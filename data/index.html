@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="/favicon.ico">
+
+    <title>ESP RFID Websocket Demo</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="bootstrap.css" rel="stylesheet">
+    <link href="jumbotron.css" rel="stylesheet">
+
+    <script>
+        var websock;
+        var count = 0;
+
+
+        function start() {
+            websock = new WebSocket('ws://' + window.location.hostname + '/ws');
+            websock.onopen = function(evt) {
+                console.log('ESP WebSock Open');
+            };
+            websock.onclose = function(evt) {
+                console.log('ESP WebSock Close');
+            };
+            websock.onerror = function(evt) {
+                console.log(evt);
+            };
+            websock.onmessage = function(evt) {
+                console.log(evt.data);
+                var obj = JSON.parse(evt.data);
+                var epochTime = obj.epoch;
+                var humanTime = timeConverter(epochTime);
+                var uid = obj.uid;
+                var isKnown = obj.known;
+                var upper = uid.toUpperCase();
+                count++;
+                var countwrap = "scan" + count ;
+                
+                var getParent = document.getElementById('scan_container');
+                var createElement = document.createElement('div');
+                createElement.id = countwrap;
+                getParent.insertBefore(createElement,getParent.childNodes[0]);
+                
+                var child = document.getElementById(countwrap);
+                
+                child.innerHTML = 'UID: ' + upper + ' -> ' + humanTime + ' (UTC)   ';
+                
+                
+                if (isKnown == 1) {
+                  document.getElementById(countwrap).insertAdjacentHTML('beforeend', '<button id=' + uid + ' type="button" class="btn btn-danger btn-xs" onclick="buttonclick(this)">Delete</button>');
+                  
+                  
+                }
+                else {
+                  document.getElementById(countwrap).insertAdjacentHTML('beforeend', '<button id=' + uid + ' type="button" class="btn btn-success btn-xs" onclick="buttonclick(this)">Add</button>');
+                }
+                
+                fadeOutIn(child, 500);
+                if (count >= 11) {
+                    var top = document.getElementById('scan_container');
+                    top.removeChild(top.lastChild);
+                };
+            };
+
+            function fadeOutIn(elem, speed) {
+
+                if (!elem.style.opacity) {
+                    elem.style.opacity = 1;
+                } // end if
+
+                var outInterval = setInterval(function() {
+                    elem.style.opacity -= 0.02;
+                    if (elem.style.opacity <= 0) {
+                        clearInterval(outInterval);
+                        var inInterval = setInterval(function() {
+                            elem.style.opacity = Number(elem.style.opacity) + 0.02;
+                            if (elem.style.opacity >= 1)
+                                clearInterval(inInterval);
+                        }, speed / 50);
+                    } // end if
+                }, speed / 50);
+
+            };
+
+            function timeConverter(t) {
+                var a = new Date(t * 1000);
+                var today = new Date();
+                var yesterday = new Date(Date.now() - 86400000);
+                var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                var year = a.getFullYear();
+                var month = months[a.getMonth()];
+                var date = a.getDate();
+                var hour = a.getHours();
+                var min = a.getMinutes();
+                if (a.setHours(0, 0, 0, 0) == today.setHours(0, 0, 0, 0))
+                    return 'Today, ' + hour + ':' + min;
+                else if (a.setHours(0, 0, 0, 0) == yesterday.setHours(0, 0, 0, 0))
+                    return 'Yesterday, ' + hour + ':' + min;
+                else if (year == today.getFullYear())
+                    return date + ' ' + month + ', ' + hour + ':' + min;
+                else
+                    return date + ' ' + month + ' ' + year + ', ' + hour + ':' + min;
+            };
+        }
+
+        function buttonclick(e) {
+            var x = confirm("Are you sure?");
+            if (x) {
+            console.log(e.id);
+            websock.send(e.id);
+            console.log('Data Sent to WebSocket Server');
+            };
+        
+        }
+        
+    </script>
+</head>
+
+<body onload="javascript:start();">
+    <div class="container">
+        <div class="header clearfix">
+            <nav>
+                <ul class="nav nav-pills pull-right">
+                    <li role="presentation" class="active"><a href="#">Home</a></li>
+                    <li role="presentation"><a href="#">Help</a></li>
+                </ul>
+            </nav>
+            <h3 class="text-muted">ESP RFID</h3>
+        </div>
+
+        <div class="jumbotron">
+            <p class="lead" style="text-align:center">Scan a RFID Tag in order to list below</p>
+            <div id="scan_container" style="width:100%;clear:both;text-align:center"></div>
+        </div>
+
+        <footer class="footer">
+            <p>&copy; 2017 OSB Inc.</p>
+        </footer>
+    </div>
+</body>
+
+</html>
