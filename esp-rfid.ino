@@ -1,17 +1,7 @@
 /*
-  The MIT License (MIT)
-
   Copyright (c) 2017 Omer Siar Baysal
 
-  Permission is hereby granted, free of charge, to any person obtaining a copy
-  of this software and associated documentation files (the "Software"), to deal
-  in the Software without restriction, including without limitation the rights
-  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-  copies of the Software, and to permit persons to whom the Software is
-  furnished to do so, subject to the following conditions:
-
-  The above copyright notice and this permission notice shall be included in
-  all copies or substantial portions of the Software.
+  Released to Public Domain
 
   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -69,8 +59,7 @@ const char* http_password = "admin";
 const char * otapass = "admin";
 
 // Variables for whole scoope
-char uidchar[14];           // Stores variable RFID Tag's UID information which can be 4 byte or 7 byte long
-char dir[] = "/PICCS/";     // SPIFFS does not support for directories, we need a prefix for separating known RFID Tag's
+String uid = ""; // Variable for storing UID of last scanned RFID tag
 uint8_t isKnown = 0;        // Stores variable data for returning if RFID Tag's UID is known or not
 
 // Create UDP instance for NTP Client
@@ -199,32 +188,22 @@ void rfidloop() {
   mfrc522.PICC_HaltA();
 
   // There are Mifare PICCs which have 4 byte or 7 byte UID
-  // We are going to support both so PICCs that have 4 byte UID will have appended zeros
-  byte readCard[7]; // Variable for storing UID of last scanned RFID tag
   Serial.print(F("Scanned PICC's UID: "));
-  for (int i = 0; i < 7; i++) {  //
-    readCard[i] = mfrc522.uid.uidByte[i];
+  uid = "";
+  for (int i = 0; i < mfrc522.uid.size; ++i) {
+    uid += String(mfrc522.uid.uidByte[i], HEX);
   }
-
-  // Store UID information on a String so we can use it for sending to Web Client or for filename or for writing it to text file
-  sprintf(uidchar, "%02x%02x%02x%02x%02x%02x%02x", readCard[0], readCard[1], readCard[2], readCard[3], readCard[4], readCard[5], readCard[6]);
-  Serial.println(uidchar);
+  Serial.println(uid);
 
   // We are going to use filesystem to store known UIDs. You can think of it as a database
-  // Constructed filename will be 26 char long due to prefixing directory name and extension
-  char filename[26];
-  // Constract filename
-  sprintf(filename, "\"%s%s.txt\"", dir, uidchar);
-  Serial.println(filename);
 
   // Check if this UID is known to us
   isKnown = 0;  // First assume we don't know until we got a match
-  File f = SPIFFS.open(filename, "r");
+  File f = SPIFFS.open(uid, "r");
   // Check if we could find it above function returns true if the file is exist
   if (f) {
     f.close(); // We found it so close the file
     isKnown = 1; // Label it as known
-    Serial.println(F("This is a known PICC")); // Inform
 
     // We may also want to do something else if we know the UID
     // Open a door lock, turn a servo, etc
@@ -233,12 +212,12 @@ void rfidloop() {
 
   // So far got we got UID of Scanned RFID Tag, checked it if it's on the database
   // Now we need to send this information to Web Client
-  sendDataWs(); // This function encodes a JSON object and sends it client
 
+    sendDataWs(); // This function encodes a JSON object and sends it client
   // We are all done for now
 }
 
-// Encodes JSON Object and Sends it to Client
+// Encodes JSON Object and Sends it to All WebSocket Clients
 void sendDataWs() {
   // Check ArduinoJSON Library for details
   DynamicJsonBuffer jsonBuffer;
@@ -248,7 +227,7 @@ void sendDataWs() {
   // epoch is Unix Time Stamp
   root["epoch"] = timeClient.getEpochTime();
   // UID of Scanned RFID Tag
-  root["uid"] = uidchar;
+  root["uid"] = uid;
   // And a boolean 1 for known tags 0 for unknown
   root["known"] = isKnown;
 
@@ -264,33 +243,54 @@ void sendDataWs() {
 void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len) {
   if (type == WS_EVT_CONNECT) {
     Serial.printf("ws[%s][%u] connect\n", server->url(), client->id());
+    Serial.println();
   }
   else if (type == WS_EVT_DISCONNECT) {
     Serial.printf("ws[%s][%u] disconnect: %u\n", server->url(), client->id());
+    Serial.println();
   }
   else if (type == WS_EVT_ERROR) {
     Serial.printf("ws[%s][%u] error(%u): %s\n", server->url(), client->id(), *((uint16_t*)arg), (char*)data);
-  }
-  else if (type == WS_EVT_PONG) {
-    Serial.printf("ws[%s][%u] pong[%u]: %s\n", server->url(), client->id(), len, (len) ? (char*)data : "");
+    Serial.println();
   }
   else if (type == WS_EVT_DATA) {
     AwsFrameInfo * info = (AwsFrameInfo*)arg;
     String msg = "";
     if (info->final && info->index == 0 && info->len == len) {
       //the whole message is in a single frame and we got all of it's data
-      Serial.printf("ws[%s][%u] %s-message[%llu]: ", server->url(), client->id(), (info->opcode == WS_TEXT) ? "text" : "binary", info->len);
+
 
 
       for (size_t i = 0; i < info->len; i++) {
         msg += (char) data[i];
       }
 
-      Serial.printf("%s\n", msg.c_str());
 
+      StaticJsonBuffer<200> jsonBuffer;
+      JsonObject& root = jsonBuffer.parseObject(msg);
+      if (!root.success()) {
+        Serial.println("parseObject() failed");
+        return;
+      }
+      uid = root["uid"].as<String>();
+      const char* command = root["command"];
+      if (strcmp(command, "add")  == 0) {
+        File f = SPIFFS.open(uid, "a+");
+        // Check if we created the file
+        if (f) {
+          f.close(); // We found it, close the file
+
+
+        }
+      }
+      else if (strcmp(command, "remove")  == 0) {
+        SPIFFS.remove(uid);
+      }
     }
   }
 }
+
+
 
 
 

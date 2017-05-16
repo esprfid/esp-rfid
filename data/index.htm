@@ -49,22 +49,21 @@
                 
                 var child = document.getElementById(countwrap);
                 
-                child.innerHTML = 'UID: ' + upper + ' -> ' + humanTime + ' (UTC)   ';
+                child.innerHTML = 'UID: ' + upper + ' ->  ';
                 
                 
                 if (isKnown == 1) {
-                  document.getElementById(countwrap).insertAdjacentHTML('beforeend', '<button id=' + uid + ' type="button" class="btn btn-danger btn-xs" onclick="buttonclick(this)">Delete</button>');
+                  child.insertAdjacentHTML('beforeend', '<button id=' + uid + ' type="button" class="btn btn-danger btn-xs" onclick="del(this)">Remove</button>');
                   
                   
                 }
                 else {
-                  document.getElementById(countwrap).insertAdjacentHTML('beforeend', '<button id=' + uid + ' type="button" class="btn btn-success btn-xs" onclick="buttonclick(this)">Add</button>');
+                  child.insertAdjacentHTML('beforeend', '<button id=' + uid + ' type="button" class="btn btn-success btn-xs" onclick="add(this)">Add</button>');
                 }
                 
                 fadeOutIn(child, 500);
                 if (count >= 11) {
-                    var top = document.getElementById('scan_container');
-                    top.removeChild(top.lastChild);
+                    getParent.removeChild(getParent.lastChild);
                 };
             };
 
@@ -109,14 +108,20 @@
             };
         }
 
-        function buttonclick(e) {
-            var x = confirm("Are you sure?");
+        function add(e) {
+            var x = confirm('This will add ' + e.id + ' to database. Are you sure?');
             if (x) {
-            console.log(e.id);
-            websock.send(e.id);
-            console.log('Data Sent to WebSocket Server');
+            var jsontosend = '{"uid":"'+ e.id + '","command":"add"}'
+            websock.send(jsontosend);
             };
+        }
         
+        function del(e) {
+            var x = confirm('This will remove ' + e.id + ' from database. Are you sure?');
+            if (x) {
+            var jsontosend = '{"uid":"'+ e.id + '","command":"remove"}'
+            websock.send(jsontosend);
+            };
         }
         
     </script>

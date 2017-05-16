@@ -6,31 +6,32 @@ Access Control demonstration using a cheap RC522 RFID Hardware and Espressif's E
 
 * Using WebSocket protocol to exchange data between Hardware and Web Browser
 * Data is encoded as JSON object
-* Time Stamps from NTP Server
-* Built-in HTML Editor for making visual changes
+* Records are Timestamped (Time synced from a NTP Server)
+* Bootstrap for beautiful Web Pages
+* Built-in HTML Editor
 * Thanks to ESPAsyncWebServer Library communication is Asyncronous
 
 ## TODO
 
-- [ ] Serve pre-compiled binaries
-- [ ] Logging access
-- [ ] Password Protection or Authentication for Tags instead trusting UID
-- [ ] Settings Panel for Wi-Fi, PICC Password, Factory Reset, NTP Client, etc
-- [ ] Schecdule User Access
-- [ ] Polished web pages
-- [ ] Sync Time from Browser if no internet connection
+[ ] Serve pre-compiled binaries
+[ ] Logging access
+[ ] Password Protection or Authentication for Tags instead trusting UID
+[ ] Settings Panel for Wi-Fi, PICC Password, Factory Reset, NTP Client, etc
+[ ] Schedule User Access
+[ ] Polished web pages
+[ ] Sync Time from Browser if no internet connection
 
-- [ ] Use Sming Framework for Development
+[ ] Use Sming Framework for Development
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running for development and testing purposes.
+Please install Arduino IDE if you don't already, then add ESP8266 Core on top of it. Additional Library download links are listed below:
 
 * [Arduino IDE](http://www.arduino.cc) - The development IDE
 * [ESP8266 Core for Arduino IDE](https://github.com/esp8266/Arduino) - ESP8266 Core
 * [ESPAsyncWebServer](https://github.com/me-no-dev/ESPAsyncWebServer) - Asyncrone Web Server with WebSocket Plug-in
 * [ESPAsyncTCP](https://github.com/me-no-dev/ESPAsyncTCP) - Mandatory for ESPAsyncWebServer
-* [ESPAsyncTCP](https://github.com/arduino-libraries/NTPClient) - NTP Library for Arduino IDE
+* [NTPClient](https://github.com/arduino-libraries/NTPClient) - NTP Library for Arduino IDE
 * [MFRC522](https://github.com/miguelbalboa/rfid) - MFRC522 RFID Hardware Library for Arduino IDE
 * [ArduinoJson](https://github.com/bblanchon/ArduinoJson) - JSON Library for Arduino IDE
 
