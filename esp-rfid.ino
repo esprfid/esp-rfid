@@ -70,10 +70,10 @@ WiFiUDP ntpUDP;
 #define NTP_INTERVAL 60 * 1000    // In miliseconds
 #define NTP_ADDRESS  "europe.pool.ntp.org"  // NTP Server to connect
 
-// Create NTP Client instance with above settings
+// Create NTP Client instance with below settings
 NTPClient timeClient(ntpUDP, NTP_ADDRESS, NTP_OFFSET, NTP_INTERVAL);
 
-// RC522 Device Pins on
+// Configure RC522 Device Pins on
 #define SS_PIN D8                     //Pin on WeMos D1 Mini
 #define RST_PIN D3                    //Pin on WeMos D1 Mini
 
@@ -171,6 +171,10 @@ void loop() {
   rfidloop();
 }
 
+void grantAccess() {
+  
+}
+
 // RFID Specific Loop
 void rfidloop() {
   //If a new PICC placed to RFID reader continue
@@ -207,7 +211,7 @@ void rfidloop() {
 
     // We may also want to do something else if we know the UID
     // Open a door lock, turn a servo, etc
-    // digitalWrite(LED, HIGH);
+    grantAccess();
   }
 
   // So far got we got UID of Scanned RFID Tag, checked it if it's on the database
@@ -243,15 +247,12 @@ void sendDataWs() {
 void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len) {
   if (type == WS_EVT_CONNECT) {
     Serial.printf("ws[%s][%u] connect\n", server->url(), client->id());
-    Serial.println();
   }
   else if (type == WS_EVT_DISCONNECT) {
     Serial.printf("ws[%s][%u] disconnect: %u\n", server->url(), client->id());
-    Serial.println();
   }
   else if (type == WS_EVT_ERROR) {
     Serial.printf("ws[%s][%u] error(%u): %s\n", server->url(), client->id(), *((uint16_t*)arg), (char*)data);
-    Serial.println();
   }
   else if (type == WS_EVT_DATA) {
     AwsFrameInfo * info = (AwsFrameInfo*)arg;

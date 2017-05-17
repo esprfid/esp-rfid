@@ -42,28 +42,49 @@
                 count++;
                 var countwrap = "scan" + count ;
                 
-                var getParent = document.getElementById('scan_container');
-                var createElement = document.createElement('div');
-                createElement.id = countwrap;
-                getParent.insertBefore(createElement,getParent.childNodes[0]);
+                var tableRef = document.getElementById('scan_table').getElementsByTagName('tbody')[0];
+                var newRow   = tableRef.insertRow(tableRef.rows[0]);
+                newRow.id = countwrap;
                 
+                
+                var newCell1  = newRow.insertCell(0);
+
+
                 var child = document.getElementById(countwrap);
                 
-                child.innerHTML = 'UID: ' + upper + ' ->  ';
                 
+                
+                newCell1.innerHTML = upper ;
+
+                var newCell2  = newRow.insertCell(1);
                 
                 if (isKnown == 1) {
-                  child.insertAdjacentHTML('beforeend', '<button id=' + uid + ' type="button" class="btn btn-danger btn-xs" onclick="del(this)">Remove</button>');
                   
+                  child.className='success';
+                  var btn = document.createElement('button');
+
+                  btn.id = uid;
+                  btn.classList.add("btn", "btn-danger","btn-xs");
+                  btn.onclick = function(){del(this);};
+                  btn.textContent = "Remove" ;
+                  newCell2.appendChild(btn);
                   
                 }
                 else {
-                  child.insertAdjacentHTML('beforeend', '<button id=' + uid + ' type="button" class="btn btn-success btn-xs" onclick="add(this)">Add</button>');
+                  child.className='warning';
+                  var btn = document.createElement('button');
+                  btn.id = uid;
+                  btn.classList.add("btn", "btn-success","btn-xs");
+                  btn.onclick = function(){add(this);};
+                  btn.textContent = "Add" ;
+                  
+                  newCell2.appendChild(btn);
                 }
                 
                 fadeOutIn(child, 500);
+                
                 if (count >= 11) {
-                    getParent.removeChild(getParent.lastChild);
+                    tableRef.removeChild(tableRef.lastChild);
                 };
             };
 
@@ -113,6 +134,8 @@
             if (x) {
             var jsontosend = '{"uid":"'+ e.id + '","command":"add"}'
             websock.send(jsontosend);
+            var child = document.getElementById(countwrap);
+
             };
         }
         
@@ -121,6 +144,7 @@
             if (x) {
             var jsontosend = '{"uid":"'+ e.id + '","command":"remove"}'
             websock.send(jsontosend);
+            
             };
         }
         
@@ -141,7 +165,16 @@
 
         <div class="jumbotron">
             <p class="lead" style="text-align:center">Scan a RFID Tag in order to list below</p>
-            <div id="scan_container" style="width:100%;clear:both;text-align:center"></div>
+            <table id="scan_table" class="table table-hover">
+              <thead class="thead-default">
+      <tr>
+        <th>UID</th>
+        <th>Action</th>
+      </tr>
+       </thead>
+       <tbody>
+            </tbody>
+  </table>
         </div>
 
         <footer class="footer">

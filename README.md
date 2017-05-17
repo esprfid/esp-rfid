@@ -13,15 +13,15 @@ Access Control demonstration using a cheap RC522 RFID Hardware and Espressif's E
 
 ## TODO
 
-[ ] Serve pre-compiled binaries
-[ ] Logging access
-[ ] Password Protection or Authentication for Tags instead trusting UID
-[ ] Settings Panel for Wi-Fi, PICC Password, Factory Reset, NTP Client, etc
-[ ] Schedule User Access
-[ ] Polished web pages
-[ ] Sync Time from Browser if no internet connection
+- [ ] Serve pre-compiled binaries
+- [ ] Logging access
+- [ ] Password Protection or Authentication for Tags instead trusting UID
+- [ ] Settings Panel for Wi-Fi, PICC Password, Factory Reset, NTP Client, etc
+- [ ] Schedule User Access
+- [ ] Polished web pages
+- [ ] Sync Time from Browser if no internet connection
 
-[ ] Use Sming Framework for Development
+- [ ] Use Sming Framework for Development
 
 ## Getting Started
 
@@ -35,5 +35,15 @@ Please install Arduino IDE if you don't already, then add ESP8266 Core on top of
 * [MFRC522](https://github.com/miguelbalboa/rfid) - MFRC522 RFID Hardware Library for Arduino IDE
 * [ArduinoJson](https://github.com/bblanchon/ArduinoJson) - JSON Library for Arduino IDE
 
+You may also need 
+
+* [ESP8266FS Uploader](https://github.com/esp8266/arduino-esp8266fs-plugin) - Arduino ESP8266 filesystem uploader
+
 Unlisted libraries are part of ESP8266 Core for Arduino IDE, so you don't need to download them.
+
+### Known Issues
+
+* Built-in HTML Editor has hard-coded JavaScript that loads from CDN Internet
+
+
 
