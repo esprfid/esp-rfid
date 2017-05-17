@@ -2,6 +2,8 @@
 
 Access Control demonstration using a cheap RC522 RFID Hardware and Espressif's ESP8266 Microcontroller.
 
+![SH](https://image.ibb.co/hc7nmQ/Screenshot_2017_05_17_13_01_34.png)
+
 ## Features
 
 * Using WebSocket protocol to exchange data between Hardware and Web Browser
