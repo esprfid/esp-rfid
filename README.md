@@ -13,18 +13,6 @@ Access Control demonstration using a cheap RC522 RFID Hardware and Espressif's E
 * Built-in HTML Editor
 * Thanks to ESPAsyncWebServer Library communication is Asyncronous
 
-## TODO
-
-- [ ] Serve pre-compiled binaries
-- [ ] Logging access
-- [ ] Password Protection or Authentication for Tags instead trusting UID
-- [ ] Settings Panel for Wi-Fi, PICC Password, Factory Reset, NTP Client, etc
-- [ ] Schedule User Access
-- [ ] Polished web pages
-- [ ] Sync Time from Browser if no internet connection
-
-- [ ] Use Sming Framework for Development
-
 ## Getting Started
 
 Please install Arduino IDE if you don't already, then add ESP8266 Core on top of it. Additional Library download links are listed below:
@@ -43,9 +31,37 @@ You may also need
 
 Unlisted libraries are part of ESP8266 Core for Arduino IDE, so you don't need to download them.
 
+### Pin Layout
+
+The following table shows the typical pin layout used:
+
+| Signal        | MFRC522       | WeMos D1 mini  | NodeMcu | Generic      |
+|---------------|:-------------:|:--------------:| :------:|:------------:|
+| RST/Reset     | RST           | D3 [1]         | D3 [1]  | GPIO-0 [1]   |
+| SPI SS        | SDA [3]       | D8 [2]         | D8 [2]  | GPIO-15 [2]  |
+| SPI MOSI      | MOSI          | D7             | D7      | GPIO-13      |
+| SPI MISO      | MISO          | D6             | D6      | GPIO-12      |
+| SPI SCK       | SCK           | D5             | D5      | GPIO-14      |
+
+1. Configurable, typically defined as RST_PIN in sketch/program.
+2. Configurable, typically defined as SS_PIN in sketch/program.
+3. The SDA pin might be labeled SS on some/older MFRC522 boards.
+
 ### Known Issues
 
 * Built-in HTML Editor has hard-coded JavaScript that loads from CDN Internet
+* AP mode is being tested, connect to Internet where available.
 
 
+## TODO
+
+- [ ] Logging access
+- [ ] Password Protection or Authentication for Tags instead trusting UID
+- [ ] Settings Panel for Wi-Fi, PICC Password, Factory Reset, NTP Client, etc
+- [ ] Schedule User Access
+- [ ] Polished web pages
+- [ ] Sync Time from Browser if no internet connection
+- [ ] An uncompleted task
+
+- [ ] Use Sming Framework for Development
 
