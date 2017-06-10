@@ -15,7 +15,7 @@ Access Control demonstration using a cheap RC522 RFID Hardware and Espressif's E
 
 ## Getting Started
 
-Please install Arduino IDE if you don't already, then add ESP8266 Core on top of it. Additional Library download links are listed below:
+Please install Arduino IDE if you didn't already, then add ESP8266 Core on top of it. Additional Library download links are listed below:
 
 * [Arduino IDE](http://www.arduino.cc) - The development IDE
 * [ESP8266 Core for Arduino IDE](https://github.com/esp8266/Arduino) - ESP8266 Core
@@ -50,18 +50,17 @@ The following table shows the typical pin layout used:
 ### Known Issues
 
 * Built-in HTML Editor has hard-coded JavaScript that loads from CDN Internet
-* AP mode is being tested, connect to Internet where available.
+* AP mode is being tested, connect to Internet where available, Text Editor won't work if there is no Internet connection
+* Currently only Git version of ESP8266 Core is supported. (WiFi.scanNetworksAsync())
 
 
 ## TODO
 
 - [ ] Logging access
-- [ ] Password Protection or Authentication for Tags instead trusting UID
+- [ ] Password Protection or Authentication for Tags instead trusting only to UIDs
 - [ ] Settings Panel for Wi-Fi, PICC Password, Factory Reset, NTP Client, etc
 - [ ] Schedule User Access
 - [ ] Polished web pages
-- [ ] Sync Time from Browser if no internet connection
-- [ ] An uncompleted task
+- [ ] Sync Time from Browser if there is no internet connection
 
 - [ ] Use Sming Framework for Development
-
