@@ -2,7 +2,9 @@
 
 Access Control demonstration using a cheap RC522 RFID Hardware and Espressif's ESP8266 Microcontroller.
 
-![SH](https://image.ibb.co/hc7nmQ/Screenshot_2017_05_17_13_01_34.png)
+![IP](https://github.com/omersiar/esp-rfid/blob/master/demo/index.png?raw=true)
+![SP](https://github.com/omersiar/esp-rfid/blob/master/demo/settings.png?raw=true)
+
 
 ## Features
 
