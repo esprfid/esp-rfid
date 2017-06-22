@@ -21,8 +21,8 @@
   | SPI MISO      | MISO          | D6             | D6      | GPIO-12      |
   | SPI SCK       | SCK           | D5             | D5      | GPIO-14      |
 
-  1. Configurable, defined as RST_PIN in sketch/program.
-  2. Configurable, defined as SS_PIN in sketch/program.
+  1. Configurable via web page
+  2. Configurable via web page
   3. The SDA pin might be labeled SS on some/older MFRC522 boards.
 
 */
@@ -39,42 +39,34 @@
 #include <Hash.h>                     // For checking integrity of OTA update binary files to make sure it's not corrupted before it is arrived
 #include <ESPAsyncTCP.h>              // Async TCP Library is mandatory for Async Web Server
 #include <ESPAsyncWebServer.h>        // Async Web Server with built-in WebSocket Plug-in
-#include <SPIFFSEditor.h>             // This creates a web page on server (http://esp-rfid.local/edit) which can be used to edit text based files.
+#include <SPIFFSEditor.h>             // This creates a web page on server which can be used to edit text based files.
 
-// Password for AP Mode if there is no connection to Internet
-const char * password = "12345678";
+#define HTTP_USER     "admin"
+#define HTTP_PASS     "1234"
+#define HTTP_REALM    "realm"
 
-// Client's host name for mDNS, OTA, etc. we will add ChipID later
+// Client's host name for mDNS, OTA, etc. we will add ChipID to this
 #define HOSTNAME "esp-rfid-"
-
-// Creditentials for Web Editor (http://esp-rfid.local/edit)
-const char * http_username = "admin";
-const char * http_password = "admin";
-
-// Auth password for OTA Update
-const char * otapass = "admin";
-
-// Variables for whole scope
-String uid = ""; // Variable for storing UID of last scanned RFID tag
-uint8_t isKnown = 0;        // Stores variable data for returning if RFID Tag's UID is known or not
-
-// Create UDP instance for NTP Client
-WiFiUDP ntpUDP;
 
 // Configure NTP Client Settings
 #define NTP_OFFSET   60 * 60      // In seconds
 #define NTP_INTERVAL 60 * 1000    // In miliseconds
 #define NTP_ADDRESS  "europe.pool.ntp.org"  // NTP Server to connect
 
+// Password for AP Mode if there is no connection to Internet
+// const char * password = "12345678";
+
+// Variables for whole scope
+String filename = "/P/";
+
+// Create UDP instance for NTP Client
+WiFiUDP ntpUDP;
+
 // Create NTP Client instance with below settings
 NTPClient timeClient(ntpUDP, NTP_ADDRESS, NTP_OFFSET, NTP_INTERVAL);
 
-// Configure RC522 Device Pins on
-#define SS_PIN D8
-#define RST_PIN D3
-
-// Create MFRC522 RFID instance with above settings
-MFRC522 mfrc522(SS_PIN, RST_PIN);
+// Create MFRC522 RFID instance
+MFRC522 mfrc522 = MFRC522();
 
 // Create AsyncWebServer instance on port "80"
 AsyncWebServer server(80);
@@ -86,101 +78,44 @@ void setup() {
   delay(1000);
   Serial.begin(115200);
   Serial.println();
-  Serial.println(F("ESP RFID AccessControl v0.1"));
-  Serial.print("Chip ID: 0x");
+  Serial.println(F("[ INFO ] ESP RFID v0.0.3"));
+  Serial.print("[ INFO ] Chip ID: 0x");
   Serial.println(ESP.getChipId(), HEX);
-
+  // Start SPIFFS filesystem
+  SPIFFS.begin();
   // Set Hostname.
   String hostname(HOSTNAME);
   hostname += String(ESP.getChipId(), HEX);
   WiFi.hostname(hostname);
-
   // Print hostname.
-  Serial.println("Hostname: " + hostname);
-
+  Serial.println("[ INFO ] Hostname: " + hostname);
   // Start SPIFFS filesystem
   SPIFFS.begin();
-  // Get wireless configuration
-  File configFile = SPIFFS.open("/cl_conf.txt", "r");
-  if (!configFile) {
-    Serial.println("Failed to open cl_conf.txt.");
+  if (!loadConfiguration()) {
+    fallbacktoAPMode();
   }
-  String content = configFile.readString();
-  configFile.close();
-
-  StaticJsonBuffer<110> jsonBuffer;
-  JsonObject& root = jsonBuffer.parseObject(content);
-  if (!root.success()) {
-    Serial.println("parseObject() failed");
-    return;
-  }
-  const char * conssid = root["ssid"];
-  const char * conpassword = root["pswd"];
-
-  // First connect to a wi-fi network
-  WiFi.begin(conssid, conpassword);
-  // Inform user we are trying to connect
-  Serial.print(F("Connecting"));
-  // We try it for 15 seconds and give up on if we can't connect
-  unsigned long now = millis();
-  uint8_t timeout = 15; // define when to time out in seconds
-  while (millis() - now < timeout * 1000) {
-    if (WiFi.status() == WL_CONNECTED) {
-      // Print Wi-Fi Client's IP
-      Serial.println();
-      Serial.print(F("Client IP address: "));
-      Serial.println(WiFi.localIP());
-      WiFi.mode(WIFI_STA);
-      break;
-    }
-    delay(500);
-    Serial.print(F("."));
-  }
-  if (WiFi.status() != WL_CONNECTED) {
-    Serial.println();
-    Serial.println(F("Couldn't connect in time"));
-    // Fallback to AP Mode, so we can connect to ESP if there is no Internet connection
-    WiFi.mode(WIFI_AP);
-    Serial.print(F("Configuring access point... "));
-    Serial.println(WiFi.softAP((const char *)hostname.c_str(), password) ? "Ready" : "Failed!");
-    // Access Point IP
-    IPAddress myIP = WiFi.softAPIP();
-    Serial.println(F("AP IP address: "));
-    Serial.println(myIP);
-  }
-
-  SPI.begin();           // MFRC522 Hardware uses SPI protocol
-  mfrc522.PCD_Init();    // Initialize MFRC522 Hardware
-  Serial.print(F("RFID Hardware "));
-  mfrc522.PCD_DumpVersionToSerial(); // Show details of PCD - MFRC522 Card Reader details
-
-  // If you set RFID Hardwware Antenna Gain to Max it will increase reading distance
-  // mfrc522.PCD_SetAntennaGain(mfrc522.RxGain_max);
-
   // Start NTP Client if we connected to an AP
   if (WiFi.status() == WL_CONNECTED) {
     timeClient.begin();
   }
-
-
-
-
   // Start OTA Upload Service
   ArduinoOTA.setHostname((const char *)hostname.c_str());
-  ArduinoOTA.setPassword(otapass);
   ArduinoOTA.begin();
-
   // Start WebSocket Plug-in and handle incoming message on "onWsEvent" function
-  ws.onEvent(onWsEvent);
   server.addHandler(&ws);
+  ws.onEvent(onWsEvent);
+  //Configure web server
   // Add Text Editor (/edit) handler
-  server.addHandler(new SPIFFSEditor(http_username, http_password));
+  server.addHandler(new SPIFFSEditor("admin", "admin"));
   // Serve all files in Filesystem and make default file which is served first index.htm
-  server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.htm");
-
-
+  // send a file when /index is requested
+  server.serveStatic("/auth/", SPIFFS, "/auth/").setDefaultFile("settings.htm").setAuthentication("admin", "admin");
+  server.serveStatic("/", SPIFFS, "/");
   // Handle what happens when requested web file couldn't be found
-  server.onNotFound(NotFound);
+  server.onNotFound([](AsyncWebServerRequest *request) {
+    request->send(404);
+  });
+
   // Start Web Server
   server.begin();
 }
@@ -198,7 +133,7 @@ void loop() {
 }
 
 void grantAccess() {
-
+  // do something if scanned PICC is known
 }
 
 // RFID Specific Loop
@@ -216,42 +151,51 @@ void rfidloop() {
   // We got UID tell PICC to stop responding to not get that again
   mfrc522.PICC_HaltA();
   // There are Mifare PICCs which have 4 byte or 7 byte UID
-  Serial.print(F("Scanned PICC's UID: "));
-  uid = "";
+  Serial.print(F("[ INFO ] PICC's UID: "));
+
+  String uid = "";
   for (int i = 0; i < mfrc522.uid.size; ++i) {
     uid += String(mfrc522.uid.uidByte[i], HEX);
   }
-  Serial.println(uid);
+  Serial.print(uid);
+  MFRC522::PICC_Type piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
+  String type = mfrc522.PICC_GetTypeName(piccType);
   // We are going to use filesystem to store known UIDs.
   // Check if this UID is known to us
-  isKnown = 0;  // First assume we don't know until we got a match
-  File f = SPIFFS.open(uid, "r");
+  int isKnown = 0;  // First assume we don't know until we got a match
+  filename = "/P/";
+  filename += uid;
+  File f = SPIFFS.open(filename, "r");
   // Check if we could find it above function returns true if the file is exist
   if (f) {
     f.close(); // We found it so close the file
-    
     isKnown = 1; // Label it as known
     // We may also want to do something else if we know the UID
     // Open a door lock, turn a servo, etc
-    Serial.println("This is a known PICC");
+    Serial.println(" = known PICC");
     grantAccess();
+  }
+  else {
+    Serial.println(" = unknown PICC");
   }
   // So far got we got UID of Scanned RFID Tag, checked it if it's on the database
   // Now we need to send this information to Web Client
-  sendDataWs(); // This function encodes a JSON object and sends it client
+  sendDataWs(uid, type, isKnown); // This function encodes a JSON object and sends it client
   // We are all done for now
 }
 
 // Encodes JSON Object and Sends it to All WebSocket Clients
-void sendDataWs() {
+void sendDataWs(String uid, String type, int isKnown) {
   // Check ArduinoJSON Library for details
   DynamicJsonBuffer jsonBuffer;
   JsonObject& root = jsonBuffer.createObject();
+  root["command"] = "piccscan";
   // We send 3 data blocks
   // epoch is Unix Time Stamp
   root["epoch"] = timeClient.getEpochTime();
   // UID of Scanned RFID Tag
   root["uid"] = uid;
+  root["type"] = type;
   // And a boolean 1 for known tags 0 for unknown
   root["known"] = isKnown;
   size_t len = root.measureLength();
@@ -264,14 +208,8 @@ void sendDataWs() {
 
 // Handles WebSocket Events
 void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len) {
-  if (type == WS_EVT_CONNECT) {
-    Serial.printf("ws[%s][%u] connected\r\n", server->url(), client->id());
-  }
-  else if (type == WS_EVT_DISCONNECT) {
-    Serial.printf("ws[%s][%u] disconnected\r\n", server->url(), client->id());
-  }
-  else if (type == WS_EVT_ERROR) {
-    Serial.printf("ws[%s][%u] error(%u): %s\r\n", server->url(), client->id(), *((uint16_t*)arg), (char*)data);
+  if (type == WS_EVT_ERROR) {
+    Serial.printf("[ WARN ] WebSocket[%s][%u] error(%u): %s\r\n", server->url(), client->id(), *((uint16_t*)arg), (char*)data);
   }
   else if (type == WS_EVT_DATA) {
     AwsFrameInfo * info = (AwsFrameInfo*)arg;
@@ -282,58 +220,86 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
         msg += (char) data[i];
       }
       // We got a JSON object from browser, parse it
-      StaticJsonBuffer<200> jsonBuffer;
+      DynamicJsonBuffer jsonBuffer;
       JsonObject& root = jsonBuffer.parseObject(msg);
       if (!root.success()) {
-        Serial.println("parseObject() failed");
+        Serial.println(F("[ WARN ] Couldn't parse WebSocket message"));
         return;
       }
-
       // Web Browser sends some commands, check which command is given
-      uid = root["uid"].as<String>();
       const char * command = root["command"];
       if (strcmp(command, "add")  == 0) {
-        File f = SPIFFS.open(uid, "a+");
+        const char* uid = root["uid"];
+        filename = "/P/";
+        filename += uid;
+        File f = SPIFFS.open(filename, "a+");
         // Check if we created the file
         if (f) {
           f.close(); // We found it, close the file
         }
       }
       else if (strcmp(command, "remove")  == 0) {
-        SPIFFS.remove(uid);
+        const char* uid = root["uid"];
+        filename = "/P/";
+        filename += uid;
+        SPIFFS.remove(filename);
       }
-      else if (strcmp(command, "setssid")  == 0) {
-        const char * ssid = root["ssid"];
-        const char * password = root["pswd"];
-        DynamicJsonBuffer jsonBuffer;
-        JsonObject& root = jsonBuffer.createObject();
-        root["ssid"] = ssid;
-        root["pswd"] = password;
-        size_t len = root.measureLength();
-        AsyncWebSocketMessageBuffer * buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
-        if (buffer) {
-          File f = SPIFFS.open("/cl_conf.txt", "w+");
-          if (!f) {
-            Serial.println("Failed to open for write cl_conf.txt.");
-          }
-          root.printTo(f);
-          f.close();
-          Serial.println("Joining new network");
-          ESP.restart();
+      else if (strcmp(command, "configfile")  == 0) {
+        File f = SPIFFS.open("/auth/config.json", "w+");
+        if (!f) {
+          Serial.println("Failed to open for write config.json.");
         }
+        f.print(msg);
+        f.close();
+        ESP.reset();
+      }
+      else if (strcmp(command, "picclist")  == 0) {
+        sendPICClist();
       }
       else if (strcmp(command, "scan")  == 0) {
-        Serial.println("Wi-Fi Scan Start");
         WiFi.scanNetworksAsync(printScanResult);
+      }
+      else if (strcmp(command, "getconf")  == 0) {
+        File configFile = SPIFFS.open("/auth/config.json", "r");
+        if (configFile) {
+          size_t len = configFile.size();
+          AsyncWebSocketMessageBuffer * buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
+          if (buffer) {
+            configFile.readBytes((char *)buffer->get(), len + 1);
+            ws.textAll(buffer);
+          }
+          configFile.close();
+        }
       }
     }
   }
 }
 
-// Send a JSON object to websocket client that has nearby SSIDs
+void sendPICClist() {
+  Dir dir = SPIFFS.openDir("/P/");
+  DynamicJsonBuffer jsonBuffer;
+  JsonObject& root = jsonBuffer.createObject();
+  root["command"] = "picclist";
+  // We send 3 data blocks
+  // epoch is Unix Time Stamp
+  JsonArray& data = root.createNestedArray("piccs");
+  while (dir.next()) {
+    data.add(dir.fileName());
+  }
+  size_t len = root.measureLength();
+  AsyncWebSocketMessageBuffer * buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
+  if (buffer) {
+    root.printTo((char *)buffer->get(), len + 1);
+    ws.textAll(buffer);
+  }
+}
+
+
+// Send Scanned SSIDs to websocket clients as JSON object
 void printScanResult(int networksFound) {
   DynamicJsonBuffer jsonBuffer;
   JsonObject& root = jsonBuffer.createObject();
+  root["command"] = "ssidlist";
   JsonArray& data = root.createNestedArray("ssid");
   for (int i = 0; i < networksFound; ++i) {
     // Print SSID for each network found
@@ -349,10 +315,99 @@ void printScanResult(int networksFound) {
 }
 
 
-void NotFound(AsyncWebServerRequest * request) {
-  //Handle Unknown Request
-  request->send(404);
+// Fallback to AP Mode, so we can connect to ESP if there is no Internet connection
+void fallbacktoAPMode() {
+  WiFi.mode(WIFI_AP);
+  Serial.print(F("[ INFO ] Configuring access point... "));
+  Serial.println(WiFi.softAP("ESP-RFID") ? "Ready" : "Failed!");
+  // Access Point IP
+  IPAddress myIP = WiFi.softAPIP();
+  Serial.print(F("[ INFO ] AP IP address: "));
+  Serial.println(myIP);
 }
 
+bool loadConfiguration() {
+  File configFile = SPIFFS.open("/auth/config.json", "r");
+  if (!configFile) {
+    Serial.println("[ WARN ] Failed to open config file");
+    return false;
+  }
+  size_t size = configFile.size();
+  // Allocate a buffer to store contents of the file.
+  std::unique_ptr<char[]> buf(new char[size]);
+  // We don't use String here because ArduinoJson library requires the input
+  // buffer to be mutable. If you don't use ArduinoJson, you may as well
+  // use configFile.readString instead.
+  configFile.readBytes(buf.get(), size);
+  DynamicJsonBuffer jsonBuffer;
+  JsonObject& json = jsonBuffer.parseObject(buf.get());
+  if (!json.success()) {
+    Serial.println("[ WARN ] Failed to parse config file");
+    return false;
+  }
+  const char * conssid = json["ssid"];
+  const char * conpassword = json["pswd"];
+  int rfidss = json["sspin"];
+  int rfidrst = json["rstpin"];
+  int rfidgain = json["rfidgain"];
+  // Configure RFID Hardware
+  SPI.begin();           // MFRC522 Hardware uses SPI protocol
+  mfrc522.PCD_Init(rfidss, rfidrst);    // Initialize MFRC522 Hardware
+  // Set RFID Hardware Antenna Gain
+  // This may not work with some boards
+  mfrc522.PCD_SetAntennaGain(rfidgain);
+  Serial.printf("[ INFO ] RFID SS_PIN: %u RST_PIN: %u and Gain Factor: %u", rfidss, rfidrst, rfidgain);
+  Serial.println("");
+  ShowReaderDetails(); // Show details of PCD - MFRC522 Card Reader details
+  // Configure Wi-Fi
+  WiFi.mode(WIFI_STA);
+  // First connect to a wi-fi network
+  WiFi.begin(conssid, conpassword);
+  // Inform user we are trying to connect
+  Serial.print(F("[ INFO ] Trying to connect WiFi: "));
+  Serial.print(conssid);
+  // We try it for 20 seconds and give up on if we can't connect
+  unsigned long now = millis();
+  uint8_t timeout = 20; // define when to time out in seconds
+  // Wait until we connect or 20 seconds pass
+  do {
+    if (WiFi.status() == WL_CONNECTED) {
+      break;
+    }
+    delay(500);
+    Serial.print(F("."));
+  }
+  while (millis() - now < timeout * 1000);
+  // We now out of the while loop, either time is out or we connected. check what happened
+  if (WiFi.status() == WL_CONNECTED) { // Assume time is out first and check
+    Serial.println();
+    Serial.print(F("[ INFO ] Client IP address: ")); // Great, we connected, inform
+    Serial.println(WiFi.localIP());
+  }
+  else { // We couln't connect, time is out, inform
+    Serial.println();
+    Serial.println(F("[ WARN ] Couldn't connect in time"));
+    return false;
+  }
+  return true;
+}
 
-
+void ShowReaderDetails() {
+  // Get the MFRC522 software version
+  byte v = mfrc522.PCD_ReadRegister(mfrc522.VersionReg);
+  Serial.print(F("[ INFO ] MFRC522 Version: 0x"));
+  Serial.print(v, HEX);
+  if (v == 0x91)
+    Serial.print(F(" = v1.0"));
+  else if (v == 0x92)
+    Serial.print(F(" = v2.0"));
+  else if (v == 0x88)
+    Serial.print(F(" = clone"));
+  else
+    Serial.print(F(" (unknown)"));
+  Serial.println("");
+  // When 0x00 or 0xFF is returned, communication probably failed
+  if ((v == 0x00) || (v == 0xFF)) {
+    Serial.println(F("[ WARN ] Communication failure, check if MFRC522 properly connected"));
+  }
+}

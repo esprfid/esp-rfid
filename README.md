@@ -9,7 +9,7 @@ Access Control demonstration using a cheap RC522 RFID Hardware and Espressif's E
 * Using WebSocket protocol to exchange data between Hardware and Web Browser
 * Data is encoded as JSON object
 * Records are Timestamped (Time synced from a NTP Server)
-* Bootstrap for beautiful Web Pages
+* Bootstrap for beautiful Web Pages for both Mobile and Desktop Screens
 * Built-in HTML Editor
 * Thanks to ESPAsyncWebServer Library communication is Asyncronous
 
@@ -51,7 +51,9 @@ The following table shows the typical pin layout used:
 
 * Built-in HTML Editor has hard-coded JavaScript that loads from CDN Internet
 * AP mode is being tested, connect to Internet where available, Text Editor won't work if there is no Internet connection
-* Currently only Git version of ESP8266 Core is supported. (WiFi.scanNetworksAsync())
+* Currently only Git version (2.4.0rc) of ESP8266 Core is supported, due to new function is introduced (WiFi.scanNetworksAsync())
+* Currently we are serving all SPIFFS Files on webserver, exposing config.txt confidential data.
+* Chrome complains about password on URL
 
 
 ## TODO
@@ -62,5 +64,8 @@ The following table shows the typical pin layout used:
 - [ ] Schedule User Access
 - [ ] Polished web pages
 - [ ] Sync Time from Browser if there is no internet connection
+- [ ] Sanity check where needed
 
 - [ ] Use Sming Framework for Development
+- [ ] Abandon "String" usage
+- [ ] Close security holes

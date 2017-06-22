@@ -1,186 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="">
-    <meta name="author" content="">
-    <link rel="icon" href="/favicon.ico">
-
-    <title>ESP RFID Websocket Demo</title>
-
-    <!-- Bootstrap core CSS -->
-    <link href="bootstrap.css" rel="stylesheet">
-    <link href="jumbotron.css" rel="stylesheet">
-
-    <script>
-        var websock;
-        var count = 0;
-
-
-        function start() {
-            websock = new WebSocket('ws://' + window.location.hostname + '/ws');
-            websock.onopen = function(evt) {
-                console.log('ESP WebSock Open');
-            };
-            websock.onclose = function(evt) {
-                console.log('ESP WebSock Close');
-            };
-            websock.onerror = function(evt) {
-                console.log(evt);
-            };
-            websock.onmessage = function(evt) {
-                console.log(evt.data);
-                var obj = JSON.parse(evt.data);
-                var epochTime = obj.epoch;
-                var humanTime = timeConverter(epochTime);
-                var uid = obj.uid;
-                var isKnown = obj.known;
-                var upper = uid.toUpperCase();
-                count++;
-                var countwrap = "scan" + count ;
-                
-                var tableRef = document.getElementById('scan_table').getElementsByTagName('tbody')[0];
-                var newRow   = tableRef.insertRow(tableRef.rows[0]);
-                newRow.id = countwrap;
-                
-                
-                var newCell1  = newRow.insertCell(0);
-
-
-                var child = document.getElementById(countwrap);
-                
-                
-                
-                newCell1.innerHTML = upper ;
-
-                var newCell2  = newRow.insertCell(1);
-                
-                if (isKnown == 1) {
-                  
-                  child.className='success';
-                  var btn = document.createElement('button');
-
-                  btn.id = uid;
-                  btn.classList.add("btn", "btn-danger","btn-xs");
-                  btn.onclick = function(){del(this);};
-                  btn.textContent = "Remove" ;
-                  newCell2.appendChild(btn);
-                  
-                }
-                else {
-                  child.className='warning';
-                  var btn = document.createElement('button');
-                  btn.id = uid;
-                  btn.classList.add("btn", "btn-success","btn-xs");
-                  btn.onclick = function(){add(this);};
-                  btn.textContent = "Add" ;
-                  
-                  newCell2.appendChild(btn);
-                }
-                
-                fadeOutIn(child, 500);
-                
-                if (count >= 11) {
-                    tableRef.removeChild(tableRef.lastChild);
-                };
-            };
-
-            function fadeOutIn(elem, speed) {
-
-                if (!elem.style.opacity) {
-                    elem.style.opacity = 1;
-                } // end if
-
-                var outInterval = setInterval(function() {
-                    elem.style.opacity -= 0.02;
-                    if (elem.style.opacity <= 0) {
-                        clearInterval(outInterval);
-                        var inInterval = setInterval(function() {
-                            elem.style.opacity = Number(elem.style.opacity) + 0.02;
-                            if (elem.style.opacity >= 1)
-                                clearInterval(inInterval);
-                        }, speed / 50);
-                    } // end if
-                }, speed / 50);
-
-            };
-
-            function timeConverter(t) {
-                var a = new Date(t * 1000);
-                var today = new Date();
-                var yesterday = new Date(Date.now() - 86400000);
-                var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                var year = a.getFullYear();
-                var month = months[a.getMonth()];
-                var date = a.getDate();
-                var hour = a.getHours();
-                var min = a.getMinutes();
-                if (a.setHours(0, 0, 0, 0) == today.setHours(0, 0, 0, 0))
-                    return 'Today, ' + hour + ':' + min;
-                else if (a.setHours(0, 0, 0, 0) == yesterday.setHours(0, 0, 0, 0))
-                    return 'Yesterday, ' + hour + ':' + min;
-                else if (year == today.getFullYear())
-                    return date + ' ' + month + ', ' + hour + ':' + min;
-                else
-                    return date + ' ' + month + ' ' + year + ', ' + hour + ':' + min;
-            };
-        }
-
-        function add(e) {
-            var x = confirm('This will add ' + e.id + ' to database. Are you sure?');
-            if (x) {
-            var jsontosend = '{"uid":"'+ e.id + '","command":"add"}'
-            websock.send(jsontosend);
-            var child = document.getElementById(countwrap);
-
-            };
-        }
-        
-        function del(e) {
-            var x = confirm('This will remove ' + e.id + ' from database. Are you sure?');
-            if (x) {
-            var jsontosend = '{"uid":"'+ e.id + '","command":"remove"}'
-            websock.send(jsontosend);
-            
-            };
-        }
-        
-    </script>
-</head>
-
-<body onload="javascript:start();">
-    <div class="container">
-        <div class="header clearfix">
-            <nav>
-                <ul class="nav nav-pills pull-right">
-                    <li role="presentation" class="active"><a href="#">Home</a></li>
-                    <li role="presentation"><a href="settings.htm">Settings</a></li>
-                </ul>
-            </nav>
+   <head>
+      <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="">
+      <meta name="author" content="">
+      <link rel="icon" href="/favicon.ico">
+      <title>ESP RFID Websocket Demo</title>
+      <!-- Bootstrap core CSS -->
+      <link href="bootstrap.css" rel="stylesheet">
+      <script>
+         function submitAuthForm() {
+             var login = "admin"
+             var pass = document.getElementById('password').value;
+             location = location.href.replace('://', '://' + encodeURIComponent(login) + ':' + encodeURIComponent(pass) + '@') + 'auth/';
+             // might be required to reload on Firefox (FF shows confirmation dialog)
+             setTimeout(function(){
+                 location.reload(true);
+             }, 5000);
+         }
+      </script>
+   </head>
+   <body>
+      <div class="container text-center">
+         <div class="header clearfix">
             <h3 class="text-muted">ESP RFID</h3>
-        </div>
-
-        <div class="jumbotron">
-            <p class="lead" style="text-align:center">Scan a RFID Tag in order to list below</p>
-            <table id="scan_table" class="table table-hover">
-              <thead class="thead-default">
-      <tr>
-        <th>UID</th>
-        <th>Action</th>
-      </tr>
-       </thead>
-       <tbody>
-            </tbody>
-  </table>
-        </div>
-
-        <footer class="footer">
+         </div>
+         <div>
+            <div class="row">
+               <div class="well center-block" style="max-width:250px">
+                  <form id="loginForm" method="GET" onsubmit="submitAuthForm(); return false">
+                     <div class="form-group">
+                        <label for="password" class="control-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" value="" required="" title="Please enter your password">
+                     </div>
+                     <button type="submit" class="btn btn-success btn-sm">Login</button>
+                  </form>
+               </div>
+            </div>
+         </div>
+         <footer class="footer">
             <p>&copy; 2017 OSB Inc.</p>
-        </footer>
-    </div>
-</body>
-
+         </footer>
+      </div>
+   </body>
 </html>
