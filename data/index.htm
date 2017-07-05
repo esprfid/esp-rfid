@@ -11,14 +11,26 @@
       <!-- Bootstrap core CSS -->
       <link href="bootstrap.css" rel="stylesheet">
       <script>
-         function submitAuthForm() {
-             var login = "admin"
-             var pass = document.getElementById('password').value;
-             location = location.href.replace('://', '://' + encodeURIComponent(login) + ':' + encodeURIComponent(pass) + '@') + 'auth/';
-             // might be required to reload on Firefox (FF shows confirmation dialog)
-             setTimeout(function(){
-                 location.reload(true);
-             }, 5000);
+         function login() {
+         var username = "admin"
+         var password = document.getElementById('password').value;
+         var url = "/auth";
+         var xhr = new XMLHttpRequest();
+         xhr.open("get", url, true, username, password);
+         xhr.onload = function (e) {
+         if (xhr.readyState === 4) {
+         if (xhr.status === 200) {
+         document.location = url;
+         } else {
+         alert("Incorrect password!");
+         console.error(xhr.statusText);
+         }
+         }
+         };
+         xhr.onerror = function (e) {
+         console.error(xhr.statusText);
+         };
+         xhr.send(null);
          }
       </script>
    </head>
@@ -30,7 +42,7 @@
          <div>
             <div class="row">
                <div class="well center-block" style="max-width:250px">
-                  <form id="loginForm" method="GET" onsubmit="submitAuthForm(); return false">
+                  <form id="loginForm" method="GET" onsubmit="login(); return false">
                      <div class="form-group">
                         <label for="password" class="control-label">Password</label>
                         <input type="password" class="form-control" id="password" name="password" value="" required="" title="Please enter your password">

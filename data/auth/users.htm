@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="">
+      <meta name="author" content="">
+      <link rel="icon" href="/favicon.ico">
+      <title>ESP RFID Websocket Demo</title>
+      <!-- Bootstrap core CSS -->
+      <link href="/bootstrap.css" rel="stylesheet">
+      <script src="/auth/users.js" type="text/javascript" charset="utf-8"></script>
+   </head>
+   <body onload="javascript:start();">
+      <div class="container">
+         <div class="header clearfix">
+            <nav>
+               <ul class="nav nav-pills pull-right">
+                  <li role="presentation" class="active"><a href="/auth/users.htm">Users</a> </li>
+                  <li role="presentation"><a href="/auth/settings.htm">Settings</a> </li>
+               </ul>
+            </nav>
+            <h3 class="text-muted">ESP RFID</h3>
+         </div>
+         <div class="jumbotron">
+            <div class="row">
+               <div class="col-sm-6 col-sm-push-6">
+                  <legend>User List</legend>
+                  <div class="overlay">
+                     <div id="loading-img" class="text-center">
+                        <img src="/load.gif">
+                        <h5>Please wait while fetching data...</h5>
+                        <br>
+                     </div>
+                  </div>
+                  <div class="panel panel-default table-responsive">
+                     <table id="knowntable" class="table table-hover table-striped">
+                        <thead class="thead-default">
+                           <tr>
+                              <th>UID</th>
+                              <th>User</th>
+                              <th>Access</th>
+                              <th>Update</th>
+                           </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                     </table>
+                  </div>
+               </div>
+               <div class="col-sm-6 col-sm-pull-6">
+                  <legend>Add / Update User</legend>
+                  <p style="font-size:12px;" class="text-muted">Scan a PICC (RFID Tag) to see details.</p>
+                  <form id="fade">
+                     <div class="input-group">
+                        <span class="input-group-addon" style="text-align:left;min-width:100px"><strong>UID</strong></span>
+                        <input id="uidinp" type="text" style="max-width:290px" class="form-control" name="msg" placeholder="PICC UID" disabled>
+                     </div>
+                     <div class="input-group">
+                        <span class="input-group-addon" style="text-align:left;min-width:100px"><strong>PICC Type</strong></span>
+                        <input id="typeinp" type="text" style="max-width:290px" class="form-control" name="msg" placeholder="PICC Type" disabled>
+                     </div>
+                     <div class="input-group">
+                        <span class="input-group-addon" style="text-align:left;min-width:100px"><strong>User Name</strong></span>
+                        <input id="username" type="text" style="max-width:290px" class="form-control" name="msg" placeholder="User Name or Label">
+                     </div>
+                     <div class="input-group">
+                        <span class="input-group-addon" style="text-align:left;min-width:100px"><strong>Access</strong></span>
+                        <select class="form-control" style="max-width:290px" id="access">
+                           <option selected="selected" value="1">Allow Acces</option>
+                           <option value="0">Deny Access</option>
+                        </select>
+                     </div>
+                  </form>
+                  <br>
+                  <div>
+                     <button id="button" type="button" style="display:none" class="btn btn-sm" onclick=""></button>
+                     <img id="load" style="display:none" src="/load.gif">
+                  </div>
+               </div>
+            </div>
+         </div>
+         <hr>
+         <footer>
+            <p>&copy; 2017 OSB Inc.</p>
+         </footer>
+      </div>
+   </body>
+</html>

@@ -10,14 +10,14 @@
       <title>ESP RFID Websocket Demo</title>
       <!-- Bootstrap core CSS -->
       <link href="/bootstrap.css" rel="stylesheet">
-      <script src="/auth/rfid.js" type="text/javascript" charset="utf-8"></script>
+      <script src="/auth/set.js" type="text/javascript" charset="utf-8"></script>
    </head>
    <body onload="javascript:start();">
       <div class="container">
          <div class="header clearfix">
             <nav>
                <ul class="nav nav-pills pull-right">
-                  <li role="presentation"><a href="#">Logs</a> </li>
+                  <li role="presentation"><a href="/auth/users.htm">Users</a> </li>
                   <li role="presentation" class="active"><a href="/auth/settings.htm">Settings</a> </li>
                </ul>
             </nav>
@@ -25,6 +25,13 @@
          </div>
          <div class="jumbotron">
             <div class="alert alert-warning"> <strong>Warning!</strong> Saving settings will cause your ESP to reboot. </div>
+            <div class="overlay">
+               <div id="loading-img" class="text-center">
+                  <img src="/load.gif">
+                  <h5>Please wait while fetching settings...</h5>
+                  <br>
+               </div>
+            </div>
             <div class="row">
                <div class="col-sm-6 col-sm-push-6">
                   <fieldset>
@@ -35,7 +42,7 @@
                         <span class="col-xs-9">
                         <input class="form-control input-sm" style="display:inline;max-width:150px" id="inputtohide" type="text" name="ap_ssid"/>
                         <select class="form-control input-sm" style="display:none;max-width:150px" id="ssid"></select>
-                        <button id="scanb" type="button" class="btn btn-info btn-xs" onclick="scanWifi()">Scan</button>
+                        <button id="scanb" type="button" class="btn btn-primary btn-xs" onclick="scanWifi()">Scan</button>
                         </span>
                      </div>
                      <div class="row form-group">
@@ -50,7 +57,7 @@
                <div class="col-sm-6 col-sm-pull-6">
                   <fieldset>
                      <legend>MFRC522 Hardware Settings</legend>
-                     <p style="font-size:12px;" class="text-muted">Please refer the <a href="https://github.com/omersiar/esp-rfid">documentation</a> for pin configuration.</p>
+                     <p style="font-size:12px;" class="text-muted">Please refer the <a href="https://github.com/omersiar/esp-rfid#pin-layout">documentation</a> for pin configuration.</p>
                      <div class="row form-group">
                         <label class="col-xs-3">RST/Reset</label> 
                         <span class="col-xs-9">
@@ -93,35 +100,35 @@
                   </fieldset>
                </div>
             </div>
-            <div><button onclick="saveConf()" class="btn btn-success btn-md pull-right">Save & Reboot</button> 
+            <div><button onclick="saveConf()" class="btn btn-primary btn-sm pull-right">Save & Reboot</button> 
             </div>
             <br>
          </div>
          <div class="jumbotron">
             <div class="row">
-               <div class="col-sm-6 col-sm-push-6"><legend>Scan a PICC for details.</legend>
-                 <div id="picctype" class="well well-lg" style="width:100%;">
-
-
-                 </div>
-               </div>
-               <div class="col-sm-6 col-sm-pull-6">
-                  <legend>Known PICCs</legend>
-                  <div class="panel panel-default table-responsive">
-                     <table id="knowntable" class="table table-hover table-striped">
-                        <thead class="thead-default">
-                           <tr>
-                              <th>UID</th>
-                              <th>User</th>
-                              <th>Remove</th>
-                           </tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                     </table>
-                  </div>
-               </div>
-               <br><br>
+               <fieldset class="col-sm-6">
+                  <legend>Update Firmware</legend>
+                  <p style="font-size:12px;" class="text-muted">Download <a href="https://github.com/omersiar/esp-rfid/raw/master/compiledbin/latest.bin">latest version</a> from GitHub.</p>
+                  <form class="form-inline" method="POST" action="/auth/update" enctype="multipart/form-data">
+                     <div class="form-group">
+                        <input type="file" name="update">
+                     </div>
+                     <button type="submit" class="btn btn-primary btn-sm">Upload</button>
+                  </form>
+                  <br>
+               </fieldset>
+               <fieldset class="col-sm-6">
+                  <legend>Update SPIFFS</legend>
+                  <div class="alert alert-danger"><strong>Warning!</strong> This will delete all data (including UIDs, Users, Settings).</div>
+                  <p style="font-size:12px;" class="text-muted">Dowload <a href="https://github.com/omersiar/esp-rfid/raw/master/compiledbin/latestspiffs.bin">latest version</a> from GitHub.</p>
+                  <form class="form-inline" method="POST" action="/auth/spiupdate" enctype="multipart/form-data">
+                     <div class="form-group">
+                        <input type="file" name="update">
+                     </div>
+                     <button type="submit" class="btn btn-primary btn-sm">Upload</button>
+                  </form>
+                  <br>
+               </fieldset>
             </div>
          </div>
          <hr>
