@@ -1,5 +1,5 @@
 # ESP RFID - Access Control with ESP8266, RC522
-Access Control demonstration using a cheap RC522 RFID Hardware and Espressif's ESP8266 Microcontroller.
+Access Control demonstration using a cheap MFRC522 RFID Hardware and Espressif's ESP8266 Microcontroller.
 
 ![IP](https://github.com/omersiar/esp-rfid/blob/master/demo/index.png?raw=true)
 ![SP](https://github.com/omersiar/esp-rfid/blob/master/demo/settings.png?raw=true)
@@ -7,12 +7,16 @@ Access Control demonstration using a cheap RC522 RFID Hardware and Espressif's E
 ## Features
 * Using WebSocket protocol to exchange data between Hardware and Web Browser
 * Data is encoded as JSON object
-* Records are Timestamped (Time synced from a NTP Server)
+* Records are Timestamped (Time synced from a NTP Server) (tested but not implemented yet)
 * Bootstrap for beautiful Web Pages for both Mobile and Desktop Screens
 * Thanks to ESPAsyncWebServer Library communication is Asyncronous
 
 ## Getting Started
+This project still in its development phase. New features (and also bugs) are introduced often and some functions may become deprecated. Please feel free to comment or give feedback.
 Latest version is v0.1rc1
+See [Known Issues](https://github.com/omersiar/esp-rfid#known-issues) before starting right away.
+See [ChangeLog](https://github.com/omersiar/esp-rfid/blob/master/CHANGELOG.md)
+See [To Do](https://github.com/omersiar/esp-rfid#to-do) for what to expect in future.
 
 ### Using Compiled Binaries
 Compiled binaries are available in directory /compiledbin.
@@ -35,7 +39,7 @@ You also need to upload web files to your ESP with ESP8266FS Uploader.
 Unlisted libraries are part of ESP8266 Core for Arduino IDE, so you don't need to download them.
 
 ### Pin Layout
-The following table shows the typical pin layout used:
+The following table shows the typical pin layout used for connecting MFRC522 hardware to ESP:
 
 | Signal        | MFRC522       | WeMos D1 mini  | NodeMcu | Generic      |
 |---------------|:-------------:|:--------------:| :------:|:------------:|
@@ -54,13 +58,32 @@ The following table shows the typical pin layout used:
 * Currently only Git version (2.4.0rc) of ESP8266 Core is supported, due to new function is introduced (WiFi.scanNetworksAsync()).
 * Firmware update does not authenticated (until we find a solution).
 
+## Scalability
+Since we are limited on both flash and ram size things may get ugly at some point in the future. You can find out some test results below.
 
-## TODO
-- [ ] Logging access
-- [ ] Password Protection or Authentication for Tags instead trusting only to UIDs
-- [ ] Settings Panel for Wi-Fi, PICC Password, Factory Reset, NTP Client, etc
+### Tests
+* Write some user data on File System worth: 100 seperate 4 Bytes long UID and random lenght long User Name and each have access bit. Total 16000 Bytes
+At least 100 unique User (RFID Tag) can be handled, the test were performed on WeMos D1 mini. I'm quite confident that storing User Data completely on ESP is not an issue.
+
+Additional testing:
+* Logging needs testing. How long should it need to log access? What if a Boss needs whole year log?
+* Realiability on Flash (these NOR Flash have limited write cycle on their cells). It depends on manufacturer choice of Flash Chip and usage.
+
+
+## To Do
+- [ ] Adapt to use case scenarios such as every entered user also need to exit and do not allow re-entry unless user exited before. (this needs multiple device RFID or ESP)
+- [ ] Log Access Time of Users
+- [ ] Password Protection or Authentication for Tags instead of relying to only UIDs
+- [ ] Settings Panel for Wi-Fi, IP, Hostname, PICC Password, Factory Reset, NTP Client, etc
+- [ ] Globalization (language support, time zone support, etc)
 - [ ] Schedule User Access
+- [ ] Use Value Blocks to check if user have enough credits for access
+- [ ] Backup / Restore Settings, PICC files, everything
 - [ ] Sync Time from Browser if there is no internet connection
-- [ ] Sanity check where needed
-- [ ] Close security holes
+- [ ] Sanity check where needed (min WPA password lenght, return status of commands to WebSocket, etc)
+- [ ] Close security holes (there are many, for example WebSocket communication is not Authenticated at all)
+- [ ] rBoot for secondary recovery program? to flash main firmware maybe?
 - [X] Polished web pages
+
+## Donations
+If this project helps you in a way, you can buy me a beer. PayPal is not allowed in my country (what a shame) you can donate via Bitcoin however, to this address: 166XWuSAmGAurR7jvS3Nui65QkKKKcsr8R

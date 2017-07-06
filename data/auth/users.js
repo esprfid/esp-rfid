@@ -47,20 +47,12 @@ function listSCAN(obj) {
         ref.dep = uid;
         ref.className = "btn btn-success btn-sm";
         ref.onclick = function() {
-            add(this);
+            update(this);
         };
         ref.textContent = "Add";
     }
     fadeOutIn(document.getElementById('fade'), 250);
 
-}
-
-function add(e) {
-    var x = confirm('This will add ' + e.dep + ' to database. Are you sure?');
-    if (x) {
-        var jsontosend = '{"uid":"' + e.dep + '","command":"add"}';
-        websock.send(jsontosend);
-    }
 }
 
 function del(e) {

@@ -80,9 +80,6 @@ void setup() {
   // Set Hostname.
   WiFi.hostname(hstname);
 
-  // Start SPIFFS filesystem
-  SPIFFS.begin();
-
   // Try to load configuration file so we can connect to an Wi-Fi Access Point
   // Do not worry if no config file is present, we fall back to Access Point mode and device can be easly configured
   if (!loadConfiguration()) {
@@ -338,7 +335,7 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
 
       // Web Browser sends some commands, check which command is given
       const char * command = root["command"];
-
+      /*
       // Check whatever the command is and act accordingly
       if (strcmp(command, "add")  == 0) {
         const char* uid = root["uid"];
@@ -347,11 +344,13 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
         File f = SPIFFS.open(filename, "a+");
         // Check if we created the file
         if (f) {
-          f.print("{\"user\":\"N/A\",\"haveAcc\":0}");
+          f.print(msg);
           f.close(); // We found it, close the file
+          ws.textAll("{\"command\":\"status\",\"add\":1}");
         }
-      }
-      else if (strcmp(command, "remove")  == 0) {
+        ws.textAll("{\"command\":\"status\",\"add\":0}");
+      }*/
+      if (strcmp(command, "remove")  == 0) {
         const char* uid = root["uid"];
         filename = "/P/";
         filename += uid;
