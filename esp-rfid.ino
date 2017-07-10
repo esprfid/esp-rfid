@@ -72,16 +72,16 @@ void setup() {
   delay(1000);
   Serial.begin(115200);
   Serial.println();
-  Serial.println(F("[ INFO ] ESP RFID v0.1rc1"));
+  Serial.println(F("[ INFO ] ESP RFID v0.1rc2"));
 
   // Start SPIFFS filesystem
   SPIFFS.begin();
-
+  
   // Set Hostname.
   WiFi.hostname(hstname);
 
   // Try to load configuration file so we can connect to an Wi-Fi Access Point
-  // Do not worry if no config file is present, we fall back to Access Point mode and device can be easly configured
+  // Do not worry if no config file is present, we fall back to Access Point mode and device can be easily configured
   if (!loadConfiguration()) {
     fallbacktoAPMode();
   }

@@ -74,7 +74,3 @@ function saveConf() {
     console.log(JSON.stringify(datatosend));
     websock.send(JSON.stringify(datatosend));
 }
-
-
-
-

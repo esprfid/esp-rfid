@@ -1,6 +1,18 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.1rc2] - 2017-07-10 - Release Candidate
+#### Added
+- User List table now automaticly sorted by Name
+- Click on an any element on User List to edit via Add / Update User
+- User List actions are instantly happens on the ESP hardware.
+
+#### Fixed
+- Some Javascript functions
+
+#### Misc
+- Run a test where 100 seperate User can be handled (see README - Tests)
+
 ## [0.1rc1] - 2017-07-05 - Release Candidate
 #### Added
 - Simple Firmware Update from settings page

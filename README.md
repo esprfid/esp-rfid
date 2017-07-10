@@ -13,10 +13,10 @@ Access Control demonstration using a cheap MFRC522 RFID Hardware and Espressif's
 
 ## Getting Started
 This project still in its development phase. New features (and also bugs) are introduced often and some functions may become deprecated. Please feel free to comment or give feedback.
-Latest version is v0.1rc1
-See [Known Issues](https://github.com/omersiar/esp-rfid#known-issues) before starting right away.
-See [ChangeLog](https://github.com/omersiar/esp-rfid/blob/master/CHANGELOG.md)
-See [To Do](https://github.com/omersiar/esp-rfid#to-do) for what to expect in future.
+* Latest version is v0.1rc1
+* See [Known Issues](https://github.com/omersiar/esp-rfid#known-issues) before starting right away.
+* See [ChangeLog](https://github.com/omersiar/esp-rfid/blob/master/CHANGELOG.md)
+* See [To Do](https://github.com/omersiar/esp-rfid#to-do) for what to expect in future.
 
 ### Using Compiled Binaries
 Compiled binaries are available in directory /compiledbin.
@@ -62,10 +62,22 @@ The following table shows the typical pin layout used for connecting MFRC522 har
 Since we are limited on both flash and ram size things may get ugly at some point in the future. You can find out some test results below.
 
 ### Tests
-* Write some user data on File System worth: 100 seperate 4 Bytes long UID and random lenght long User Name and each have access bit. Total 16000 Bytes
-At least 100 unique User (RFID Tag) can be handled, the test were performed on WeMos D1 mini. I'm quite confident that storing User Data completely on ESP is not an issue.
 
-Additional testing:
+#### How many RFID Tag can be handled?
+* Write some user data on File System worth: 
+
+100 seperate 
+
+* random 4 Bytes long UID and
+* "Test Name Test Surname Label" as User Name and 
+* each have access status integer "1" or "0". 
+
+Total 4,284 Bytes
+
+At least 100 unique User (RFID Tag) can be handled, the test were performed on WeMos D1 mini.
+
+#### Additional testing is needed:
+
 * Logging needs testing. How long should it need to log access? What if a Boss needs whole year log?
 * Realiability on Flash (these NOR Flash have limited write cycle on their cells). It depends on manufacturer choice of Flash Chip and usage.
 

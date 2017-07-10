@@ -7,7 +7,7 @@
       <meta name="description" content="">
       <meta name="author" content="">
       <link rel="icon" href="/favicon.ico">
-      <title>ESP RFID Websocket Demo</title>
+      <title>ESP RFID</title>
       <!-- Bootstrap core CSS -->
       <link href="/bootstrap.css" rel="stylesheet">
       <script src="/auth/users.js" type="text/javascript" charset="utf-8"></script>
@@ -30,7 +30,7 @@
                   <div class="overlay">
                      <div id="loading-img" class="text-center">
                         <img src="/load.gif">
-                        <h5>Please wait while fetching data...</h5>
+                        <h5>Please wait while WebSocket connecting...</h5>
                         <br>
                      </div>
                   </div>
@@ -39,19 +39,18 @@
                         <thead class="thead-default">
                            <tr>
                               <th>UID</th>
-                              <th>User</th>
+                              <th>Label / User Name</th>
                               <th>Access</th>
-                              <th>Update</th>
                            </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="tablebody">
                         </tbody>
                      </table>
                   </div>
                </div>
                <div class="col-sm-6 col-sm-pull-6">
                   <legend>Add / Update User</legend>
-                  <p style="font-size:12px;" class="text-muted">Scan a PICC (RFID Tag) to see details.</p>
+                  <p style="font-size:12px;" class="text-muted">Scan a PICC (RFID Tag) or choose from the list.</p>
                   <form id="fade">
                      <div class="input-group">
                         <span class="input-group-addon" style="text-align:left;min-width:100px"><strong>UID</strong></span>
