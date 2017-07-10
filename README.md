@@ -13,7 +13,7 @@ Access Control demonstration using a cheap MFRC522 RFID Hardware and Espressif's
 
 ## Getting Started
 This project still in its development phase. New features (and also bugs) are introduced often and some functions may become deprecated. Please feel free to comment or give feedback.
-* Latest version is v0.1rc1
+* Latest version is v0.1rc2
 * See [Known Issues](https://github.com/omersiar/esp-rfid#known-issues) before starting right away.
 * See [ChangeLog](https://github.com/omersiar/esp-rfid/blob/master/CHANGELOG.md)
 * See [To Do](https://github.com/omersiar/esp-rfid#to-do) for what to expect in future.
@@ -64,12 +64,11 @@ Since we are limited on both flash and ram size things may get ugly at some poin
 ### Tests
 
 #### How many RFID Tag can be handled?
-* Write some user data on File System worth: 
+Write some user data on File System worth: 
 
-100 seperate 
-
+* 100 seperate "userfile"
 * random 4 Bytes long UID and
-* "Test Name Test Surname Label" as User Name and 
+* "Test Name Test Surname Label" as User Name and
 * each have access status integer "1" or "0". 
 
 Total 4,284 Bytes
