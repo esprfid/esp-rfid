@@ -115,7 +115,7 @@ function listSCAN(obj) {
 function del(e) {
     var x = confirm("This will remove " + e.id + " from database. Are you sure?");
     if (x) {
-        var jsontosend = "{\"uid\":"\" + e.id + "\",\"command\":\"remove\"}";
+        var jsontosend = "{\"uid\":\"" + e.id + "\",\"command\":\"remove\"}";
         websock.send(jsontosend);
     }
 }

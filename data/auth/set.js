@@ -21,7 +21,7 @@ function listSSID(obj) {
 }
 
 function scanWifi() {
-    websock.send("{"command":"scan"}");
+    websock.send("{\"command\":\"scan\"}");
     document.getElementById("scanb").innerHTML = "...";
     document.getElementById("inputtohide").style.display = "none";
     var node = document.getElementById("ssid");
