@@ -1,36 +1,5 @@
 var websock;
 
-function start() {
-    websock = new WebSocket('ws://' + window.location.hostname + '/ws');
-    websock.onopen = function(evt) {
-        console.log('ESP WebSock Open');
-        websock.send('{"command":"picclist"}');
-    };
-    websock.onclose = function(evt) {
-        console.log('ESP WebSock Close');
-    };
-    websock.onerror = function(evt) {
-        console.log(evt);
-    };
-    websock.onmessage = function(evt) {
-        console.log(evt.data);
-        obj = JSON.parse(evt.data);
-        if (obj.command == "piccscan") {
-            listSCAN(obj);
-        } else if (obj.command == "picclist") {
-            var node = document.getElementById("tablebody");
-            while (node.hasChildNodes()) {
-                node.removeChild(node.lastChild);
-            }
-            document.getElementById('loading-img').style.display = "none";
-            listknownPICC(obj);
-            sortTable(1);
-            addRowHandlers();
-        }
-    };
-}
-
-
 function sortTable(n) {
     var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
     table = document.getElementById("knowntable");
@@ -89,21 +58,21 @@ function sortTable(n) {
 function addRowHandlers() {
     var table = document.getElementById("tablebody");
     var rows = table.getElementsByTagName("tr");
-    for (i = 0; i < rows.length; i++) {
+    for (var i = 0; i < rows.length; i++) {
         var currentRow = table.rows[i];
         var createClickHandler =
             function(row) {
                 return function() {
-                    document.getElementById('uidinp').value = row.getElementsByTagName("td")[0].innerHTML;
-                    document.getElementById('username').value = row.getElementsByTagName("td")[1].innerHTML;
+                    document.getElementById("uidinp").value = row.getElementsByTagName("td")[0].innerHTML;
+                    document.getElementById("username").value = row.getElementsByTagName("td")[1].innerHTML;
                     if (row.getElementsByTagName("td")[2].getElementsByTagName("input")[0].checked) {
-                        document.getElementById('access').value = "1";
+                        document.getElementById("access").value = "1";
                     } else {
-                        document.getElementById('access').value = "0";
+                        document.getElementById("access").value = "0";
                     }
-                    var ref = document.getElementById('button');
+                    var ref = document.getElementById("button");
                     ref.style.display = "block";
-                    ref.dep = document.getElementById('uidinp').value.toLowerCase();
+                    ref.dep = document.getElementById("uidinp").value.toLowerCase();
                     ref.className = "btn btn-warning btn-sm";
                     ref.onclick = function() {
                         update(this);
@@ -116,15 +85,14 @@ function addRowHandlers() {
 }
 
 function listSCAN(obj) {
-    var epochTime = obj.epoch;
     var isKnown = obj.known;
     var uid = obj.uid;
     var uidUP = obj.uid.toUpperCase();
-    document.getElementById('uidinp').value = uidUP;
-    document.getElementById('typeinp').value = obj.type;
-    document.getElementById('username').value = obj.user;
-    document.getElementById('access').value = obj.access;
-    var ref = document.getElementById('button');
+    document.getElementById("uidinp").value = uidUP;
+    document.getElementById("typeinp").value = obj.type;
+    document.getElementById("username").value = obj.user;
+    document.getElementById("access").value = obj.access;
+    var ref = document.getElementById("button");
     ref.style.display = "block";
     if (isKnown == 1) {
         ref.dep = uid;
@@ -141,13 +109,13 @@ function listSCAN(obj) {
         };
         ref.textContent = "Add";
     }
-    fadeOutIn(document.getElementById('fade'), 250);
+    fadeOutIn(document.getElementById("fade"), 250);
 }
 
 function del(e) {
-    var x = confirm('This will remove ' + e.id + ' from database. Are you sure?');
+    var x = confirm("This will remove " + e.id + " from database. Are you sure?");
     if (x) {
-        var jsontosend = '{"uid":"' + e.id + '","command":"remove"}';
+        var jsontosend = "{\"uid\":"\" + e.id + "\",\"command\":\"remove\"}";
         websock.send(jsontosend);
     }
 }
@@ -164,20 +132,18 @@ function tableupdate(e) {
         haveAcc = "0";
     }
     datatosend.haveAcc = haveAcc;
-    console.log(JSON.stringify(datatosend));
     websock.send(JSON.stringify(datatosend));
-    websock.send('{"command":"picclist"}');
+    websock.send("{\"command\":\"picclist\"}");
 }
 
 function update(e) {
     var datatosend = {};
     datatosend.command = "userfile";
     datatosend.uid = e.dep;
-    datatosend.user = document.getElementById('username').value;
-    datatosend.haveAcc = document.getElementById('access').value;
-    console.log(JSON.stringify(datatosend));
+    datatosend.user = document.getElementById("username").value;
+    datatosend.haveAcc = document.getElementById("access").value;
     websock.send(JSON.stringify(datatosend));
-    websock.send('{"command":"picclist"}');
+    websock.send("{\"command\":\"picclist\"}");
 }
 
 function fadeOutIn(elem, speed) {
@@ -198,35 +164,60 @@ function fadeOutIn(elem, speed) {
 }
 
 function listknownPICC(obj) {
-    var table = document.getElementById("knowntable").getElementsByTagName('tbody')[0];
+    var table = document.getElementById("knowntable").getElementsByTagName("tbody")[0];
     for (var i = 0; i < obj.piccs.length; i++) {
         var x = obj.piccs[i];
         x = x.substring(3);
         var upper = x.toUpperCase();
         var row = table.insertRow(table.rows[0]);
-        row.className = 'success';
+        row.className = "success";
         row.id = x;
         var cell1 = row.insertCell(0);
         cell1.innerHTML = upper;
         var cell2 = row.insertCell(1);
         cell2.innerHTML = obj.users[i];
         var cell3 = row.insertCell(2);
-        var inp2 = document.createElement('input');
+        var inp2 = document.createElement("input");
         inp2.type = "checkbox";
         inp2.id = x + "C";
         inp2.dep = x;
         inp2.onclick = function() {
             tableupdate(this);
         };
-        if (obj.access[i] == 1) {
-            row.className = 'success';
+        if (obj.access[i] === 1) {
+            row.className = "success";
             inp2.checked = true;
         } else {
-            row.className = 'warning';
+            row.className = "warning";
             inp2.checked = false;
         }
         cell3.appendChild(inp2);
-
     }
-    console.log(obj);
+}
+
+function start() {
+    websock = new WebSocket("ws://" + window.location.hostname + "/ws");
+    websock.onopen = function(evt) {
+        websock.send("{\"command\":\"picclist\"}");
+    };
+    websock.onclose = function(evt) {
+    };
+    websock.onerror = function(evt) {
+        console.log(evt);
+    };
+    websock.onmessage = function(evt) {
+        var obj = JSON.parse(evt.data);
+        if (obj.command === "piccscan") {
+            listSCAN(obj);
+        } else if (obj.command === "picclist") {
+            var node = document.getElementById("tablebody");
+            while (node.hasChildNodes()) {
+                node.removeChild(node.lastChild);
+            }
+            document.getElementById("loading-img").style.display = "none";
+            listknownPICC(obj);
+            sortTable(1);
+            addRowHandlers();
+        }
+    };
 }

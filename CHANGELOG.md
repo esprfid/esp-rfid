@@ -8,7 +8,7 @@ All notable changes to this project will be documented in this file.
 - User List actions are instantly happens on the ESP hardware.
 
 #### Fixed
-- Some Javascript functions
+- Javascript functions (As suggested from JSHint and Codacy)
 
 #### Misc
 - Run a test where 100 seperate User can be handled (see README - Tests)
