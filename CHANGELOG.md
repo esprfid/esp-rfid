@@ -7,6 +7,9 @@ All notable changes to this project will be documented in this file.
 - Relay Test Button
 - Ability to Add known PICC to User List (useful to add new PICC to device when device is already deployed)
 
+#### Removed
+- Maintaining RST pin for MFRC522 hardware is removed. MFRC522 library now supports for soft-reset, we do not need hardware reset anymore this frees a GPIO from MCU. (suggested by @farthinder #6 https://github.com/omersiar/esp-rfid/issues/6)
+
 ## [0.1rc2] - 2017-07-10 - Release Candidate
 #### Added
 - User List table now automaticly sorted by Name
@@ -17,7 +20,7 @@ All notable changes to this project will be documented in this file.
 - Javascript functions (As suggested from JSHint and Codacy)
 
 #### Misc
-- Run a test where 100 seperate User can be handled (see README - Tests)
+- Run a test where 100 seperate User can be handled (see https://github.com/omersiar/esp-rfid#tests)
 
 ## [0.1rc1] - 2017-07-05 - Release Candidate
 #### Added

@@ -73,36 +73,6 @@ function fadeOutIn(elem, speed) {
     }, speed / 50);
 }
 
-function addRowHandlers() {
-    var table = document.getElementById("tablebody");
-    var rows = table.getElementsByTagName("tr");
-    for (var i = 0; i < rows.length; i++) {
-        var currentRow = table.rows[i];
-        var createClickHandler =
-            function(row) {
-                return function() {
-                    document.getElementById("uidinp").value = row.getElementsByTagName("td")[0].innerHTML;
-                    document.getElementById("username").value = row.getElementsByTagName("td")[1].innerHTML;
-                    document.getElementById("typeinp").value = "";
-                    if (row.getElementsByTagName("td")[2].getElementsByTagName("input")[0].checked) {
-                        document.getElementById("access").value = "1";
-                    } else {
-                        document.getElementById("access").value = "0";
-                    }
-                    var ref = document.getElementById("button");
-                    ref.style.display = "block";
-                    ref.dep = document.getElementById("uidinp").value.toLowerCase();
-                    ref.className = "btn btn-warning btn-sm";
-                    ref.onclick = function() {
-                        update(this);
-                    };
-                    ref.textContent = "Update";
-                };
-            };
-        currentRow.onclick = createClickHandler(currentRow);
-    }
-}
-
 function listSCAN(obj) {
     var isKnown = obj.known;
     var uid = obj.uid;
@@ -163,6 +133,36 @@ function update(e) {
     datatosend.haveAcc = document.getElementById("access").value;
     websock.send(JSON.stringify(datatosend));
     websock.send("{\"command\":\"picclist\"}");
+}
+
+function addRowHandlers() {
+    var table = document.getElementById("tablebody");
+    var rows = table.getElementsByTagName("tr");
+    for (var i = 0; i < rows.length; i++) {
+        var currentRow = table.rows[i];
+        var createClickHandler =
+            function(row) {
+                return function() {
+                    document.getElementById("uidinp").value = row.getElementsByTagName("td")[0].innerHTML;
+                    document.getElementById("username").value = row.getElementsByTagName("td")[1].innerHTML;
+                    document.getElementById("typeinp").value = "";
+                    if (row.getElementsByTagName("td")[2].getElementsByTagName("input")[0].checked) {
+                        document.getElementById("access").value = "1";
+                    } else {
+                        document.getElementById("access").value = "0";
+                    }
+                    var ref = document.getElementById("button");
+                    ref.style.display = "block";
+                    ref.dep = document.getElementById("uidinp").value.toLowerCase();
+                    ref.className = "btn btn-warning btn-sm";
+                    ref.onclick = function() {
+                        update(this);
+                    };
+                    ref.textContent = "Update";
+                };
+            };
+        currentRow.onclick = createClickHandler(currentRow);
+    }
 }
 
 function listknownPICC(obj) {

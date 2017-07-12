@@ -4,7 +4,6 @@ function listCONF(obj) {
     document.getElementById("inputtohide").value = obj.ssid;
     document.getElementById("wifipass").value = obj.pswd;
     document.getElementById("gpioss").value = obj.sspin;
-    document.getElementById("gpiorst").value = obj.rstpin;
     document.getElementById("gain").value = obj.rfidgain;
     document.getElementById("gpiorly").value = obj.rpin;
     document.getElementById("delay").value = obj.rtime;
@@ -13,10 +12,9 @@ function listCONF(obj) {
 function listSSID(obj) {
     var select = document.getElementById("ssid");
     for (var i = 0; i < obj.ssid.length; i++) {
-        var x = obj.ssid[i];
         var opt = document.createElement("option");
-        opt.value = x;
-        opt.innerHTML = x;
+        opt.value = obj.ssid[i];
+        opt.innerHTML = obj.ssid[i];
         select.appendChild(opt);
     }
     document.getElementById("scanb").innerHTML = "Re-Scan";
@@ -46,7 +44,6 @@ function saveConf() {
     datatosend.ssid = ssid;
     datatosend.pswd = document.getElementById("wifipass").value;
     datatosend.sspin = document.getElementById("gpioss").value;
-    datatosend.rstpin = document.getElementById("gpiorst").value;
     datatosend.rfidgain = document.getElementById("gain").value;
     datatosend.rpin = document.getElementById("gpiorly").value;
     datatosend.rtime = document.getElementById("delay").value;

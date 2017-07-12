@@ -499,9 +499,8 @@ bool loadConfiguration() {
     return false;
   }
   int rfidss = json["sspin"];
-  int rfidrst = json["rstpin"];
   int rfidgain = json["rfidgain"];
-  setupRFID(rfidss, rfidrst, rfidgain);
+  setupRFID(rfidss, rfidgain);
 
   activateTime = json["rtime"];
   relayPin = json["rpin"];
@@ -518,13 +517,13 @@ bool loadConfiguration() {
 }
 
 // Configure RFID Hardware
-void setupRFID(int rfidss, int rfidrst, int rfidgain) {
+void setupRFID(int rfidss, int rfidgain) {
   SPI.begin();           // MFRC522 Hardware uses SPI protocol
-  mfrc522.PCD_Init(rfidss, rfidrst);    // Initialize MFRC522 Hardware
+  mfrc522.PCD_Init(rfidss, UINT8_MAX);    // Initialize MFRC522 Hardware
   // Set RFID Hardware Antenna Gain
   // This may not work with some boards
   mfrc522.PCD_SetAntennaGain(rfidgain);
-  Serial.printf("[ INFO ] RFID SS_PIN: %u RST_PIN: %u and Gain Factor: %u", rfidss, rfidrst, rfidgain);
+  Serial.printf("[ INFO ] RFID SS_PIN: %u and Gain Factor: %u", rfidss, rfidgain);
   Serial.println("");
   ShowReaderDetails(); // Show details of PCD - MFRC522 Card Reader details
 }
