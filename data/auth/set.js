@@ -6,6 +6,8 @@ function listCONF(obj) {
     document.getElementById("gpioss").value = obj.sspin;
     document.getElementById("gpiorst").value = obj.rstpin;
     document.getElementById("gain").value = obj.rfidgain;
+    document.getElementById("gpiorly").value = obj.rpin;
+    document.getElementById("delay").value = obj.rtime;
 }
 
 function listSSID(obj) {
@@ -46,7 +48,13 @@ function saveConf() {
     datatosend.sspin = document.getElementById("gpioss").value;
     datatosend.rstpin = document.getElementById("gpiorst").value;
     datatosend.rfidgain = document.getElementById("gain").value;
+    datatosend.rpin = document.getElementById("gpiorly").value;
+    datatosend.rtime = document.getElementById("delay").value;
     websock.send(JSON.stringify(datatosend));
+}
+
+function testRelay() {
+    websock.send("{\"command\":\"testrelay\"}");
 }
 
 function start() {

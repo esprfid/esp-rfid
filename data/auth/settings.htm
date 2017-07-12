@@ -36,7 +36,8 @@
                <div class="col-sm-6 col-sm-push-6">
                   <fieldset>
                      <legend>Wi-Fi Client Settings</legend>
-                     <p style="font-size:12px;" class="text-muted">Type your Wi-Fi Network's SSID or Scan for nerby Wireless Networks to join.</p>
+                     <h6 class="text-muted">Type your Wi-Fi Network's SSID or Scan for nerby Wireless Networks to join.</h6>
+                     <br>
                      <div class="row form-group">
                         <label class="col-xs-3">SSID</label> 
                         <span class="col-xs-9">
@@ -57,7 +58,8 @@
                <div class="col-sm-6 col-sm-pull-6">
                   <fieldset>
                      <legend>MFRC522 Hardware Settings</legend>
-                     <p style="font-size:12px;" class="text-muted">Please refer the <a href="https://github.com/omersiar/esp-rfid#pin-layout">documentation</a> for pin configuration.</p>
+                     <h6 class="text-muted">Please refer the <a href="https://github.com/omersiar/esp-rfid#pin-layout">documentation</a> for pin configuration.</h6>
+                     <br>
                      <div class="row form-group">
                         <label class="col-xs-3">RST/Reset</label> 
                         <span class="col-xs-9">
@@ -97,10 +99,33 @@
                            </select>
                         </span>
                      </div>
+                     <br>
+                     <div class="row form-group">
+                        <label class="col-xs-3">Relay Pin</label> 
+                        <span class="col-xs-9">
+                           <select class="form-control input-sm" style="max-width:185px" id="gpiorly">
+                              <option value="0">GPIO-0</option>
+                              <option value="2">GPIO-2</option>
+                              <option selected="selected" value="4">GPIO-4</option>
+                              <option value="5">GPIO-5</option>
+                              <option value="15">GPIO-15</option>
+                              <option value="16">GPIO-16</option>
+                           </select>
+                        </span>
+                     </div>
+                     <div class="row form-group">
+                        <label class="col-xs-3">Activate Time</label> 
+                        <span class="col-xs-9">
+                        <input class="form-control input-sm" placeholder="in Microsecond" style="display:inline;max-width:185px" id="delay" type="text" name="hightime">
+                        </span>
+                     </div>
+                     <button id="testb" type="button" class="btn btn-primary btn-xs" onclick="testRelay()">Test Relay</button><h6 class="text-muted"> Please reboot before test</h6>
                   </fieldset>
                </div>
             </div>
-            <div><button onclick="saveConf()" class="btn btn-primary btn-sm pull-right">Save & Reboot</button> 
+            <hr>
+            <div>
+              <button onclick="saveConf()" class="btn btn-primary btn-sm pull-right">Save & Reboot</button> 
             </div>
             <br>
          </div>
@@ -108,7 +133,8 @@
             <div class="row">
                <fieldset class="col-sm-6">
                   <legend>Update Firmware</legend>
-                  <p style="font-size:12px;" class="text-muted">Download <a href="https://github.com/omersiar/esp-rfid/raw/master/compiledbin/latest.bin">latest version</a> from GitHub.</p>
+                  <h6 class="text-muted">Download <a href="https://github.com/omersiar/esp-rfid/raw/master/compiledbin/latest.bin">latest version</a> from GitHub.</h6>
+                  <br>
                   <form class="form-inline" method="POST" action="/auth/update" enctype="multipart/form-data">
                      <div class="form-group">
                         <input type="file" name="update">
@@ -120,7 +146,8 @@
                <fieldset class="col-sm-6">
                   <legend>Update SPIFFS</legend>
                   <div class="alert alert-danger"><strong>Warning!</strong> This will delete all data (including UIDs, Users, Settings).</div>
-                  <p style="font-size:12px;" class="text-muted">Dowload <a href="https://github.com/omersiar/esp-rfid/raw/master/compiledbin/latestspiffs.bin">latest version</a> from GitHub.</p>
+                  <h6 class="text-muted">Dowload <a href="https://github.com/omersiar/esp-rfid/raw/master/compiledbin/latestspiffs.bin">latest version</a> from GitHub.</h6>
+                  <br>
                   <form class="form-inline" method="POST" action="/auth/spiupdate" enctype="multipart/form-data">
                      <div class="form-group">
                         <input type="file" name="update">

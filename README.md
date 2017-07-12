@@ -3,6 +3,7 @@ Access Control demonstration using a cheap MFRC522 RFID Hardware and Espressif's
 
 ![IP](https://github.com/omersiar/esp-rfid/blob/master/demo/index.png?raw=true)
 ![SP](https://github.com/omersiar/esp-rfid/blob/master/demo/settings.png?raw=true)
+![UP](https://github.com/omersiar/esp-rfid/blob/master/demo/users.png?raw=true)
 
 ## Features
 * Using WebSocket protocol to exchange data between Hardware and Web Browser
@@ -13,13 +14,33 @@ Access Control demonstration using a cheap MFRC522 RFID Hardware and Espressif's
 
 ## Getting Started
 This project still in its development phase. New features (and also bugs) are introduced often and some functions may become deprecated. Please feel free to comment or give feedback.
-* Latest version is v0.1rc2
+* Latest version is v0.1
 * See [Known Issues](https://github.com/omersiar/esp-rfid#known-issues) before starting right away.
 * See [ChangeLog](https://github.com/omersiar/esp-rfid/blob/master/CHANGELOG.md)
 * See [To Do](https://github.com/omersiar/esp-rfid#to-do) for what to expect in future.
 
+### Steps
+* First, flash firmware to your ESP either using Arduino IDE or with your favourite flash tool
+* Flash webfiles data to SPIFFS either using ESP8266FS Uploader tool or with your favourite flash tool
+* (optional) Fire up your serial monitor to get informed
+* Power on your ESP
+* Search for Wireless Network "esp-rfid" and connect to it (It should be an open network and does not reqiure password)
+* Open your browser and type either "http://192.168.4.1" or "http://esp-rfid.local" (.local needs Bonjour installed on your computer) on address bar.
+* Log on to ESP, password is "admin" (for now, you can only change it from source) 
+* Go to "Settings" page
+* Configure your amazing access control device. Push "Scan" button to join your wireless network, configure RFID hardware, Relay Module.
+* Save settings, when rebooted your ESP will try to join your wireless network.
+* Check your new IP address from serial monitor and connect to your ESP again. (You can also connect to "http://esp-rfid.local")
+* Go to "Users" page
+* Scan a PICC (RFID Tag) then it should glimpse on your Browser's screen.
+* Type "User Name" or "Label" for the PICC you scanned.
+* Choose "Allow Access" if you want to
+* Click "Add"
+* Congratulations, everything went well, if you encounter any issue feel free to ask help on GitHub.
+
 ### Using Compiled Binaries
-Compiled binaries are available in directory /compiledbin.
+Compiled binaries are available in directory /compiledbin. You can use any flashing tool and do the flashing manually. The flashing process itself has been described at numerous places on Internet.
+
 
 ### Building from Source
 Please install Arduino IDE if you didn't already, then add ESP8266 Core (Beware! Install Git Version) on top of it. Additional Library download links are listed below:
@@ -57,6 +78,7 @@ The following table shows the typical pin layout used for connecting MFRC522 har
 * Built-in HTML Editor has hard-coded JavaScript that loads from CDN Internet. Text Editor won't work if there is no Internet connection.
 * Currently only Git version (2.4.0rc) of ESP8266 Core is supported, due to new function is introduced (WiFi.scanNetworksAsync()).
 * Firmware update does not authenticated (until we find a solution).
+* When you connect to ESP via mDNS url Browsers make a DNS Query for WebSocket link, it takes long time to resolve.
 
 ## Scalability
 Since we are limited on both flash and ram size things may get ugly at some point in the future. You can find out some test results below.
@@ -94,6 +116,8 @@ At least 100 unique User (RFID Tag) can be handled, the test were performed on W
 - [ ] Sanity check where needed (min WPA password lenght, return status of commands to WebSocket, etc)
 - [ ] Close security holes (there are many, for example WebSocket communication is not Authenticated at all)
 - [ ] rBoot for secondary recovery program? to flash main firmware maybe?
+- [ ] Find a way to speed up DNS query for WebSocket. Takes a lot of time
+- [ ] Switch to Async JSON. This may allow much larger transfers from ESP to Browser
 - [X] Polished web pages
 
 ## Donations

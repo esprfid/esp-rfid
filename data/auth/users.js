@@ -23,13 +23,13 @@ function sortTable(n) {
             y = rows[i + 1].getElementsByTagName("TD")[n];
             /*check if the two rows should switch place,
             based on the direction, asc or desc:*/
-            if (dir == "asc") {
+            if (dir === "asc") {
                 if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
                     //if so, mark as a switch and break the loop:
                     shouldSwitch = true;
                     break;
                 }
-            } else if (dir == "desc") {
+            } else if (dir === "desc") {
                 if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
                     //if so, mark as a switch and break the loop:
                     shouldSwitch = true;
@@ -47,12 +47,30 @@ function sortTable(n) {
         } else {
             /*If no switching has been done AND the direction is "asc",
             set the direction to "desc" and run the while loop again.*/
-            if (switchcount == 0 && dir == "asc") {
+            if (switchcount === 0 && dir === "asc") {
                 dir = "desc";
                 switching = true;
             }
         }
     }
+}
+
+function fadeOutIn(elem, speed) {
+    if (!elem.style.opacity) {
+        elem.style.opacity = 1;
+    } // end if
+    var outInterval = setInterval(function() {
+        elem.style.opacity -= 0.02;
+        if (elem.style.opacity <= 0) {
+            clearInterval(outInterval);
+            var inInterval = setInterval(function() {
+                elem.style.opacity = Number(elem.style.opacity) + 0.02;
+                if (elem.style.opacity >= 1) {
+                    clearInterval(inInterval);
+				}
+            }, speed / 50);
+        } // end if
+    }, speed / 50);
 }
 
 function addRowHandlers() {
@@ -65,6 +83,7 @@ function addRowHandlers() {
                 return function() {
                     document.getElementById("uidinp").value = row.getElementsByTagName("td")[0].innerHTML;
                     document.getElementById("username").value = row.getElementsByTagName("td")[1].innerHTML;
+                    document.getElementById("typeinp").value = "";
                     if (row.getElementsByTagName("td")[2].getElementsByTagName("input")[0].checked) {
                         document.getElementById("access").value = "1";
                     } else {
@@ -94,7 +113,7 @@ function listSCAN(obj) {
     document.getElementById("access").value = obj.access;
     var ref = document.getElementById("button");
     ref.style.display = "block";
-    if (isKnown == 1) {
+    if (isKnown === 1) {
         ref.dep = uid;
         ref.className = "btn btn-warning btn-sm";
         ref.onclick = function() {
@@ -139,28 +158,11 @@ function tableupdate(e) {
 function update(e) {
     var datatosend = {};
     datatosend.command = "userfile";
-    datatosend.uid = e.dep;
+    datatosend.uid = document.getElementById("uidinp").value.toLowerCase();
     datatosend.user = document.getElementById("username").value;
     datatosend.haveAcc = document.getElementById("access").value;
     websock.send(JSON.stringify(datatosend));
     websock.send("{\"command\":\"picclist\"}");
-}
-
-function fadeOutIn(elem, speed) {
-    if (!elem.style.opacity) {
-        elem.style.opacity = 1;
-    } // end if
-    var outInterval = setInterval(function() {
-        elem.style.opacity -= 0.02;
-        if (elem.style.opacity <= 0) {
-            clearInterval(outInterval);
-            var inInterval = setInterval(function() {
-                elem.style.opacity = Number(elem.style.opacity) + 0.02;
-                if (elem.style.opacity >= 1)
-                    clearInterval(inInterval);
-            }, speed / 50);
-        } // end if
-    }, speed / 50);
 }
 
 function listknownPICC(obj) {

@@ -49,6 +49,11 @@ String filename = "/P/";
 //flag to use from web update to reboot the ESP
 bool shouldReboot = false;
 
+bool activateRelay = false;
+unsigned long previousMillis = 0;
+int relayPin;
+int activateTime;
+
 extern "C" uint32_t _SPIFFS_start;
 extern "C" uint32_t _SPIFFS_end;
 
@@ -72,11 +77,11 @@ void setup() {
   delay(1000);
   Serial.begin(115200);
   Serial.println();
-  Serial.println(F("[ INFO ] ESP RFID v0.1rc2"));
+  Serial.println(F("[ INFO ] ESP RFID v0.1"));
 
   // Start SPIFFS filesystem
   SPIFFS.begin();
-  
+
   // Set Hostname.
   WiFi.hostname(hstname);
 
@@ -140,7 +145,7 @@ void setup() {
       }
     }
   });
-  
+
   // Simple SPIFFs Update Handler
   server.on("/auth/spiupdate", HTTP_POST, [](AsyncWebServerRequest * request) {
     shouldReboot = !Update.hasError();
@@ -183,15 +188,19 @@ void loop() {
     delay(100);
     ESP.restart();
   }
+  unsigned long currentMillis = millis();
+  if (currentMillis - previousMillis >= activateTime) {
+    activateRelay = false;
+    digitalWrite(relayPin, HIGH);
+  }
+  if (activateRelay) {
+    digitalWrite(relayPin, LOW);
+  }
   // Get Time from NTP Server
   timeClient.update();
 
   // Another loop for RFID Events, since we are using polling method instead of Interrupt we need to check RFID hardware for events
   rfidloop();
-}
-
-void grantAccess() {
-  // do something if scanned PICC is known
 }
 
 // RFID Specific Loop
@@ -253,7 +262,8 @@ void rfidloop() {
       Serial.print(username);
       // Check if user have an access
       if (haveAcc == 1) {
-        grantAccess();  // Give user Access to Door, Safe, Box whatever you like
+        activateRelay = true;  // Give user Access to Door, Safe, Box whatever you like
+        previousMillis = millis();
         Serial.println(" have access");
       }
       else {
@@ -336,8 +346,7 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
       // Web Browser sends some commands, check which command is given
       const char * command = root["command"];
       /*
-      // Check whatever the command is and act accordingly
-      if (strcmp(command, "add")  == 0) {
+        if (strcmp(command, "add")  == 0) {
         const char* uid = root["uid"];
         filename = "/P/";
         filename += uid;
@@ -349,7 +358,8 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
           ws.textAll("{\"command\":\"status\",\"add\":1}");
         }
         ws.textAll("{\"command\":\"status\",\"add\":0}");
-      }*/
+        }*/
+      // Check whatever the command is and act accordingly
       if (strcmp(command, "remove")  == 0) {
         const char* uid = root["uid"];
         filename = "/P/";
@@ -377,6 +387,10 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
           f.print(msg);
           f.close();
         }
+      }
+      else if (strcmp(command, "testrelay")  == 0) {
+        activateRelay = true;
+        previousMillis = millis();
       }
       else if (strcmp(command, "scan")  == 0) {
         WiFi.scanNetworksAsync(printScanResult);
@@ -488,6 +502,11 @@ bool loadConfiguration() {
   int rfidrst = json["rstpin"];
   int rfidgain = json["rfidgain"];
   setupRFID(rfidss, rfidrst, rfidgain);
+
+  activateTime = json["rtime"];
+  relayPin = json["rpin"];
+  pinMode(relayPin, OUTPUT);
+  digitalWrite(relayPin, HIGH);
 
   const char * conssid = json["ssid"];
   const char * conpassword = json["pswd"];

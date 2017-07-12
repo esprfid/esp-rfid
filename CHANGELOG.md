@@ -1,6 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.1] - 2017-07-12 - :hurray: We hit the 0.1!
+#### Added
+- Relay Module configuration in Settings Page (You need to make sure how the relay module reacts when device is restarting or on power-on, make changes accordingly). I may try to make it more universal, but for now it's up to you.
+- Relay Test Button
+- Ability to Add known PICC to User List (useful to add new PICC to device when device is already deployed)
+
 ## [0.1rc2] - 2017-07-10 - Release Candidate
 #### Added
 - User List table now automaticly sorted by Name
