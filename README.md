@@ -64,13 +64,13 @@ The following table shows the typical pin layout used for connecting MFRC522 har
 
 | Signal        | MFRC522       | WeMos D1 mini  | NodeMcu | Generic      |
 |---------------|:-------------:|:--------------:| :------:|:------------:|
-| RST/Reset     | RST           | D3 [1]         | D3 [1]  | GPIO-0 [1]   |
+| RST/Reset     | RST           | N/C [1]        | N/C [1] | N/C [1]      |
 | SPI SS        | SDA [3]       | D8 [2]         | D8 [2]  | GPIO-15 [2]  |
 | SPI MOSI      | MOSI          | D7             | D7      | GPIO-13      |
 | SPI MISO      | MISO          | D6             | D6      | GPIO-12      |
 | SPI SCK       | SCK           | D5             | D5      | GPIO-14      |
 
-1. Configurable via settings page.
+1. Not Connected. Hard-reset no longer needed.
 2. Configurable via settings page.
 3. The SDA pin might be labeled SS on some/older MFRC522 boards.
 
