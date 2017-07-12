@@ -1,6 +1,12 @@
 # ESP RFID - Access Control with ESP8266, RC522
 Access Control demonstration using a cheap MFRC522 RFID Hardware and Espressif's ESP8266 Microcontroller.
 
+Its easy to use web based interface makes everything smooth. Once you setup your hardware, you can associate RFID tags to "Users" (or just label them), give them ability to unlock a electric controlled door or whatever you want give access.
+
+You can connect to Web UI anytime to give users access or take it back. Web UI accessible via Wi-Fi network, if your Wi-Fi Access Point is connected to Internet, you can sync Time from NTP Server to timestamp User's access. 
+
+Use case scenarios can be expanded. There are several things I want to implement. (such as limited time access, logging, record user's enter exit time, etc.)
+
 ![IP](https://github.com/omersiar/esp-rfid/blob/master/demo/index.png?raw=true)
 ![SP](https://github.com/omersiar/esp-rfid/blob/master/demo/settings.png?raw=true)
 ![UP](https://github.com/omersiar/esp-rfid/blob/master/demo/users.png?raw=true)
