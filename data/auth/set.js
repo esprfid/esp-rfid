@@ -7,6 +7,9 @@ function listCONF(obj) {
     document.getElementById("gain").value = obj.rfidgain;
     document.getElementById("gpiorly").value = obj.rpin;
     document.getElementById("delay").value = obj.rtime;
+    if (obj.wmode === "1") {
+      document.getElementById("wmodeap").checked = true;
+    }
 }
 
 function listSSID(obj) {
@@ -39,9 +42,17 @@ function saveConf() {
     } else {
         ssid = document.getElementById("inputtohide").value;
     }
+    var wmode;
+    if (document.getElementById("wmodeap").checked) {
+      wmode = "1";
+    }
+    else {
+      wmode = "0";
+    }
     var datatosend = {};
     datatosend.command = "configfile";
     datatosend.ssid = ssid;
+    datatosend.wmode = wmode;
     datatosend.pswd = document.getElementById("wifipass").value;
     datatosend.sspin = document.getElementById("gpioss").value;
     datatosend.rfidgain = document.getElementById("gain").value;

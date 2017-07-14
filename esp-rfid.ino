@@ -91,8 +91,6 @@ void setup() {
     fallbacktoAPMode();
   }
 
-  // Start NTP Client
-  timeClient.begin();
 
   // Start mDNS service so we can connect to http://esp-rfid.local (if Bonjour installed on Windows or Avahi on Linux)
   if (!MDNS.begin(hstname)) {
@@ -178,6 +176,10 @@ void setup() {
 
   // Start Web Server
   server.begin();
+
+  if (WiFi.status() == WL_CONNECTED) {
+    timeClient.begin();
+  }
 }
 
 // Main Loop
@@ -197,7 +199,9 @@ void loop() {
     digitalWrite(relayPin, LOW);
   }
   // Get Time from NTP Server
-  timeClient.update();
+  if (WiFi.status() == WL_CONNECTED) {
+    timeClient.update();
+  }
 
   // Another loop for RFID Events, since we are using polling method instead of Interrupt we need to check RFID hardware for events
   rfidloop();
@@ -507,12 +511,27 @@ bool loadConfiguration() {
   pinMode(relayPin, OUTPUT);
   digitalWrite(relayPin, HIGH);
 
-  const char * conssid = json["ssid"];
-  const char * conpassword = json["pswd"];
+  const char * ssid = json["ssid"];
+  const char * password = json["pswd"];
+  int wmode = json["wmode"];
 
-  if (!connectSTA(conssid, conpassword)) {
+  if (wmode == 1) {
+    Serial.println(F("[ INFO ] ESP-RFID is running in AP Mode "));
+    WiFi.mode(WIFI_AP);
+    Serial.print(F("[ INFO ] Configuring access point... "));
+    Serial.println(WiFi.softAP(ssid, password) ? "Ready" : "Failed!");
+    // Access Point IP
+    IPAddress myIP = WiFi.softAPIP();
+    Serial.print(F("[ INFO ] AP IP address: "));
+    Serial.println(myIP);
+    Serial.print(F("[ INFO ] AP SSID: "));
+    Serial.println(ssid);
+    return true;
+  }
+  else if (!connectSTA(ssid, password)) {
     return false;
   }
+
   return true;
 }
 
@@ -529,13 +548,13 @@ void setupRFID(int rfidss, int rfidgain) {
 }
 
 // Try to connect Wi-Fi
-bool connectSTA(const char* conssid, const char* conpassword) {
+bool connectSTA(const char* ssid, const char* password) {
   WiFi.mode(WIFI_STA);
   // First connect to a wi-fi network
-  WiFi.begin(conssid, conpassword);
+  WiFi.begin(ssid, password);
   // Inform user we are trying to connect
   Serial.print(F("[ INFO ] Trying to connect WiFi: "));
-  Serial.print(conssid);
+  Serial.print(ssid);
   // We try it for 20 seconds and give up on if we can't connect
   unsigned long now = millis();
   uint8_t timeout = 20; // define when to time out in seconds
@@ -581,5 +600,4 @@ void ShowReaderDetails() {
     Serial.println(F("[ WARN ] Communication failure, check if MFRC522 properly connected"));
   }
 }
-
 

@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.1a] - 2017-07-14
+#### Added
+- Now you can select Wi-Fi mode.
+
+#### Fixed
+- Some fixes (features) were not included in previous release
+- NTPClient wastes CPU time when device is in AP mode. (probably tries to force update time)
+
 ## [0.1] - 2017-07-12 - :hurray: We hit the 0.1!
 #### Added
 - Relay Module configuration in Settings Page (You need to make sure how the relay module reacts when device is restarting or on power-on, make changes accordingly). I may try to make it more universal, but for now it's up to you.

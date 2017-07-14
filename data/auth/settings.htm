@@ -34,10 +34,18 @@
             </div>
             <div class="row">
                <div class="col-sm-6 col-sm-push-6">
-                  <fieldset>
-                     <legend>Wi-Fi Client Settings</legend>
+                     <legend>Wi-Fi Settings</legend>
                      <h6 class="text-muted">Type your Wi-Fi Network's SSID or Scan for nerby Wireless Networks to join.</h6>
-                     <br>
+                     <div class="row form-group">
+                       <label class="col-xs-3">Wi-Fi Mode</label>
+                       <div class="col-xs-9">
+                         <form>
+                       <label class="radio-inline"><input type="radio" value="1" name="wmode" id="wmodeap">Access Point </label>
+                       <label class="radio-inline"><input type="radio" value="0" name="wmode" id="wmodesta" checked>Client</label>
+                       </form>
+                       </div>
+                       
+                       </div>
                      <div class="row form-group">
                         <label class="col-xs-3">SSID</label> 
                         <span class="col-xs-9">
@@ -52,14 +60,11 @@
                         <input id="wifipass" style="max-width:150px" class="form-control input-sm" type="text" name="ap_passwd">
                         </span> 
                      </div>
-                  </fieldset>
                   <br>
                </div>
                <div class="col-sm-6 col-sm-pull-6">
-                  <fieldset>
                      <legend>MFRC522 Hardware Settings</legend>
                      <h6 class="text-muted">Please refer the <a href="https://github.com/omersiar/esp-rfid#pin-layout">documentation</a> for pin configuration.</h6>
-                     <br>
                      <div class="row form-group">
                         <label class="col-xs-3">SPI SS</label> 
                         <span class="col-xs-9">
@@ -107,7 +112,6 @@
                         </span>
                      </div>
                      <button id="testb" type="button" class="btn btn-primary btn-xs" onclick="testRelay()">Test Relay</button><h6 class="text-muted"> Please reboot before test</h6>
-                  </fieldset>
                </div>
             </div>
             <hr>
@@ -118,10 +122,9 @@
          </div>
          <div class="jumbotron">
             <div class="row">
-               <fieldset class="col-sm-6">
+               <div class="col-sm-6">
                   <legend>Update Firmware</legend>
                   <h6 class="text-muted">Download <a href="https://github.com/omersiar/esp-rfid/raw/master/compiledbin/latest.bin">latest version</a> from GitHub.</h6>
-                  <br>
                   <form class="form-inline" method="POST" action="/auth/update" enctype="multipart/form-data">
                      <div class="form-group">
                         <input type="file" name="update">
@@ -129,12 +132,11 @@
                      <button type="submit" class="btn btn-primary btn-sm">Upload</button>
                   </form>
                   <br>
-               </fieldset>
-               <fieldset class="col-sm-6">
+               </div>
+               <div class="col-sm-6">
                   <legend>Update SPIFFS</legend>
                   <div class="alert alert-danger"><strong>Warning!</strong> This will delete all data (including UIDs, Users, Settings).</div>
                   <h6 class="text-muted">Dowload <a href="https://github.com/omersiar/esp-rfid/raw/master/compiledbin/latestspiffs.bin">latest version</a> from GitHub.</h6>
-                  <br>
                   <form class="form-inline" method="POST" action="/auth/spiupdate" enctype="multipart/form-data">
                      <div class="form-group">
                         <input type="file" name="update">
@@ -142,7 +144,7 @@
                      <button type="submit" class="btn btn-primary btn-sm">Upload</button>
                   </form>
                   <br>
-               </fieldset>
+               </div>
             </div>
          </div>
          <hr>
