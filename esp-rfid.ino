@@ -30,6 +30,7 @@
 #include <ESP8266WiFi.h>              // Whole thing is about using Wi-Fi networks
 #include <SPI.h>                      // RFID MFRC522 Module uses SPI protocol
 #include <ESP8266mDNS.h>              // Zero-config Library (Bonjour, Avahi) http://esp-rfid.local
+#include <DNSServer.h>                // Used for captive portal
 #include <MFRC522.h>                  // Library for Mifare RC522 Devices
 #include <WiFiUdp.h>                  // Library for manipulating UDP packets which is used by NTP Client to get Timestamps
 #include <NTPClient.h>                // To timestamp RFID scans we get Unix Time from NTP Server
@@ -38,9 +39,7 @@
 #include <ESPAsyncTCP.h>              // Async TCP Library is mandatory for Async Web Server
 #include <ESPAsyncWebServer.h>        // Async Web Server with built-in WebSocket Plug-in
 #include <SPIFFSEditor.h>             // This creates a web page on server which can be used to edit text based files.
-
-// Password for AP Mode if there is no connection to Internet
-// const char * password = "12345678";
+#include <TimeLib.h>                  // Library for converting epochtime to a date
 
 #define hstname "esp-rfid"
 
@@ -48,15 +47,19 @@
 String filename = "/P/";
 //flag to use from web update to reboot the ESP
 bool shouldReboot = false;
-
 bool activateRelay = false;
 unsigned long previousMillis = 0;
 int relayPin;
 int activateTime;
+const byte DNS_PORT = 53;
+String dateTimeStamp;
+
+IPAddress apIP(192, 168, 4, 1);
 
 extern "C" uint32_t _SPIFFS_start;
 extern "C" uint32_t _SPIFFS_end;
 
+DNSServer dnsServer;
 
 // Create UDP instance for NTP Client
 WiFiUDP ntpUDP;
@@ -91,7 +94,6 @@ void setup() {
     fallbacktoAPMode();
   }
 
-
   // Start mDNS service so we can connect to http://esp-rfid.local (if Bonjour installed on Windows or Avahi on Linux)
   if (!MDNS.begin(hstname)) {
     Serial.println("Error setting up MDNS responder!");
@@ -113,7 +115,28 @@ void setup() {
   server.serveStatic("/", SPIFFS, "/");
   // Handle what happens when requested web file couldn't be found
   server.onNotFound([](AsyncWebServerRequest * request) {
-    request->send(404);
+    if (captivePortal(request)) { // If captive portal redirect instead of displaying the error page.
+      return;
+    }
+
+    String message = "File Not Found\n\n";
+    message += "URI: ";
+    message += request->url();
+    message += "\nMethod: ";
+    message += ( request->method() == HTTP_GET ) ? "GET" : "POST";
+    message += "\nArguments: ";
+    message += request->args();
+    message += "\n";
+
+    for (uint8_t i = 0; i < request->args(); i++ ) {
+      message += " " + request->argName ( i ) + ": " + request->arg ( i ) + "\n";
+    }
+
+    AsyncWebServerResponse *response = request->beginResponse(404, "text/plain", message);
+    response->addHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    response->addHeader("Pragma", "no-cache");
+    response->addHeader("Expires", "-1");
+    request->send(response);
   });
 
   // Simple Firmware Update Handler
@@ -143,7 +166,7 @@ void setup() {
       }
     }
   });
-
+  /* Dropped SPIFFS Update for now, implement backup restore facility first
   // Simple SPIFFs Update Handler
   server.on("/auth/spiupdate", HTTP_POST, [](AsyncWebServerRequest * request) {
     shouldReboot = !Update.hasError();
@@ -173,6 +196,10 @@ void setup() {
       }
     }
   });
+  */
+  
+  //Setting up dns for the captive portal
+  dnsServer.start(53, "*", apIP);
 
   // Start Web Server
   server.begin();
@@ -202,10 +229,41 @@ void loop() {
   if (WiFi.status() == WL_CONNECTED) {
     timeClient.update();
   }
+  dnsServer.processNextRequest();
 
   // Another loop for RFID Events, since we are using polling method instead of Interrupt we need to check RFID hardware for events
   rfidloop();
 }
+
+boolean captivePortal(AsyncWebServerRequest *request) {
+  if (!isIp(request->host()) ) {
+    AsyncWebServerResponse *response = request->beginResponse(302, "text/plain", "");
+    response->addHeader("Location", String("http://" + ipToString(apIP)));
+    request->send(response);
+    return true;
+  }
+  return false;
+}
+
+boolean isIp(String str) {
+  for (int i = 0; i < str.length(); i++) {
+    int c = str.charAt(i);
+    if (c != '.' && (c < '0' || c > '9')) {
+      return false;
+    }
+  }
+  return true;
+}
+
+String ipToString(IPAddress ip) {
+  String res = "";
+  for (int i = 0; i < 3; i++) {
+    res += String((ip >> (8 * i)) & 0xFF) + ".";
+  }
+  res += String(((ip >> 8 * 3)) & 0xFF);
+  return res;
+}
+
 
 // RFID Specific Loop
 void rfidloop() {

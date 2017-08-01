@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.2rc1] - Ongoing
+#### Added
+- Refresh page after saving settings. [@rneurink](https://github.com/rneurink/esp-rfid)
+- Captive Portal for easy first setup. [@rneurink](https://github.com/rneurink/esp-rfid)
+
+#### Fixed
+- Settings Page shows "... WebSocket connecting" message even if the connection was made
+
 ## [0.1a] - 2017-07-14
 #### Added
 - Now you can select Wi-Fi mode.
@@ -16,7 +24,7 @@ All notable changes to this project will be documented in this file.
 - Ability to Add known PICC to User List (useful to add new PICC to device when device is already deployed)
 
 #### Removed
-- Maintaining RST pin for MFRC522 hardware is removed. MFRC522 library now supports for soft-reset, we do not need hardware reset anymore this frees a GPIO from MCU. (suggested by @farthinder #6 https://github.com/omersiar/esp-rfid/issues/6)
+- We do not need hardware reset anymore this frees a GPIO from MCU. (suggested by @farthinder [#6](https://github.com/omersiar/esp-rfid/issues/6) )
 
 ## [0.1rc2] - 2017-07-10 - Release Candidate
 #### Added

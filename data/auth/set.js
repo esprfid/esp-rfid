@@ -42,12 +42,9 @@ function saveConf() {
     } else {
         ssid = document.getElementById("inputtohide").value;
     }
-    var wmode;
+    var wmode = "0";
     if (document.getElementById("wmodeap").checked) {
       wmode = "1";
-    }
-    else {
-      wmode = "0";
     }
     var datatosend = {};
     datatosend.command = "configfile";
@@ -59,6 +56,7 @@ function saveConf() {
     datatosend.rpin = document.getElementById("gpiorly").value;
     datatosend.rtime = document.getElementById("delay").value;
     websock.send(JSON.stringify(datatosend));
+    location.reload();
 }
 
 function testRelay() {

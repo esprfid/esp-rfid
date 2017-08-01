@@ -1,6 +1,8 @@
 # ESP RFID - Access Control with ESP8266, RC522
 Access Control demonstration using a cheap MFRC522 RFID Hardware and Espressif's ESP8266 Microcontroller.
 
+Join community chat [![Chat at https://gitter.im/esp-rfid/Lobby](https://badges.gitter.im/esp-rfid.svg)](https://gitter.im/esp-rfid/Lobby)
+
 Its easy to use web based interface makes everything smooth. Once you setup your hardware, you can associate RFID tags to "Users" (or just label them), give them ability to unlock a electric controlled door or whatever you want give access.
 
 You can connect to Web UI anytime to give users access or take it back. Web UI accessible via Wi-Fi network, if your Wi-Fi Access Point is connected to Internet, you can sync Time from NTP Server to timestamp User's access. 
@@ -107,6 +109,12 @@ At least 100 unique User (RFID Tag) can be handled, the test were performed on W
 
 * Logging needs testing. How long should it need to log access? What if a Boss needs whole year log?
 * Realiability on Flash (these NOR Flash have limited write cycle on their cells). It depends on manufacturer choice of Flash Chip and usage.
+
+## Contributions
+Thanks to the community, these features are come to alive with their great effort:
+
+- [X] Timed entry. [@rneurink](https://github.com/rneurink/esp-rfid)
+- [X] Added captive portal. [@rneurink](https://github.com/rneurink/esp-rfid)
 
 
 ## To Do
