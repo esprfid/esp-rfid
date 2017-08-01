@@ -54,7 +54,7 @@
                   <form id="fade">
                      <div class="input-group">
                         <span class="input-group-addon" style="text-align:left;min-width:100px"><strong>UID</strong></span>
-                        <input id="uidinp" type="text" style="max-width:290px" class="form-control" name="msg" placeholder="PICC UID">
+                        <input id="uidinp" type="text" style="max-width:290px" class="form-control" name="msg" placeholder="PICC UID" onChange="fixAdd()">
                      </div>
                      <div class="input-group">
                         <span class="input-group-addon" style="text-align:left;min-width:100px"><strong>PICC Type</strong></span>
@@ -75,7 +75,9 @@
                   <br>
                   <div>
                      <button id="button" type="button" class="btn btn-success btn-sm" onclick="update()">Add</button>
+                     <span><button id="rembutton" type="button" class="btn btn-danger btn-sm" onclick="del()">Remove</button></span>
                   </div>
+                  
                </div>
             </div>
          </div>

@@ -7,6 +7,7 @@ function listCONF(obj) {
     document.getElementById("gain").value = obj.rfidgain;
     document.getElementById("gpiorly").value = obj.rpin;
     document.getElementById("delay").value = obj.rtime;
+    document.getElementById("adminpwd").value = obj.adminpwd;
     if (obj.wmode === "1") {
       document.getElementById("wmodeap").checked = true;
     }
@@ -35,6 +36,11 @@ function scanWifi() {
 }
 
 function saveConf() {
+    var a = document.getElementById("adminpwd").value;
+    if (a===null || a==="") {
+      alert("Administrator Password cannot be empty");
+      return;
+    }
     var ssid;
     if (document.getElementById("inputtohide").style.display === "none") {
         var b = document.getElementById("ssid");
@@ -55,6 +61,7 @@ function saveConf() {
     datatosend.rfidgain = document.getElementById("gain").value;
     datatosend.rpin = document.getElementById("gpiorly").value;
     datatosend.rtime = document.getElementById("delay").value;
+    datatosend.adminpwd = a;
     websock.send(JSON.stringify(datatosend));
     location.reload();
 }
@@ -67,6 +74,7 @@ function start() {
     websock = new WebSocket("ws://" + window.location.hostname + "/ws");
     websock.onopen = function(evt) {
         websock.send("{\"command\":\"getconf\"}");
+        document.getElementById("loading-img").style.display = "none";
     };
     websock.onclose = function(evt) {
     };
@@ -79,7 +87,6 @@ function start() {
             listSSID(obj);
         } else if (obj.command === "configfile") {
             listCONF(obj);
-            document.getElementById("loading-img").style.display = "none";
         }
     };
 }

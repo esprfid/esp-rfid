@@ -5,9 +5,12 @@ All notable changes to this project will be documented in this file.
 #### Added
 - Refresh page after saving settings. [@rneurink](https://github.com/rneurink/esp-rfid)
 - Captive Portal for easy first setup. [@rneurink](https://github.com/rneurink/esp-rfid)
+- Long-time-missing the "Remove" button. (Initialy we were getting always valid UID but now things were changed)
+- Administrator Password setting.
 
 #### Fixed
 - Settings Page shows "... WebSocket connecting" message even if the connection was made
+- Quirk in Sorting User List
 
 ## [0.1a] - 2017-07-14
 #### Added

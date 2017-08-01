@@ -109,8 +109,7 @@ void setup() {
   // Add Text Editor (http://esp-rfid.local/edit) to Web Server. This feature likely will be dropped on final release.
   server.addHandler(new SPIFFSEditor("admin", "admin"));
 
-  // Serve confidential files in /auth/ folder with a Basic HTTP authentication
-  server.serveStatic("/auth/", SPIFFS, "/auth/").setDefaultFile("users.htm").setAuthentication("admin", "admin");
+
   // Serve all files in root folder
   server.serveStatic("/", SPIFFS, "/");
   // Handle what happens when requested web file couldn't be found
@@ -407,20 +406,7 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
 
       // Web Browser sends some commands, check which command is given
       const char * command = root["command"];
-      /*
-        if (strcmp(command, "add")  == 0) {
-        const char* uid = root["uid"];
-        filename = "/P/";
-        filename += uid;
-        File f = SPIFFS.open(filename, "a+");
-        // Check if we created the file
-        if (f) {
-          f.print(msg);
-          f.close(); // We found it, close the file
-          ws.textAll("{\"command\":\"status\",\"add\":1}");
-        }
-        ws.textAll("{\"command\":\"status\",\"add\":0}");
-        }*/
+
       // Check whatever the command is and act accordingly
       if (strcmp(command, "remove")  == 0) {
         const char* uid = root["uid"];
@@ -539,6 +525,7 @@ void fallbacktoAPMode() {
   IPAddress myIP = WiFi.softAPIP();
   Serial.print(F("[ INFO ] AP IP address: "));
   Serial.println(myIP);
+  server.serveStatic("/auth/", SPIFFS, "/auth/").setDefaultFile("users.htm").setAuthentication("admin", "admin");;
 }
 
 bool loadConfiguration() {
@@ -572,6 +559,11 @@ bool loadConfiguration() {
   const char * ssid = json["ssid"];
   const char * password = json["pswd"];
   int wmode = json["wmode"];
+
+  const char * adminpass = json["adminpwd"];
+
+    // Serve confidential files in /auth/ folder with a Basic HTTP authentication
+  server.serveStatic("/auth/", SPIFFS, "/auth/").setDefaultFile("users.htm").setAuthentication("admin", adminpass);
 
   if (wmode == 1) {
     Serial.println(F("[ INFO ] ESP-RFID is running in AP Mode "));

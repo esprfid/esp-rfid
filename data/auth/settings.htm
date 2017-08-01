@@ -32,7 +32,7 @@
                   <br>
                </div>
             <div class="row">
-               <div class="col-sm-6 col-sm-push-6">
+               <div class="col-sm-6">
                      <legend>Wi-Fi Settings</legend>
                      <h6 class="text-muted">Type your Wi-Fi Network's SSID or Scan for nerby Wireless Networks to join.</h6>
                      <div class="row form-group">
@@ -61,7 +61,7 @@
                      </div>
                   <br>
                </div>
-               <div class="col-sm-6 col-sm-pull-6">
+               <div class="col-sm-6">
                      <legend>MFRC522 Hardware Settings</legend>
                      <h6 class="text-muted">Please refer the <a href="https://github.com/omersiar/esp-rfid#pin-layout">documentation</a> for pin configuration.</h6>
                      <div class="row form-group">
@@ -110,7 +110,20 @@
                         <input class="form-control input-sm" placeholder="in Microsecond" style="display:inline;max-width:185px" id="delay" type="text" name="hightime">
                         </span>
                      </div>
-                     <button id="testb" type="button" class="btn btn-primary btn-xs" onclick="testRelay()">Test Relay</button><h6 class="text-muted"> Please reboot before test</h6>
+                     <button id="testb" type="button" class="btn btn-primary btn-xs" onclick="testRelay()">Test Relay</button>
+               </div>
+               <br>
+            </div>
+            <div class="row">
+              <div class="col-sm-6">
+                <legend>General Settings</legend>
+               <div class="row form-group">
+<label class="col-xs-3">Admin Password</label> 
+                        <span class="col-xs-9">
+                        <input class="form-control input-sm" placeholder="Administrator Password" style="display:inline;max-width:185px" id="adminpwd" type="text">
+                        </span>
+                  <br>
+               </div>
                </div>
             </div>
             <hr>
@@ -125,18 +138,6 @@
                   <legend>Update Firmware</legend>
                   <h6 class="text-muted">Download <a href="https://github.com/omersiar/esp-rfid/raw/master/compiledbin/latest.bin">latest version</a> from GitHub.</h6>
                   <form class="form-inline" method="POST" action="/auth/update" enctype="multipart/form-data">
-                     <div class="form-group">
-                        <input type="file" name="update">
-                     </div>
-                     <button type="submit" class="btn btn-primary btn-sm">Upload</button>
-                  </form>
-                  <br>
-               </div>
-               <div class="col-sm-6">
-                  <legend>Update SPIFFS</legend>
-                  <div class="alert alert-danger"><strong>Warning!</strong> This will delete all data (including UIDs, Users, Settings).</div>
-                  <h6 class="text-muted">Dowload <a href="https://github.com/omersiar/esp-rfid/raw/master/compiledbin/latestspiffs.bin">latest version</a> from GitHub.</h6>
-                  <form class="form-inline" method="POST" action="/auth/spiupdate" enctype="multipart/form-data">
                      <div class="form-group">
                         <input type="file" name="update">
                      </div>
