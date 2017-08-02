@@ -1,7 +1,7 @@
 # ESP RFID - Access Control with ESP8266, RC522
 Access Control demonstration using a cheap MFRC522 RFID Hardware and Espressif's ESP8266 Microcontroller.
 
-Join community chat [![Chat at https://gitter.im/esp-rfid/Lobby](https://badges.gitter.im/esp-rfid.svg)](https://gitter.im/esp-rfid/Lobby)
+[![Chat at https://gitter.im/esp-rfid/Lobby](https://badges.gitter.im/esp-rfid.svg)](https://gitter.im/esp-rfid/Lobby) Join community chat
 
 Its easy to use web based interface makes everything smooth. Once you setup your hardware, you can associate RFID tags to "Users" (or just label them), give them ability to unlock a electric controlled door or whatever you want give access.
 
@@ -22,7 +22,7 @@ Use case scenarios can be expanded. There are several things I want to implement
 
 ## Getting Started
 This project still in its development phase. New features (and also bugs) are introduced often and some functions may become deprecated. Please feel free to comment or give feedback.
-* Latest version is v0.1
+* Latest version is v0.2rc1
 * See [Known Issues](https://github.com/omersiar/esp-rfid#known-issues) before starting right away.
 * See [ChangeLog](https://github.com/omersiar/esp-rfid/blob/master/CHANGELOG.md)
 * See [To Do](https://github.com/omersiar/esp-rfid#to-do) for what to expect in future.
@@ -113,8 +113,7 @@ At least 100 unique User (RFID Tag) can be handled, the test were performed on W
 ## Contributions
 Thanks to the community, these features are come to alive with their great effort:
 
-- [X] Timed entry. [@rneurink](https://github.com/rneurink/esp-rfid)
-- [X] Added captive portal. [@rneurink](https://github.com/rneurink/esp-rfid)
+- [X] Added captive portal. [by @rneurink](https://github.com/omersiar/esp-rfid/issues/7)
 
 
 ## To Do

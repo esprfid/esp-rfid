@@ -1,16 +1,23 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [0.2rc1] - Ongoing
+## [0.2rc1] - 2017-08-02
 #### Added
 - Refresh page after saving settings. [@rneurink](https://github.com/rneurink/esp-rfid)
 - Captive Portal for easy first setup. [@rneurink](https://github.com/rneurink/esp-rfid)
 - Long-time-missing the "Remove" button. (Initialy we were getting always valid UID but now things were changed)
 - Administrator Password setting.
+- Basic Backup / Restore facility. (For now we can only restore settings not the Users)
 
 #### Fixed
 - Settings Page shows "... WebSocket connecting" message even if the connection was made
 - Quirk in Sorting User List
+
+#### Changed
+- Config File now is more human readable.
+
+#### Removed
+- SPIFFS Update from Web (we will likely be able to update it directly from Internet)
 
 ## [0.1a] - 2017-07-14
 #### Added

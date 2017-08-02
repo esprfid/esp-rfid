@@ -165,37 +165,7 @@ void setup() {
       }
     }
   });
-  /* Dropped SPIFFS Update for now, implement backup restore facility first
-  // Simple SPIFFs Update Handler
-  server.on("/auth/spiupdate", HTTP_POST, [](AsyncWebServerRequest * request) {
-    shouldReboot = !Update.hasError();
-    AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", shouldReboot ? "OK" : "FAIL");
-    response->addHeader("Connection", "close");
-    request->send(response);
-  }, [](AsyncWebServerRequest * request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
-    if (!index) {
-      Serial.printf("[ UPDT ] SPIFFS update started: %s\n", filename.c_str());
-      Update.runAsync(true);
-      size_t spiffsSize = ((size_t) &_SPIFFS_end - (size_t) &_SPIFFS_start);
-      if (!Update.begin(spiffsSize, U_SPIFFS)) {
-        Update.printError(Serial);
-      }
-    }
-    if (!Update.hasError()) {
-      if (Update.write(data, len) != len) {
-        Update.printError(Serial);
-      }
-    }
-    if (final) {
-      if (Update.end(true)) {
-        Serial.printf("[ UPDT ] SPIFFS update finished: %uB\n", index + len);
 
-      } else {
-        Update.printError(Serial);
-      }
-    }
-  });
-  */
   
   //Setting up dns for the captive portal
   dnsServer.start(53, "*", apIP);
@@ -417,7 +387,8 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
       else if (strcmp(command, "configfile")  == 0) {
         File f = SPIFFS.open("/auth/config.json", "w+");
         if (f) {
-          f.print(msg);
+          root.prettyPrintTo(f);
+          //f.print(msg);
           f.close();
           ESP.reset();
         }

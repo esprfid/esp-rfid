@@ -145,6 +145,21 @@
                   </form>
                   <br>
                </div>
+                              <div class="col-sm-6">
+                  <legend>Backup & Restore</legend>
+                  
+
+                     <button class="btn btn-link btn-sm" onclick="backupuser()">Backup User Data</button>
+                     <a id="downloadUser" style="display:none"></a>
+                     
+                     <button class="btn btn-link btn-sm" onclick="backupset()">Backup Settings</button>
+                     <a id="downloadSet" style="display:none"></a>
+                     <div>
+                     <label for="restoreSet">Restore Settings from Backup</label>
+                     <input id="restoreSet" type="file" accept="application/json" onchange="restoreSet()">
+</div>
+                  <br>
+               </div>
             </div>
          </div>
          <hr>
