@@ -30,6 +30,7 @@
 #include <ESP8266WiFi.h>              // Whole thing is about using Wi-Fi networks
 #include <SPI.h>                      // RFID MFRC522 Module uses SPI protocol
 #include <ESP8266mDNS.h>              // Zero-config Library (Bonjour, Avahi) http://esp-rfid.local
+#include <DNSServer.h>                // Used for captive portal
 #include <MFRC522.h>                  // Library for Mifare RC522 Devices
 #include <WiFiUdp.h>                  // Library for manipulating UDP packets which is used by NTP Client to get Timestamps
 #include <NTPClient.h>                // To timestamp RFID scans we get Unix Time from NTP Server
@@ -38,9 +39,7 @@
 #include <ESPAsyncTCP.h>              // Async TCP Library is mandatory for Async Web Server
 #include <ESPAsyncWebServer.h>        // Async Web Server with built-in WebSocket Plug-in
 #include <SPIFFSEditor.h>             // This creates a web page on server which can be used to edit text based files.
-
-// Password for AP Mode if there is no connection to Internet
-// const char * password = "12345678";
+#include <TimeLib.h>                  // Library for converting epochtime to a date
 
 #define hstname "esp-rfid"
 
@@ -48,15 +47,19 @@
 String filename = "/P/";
 //flag to use from web update to reboot the ESP
 bool shouldReboot = false;
-
 bool activateRelay = false;
 unsigned long previousMillis = 0;
 int relayPin;
 int activateTime;
+const byte DNS_PORT = 53;
+String dateTimeStamp;
+
+IPAddress apIP(192, 168, 4, 1);
 
 extern "C" uint32_t _SPIFFS_start;
 extern "C" uint32_t _SPIFFS_end;
 
+DNSServer dnsServer;
 
 // Create UDP instance for NTP Client
 WiFiUDP ntpUDP;
@@ -91,7 +94,6 @@ void setup() {
     fallbacktoAPMode();
   }
 
-
   // Start mDNS service so we can connect to http://esp-rfid.local (if Bonjour installed on Windows or Avahi on Linux)
   if (!MDNS.begin(hstname)) {
     Serial.println("Error setting up MDNS responder!");
@@ -107,13 +109,33 @@ void setup() {
   // Add Text Editor (http://esp-rfid.local/edit) to Web Server. This feature likely will be dropped on final release.
   server.addHandler(new SPIFFSEditor("admin", "admin"));
 
-  // Serve confidential files in /auth/ folder with a Basic HTTP authentication
-  server.serveStatic("/auth/", SPIFFS, "/auth/").setDefaultFile("users.htm").setAuthentication("admin", "admin");
+
   // Serve all files in root folder
   server.serveStatic("/", SPIFFS, "/");
   // Handle what happens when requested web file couldn't be found
   server.onNotFound([](AsyncWebServerRequest * request) {
-    request->send(404);
+    if (captivePortal(request)) { // If captive portal redirect instead of displaying the error page.
+      return;
+    }
+
+    String message = "File Not Found\n\n";
+    message += "URI: ";
+    message += request->url();
+    message += "\nMethod: ";
+    message += ( request->method() == HTTP_GET ) ? "GET" : "POST";
+    message += "\nArguments: ";
+    message += request->args();
+    message += "\n";
+
+    for (uint8_t i = 0; i < request->args(); i++ ) {
+      message += " " + request->argName ( i ) + ": " + request->arg ( i ) + "\n";
+    }
+
+    AsyncWebServerResponse *response = request->beginResponse(404, "text/plain", message);
+    response->addHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    response->addHeader("Pragma", "no-cache");
+    response->addHeader("Expires", "-1");
+    request->send(response);
   });
 
   // Simple Firmware Update Handler
@@ -144,35 +166,9 @@ void setup() {
     }
   });
 
-  // Simple SPIFFs Update Handler
-  server.on("/auth/spiupdate", HTTP_POST, [](AsyncWebServerRequest * request) {
-    shouldReboot = !Update.hasError();
-    AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", shouldReboot ? "OK" : "FAIL");
-    response->addHeader("Connection", "close");
-    request->send(response);
-  }, [](AsyncWebServerRequest * request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
-    if (!index) {
-      Serial.printf("[ UPDT ] SPIFFS update started: %s\n", filename.c_str());
-      Update.runAsync(true);
-      size_t spiffsSize = ((size_t) &_SPIFFS_end - (size_t) &_SPIFFS_start);
-      if (!Update.begin(spiffsSize, U_SPIFFS)) {
-        Update.printError(Serial);
-      }
-    }
-    if (!Update.hasError()) {
-      if (Update.write(data, len) != len) {
-        Update.printError(Serial);
-      }
-    }
-    if (final) {
-      if (Update.end(true)) {
-        Serial.printf("[ UPDT ] SPIFFS update finished: %uB\n", index + len);
-
-      } else {
-        Update.printError(Serial);
-      }
-    }
-  });
+  
+  //Setting up dns for the captive portal
+  dnsServer.start(53, "*", apIP);
 
   // Start Web Server
   server.begin();
@@ -202,10 +198,41 @@ void loop() {
   if (WiFi.status() == WL_CONNECTED) {
     timeClient.update();
   }
+  dnsServer.processNextRequest();
 
   // Another loop for RFID Events, since we are using polling method instead of Interrupt we need to check RFID hardware for events
   rfidloop();
 }
+
+boolean captivePortal(AsyncWebServerRequest *request) {
+  if (!isIp(request->host()) ) {
+    AsyncWebServerResponse *response = request->beginResponse(302, "text/plain", "");
+    response->addHeader("Location", String("http://" + ipToString(apIP)));
+    request->send(response);
+    return true;
+  }
+  return false;
+}
+
+boolean isIp(String str) {
+  for (int i = 0; i < str.length(); i++) {
+    int c = str.charAt(i);
+    if (c != '.' && (c < '0' || c > '9')) {
+      return false;
+    }
+  }
+  return true;
+}
+
+String ipToString(IPAddress ip) {
+  String res = "";
+  for (int i = 0; i < 3; i++) {
+    res += String((ip >> (8 * i)) & 0xFF) + ".";
+  }
+  res += String(((ip >> 8 * 3)) & 0xFF);
+  return res;
+}
+
 
 // RFID Specific Loop
 void rfidloop() {
@@ -349,20 +376,7 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
 
       // Web Browser sends some commands, check which command is given
       const char * command = root["command"];
-      /*
-        if (strcmp(command, "add")  == 0) {
-        const char* uid = root["uid"];
-        filename = "/P/";
-        filename += uid;
-        File f = SPIFFS.open(filename, "a+");
-        // Check if we created the file
-        if (f) {
-          f.print(msg);
-          f.close(); // We found it, close the file
-          ws.textAll("{\"command\":\"status\",\"add\":1}");
-        }
-        ws.textAll("{\"command\":\"status\",\"add\":0}");
-        }*/
+
       // Check whatever the command is and act accordingly
       if (strcmp(command, "remove")  == 0) {
         const char* uid = root["uid"];
@@ -373,7 +387,8 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
       else if (strcmp(command, "configfile")  == 0) {
         File f = SPIFFS.open("/auth/config.json", "w+");
         if (f) {
-          f.print(msg);
+          root.prettyPrintTo(f);
+          //f.print(msg);
           f.close();
           ESP.reset();
         }
@@ -481,6 +496,7 @@ void fallbacktoAPMode() {
   IPAddress myIP = WiFi.softAPIP();
   Serial.print(F("[ INFO ] AP IP address: "));
   Serial.println(myIP);
+  server.serveStatic("/auth/", SPIFFS, "/auth/").setDefaultFile("users.htm").setAuthentication("admin", "admin");;
 }
 
 bool loadConfiguration() {
@@ -514,6 +530,11 @@ bool loadConfiguration() {
   const char * ssid = json["ssid"];
   const char * password = json["pswd"];
   int wmode = json["wmode"];
+
+  const char * adminpass = json["adminpwd"];
+
+    // Serve confidential files in /auth/ folder with a Basic HTTP authentication
+  server.serveStatic("/auth/", SPIFFS, "/auth/").setDefaultFile("users.htm").setAuthentication("admin", adminpass);
 
   if (wmode == 1) {
     Serial.println(F("[ INFO ] ESP-RFID is running in AP Mode "));

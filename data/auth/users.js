@@ -1,11 +1,9 @@
 var websock;
 
-function sortTable(n) {
-    var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+function sortTable() {
+    var table, rows, switching, i, x, y, shouldSwitch;
     table = document.getElementById("knowntable");
     switching = true;
-    //Set the sorting direction to ascending:
-    dir = "asc";
     /*Make a loop that will continue until
     no switching has been done:*/
     while (switching) {
@@ -19,23 +17,13 @@ function sortTable(n) {
             shouldSwitch = false;
             /*Get the two elements you want to compare,
             one from current row and one from the next:*/
-            x = rows[i].getElementsByTagName("TD")[n];
-            y = rows[i + 1].getElementsByTagName("TD")[n];
-            /*check if the two rows should switch place,
-            based on the direction, asc or desc:*/
-            if (dir === "asc") {
+            x = rows[i].getElementsByTagName("TD")[1];
+            y = rows[i + 1].getElementsByTagName("TD")[1];
                 if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
                     //if so, mark as a switch and break the loop:
                     shouldSwitch = true;
                     break;
                 }
-            } else if (dir === "desc") {
-                if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
-                    //if so, mark as a switch and break the loop:
-                    shouldSwitch = true;
-                    break;
-                }
-            }
         }
         if (shouldSwitch) {
             /*If a switch has been marked, make the switch
@@ -43,15 +31,7 @@ function sortTable(n) {
             rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
             switching = true;
             //Each time a switch is done, increase this count by 1:
-            switchcount++;
-        } else {
-            /*If no switching has been done AND the direction is "asc",
-            set the direction to "desc" and run the while loop again.*/
-            if (switchcount === 0 && dir === "asc") {
-                dir = "desc";
-                switching = true;
-            }
-        }
+        } 
     }
 }
 
@@ -71,6 +51,12 @@ function fadeOutIn(elem, speed) {
             }, speed / 50);
         } // end if
     }, speed / 50);
+}
+
+function fixAdd() {
+  var ref = document.getElementById("button");
+  ref.className = "btn btn-success btn-sm";
+  ref.textContent = "Add";
 }
 
 function listSCAN(obj) {
@@ -101,11 +87,14 @@ function listSCAN(obj) {
     fadeOutIn(document.getElementById("fade"), 250);
 }
 
-function del(e) {
-    var x = confirm("This will remove " + e.id + " from database. Are you sure?");
+function del() {
+    var uid = document.getElementById("uidinp").value.toLowerCase();
+    var username = document.getElementById("username").value;
+    var x = confirm("This will remove " + uid + " : " + username + " from database. Are you sure?");
     if (x) {
-        var jsontosend = "{\"uid\":\"" + e.id + "\",\"command\":\"remove\"}";
+        var jsontosend = "{\"uid\":\"" + uid + "\",\"command\":\"remove\"}";
         websock.send(jsontosend);
+        websock.send("{\"command\":\"picclist\"}");
     }
 }
 
@@ -152,7 +141,6 @@ function addRowHandlers() {
                         document.getElementById("access").value = "0";
                     }
                     var ref = document.getElementById("button");
-                    ref.style.display = "block";
                     ref.dep = document.getElementById("uidinp").value.toLowerCase();
                     ref.className = "btn btn-warning btn-sm";
                     ref.onclick = function() {
@@ -218,7 +206,7 @@ function start() {
             }
             document.getElementById("loading-img").style.display = "none";
             listknownPICC(obj);
-            sortTable(1);
+            sortTable();
             addRowHandlers();
         }
     };
