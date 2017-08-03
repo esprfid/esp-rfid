@@ -15,13 +15,13 @@
 
   | Signal        | MFRC522       | WeMos D1 mini  | NodeMcu | Generic      |
   |---------------|:-------------:|:--------------:| :------:|:------------:|
-  | RST/Reset     | RST           | D3 [1]         | D3 [1]  | GPIO-0 [1]   |
+  | RST/Reset     | RST           | NC             | NC      | NC           |
   | SPI SS        | SDA [3]       | D8 [2]         | D8 [2]  | GPIO-15 [2]  |
   | SPI MOSI      | MOSI          | D7             | D7      | GPIO-13      |
   | SPI MISO      | MISO          | D6             | D6      | GPIO-12      |
   | SPI SCK       | SCK           | D5             | D5      | GPIO-14      |
 
-  1. Configurable via web page
+  NC. Not Connected
   2. Configurable via web page
   3. The SDA pin might be labeled SS on some/older MFRC522 boards.
 
@@ -56,9 +56,6 @@ String dateTimeStamp;
 
 IPAddress apIP(192, 168, 4, 1);
 
-extern "C" uint32_t _SPIFFS_start;
-extern "C" uint32_t _SPIFFS_end;
-
 DNSServer dnsServer;
 
 // Create UDP instance for NTP Client
@@ -80,7 +77,7 @@ void setup() {
   delay(1000);
   Serial.begin(115200);
   Serial.println();
-  Serial.println(F("[ INFO ] ESP RFID v0.1"));
+  Serial.println(F("[ INFO ] ESP RFID v0.2rc2"));
 
   // Start SPIFFS filesystem
   SPIFFS.begin();
@@ -166,7 +163,7 @@ void setup() {
     }
   });
 
-  
+
   //Setting up dns for the captive portal
   dnsServer.start(53, "*", apIP);
 
@@ -396,6 +393,9 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
       else if (strcmp(command, "picclist")  == 0) {
         sendPICClist();
       }
+      else if (strcmp(command, "status")  == 0) {
+        sendStatus();
+      }
       else if (strcmp(command, "userfile")  == 0) {
         const char* uid = root["uid"];
         filename = "/P/";
@@ -466,6 +466,35 @@ void sendPICClist() {
   }
 }
 
+void sendStatus() {
+  DynamicJsonBuffer jsonBuffer;
+  JsonObject& root = jsonBuffer.createObject();
+  root["command"] = "status";
+  root["heap"] = ESP.getFreeHeap();
+  root["chipid"] = String(ESP.getChipId(), HEX);
+  root["cpu"] = ESP.getCpuFreqMHz();
+  root["availsize"] = ESP.getFreeSketchSpace();
+  root["ssid"] = (String)WiFi.SSID();
+  root["ip"] = (String)WiFi.localIP()[0] + "." + (String)WiFi.localIP()[1] + "." + (String)WiFi.localIP()[2] + "." + (String)WiFi.localIP()[3];
+  root["gateway"] = (String)WiFi.gatewayIP()[0] + "." + (String)WiFi.gatewayIP()[1] + "." + (String)WiFi.gatewayIP()[2] + "." + (String)WiFi.gatewayIP()[3];
+  root["netmask"] = (String)WiFi.subnetMask()[0] + "." + (String)WiFi.subnetMask()[1] + "." + (String)WiFi.subnetMask()[2] + "." + (String)WiFi.subnetMask()[3];
+  root["dns"] = (String)WiFi.dnsIP()[0] + "." + (String)WiFi.dnsIP()[1] + "." + (String)WiFi.dnsIP()[2] + "." + (String)WiFi.dnsIP()[3];
+  root["mac"] = getMacAddress();
+  size_t len = root.measureLength();
+  AsyncWebSocketMessageBuffer * buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
+  if (buffer) {
+    root.printTo((char *)buffer->get(), len + 1);
+    ws.textAll(buffer);
+  }
+}
+
+String getMacAddress() {
+    uint8_t mac[6];
+    char macStr[18] = { 0 };
+    WiFi.macAddress(mac);
+    sprintf(macStr, "%02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+    return  String(macStr);
+}
 
 // Send Scanned SSIDs to websocket clients as JSON object
 void printScanResult(int networksFound) {
@@ -533,7 +562,7 @@ bool loadConfiguration() {
 
   const char * adminpass = json["adminpwd"];
 
-    // Serve confidential files in /auth/ folder with a Basic HTTP authentication
+  // Serve confidential files in /auth/ folder with a Basic HTTP authentication
   server.serveStatic("/auth/", SPIFFS, "/auth/").setDefaultFile("users.htm").setAuthentication("admin", adminpass);
 
   if (wmode == 1) {

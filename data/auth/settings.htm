@@ -127,10 +127,85 @@
             </div>
             <hr>
             <div>
+              <button id="refstat" onclick="refreshStats()" class="btn btn-warning btn-xs">Show Statics</button>
                <button onclick="saveConf()" class="btn btn-primary btn-sm pull-right">Save & Reboot</button> 
             </div>
             <br>
          </div>
+         <div id="status" class="jumbotron" style="display:none">
+           <div class="row">
+             <div class="col-sm-6"><legend>Device Statics</legend></div>
+             </div>
+             <div class="row">
+             <div class="col-sm-6">
+<div class="panel panel-default table-responsive">
+                     <table class="table table-hover table-striped">
+                       <caption>Device</caption>
+  <tr>
+    <th>Chip ID</th>
+    <td id="chip"></td>
+  </tr>
+    <tr>
+    <th>CPU Clock</th>
+    <td id="cpu"></td>
+  </tr>
+      <tr>
+    <th>Free Heap</th>
+    <td>
+          <div class="progress progress-striped" style="margin-bottom: 0 !important;">
+				<div id="heap" class="progress-bar progress-bar-warning" role="progressbar">
+					Progress
+				</div>
+			</div>
+    </td>
+  </tr>
+      <tr>
+    <th>Free Flash</th>
+    <td>			
+    <div class='progress progress-striped' style="margin-bottom: 0 !important;">
+				<div id="flash" class="progress-bar progress-bar-warning" role="progressbar">
+					Progress
+				</div>
+			</div></td>
+
+   
+  </tr>
+  </table>
+  </div>
+  </div>
+  <div class="col-sm-6">
+  <div class="panel panel-default table-responsive">
+                     <table class="table table-hover table-striped">
+  <caption>Network</caption>
+          <tr>
+    <th>SSID</th>
+    <td id="ssidstat"></td>
+  </tr>
+          <tr>
+    <th>IP</th>
+    <td id="ip"></td>
+  </tr>
+          <tr>
+    <th>Gateway</th>
+    <td id="gate"></td>
+  </tr>
+          <tr>
+    <th>Mask</th>
+    <td id="mask"></td>
+  </tr>
+          <tr>
+    <th>DNS</th>
+    <td id="dns"></td>
+  </tr>
+          <tr>
+    <th>MAC</th>
+    <td id="mac"></td>
+  </tr>
+  </table>
+</div>
+</div>
+</div>
+</div>
          <div class="jumbotron">
             <div class="row">
                <div class="col-sm-6">

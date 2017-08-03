@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file.
 
 ## [0.2rc1a] - 2017-08-03
 #### Added
+- New WebSocket command "status" (sends bunch of information to browser)
+- Device Statics on Settings Page
 - Restoring User Data (restoring large backups can take a while because we are sending user data to ESP one by one and waiting 100ms each time to make sure ESP can handle it)
 
 #### Changed

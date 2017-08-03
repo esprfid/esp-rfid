@@ -171,6 +171,27 @@ function restore1by1(n, uid, user, acc, len) {
   }, 100 * n);
 }
 
+function refreshStats() {
+  websock.send("{\"command\":\"status\"}");
+  document.getElementById("status").style.display = "block";
+  document.getElementById("refstat").innerHTML = "Refresh Statics";
+}
+  
+function listStats(obj) {
+  document.getElementById("chip").innerHTML = obj.chipid;
+  document.getElementById("cpu").innerHTML = obj.cpu + " Mhz";
+  document.getElementById("heap").innerHTML = obj.heap + " Bytes";
+  document.getElementById("heap").style.width = (obj.heap * 100) / 81920 + "%";
+  document.getElementById("flash").innerHTML = obj.availsize + " Bytes";
+  document.getElementById("flash").style.width = (obj.availsize * 100) / 1044464 + "%";
+  document.getElementById("ssidstat").innerHTML = obj.ssid;
+  document.getElementById("ip").innerHTML = obj.ip;
+  document.getElementById("gate").innerHTML = obj.gateway;
+  document.getElementById("mask").innerHTML = obj.netmask;
+  document.getElementById("dns").innerHTML = obj.dns;
+  document.getElementById("mac").innerHTML = obj.mac;
+}
+
 
 function start() {
   websock = new WebSocket("ws://" + window.location.hostname + "/ws");
@@ -190,6 +211,8 @@ function start() {
       listCONF(obj);
     } else if (obj.command === "picclist") {
       piccBackup(obj);
+    } else if (obj.command === "status") {
+      listStats(obj);
     }
   };
 }
