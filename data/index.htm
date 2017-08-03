@@ -12,25 +12,21 @@
       <link href="bootstrap.css" rel="stylesheet">
       <script>
          function login() {
-         var username = "admin"
-         var password = document.getElementById('password').value;
-         var url = "/auth";
-         var xhr = new XMLHttpRequest();
-         xhr.open("get", url, true, username, password);
-         xhr.onload = function (e) {
-         if (xhr.readyState === 4) {
-         if (xhr.status === 200) {
-         document.location = url;
-         } else {
-         alert("Incorrect password!");
-         console.error(xhr.statusText);
-         }
-         }
-         };
-         xhr.onerror = function (e) {
-         console.error(xhr.statusText);
-         };
-         xhr.send(null);
+           var username = "admin"
+           var password = document.getElementById("password").value;
+           var url = "/auth";
+           var xhr = new XMLHttpRequest();
+           xhr.open("get", url, true, username, password);
+           xhr.onload = function(e) {
+             if (xhr.readyState === 4) {
+               if (xhr.status === 200) {
+                 document.location = url;
+               } else {
+                 alert("Incorrect password!");
+               }
+             }
+           };
+           xhr.send(null);
          }
       </script>
    </head>
@@ -52,9 +48,6 @@
                </div>
             </div>
          </div>
-         <footer class="footer">
-            <p>&copy; 2017 OSB Inc.</p>
-         </footer>
       </div>
    </body>
 </html>

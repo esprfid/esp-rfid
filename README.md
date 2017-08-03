@@ -22,7 +22,7 @@ Use case scenarios can be expanded. There are several things I want to implement
 
 ## Getting Started
 This project still in its development phase. New features (and also bugs) are introduced often and some functions may become deprecated. Please feel free to comment or give feedback.
-* Latest version is v0.2rc1
+* Latest version is v0.2rc1a
 * See [Known Issues](https://github.com/omersiar/esp-rfid#known-issues) before starting right away.
 * See [ChangeLog](https://github.com/omersiar/esp-rfid/blob/master/CHANGELOG.md)
 * See [To Do](https://github.com/omersiar/esp-rfid#to-do) for what to expect in future.
@@ -117,6 +117,8 @@ Thanks to the community, these features are come to alive with their great effor
 
 
 ## To Do
+- [X] Backup / Restore Settings, PICC files, everything
+- [X] Polished web pages
 - [ ] Adapt to use case scenarios such as every entered user also need to exit and do not allow re-entry unless user exited before. (this needs multiple device RFID or ESP)
 - [ ] Log Access Time of Users
 - [ ] Password Protection or Authentication for Tags instead of relying to only UIDs
@@ -124,14 +126,13 @@ Thanks to the community, these features are come to alive with their great effor
 - [ ] Globalization (language support, time zone support, etc)
 - [ ] Schedule User Access
 - [ ] Use Value Blocks to check if user have enough credits for access
-- [ ] Backup / Restore Settings, PICC files, everything
 - [ ] Sync Time from Browser if there is no internet connection
 - [ ] Sanity check where needed (min WPA password lenght, return status of commands to WebSocket, etc)
 - [ ] Close security holes (there are many, for example WebSocket communication is not Authenticated at all)
 - [ ] rBoot for secondary recovery program? to flash main firmware maybe?
 - [ ] Find a way to speed up DNS query for WebSocket. Takes a lot of time
 - [ ] Switch to Async JSON. This may allow much larger transfers from ESP to Browser
-- [X] Polished web pages
+
 
 ## Donations
 If this project helps you in a way, you can buy me a beer. PayPal is not allowed in my country (what a shame) you can donate via Bitcoin however, to this address: 166XWuSAmGAurR7jvS3Nui65QkKKKcsr8R

@@ -1,6 +1,13 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.2rc1a] - 2017-08-03
+#### Added
+- Restoring User Data (restoring large backups can take a while because we are sending user data to ESP one by one and waiting 100ms each time to make sure ESP can handle it)
+
+#### Changed
+- Branding (Copyright symbol is dropped, feel free to use this project as you want) See [License](https://github.com/omersiar/esp-rfid/blob/master/LICENSE)
+
 ## [0.2rc1] - 2017-08-02
 #### Added
 - Refresh page after saving settings. [@rneurink](https://github.com/rneurink/esp-rfid)
@@ -64,7 +71,7 @@ All notable changes to this project will be documented in this file.
 - Seperate settings page and Users specific page
 
 #### Removed
-- Appending ChipID to hostmane
+- Appending ChipID to hostname
 
 ## [0.0.3] - 2017-06-22
 #### Added
