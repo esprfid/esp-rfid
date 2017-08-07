@@ -32,16 +32,13 @@
 #include <ESP8266mDNS.h>              // Zero-config Library (Bonjour, Avahi) http://esp-rfid.local
 #include <DNSServer.h>                // Used for captive portal
 #include <MFRC522.h>                  // Library for Mifare RC522 Devices
-#include <WiFiUdp.h>                  // Library for manipulating UDP packets which is used by NTP Client to get Timestamps
-#include <NTPClient.h>                // To timestamp RFID scans we get Unix Time from NTP Server
 #include <ArduinoJson.h>              // JSON Library for Encoding and Parsing Json object to send browser. We do that because Javascript has built-in JSON parsing.
 #include <FS.h>                       // SPIFFS Library for storing web files to serve to web browsers
 #include <ESPAsyncTCP.h>              // Async TCP Library is mandatory for Async Web Server
 #include <ESPAsyncWebServer.h>        // Async Web Server with built-in WebSocket Plug-in
 #include <SPIFFSEditor.h>             // This creates a web page on server which can be used to edit text based files.
 #include <TimeLib.h>                  // Library for converting epochtime to a date
-
-#define hstname "esp-rfid"
+#include <WiFiUdp.h>                  // Library for manipulating UDP packets which is used by NTP Client to get Timestamps
 
 // Variables for whole scope
 String filename = "/P/";
@@ -52,17 +49,20 @@ unsigned long previousMillis = 0;
 int relayPin;
 int activateTime;
 const byte DNS_PORT = 53;
-String dateTimeStamp;
+bool inAPMode = false;
+int timeZone;
+
+WiFiUDP Udp;
+unsigned int localPort = 8888;  // local port to listen for UDP packets
+
+time_t getNtpTime();
+void sendNTPpacket(IPAddress &address);
+char ntpServerName[44];
+int ntpinter;
 
 IPAddress apIP(192, 168, 4, 1);
 
 DNSServer dnsServer;
-
-// Create UDP instance for NTP Client
-WiFiUDP ntpUDP;
-
-// Create NTP Client instance
-NTPClient timeClient(ntpUDP);
 
 // Create MFRC522 RFID instance
 MFRC522 mfrc522 = MFRC522();
@@ -74,7 +74,6 @@ AsyncWebSocket ws("/ws");
 
 // Set things up
 void setup() {
-  delay(1000);
   Serial.begin(115200);
   Serial.println();
   Serial.println(F("[ INFO ] ESP RFID v0.2rc2"));
@@ -82,21 +81,11 @@ void setup() {
   // Start SPIFFS filesystem
   SPIFFS.begin();
 
-  // Set Hostname.
-  WiFi.hostname(hstname);
-
   // Try to load configuration file so we can connect to an Wi-Fi Access Point
   // Do not worry if no config file is present, we fall back to Access Point mode and device can be easily configured
   if (!loadConfiguration()) {
     fallbacktoAPMode();
   }
-
-  // Start mDNS service so we can connect to http://esp-rfid.local (if Bonjour installed on Windows or Avahi on Linux)
-  if (!MDNS.begin(hstname)) {
-    Serial.println("Error setting up MDNS responder!");
-  }
-  // Add Web Server service to mDNS
-  MDNS.addService("http", "tcp", 80);
 
   // Start WebSocket Plug-in and handle incoming message on "onWsEvent" function
   server.addHandler(&ws);
@@ -167,12 +156,15 @@ void setup() {
   //Setting up dns for the captive portal
   dnsServer.start(53, "*", apIP);
 
+  Udp.begin(localPort);
+
+  if (!inAPMode) {
+    setSyncProvider(getNtpTime);
+    setSyncInterval(ntpinter * 60);
+  }
+
   // Start Web Server
   server.begin();
-
-  if (WiFi.status() == WL_CONNECTED) {
-    timeClient.begin();
-  }
 }
 
 // Main Loop
@@ -191,11 +183,8 @@ void loop() {
   if (activateRelay) {
     digitalWrite(relayPin, LOW);
   }
-  // Get Time from NTP Server
-  if (WiFi.status() == WL_CONNECTED) {
-    timeClient.update();
-  }
   dnsServer.processNextRequest();
+  
 
   // Another loop for RFID Events, since we are using polling method instead of Interrupt we need to check RFID hardware for events
   rfidloop();
@@ -414,6 +403,14 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
       else if (strcmp(command, "scan")  == 0) {
         WiFi.scanNetworksAsync(printScanResult);
       }
+      else if (strcmp(command, "gettime")  == 0) {
+        sendTime();
+      }
+      else if (strcmp(command, "settime")  == 0) {
+        unsigned long t = root["epoch"];
+        setTime(t);
+        sendTime();
+      }
       else if (strcmp(command, "getconf")  == 0) {
         File configFile = SPIFFS.open("/auth/config.json", "r");
         if (configFile) {
@@ -427,6 +424,19 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
         }
       }
     }
+  }
+}
+
+void sendTime() {
+  DynamicJsonBuffer jsonBuffer;
+  JsonObject& root = jsonBuffer.createObject();
+  root["command"] = "gettime";
+  root["epoch"] = now();
+  size_t len = root.measureLength();
+  AsyncWebSocketMessageBuffer * buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
+  if (buffer) {
+    root.printTo((char *)buffer->get(), len + 1);
+    ws.textAll(buffer);
   }
 }
 
@@ -489,11 +499,11 @@ void sendStatus() {
 }
 
 String getMacAddress() {
-    uint8_t mac[6];
-    char macStr[18] = { 0 };
-    WiFi.macAddress(mac);
-    sprintf(macStr, "%02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-    return  String(macStr);
+  uint8_t mac[6];
+  char macStr[18] = { 0 };
+  WiFi.macAddress(mac);
+  sprintf(macStr, "%02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+  return  String(macStr);
 }
 
 // Send Scanned SSIDs to websocket clients as JSON object
@@ -518,6 +528,7 @@ void printScanResult(int networksFound) {
 
 // Fallback to AP Mode, so we can connect to ESP if there is no Internet connection
 void fallbacktoAPMode() {
+  inAPMode = true;
   WiFi.mode(WIFI_AP);
   Serial.print(F("[ INFO ] Configuring access point... "));
   Serial.println(WiFi.softAP("ESP-RFID") ? "Ready" : "Failed!");
@@ -525,7 +536,7 @@ void fallbacktoAPMode() {
   IPAddress myIP = WiFi.softAPIP();
   Serial.print(F("[ INFO ] AP IP address: "));
   Serial.println(myIP);
-  server.serveStatic("/auth/", SPIFFS, "/auth/").setDefaultFile("users.htm").setAuthentication("admin", "admin");;
+  server.serveStatic("/auth/", SPIFFS, "/auth/").setDefaultFile("users.htm").setAuthentication("admin", "admin");
 }
 
 bool loadConfiguration() {
@@ -547,9 +558,32 @@ bool loadConfiguration() {
     Serial.println(F("[ WARN ] Failed to parse config file"));
     return false;
   }
+  Serial.println(F("[ INFO ] Config file found"));
+  json.prettyPrintTo(Serial);
+  Serial.println();
   int rfidss = json["sspin"];
   int rfidgain = json["rfidgain"];
   setupRFID(rfidss, rfidgain);
+
+  const char * hstname = json["hostnm"];
+
+  // Set Hostname.
+  WiFi.hostname(hstname);
+
+  // Start mDNS service so we can connect to http://esp-rfid.local (if Bonjour installed on Windows or Avahi on Linux)
+  if (!MDNS.begin(hstname)) {
+    Serial.println("Error setting up MDNS responder!");
+  }
+  // Add Web Server service to mDNS
+  MDNS.addService("http", "tcp", 80);
+
+  const char * ntpserver = json["ntpserver"];
+  strcpy (ntpServerName, ntpserver);
+  ntpinter = json["ntpinterval"];
+  timeZone = json["timezone"];
+
+
+
 
   activateTime = json["rtime"];
   relayPin = json["rpin"];
@@ -566,6 +600,7 @@ bool loadConfiguration() {
   server.serveStatic("/auth/", SPIFFS, "/auth/").setDefaultFile("users.htm").setAuthentication("admin", adminpass);
 
   if (wmode == 1) {
+    inAPMode = true;
     Serial.println(F("[ INFO ] ESP-RFID is running in AP Mode "));
     WiFi.mode(WIFI_AP);
     Serial.print(F("[ INFO ] Configuring access point... "));
@@ -651,3 +686,52 @@ void ShowReaderDetails() {
   }
 }
 
+/*-------- NTP code ----------*/
+
+const int NTP_PACKET_SIZE = 48; // NTP time is in the first 48 bytes of message
+byte packetBuffer[NTP_PACKET_SIZE]; //buffer to hold incoming & outgoing packets
+
+time_t getNtpTime() {
+  IPAddress ntpServerIP; // NTP server's ip address
+  while (Udp.parsePacket() > 0) ; // discard any previously received packets
+  // get a random server from the pool
+  WiFi.hostByName(ntpServerName, ntpServerIP);
+  sendNTPpacket(ntpServerIP);
+  uint32_t beginWait = millis();
+  while (millis() - beginWait < 1500) {
+    int size = Udp.parsePacket();
+    if (size >= NTP_PACKET_SIZE) {
+      Udp.read(packetBuffer, NTP_PACKET_SIZE);  // read packet into the buffer
+      unsigned long secsSince1900;
+      // convert four bytes starting at location 40 to a long integer
+      secsSince1900 =  (unsigned long)packetBuffer[40] << 24;
+      secsSince1900 |= (unsigned long)packetBuffer[41] << 16;
+      secsSince1900 |= (unsigned long)packetBuffer[42] << 8;
+      secsSince1900 |= (unsigned long)packetBuffer[43];
+      return secsSince1900 - 2208988800UL + timeZone * SECS_PER_HOUR;
+    }
+  }
+  return 0; // return 0 if unable to get the time
+}
+
+// send an NTP request to the time server at the given address
+void sendNTPpacket(IPAddress &address) {
+  // set all bytes in the buffer to 0
+  memset(packetBuffer, 0, NTP_PACKET_SIZE);
+  // Initialize values needed to form NTP request
+  // (see URL above for details on the packets)
+  packetBuffer[0] = 0b11100011;   // LI, Version, Mode
+  packetBuffer[1] = 0;     // Stratum, or type of clock
+  packetBuffer[2] = 6;     // Polling Interval
+  packetBuffer[3] = 0xEC;  // Peer Clock Precision
+  // 8 bytes of zero for Root Delay & Root Dispersion
+  packetBuffer[12] = 49;
+  packetBuffer[13] = 0x4E;
+  packetBuffer[14] = 49;
+  packetBuffer[15] = 52;
+  // all NTP fields have been given values, now
+  // you can send a packet requesting a timestamp:
+  Udp.beginPacket(address, 123); //NTP requests are to port 123
+  Udp.write(packetBuffer, NTP_PACKET_SIZE);
+  Udp.endPacket();
+}

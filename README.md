@@ -57,7 +57,6 @@ Please install Arduino IDE if you didn't already, then add ESP8266 Core (Beware!
 * [ESP8266 Core for Arduino IDE](https://github.com/esp8266/Arduino) - ESP8266 Core
 * [ESPAsyncWebServer](https://github.com/me-no-dev/ESPAsyncWebServer) - Asyncrone Web Server with WebSocket Plug-in
 * [ESPAsyncTCP](https://github.com/me-no-dev/ESPAsyncTCP) - Mandatory for ESPAsyncWebServer
-* [NTPClient](https://github.com/arduino-libraries/NTPClient) - NTP Library for Arduino IDE
 * [MFRC522](https://github.com/miguelbalboa/rfid) - MFRC522 RFID Hardware Library for Arduino IDE
 * [ArduinoJson](https://github.com/bblanchon/ArduinoJson) - JSON Library for Arduino IDE
 
@@ -87,6 +86,11 @@ The following table shows the typical pin layout used for connecting MFRC522 har
 * Currently only Git version (2.4.0rc) of ESP8266 Core is supported, due to new function is introduced (WiFi.scanNetworksAsync()).
 * Firmware update does not authenticated (until we find a solution).
 * When you connect to ESP via mDNS url Browsers make a DNS Query for WebSocket link, it takes long time to resolve.
+
+### Time
+We are syncing time from a NTP Server (in Client -aka infrastructure- Mode). This will require ESP to have an Internet connection. Additionaly your ESP can also work without Internet connection too (Access Point -aka Ad-Hoc- Mode),  without giving up functionality.
+This will require you to do syncing manually. ESP can store and hold time for you approximately 51 days without a major issue, device time can drift from actual time depending on usage, temprature, etc.
+So you have to login to settings page and sync it in a timely fashion.
 
 ## Scalability
 Since we are limited on both flash and ram size things may get ugly at some point in the future. You can find out some test results below.

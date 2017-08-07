@@ -1,6 +1,23 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.2rc2] - 2017-08-07
+#### Added
+- Time Settings
+- Hostname Setting
+- UID sanity check on Users Page
+
+#### Fixed
+- Restoring Users too fast (increased to 200ms) [@rneurink](https://github.com/rneurink/esp-rfid)
+
+#### Changed
+- Device Status location
+- Bootstrap Version to v3.3.7
+
+#### Removed
+- Dropped NTPClient Library Usage (since we have TimeLib)
+
+
 ## [0.2rc1a] - 2017-08-03
 #### Added
 - New WebSocket command "status" (sends bunch of information to browser)

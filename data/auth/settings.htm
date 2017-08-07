@@ -1,253 +1,333 @@
 <!DOCTYPE html>
 <html lang="en">
-   <head>
-      <meta charset="utf-8">
-      <meta http-equiv="X-UA-Compatible" content="IE=edge">
-      <meta name="viewport" content="width=device-width, initial-scale=1">
-      <meta name="description" content="">
-      <meta name="author" content="">
-      <link rel="icon" href="/favicon.ico">
-      <title>ESP RFID</title>
-      <!-- Bootstrap core CSS -->
-      <link href="/bootstrap.css" rel="stylesheet">
-      <script src="/auth/set.js" type="text/javascript" charset="utf-8"></script>
-   </head>
-   <body onload="start()">
-      <div class="container">
-         <div class="header clearfix">
-            <nav>
-               <ul class="nav nav-pills pull-right">
-                  <li role="presentation"><a href="/auth/users.htm">Users</a> </li>
-                  <li role="presentation" class="active"><a href="/auth/settings.htm">Settings</a> </li>
-               </ul>
-            </nav>
-            <h3 class="text-muted">ESP RFID</h3>
-         </div>
-         <div class="jumbotron">
-            <div class="alert alert-warning"><strong>Warning!</strong> Settings will take effect when the device is rebooted. 
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="/favicon.ico">
+    <title>ESP RFID</title>
+    <!-- Bootstrap core CSS -->
+    <link href="/bootstrap.css" rel="stylesheet">
+    <script src="/auth/set.js" type="text/javascript" charset="utf-8"></script>
+  </head>
+  <body onload="start()">
+    <div class="container">
+      <div class="header clearfix">
+        <nav>
+          <ul class="nav nav-pills pull-right">
+            <li role="presentation"><a href="/auth/users.htm">Users</a> </li>
+            <li role="presentation" class="active"><a href="/auth/settings.htm">Settings</a> </li>
+          </ul>
+        </nav>
+        <h3 class="text-muted">ESP RFID</h3>
+      </div>
+      <div class="jumbotron">
+        <div class="alert alert-warning"><strong>Warning!</strong> Settings will take effect when the device is rebooted. 
+        </div>
+        <div id="loading-img" class="text-center">
+          <img src="/load.gif">
+          <h5>Please wait while WebSocket connecting...</h5>
+        </div>
+        <div>
+          <button id="refstat" onclick="refreshStats()" class="btn btn-link btn-sm">Show Device Status</button>
+        </div>
+        <br>
+        <div id="status" class="row" style="display:none">
+            <div class="col-sm-6">
+              <div class="panel panel-default table-responsive">
+                <table class="table table-hover table-striped">
+                  <caption>Device</caption>
+                  <tr>
+                    <th>Chip ID</th>
+                    <td id="chip"></td>
+                  </tr>
+                  <tr>
+                    <th>CPU Clock</th>
+                    <td id="cpu"></td>
+                  </tr>
+                  <tr>
+                    <th>Free Heap</th>
+                    <td>
+                      <div class="progress" style="margin-bottom: 0 !important;">
+                        <div id="heap" class="progress-bar progress-bar-primary" role="progressbar">
+                          Progress
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <th>Free Flash</th>
+                    <td>
+                      <div class='progress' style="margin-bottom: 0 !important;">
+                        <div id="flash" class="progress-bar progress-bar-primary" role="progressbar">
+                          Progress
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+              </div>
             </div>
-            <div id="loading-img" class="text-center">
-               <img src="/load.gif">
-               <h5>Please wait while WebSocket connecting...</h5>
-               <br>
+            <div class="col-sm-6">
+              <div class="panel panel-default table-responsive">
+                <table class="table table-hover table-striped">
+                  <caption>Network</caption>
+                  <tr>
+                    <th>SSID</th>
+                    <td id="ssidstat"></td>
+                  </tr>
+                  <tr>
+                    <th>IP</th>
+                    <td id="ip"></td>
+                  </tr>
+                  <tr>
+                    <th>Gateway</th>
+                    <td id="gate"></td>
+                  </tr>
+                  <tr>
+                    <th>Mask</th>
+                    <td id="mask"></td>
+                  </tr>
+                  <tr>
+                    <th>DNS</th>
+                    <td id="dns"></td>
+                  </tr>
+                  <tr>
+                    <th>MAC</th>
+                    <td id="mac"></td>
+                  </tr>
+                </table>
+              </div>
             </div>
-            <div class="row">
-               <div class="col-sm-6">
-                  <legend>Wi-Fi Settings</legend>
-                  <h6 class="text-muted">Type your Wi-Fi Network's SSID or Scan for nerby Wireless Networks to join.</h6>
-                  <div class="row form-group">
-                     <label class="col-xs-3">Wi-Fi Mode</label>
-                     <div class="col-xs-9">
-                        <form>
-                           <label class="radio-inline"><input type="radio" value="1" name="wmode" id="wmodeap">Access Point </label>
-                           <label class="radio-inline"><input type="radio" value="0" name="wmode" id="wmodesta" checked>Client</label>
-                        </form>
-                     </div>
-                  </div>
-                  <div class="row form-group">
-                     <label class="col-xs-3">SSID</label> 
-                     <span class="col-xs-9">
-                     <input class="form-control input-sm" style="display:inline;max-width:150px" id="inputtohide" type="text" name="ap_ssid">
-                     <select class="form-control input-sm" style="display:none;max-width:150px" id="ssid"></select>
-                     <button id="scanb" type="button" class="btn btn-primary btn-xs" onclick="scanWifi()">Scan</button>
-                     </span>
-                  </div>
-                  <div class="row form-group">
-                     <label class="col-xs-3">Password</label> 
-                     <span class="col-xs-9">
-                     <input id="wifipass" style="max-width:150px" class="form-control input-sm" type="text" name="ap_passwd">
-                     </span> 
-                  </div>
-                  <br>
-               </div>
-               <div class="col-sm-6">
-                  <legend>MFRC522 Hardware Settings</legend>
-                  <h6 class="text-muted">Please refer the <a href="https://github.com/omersiar/esp-rfid#pin-layout">documentation</a> for pin configuration.</h6>
-                  <div class="row form-group">
-                     <label class="col-xs-3">SPI SS</label> 
-                     <span class="col-xs-9">
-                        <select class="form-control input-sm" style="max-width:185px" id="gpioss">
-                           <option value="0">GPIO-0</option>
-                           <option value="2">GPIO-2</option>
-                           <option value="4">GPIO-4</option>
-                           <option value="5">GPIO-5</option>
-                           <option selected="selected" value="15">GPIO-15</option>
-                           <option value="16">GPIO-16</option>
-                        </select>
-                     </span>
-                  </div>
-                  <div class="row form-group">
-                     <label class="col-xs-3">Antenna Gain</label> 
-                     <span class="col-xs-9">
-                        <select class="form-control input-sm" style="max-width:185px" id="gain">
-                           <option value="112">Max (48 db)</option>
-                           <option value="96">43 db</option>
-                           <option value="48">38 db</option>
-                           <option selected="selected" value="32">Avg (33 db)</option>
-                           <option value="16">23 db</option>
-                           <option value="0">Min (18 db)</option>
-                        </select>
-                     </span>
-                  </div>
-                  <br>
-                  <div class="row form-group">
-                     <label class="col-xs-3">Relay Pin</label> 
-                     <span class="col-xs-9">
-                        <select class="form-control input-sm" style="max-width:185px" id="gpiorly">
-                           <option value="0">GPIO-0</option>
-                           <option value="2">GPIO-2</option>
-                           <option selected="selected" value="4">GPIO-4</option>
-                           <option value="5">GPIO-5</option>
-                           <option value="15">GPIO-15</option>
-                           <option value="16">GPIO-16</option>
-                        </select>
-                     </span>
-                  </div>
-                  <div class="row form-group">
-                     <label class="col-xs-3">Activate Time</label> 
-                     <span class="col-xs-9">
-                     <input class="form-control input-sm" placeholder="in Microsecond" style="display:inline;max-width:185px" id="delay" type="text" name="hightime">
-                     </span>
-                  </div>
-                  <button id="testb" type="button" class="btn btn-primary btn-xs" onclick="testRelay()">Test Relay</button>
-               </div>
-               <br>
-            </div>
-            <div class="row">
-               <div class="col-sm-6">
-                  <legend>General Settings</legend>
-                  <div class="row form-group">
-                     <label class="col-xs-3">Admin Password</label> 
-                     <span class="col-xs-9">
-                     <input class="form-control input-sm" placeholder="Administrator Password" style="display:inline;max-width:185px" id="adminpwd" type="text">
-                     </span>
-                     <br>
-                  </div>
-               </div>
-            </div>
-            <hr>
-            <div>
-              <button id="refstat" onclick="refreshStats()" class="btn btn-warning btn-xs">Show Statics</button>
-               <button onclick="saveConf()" class="btn btn-primary btn-sm pull-right">Save & Reboot</button> 
+          </div>
+                      <div class="row">
             </div>
             <br>
-         </div>
-         <div id="status" class="jumbotron" style="display:none">
-           <div class="row">
-             <div class="col-sm-6"><legend>Device Statics</legend></div>
-             </div>
-             <div class="row">
-             <div class="col-sm-6">
-<div class="panel panel-default table-responsive">
-                     <table class="table table-hover table-striped">
-                       <caption>Device</caption>
-  <tr>
-    <th>Chip ID</th>
-    <td id="chip"></td>
-  </tr>
-    <tr>
-    <th>CPU Clock</th>
-    <td id="cpu"></td>
-  </tr>
-      <tr>
-    <th>Free Heap</th>
-    <td>
-          <div class="progress progress-striped" style="margin-bottom: 0 !important;">
-				<div id="heap" class="progress-bar progress-bar-warning" role="progressbar">
-					Progress
-				</div>
-			</div>
-    </td>
-  </tr>
-      <tr>
-    <th>Free Flash</th>
-    <td>			
-    <div class='progress progress-striped' style="margin-bottom: 0 !important;">
-				<div id="flash" class="progress-bar progress-bar-warning" role="progressbar">
-					Progress
-				</div>
-			</div></td>
-
-   
-  </tr>
-  </table>
-  </div>
-  </div>
-  <div class="col-sm-6">
-  <div class="panel panel-default table-responsive">
-                     <table class="table table-hover table-striped">
-  <caption>Network</caption>
-          <tr>
-    <th>SSID</th>
-    <td id="ssidstat"></td>
-  </tr>
-          <tr>
-    <th>IP</th>
-    <td id="ip"></td>
-  </tr>
-          <tr>
-    <th>Gateway</th>
-    <td id="gate"></td>
-  </tr>
-          <tr>
-    <th>Mask</th>
-    <td id="mask"></td>
-  </tr>
-          <tr>
-    <th>DNS</th>
-    <td id="dns"></td>
-  </tr>
-          <tr>
-    <th>MAC</th>
-    <td id="mac"></td>
-  </tr>
-  </table>
-</div>
-</div>
-</div>
-</div>
-         <div class="jumbotron">
-            <div class="row">
-               <div class="col-sm-6">
-                  <legend>Backup</legend>
-                  <h6 class="text-muted">Please make sure that you have made a backup before updating the firmware.</h6>
-                  <div>
-                     <button class="btn btn-link btn-sm" onclick="backupuser()">Backup User Data</button>
-                     <a id="downloadUser" style="display:none"></a>
-                     <button class="btn btn-link btn-sm" onclick="backupset()">Backup Settings</button>
-                     <a id="downloadSet" style="display:none"></a>
-                  </div>
-                  <br>
-                  <div>
-                     <legend>Restore</legend>
-                     <h6 class="text-muted">Click on links and choose your backup file to restore.</h6>
-                     <label for="restoreUser" class="btn btn-link btn-sm">Restore User Data</label>
-                     <input id="restoreUser" type="file" accept="text/json" onchange="restoreUser()" style="display:none;">
-                     <label for="restoreSet" class="btn btn-link btn-sm">Restore Settings</label>
-                     <input id="restoreSet" type="file" accept="text/json" onchange="restoreSet()" style="display:none;">
-                  </div>
-                  <br>
-                  <div id="pbar" class="progress" style="display:none">
-                     <div id="dynamic" class="progress-bar progress-bar-success progress-bar-striped">Restoring...</div>
-                  </div>
-               </div>
-               <div class="col-sm-6">
-                  <legend>Update Firmware</legend>
-                  <h6 class="text-muted">Download <a href="https://github.com/omersiar/esp-rfid/raw/master/compiledbin/latest.bin">latest version</a> from GitHub.</h6>
-                  <form class="form-inline" method="POST" action="/auth/update" enctype="multipart/form-data">
-                     <div class="form-group">
-                        <input type="file" name="update">
-                     </div>
-                     <button type="submit" class="btn btn-primary btn-sm">Upload</button>
-                  </form>
-                  <br>
-               </div>
+        <div class="row">
+          <div class="col-sm-6">
+            <legend>Wi-Fi Settings</legend>
+            <h6 class="text-muted">Type your Wi-Fi Network's SSID or Scan for nerby Wireless Networks to join.</h6>
+            <div class="row form-group">
+              <label class="col-xs-3">Wi-Fi Mode</label>
+              <div class="col-xs-9">
+                <form>
+                  <label class="radio-inline"><input type="radio" value="1" name="wmode" id="wmodeap">Access Point </label>
+                  <label class="radio-inline"><input type="radio" value="0" name="wmode" id="wmodesta" checked>Client</label>
+                </form>
+              </div>
             </div>
-         </div>
-         <hr>
-         <footer class="footer">
-            <h6 class="text-muted">ESP RFID - This is a <a href="https://github.com/omersiar/esp-rfid/blob/master/LICENSE">free</a> software</h6>
-         </footer>
+            <div class="row form-group">
+              <label class="col-xs-3">SSID</label> 
+              <span class="col-xs-9">
+              <input class="form-control input-sm" style="display:inline;max-width:150px" id="inputtohide" type="text" name="ap_ssid">
+              <select class="form-control input-sm" style="display:none;max-width:150px" id="ssid"></select>
+              <button id="scanb" type="button" class="btn btn-primary btn-xs" onclick="scanWifi()">Scan</button>
+              </span>
+            </div>
+            <div class="row form-group">
+              <label class="col-xs-3">Password</label> 
+              <span class="col-xs-9">
+              <input id="wifipass" style="max-width:150px" class="form-control input-sm" type="text" name="ap_passwd">
+              </span> 
+            </div>
+            <br>
+          </div>
+          <div class="col-sm-6">
+            <legend>MFRC522 Hardware Settings</legend>
+            <h6 class="text-muted">Please refer the <a href="https://github.com/omersiar/esp-rfid#pin-layout">documentation</a> for pin configuration.</h6>
+            <div class="row form-group">
+              <label class="col-xs-3">SPI SS</label> 
+              <span class="col-xs-9">
+                <select class="form-control input-sm" style="max-width:185px" id="gpioss">
+                  <option value="0">GPIO-0</option>
+                  <option value="2">GPIO-2</option>
+                  <option value="4">GPIO-4</option>
+                  <option value="5">GPIO-5</option>
+                  <option selected="selected" value="15">GPIO-15</option>
+                  <option value="16">GPIO-16</option>
+                </select>
+              </span>
+            </div>
+            <div class="row form-group">
+              <label class="col-xs-3">Antenna Gain</label> 
+              <span class="col-xs-9">
+                <select class="form-control input-sm" style="max-width:185px" id="gain">
+                  <option value="112">Max (48 db)</option>
+                  <option value="96">43 db</option>
+                  <option value="48">38 db</option>
+                  <option selected="selected" value="32">Avg (33 db)</option>
+                  <option value="16">23 db</option>
+                  <option value="0">Min (18 db)</option>
+                </select>
+                
+              </span>
+            </div>
+            <br>
+            <div class="row form-group">
+              <label class="col-xs-3">Relay Pin</label> 
+              <span class="col-xs-9">
+                <select class="form-control input-sm" style="display:inline;max-width:150px" id="gpiorly">
+                  <option value="0">GPIO-0</option>
+                  <option value="2">GPIO-2</option>
+                  <option selected="selected" value="4">GPIO-4</option>
+                  <option value="5">GPIO-5</option>
+                  <option value="15">GPIO-15</option>
+                  <option value="16">GPIO-16</option>
+                </select>
+                <button id="testb" type="button" class="btn btn-primary btn-xs" onclick="testRelay()">Test</button>
+              </span>
+            </div>
+            <div class="row form-group">
+              <label class="col-xs-3">Activate Time</label> 
+              <span class="col-xs-9">
+              <input class="form-control input-sm" placeholder="in Microsecond" style="display:inline;max-width:185px" id="delay" type="text" name="hightime">
+              </span>
+            </div>
+            
+          </div>
+        </div>
+        <br>
+        <div class="row"></div>
+        <br>
+        <div class="row">
+          <div class="col-sm-6">
+            <legend>General Settings</legend>
+            <div class="row form-group">
+              <label class="col-xs-3">Admin Password</label> 
+              <span class="col-xs-9">
+              <input class="form-control input-sm" placeholder="Administrator Password" style="display:inline;max-width:185px" id="adminpwd" type="text">
+              </span>
+              <br>
+            </div>
+                        <div class="row form-group">
+              <label class="col-xs-3">Host Name</label> 
+              <span class="col-xs-9">
+              <input class="form-control input-sm" placeholder="Hostname" style="display:inline;max-width:185px" id="hostname" type="text">
+              </span>
+              <br>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <legend>Time Settings</legend>
+            <h6 class="text-muted">Small differences between device time and local time can be ignored. Please see <a href="https://github.com/omersiar/esp-rfid#time">documentation</a> for additional information.</h6>
+            <div class="row form-group">
+              <label class="col-xs-3">Device Time</label> 
+              <span id="utc" class="col-xs-9">
+              </span>
+            </div>
+            <div class="row form-group">
+              <label class="col-xs-3">Browser Time</label> 
+              <span id="rtc" class="col-xs-9">
+              </span>
+            </div>
+            <div class="row form-group">
+              <button onclick="syncBrowserTime()" class="btn btn-link btn-sm">Sync Browser Time to Device</button>
+              </div>
+            <div class="row form-group">
+              <label class="col-xs-3">NTP Server</label> 
+              <span class="col-xs-9">
+              <input class="form-control input-sm" placeholder="eg. pool.ntp.org" style="display:inline;max-width:185px" id="ntpserver" type="text">
+              </span>
+              <br>
+            </div>
+            <div class="row form-group">
+              <label class="col-xs-3">Intervals</label> 
+              <span class="col-xs-9">
+              <input class="form-control input-sm" placeholder="in Minutes" style="display:inline;max-width:185px" id="intervals" type="text">
+              </span>
+              <br>
+            </div>
+            <div class="row form-group">
+              <label class="col-xs-3">Time Zone</label> 
+              <span class="col-xs-9">
+                <select class="form-control input-sm" style="max-width:185px" name="DropDownTimezone" id="DropDownTimezone">
+                  <option value="-12">(GMT -12:00) Eniwetok, Kwajalein</option>
+                  <option value="-11">(GMT -11:00) Midway Island, Samoa</option>
+                  <option value="-10">(GMT -10:00) Hawaii</option>
+                  <option value="-9">(GMT -9:00) Alaska</option>
+                  <option value="-8">(GMT -8:00) Pacific Time (US &amp; Canada)</option>
+                  <option value="-7">(GMT -7:00) Mountain Time (US &amp; Canada)</option>
+                  <option value="-6">(GMT -6:00) Central Time (US &amp; Canada), Mexico City</option>
+                  <option value="-5">(GMT -5:00) Eastern Time (US &amp; Canada), Bogota, Lima</option>
+                  <option value="-4">(GMT -4:00) Atlantic Time (Canada), Caracas, La Paz</option>
+                  <option value="-3.5">(GMT -3:30) Newfoundland</option>
+                  <option value="-3">(GMT -3:00) Brazil, Buenos Aires, Georgetown</option>
+                  <option value="-2">(GMT -2:00) Mid-Atlantic</option>
+                  <option value="-1">(GMT -1:00 hour) Azores, Cape Verde Islands</option>
+                  <option value="0">(GMT) Western Europe Time, London, Lisbon, Casablanca</option>
+                  <option value="1">(GMT +1:00 hour) Brussels, Copenhagen, Madrid, Paris</option>
+                  <option value="2">(GMT +2:00) Kaliningrad, South Africa</option>
+                  <option value="3">(GMT +3:00) Baghdad, Riyadh, Moscow, St. Petersburg</option>
+                  <option value="3.5">(GMT +3:30) Tehran</option>
+                  <option value="4">(GMT +4:00) Abu Dhabi, Muscat, Baku, Tbilisi</option>
+                  <option value="4.5">(GMT +4:30) Kabul</option>
+                  <option value="5">(GMT +5:00) Ekaterinburg, Islamabad, Karachi, Tashkent</option>
+                  <option value="5.5">(GMT +5:30) Bombay, Calcutta, Madras, New Delhi</option>
+                  <option value="5.75">(GMT +5:45) Kathmandu</option>
+                  <option value="6">(GMT +6:00) Almaty, Dhaka, Colombo</option>
+                  <option value="7">(GMT +7:00) Bangkok, Hanoi, Jakarta</option>
+                  <option value="8">(GMT +8:00) Beijing, Perth, Singapore, Hong Kong</option>
+                  <option value="9">(GMT +9:00) Tokyo, Seoul, Osaka, Sapporo, Yakutsk</option>
+                  <option value="9.5">(GMT +9:30) Adelaide, Darwin</option>
+                  <option value="10">(GMT +10:00) Eastern Australia, Guam, Vladivostok</option>
+                  <option value="11">(GMT +11:00) Magadan, Solomon Islands, New Caledonia</option>
+                  <option value="12">(GMT +12:00) Auckland, Wellington, Fiji, Kamchatka</option>
+                </select>
+              </span>
+              <br>
+            </div>
+          </div>
+        </div>
+        <hr>
+        <div>
+          <button onclick="saveConf()" class="btn btn-primary btn-sm pull-right">Save & Reboot</button> 
+        </div>
+        <br>
       </div>
-   </body>
+      <div class="jumbotron">
+        <div class="row">
+          <div class="col-sm-6">
+            <legend>Backup</legend>
+            <h6 class="text-muted">Please make sure that you have made a backup before updating the firmware.</h6>
+            <div>
+              <button class="btn btn-link btn-sm" onclick="backupuser()">Backup User Data</button>
+              <a id="downloadUser" style="display:none"></a>
+              <button class="btn btn-link btn-sm" onclick="backupset()">Backup Settings</button>
+              <a id="downloadSet" style="display:none"></a>
+            </div>
+            <br>
+            <div>
+              <legend>Restore</legend>
+              <h6 class="text-muted">Click on links and choose your backup file to restore.</h6>
+              <label for="restoreUser" class="btn btn-link btn-sm">Restore User Data</label>
+              <input id="restoreUser" type="file" accept="text/json" onchange="restoreUser()" style="display:none;">
+              <label for="restoreSet" class="btn btn-link btn-sm">Restore Settings</label>
+              <input id="restoreSet" type="file" accept="text/json" onchange="restoreSet()" style="display:none;">
+            </div>
+            <br>
+            <div id="pbar" class="progress" style="display:none">
+              <div id="dynamic" class="progress-bar progress-bar-success progress-bar-striped">Restoring...</div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <legend>Update Firmware</legend>
+            <h6 class="text-muted">Download <a href="https://github.com/omersiar/esp-rfid/raw/master/compiledbin/latest.bin">latest version</a> from GitHub.</h6>
+            <form class="form-inline" method="POST" action="/auth/update" enctype="multipart/form-data">
+              <div class="form-group">
+                <input type="file" name="update">
+              </div>
+              <button type="submit" class="btn btn-primary btn-sm">Upload</button>
+            </form>
+            <br>
+          </div>
+        </div>
+      </div>
+      <hr>
+      <footer class="footer">
+        <h6 class="text-muted">ESP RFID - This is a <a href="https://github.com/omersiar/esp-rfid/blob/master/LICENSE">free</a> software</h6>
+      </footer>
+    </div>
+  </body>
 </html>

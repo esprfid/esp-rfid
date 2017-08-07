@@ -115,6 +115,11 @@ function tableupdate(e) {
 }
 
 function update(e) {
+  var a = document.getElementById("uidinp").value;
+  if (a === null || a === "") {
+    alert("PICC UID cannot be empty");
+    return;
+  }
   var datatosend = {};
   datatosend.command = "userfile";
   datatosend.uid = document.getElementById("uidinp").value.toLowerCase();

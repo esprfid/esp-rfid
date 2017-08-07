@@ -1,4 +1,5 @@
 var websock;
+var utcSeconds;
 
 function listCONF(obj) {
   document.getElementById("inputtohide").value = obj.ssid;
@@ -8,6 +9,10 @@ function listCONF(obj) {
   document.getElementById("gpiorly").value = obj.rpin;
   document.getElementById("delay").value = obj.rtime;
   document.getElementById("adminpwd").value = obj.adminpwd;
+  document.getElementById("ntpserver").value = obj.ntpserver;
+  document.getElementById("intervals").value = obj.ntpinterval;
+  document.getElementById("DropDownTimezone").value = obj.timezone;
+  document.getElementById("hostname").value = obj.hostnm;
   if (obj.wmode === "1") {
     document.getElementById("wmodeap").checked = true;
   }
@@ -15,6 +20,30 @@ function listCONF(obj) {
   var dlAnchorElem = document.getElementById("downloadSet");
   dlAnchorElem.setAttribute("href", dataStr);
   dlAnchorElem.setAttribute("download", "esp-rfid-settings.json");
+}
+
+function browserTime() {
+    var today = new Date();
+    document.getElementById("rtc").innerHTML = today;
+}
+
+function deviceTime() {
+var d = new Date(0); // The 0 there is the key, which sets the date to the epoch
+d.setUTCSeconds(utcSeconds);
+  document.getElementById("utc").innerHTML = d;
+  utcSeconds = utcSeconds + 1;
+}
+
+var t = setInterval(browserTime, 1000);
+var tt = setInterval(deviceTime, 1000);
+
+function syncBrowserTime() {
+  var timestamp = Math.floor(new Date().getTime() / 1000);
+  var datatosend = {};
+  datatosend.command = "settime";
+  datatosend.epoch = timestamp;
+  websock.send(JSON.stringify(datatosend));
+  location.reload();
 }
 
 function listSSID(obj) {
@@ -65,6 +94,10 @@ function saveConf() {
   datatosend.rfidgain = document.getElementById("gain").value;
   datatosend.rpin = document.getElementById("gpiorly").value;
   datatosend.rtime = document.getElementById("delay").value;
+  datatosend.ntpserver =document.getElementById("ntpserver").value;
+  datatosend.ntpinterval = document.getElementById("intervals").value;
+  datatosend.timezone = document.getElementById("DropDownTimezone").value;
+  datatosend.hostnm = document.getElementById("hostname").value;
   datatosend.adminpwd = a;
   websock.send(JSON.stringify(datatosend));
   location.reload();
@@ -120,6 +153,23 @@ function restoreSet() {
   }
 }
 
+function restore1by1(n, uid, user, acc, len) {
+  setTimeout(function() {
+    var datatosend = {};
+    datatosend.command = "userfile";
+    datatosend.uid = uid;
+    datatosend.user = user;
+    datatosend.haveAcc = acc;
+    websock.send(JSON.stringify(datatosend));
+    var elem = document.getElementById("dynamic");
+    var part = 100 / len;
+    elem.style.width = part * n + "%";
+    if (n === len) {
+      document.getElementById("dynamic").innerHTML = "Completed";
+    }
+  }, 200 * n);
+}
+
 function restoreUser() {
   var input = document.getElementById("restoreUser");
   var reader = new FileReader();
@@ -154,27 +204,11 @@ function restoreUser() {
   }
 }
 
-function restore1by1(n, uid, user, acc, len) {
-  setTimeout(function() {
-    var datatosend = {};
-    datatosend.command = "userfile";
-    datatosend.uid = uid;
-    datatosend.user = user;
-    datatosend.haveAcc = acc;
-    websock.send(JSON.stringify(datatosend));
-    var elem = document.getElementById("dynamic");
-    var part = 100 / len;
-    elem.style.width = part * n + "%";
-    if (n === len) {
-      document.getElementById("dynamic").innerHTML = "Completed";
-    }
-  }, 100 * n);
-}
 
 function refreshStats() {
   websock.send("{\"command\":\"status\"}");
   document.getElementById("status").style.display = "block";
-  document.getElementById("refstat").innerHTML = "Refresh Statics";
+  document.getElementById("refstat").innerHTML = "Refresh";
 }
   
 function listStats(obj) {
@@ -197,6 +231,7 @@ function start() {
   websock = new WebSocket("ws://" + window.location.hostname + "/ws");
   websock.onopen = function(evt) {
     websock.send("{\"command\":\"getconf\"}");
+    websock.send("{\"command\":\"gettime\"}");
     document.getElementById("loading-img").style.display = "none";
   };
   websock.onclose = function(evt) {};
@@ -209,6 +244,8 @@ function start() {
       listSSID(obj);
     } else if (obj.command === "configfile") {
       listCONF(obj);
+    } else if (obj.command === "gettime") {
+      utcSeconds = obj.epoch;
     } else if (obj.command === "picclist") {
       piccBackup(obj);
     } else if (obj.command === "status") {
