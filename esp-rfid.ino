@@ -37,6 +37,7 @@
 #include <ESPAsyncTCP.h>              // Async TCP Library is mandatory for Async Web Server
 #include <ESPAsyncWebServer.h>        // Async Web Server with built-in WebSocket Plug-in
 #include <SPIFFSEditor.h>             // This creates a web page on server which can be used to edit text based files.
+#include <NtpClientLib.h>             // To timestamp RFID scans we get Unix Time from NTP Server
 #include <TimeLib.h>                  // Library for converting epochtime to a date
 #include <WiFiUdp.h>                  // Library for manipulating UDP packets which is used by NTP Client to get Timestamps
 
@@ -48,19 +49,8 @@ bool activateRelay = false;
 unsigned long previousMillis = 0;
 int relayPin;
 int activateTime;
-const byte DNS_PORT = 53;
 bool inAPMode = false;
 int timeZone;
-
-WiFiUDP Udp;
-unsigned int localPort = 8888;  // local port to listen for UDP packets
-
-time_t getNtpTime();
-void sendNTPpacket(IPAddress &address);
-char ntpServerName[44];
-int ntpinter;
-
-IPAddress apIP(192, 168, 4, 1);
 
 DNSServer dnsServer;
 
@@ -74,9 +64,10 @@ AsyncWebSocket ws("/ws");
 
 // Set things up
 void setup() {
+  static WiFiEventHandler gotIpEventHandler, disconnectedEventHandler;
   Serial.begin(115200);
   Serial.println();
-  Serial.println(F("[ INFO ] ESP RFID v0.2rc2"));
+  Serial.println(F("[ INFO ] ESP RFID v0.2"));
 
   // Start SPIFFS filesystem
   SPIFFS.begin();
@@ -154,13 +145,9 @@ void setup() {
 
 
   //Setting up dns for the captive portal
-  dnsServer.start(53, "*", apIP);
-
-  Udp.begin(localPort);
-
-  if (!inAPMode) {
-    setSyncProvider(getNtpTime);
-    setSyncInterval(ntpinter * 60);
+  if (inAPMode) {
+    dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
+    dnsServer.start(53, "*", IPAddress (192, 168, 4, 1));
   }
 
   // Start Web Server
@@ -176,15 +163,16 @@ void loop() {
     ESP.restart();
   }
   unsigned long currentMillis = millis();
-  if (currentMillis - previousMillis >= activateTime) {
+  if (currentMillis - previousMillis >= activateTime && activateRelay) {
     activateRelay = false;
     digitalWrite(relayPin, HIGH);
   }
   if (activateRelay) {
     digitalWrite(relayPin, LOW);
   }
-  dnsServer.processNextRequest();
-  
+  if (inAPMode) {
+    dnsServer.processNextRequest();
+  }
 
   // Another loop for RFID Events, since we are using polling method instead of Interrupt we need to check RFID hardware for events
   rfidloop();
@@ -193,7 +181,7 @@ void loop() {
 boolean captivePortal(AsyncWebServerRequest *request) {
   if (!isIp(request->host()) ) {
     AsyncWebServerResponse *response = request->beginResponse(302, "text/plain", "");
-    response->addHeader("Location", String("http://" + ipToString(apIP)));
+    response->addHeader("Location", String("http://" + ipToString(IPAddress (192, 168, 4, 1))));
     request->send(response);
     return true;
   }
@@ -220,6 +208,7 @@ String ipToString(IPAddress ip) {
 }
 
 
+/* ------------------ RFID Functions ------------------- */
 // RFID Specific Loop
 void rfidloop() {
   //If a new PICC placed to RFID reader continue
@@ -250,7 +239,7 @@ void rfidloop() {
   // We are going to use filesystem to store known UIDs.
   int isKnown = 0;  // First assume we don't know until we got a match
   // If we know the PICC we need to know if its User have an Access
-  int haveAcc = 0;  // First assume User do not have access
+  int AccType = 0;  // First assume User do not have access
   // Prepend /P/ on filename so we distinguish UIDs from the other files
   filename = "/P/";
   filename += uid;
@@ -273,12 +262,12 @@ void rfidloop() {
     if (json.success()) {
       // Get username Access Status
       String username = json["user"];
-      haveAcc = json["haveAcc"];
+      AccType = json["acctype"];
       Serial.println(" = known PICC");
       Serial.print("[ INFO ] User Name: ");
       Serial.print(username);
       // Check if user have an access
-      if (haveAcc == 1) {
+      if (AccType == 1) {
         activateRelay = true;  // Give user Access to Door, Safe, Box whatever you like
         previousMillis = millis();
         Serial.println(" have access");
@@ -298,7 +287,7 @@ void rfidloop() {
       // A boolean 1 for known tags 0 for unknown
       root["known"] = isKnown;
       // A boolean 1 for granted 0 for denied access
-      root["access"] = haveAcc;
+      root["acctype"] = AccType;
       // Username
       root["user"] = username;
       size_t len = root.measureLength();
@@ -448,7 +437,7 @@ void sendPICClist() {
 
   JsonArray& data = root.createNestedArray("piccs");
   JsonArray& data2 = root.createNestedArray("users");
-  JsonArray& data3 = root.createNestedArray("access");
+  JsonArray& data3 = root.createNestedArray("acctype");
   while (dir.next()) {
     File f = SPIFFS.open(dir.fileName(), "r");
     size_t size = f.size();
@@ -462,9 +451,9 @@ void sendPICClist() {
     JsonObject& json = jsonBuffer2.parseObject(buf.get());
     if (json.success()) {
       String username = json["user"];
-      int haveAcc = json["haveAcc"];
+      int AccType = json["acctype"];
       data2.add(username);
-      data3.add(haveAcc);
+      data3.add(AccType);
     }
     data.add(dir.fileName());
   }
@@ -476,20 +465,53 @@ void sendPICClist() {
   }
 }
 
+#ifdef ESP8266
+extern "C" {
+#include "user_interface.h"  // Used to get Wifi status information
+}
+#endif
+
 void sendStatus() {
+  struct ip_info info;
+  FSInfo fsinfo;
+  if (!SPIFFS.info(fsinfo)) {
+    Serial.print(F("[ WARN ] Error getting info on SPIFFS"));
+  }
   DynamicJsonBuffer jsonBuffer;
   JsonObject& root = jsonBuffer.createObject();
   root["command"] = "status";
+
   root["heap"] = ESP.getFreeHeap();
   root["chipid"] = String(ESP.getChipId(), HEX);
   root["cpu"] = ESP.getCpuFreqMHz();
   root["availsize"] = ESP.getFreeSketchSpace();
-  root["ssid"] = (String)WiFi.SSID();
-  root["ip"] = (String)WiFi.localIP()[0] + "." + (String)WiFi.localIP()[1] + "." + (String)WiFi.localIP()[2] + "." + (String)WiFi.localIP()[3];
-  root["gateway"] = (String)WiFi.gatewayIP()[0] + "." + (String)WiFi.gatewayIP()[1] + "." + (String)WiFi.gatewayIP()[2] + "." + (String)WiFi.gatewayIP()[3];
-  root["netmask"] = (String)WiFi.subnetMask()[0] + "." + (String)WiFi.subnetMask()[1] + "." + (String)WiFi.subnetMask()[2] + "." + (String)WiFi.subnetMask()[3];
-  root["dns"] = (String)WiFi.dnsIP()[0] + "." + (String)WiFi.dnsIP()[1] + "." + (String)WiFi.dnsIP()[2] + "." + (String)WiFi.dnsIP()[3];
-  root["mac"] = getMacAddress();
+  root["availspiffs"] = fsinfo.totalBytes - fsinfo.usedBytes;
+  root["spiffssize"] = fsinfo.totalBytes;
+
+  if (inAPMode) {
+    wifi_get_ip_info(SOFTAP_IF, &info);
+    struct softap_config conf;
+    wifi_softap_get_config(&conf);
+    root["ssid"] = String(reinterpret_cast<char*>(conf.ssid));
+    root["dns"] = printIP(WiFi.softAPIP());
+    root["mac"] = WiFi.softAPmacAddress();
+  }
+  else {
+    wifi_get_ip_info(STATION_IF, &info);
+    struct station_config conf;
+    wifi_station_get_config(&conf);
+    root["ssid"] = String(reinterpret_cast<char*>(conf.ssid));
+    root["dns"] = printIP(WiFi.dnsIP());
+    root["mac"] = WiFi.macAddress();
+  }
+
+  IPAddress ipaddr = IPAddress(info.ip.addr);
+  IPAddress gwaddr = IPAddress(info.gw.addr);
+  IPAddress nmaddr = IPAddress(info.netmask.addr);
+  root["ip"] = printIP(ipaddr);
+  root["gateway"] = printIP(gwaddr);
+  root["netmask"] = printIP(nmaddr);
+
   size_t len = root.measureLength();
   AsyncWebSocketMessageBuffer * buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
   if (buffer) {
@@ -498,12 +520,8 @@ void sendStatus() {
   }
 }
 
-String getMacAddress() {
-  uint8_t mac[6];
-  char macStr[18] = { 0 };
-  WiFi.macAddress(mac);
-  sprintf(macStr, "%02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-  return  String(macStr);
+String printIP(IPAddress adress) {
+  return (String)adress[0] + "." + (String)adress[1] + "." + (String)adress[2] + "." + (String)adress[3];
 }
 
 // Send Scanned SSIDs to websocket clients as JSON object
@@ -511,10 +529,12 @@ void printScanResult(int networksFound) {
   DynamicJsonBuffer jsonBuffer;
   JsonObject& root = jsonBuffer.createObject();
   root["command"] = "ssidlist";
+  JsonArray& data2 = root.createNestedArray("bssid");
   JsonArray& data = root.createNestedArray("ssid");
   for (int i = 0; i < networksFound; ++i) {
     // Print SSID for each network found
     data.add(WiFi.SSID(i));
+    data2.add(WiFi.BSSIDstr(i));
   }
   size_t len = root.measureLength();
   AsyncWebSocketMessageBuffer * buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
@@ -538,7 +558,16 @@ void fallbacktoAPMode() {
   Serial.println(myIP);
   server.serveStatic("/auth/", SPIFFS, "/auth/").setDefaultFile("users.htm").setAuthentication("admin", "admin");
 }
-
+void parseBytes(const char* str, char sep, byte* bytes, int maxBytes, int base) {
+  for (int i = 0; i < maxBytes; i++) {
+    bytes[i] = strtoul(str, NULL, base);  // Convert byte
+    str = strchr(str, sep);               // Find next separator
+    if (str == NULL || *str == '\0') {
+      break;                            // No more separators, exit
+    }
+    str++;                                // Point to next character after separator
+  }
+}
 bool loadConfiguration() {
   File configFile = SPIFFS.open("/auth/config.json", "r");
   if (!configFile) {
@@ -566,6 +595,9 @@ bool loadConfiguration() {
   setupRFID(rfidss, rfidgain);
 
   const char * hstname = json["hostnm"];
+  const char * bssidmac = json["bssid"];
+  byte bssid[6];
+  parseBytes(bssidmac, ':', bssid, 6, 16);
 
   // Set Hostname.
   WiFi.hostname(hstname);
@@ -578,12 +610,8 @@ bool loadConfiguration() {
   MDNS.addService("http", "tcp", 80);
 
   const char * ntpserver = json["ntpserver"];
-  strcpy (ntpServerName, ntpserver);
-  ntpinter = json["ntpinterval"];
-  timeZone = json["timezone"];
-
-
-
+  int ntpinter = json["ntpinterval"];
+  int timeZone = json["timezone"];
 
   activateTime = json["rtime"];
   relayPin = json["rpin"];
@@ -613,9 +641,11 @@ bool loadConfiguration() {
     Serial.println(ssid);
     return true;
   }
-  else if (!connectSTA(ssid, password)) {
+  else if (!connectSTA(ssid, password, bssid)) {
     return false;
   }
+  NTP.begin(ntpserver, timeZone);
+  NTP.setInterval(ntpinter * 60); // Poll every x minutes
 
   return true;
 }
@@ -633,10 +663,10 @@ void setupRFID(int rfidss, int rfidgain) {
 }
 
 // Try to connect Wi-Fi
-bool connectSTA(const char* ssid, const char* password) {
+bool connectSTA(const char* ssid, const char* password, byte bssid[6]) {
   WiFi.mode(WIFI_STA);
   // First connect to a wi-fi network
-  WiFi.begin(ssid, password);
+  WiFi.begin(ssid, password, 0, bssid);
   // Inform user we are trying to connect
   Serial.print(F("[ INFO ] Trying to connect WiFi: "));
   Serial.print(ssid);
@@ -686,52 +716,3 @@ void ShowReaderDetails() {
   }
 }
 
-/*-------- NTP code ----------*/
-
-const int NTP_PACKET_SIZE = 48; // NTP time is in the first 48 bytes of message
-byte packetBuffer[NTP_PACKET_SIZE]; //buffer to hold incoming & outgoing packets
-
-time_t getNtpTime() {
-  IPAddress ntpServerIP; // NTP server's ip address
-  while (Udp.parsePacket() > 0) ; // discard any previously received packets
-  // get a random server from the pool
-  WiFi.hostByName(ntpServerName, ntpServerIP);
-  sendNTPpacket(ntpServerIP);
-  uint32_t beginWait = millis();
-  while (millis() - beginWait < 1500) {
-    int size = Udp.parsePacket();
-    if (size >= NTP_PACKET_SIZE) {
-      Udp.read(packetBuffer, NTP_PACKET_SIZE);  // read packet into the buffer
-      unsigned long secsSince1900;
-      // convert four bytes starting at location 40 to a long integer
-      secsSince1900 =  (unsigned long)packetBuffer[40] << 24;
-      secsSince1900 |= (unsigned long)packetBuffer[41] << 16;
-      secsSince1900 |= (unsigned long)packetBuffer[42] << 8;
-      secsSince1900 |= (unsigned long)packetBuffer[43];
-      return secsSince1900 - 2208988800UL + timeZone * SECS_PER_HOUR;
-    }
-  }
-  return 0; // return 0 if unable to get the time
-}
-
-// send an NTP request to the time server at the given address
-void sendNTPpacket(IPAddress &address) {
-  // set all bytes in the buffer to 0
-  memset(packetBuffer, 0, NTP_PACKET_SIZE);
-  // Initialize values needed to form NTP request
-  // (see URL above for details on the packets)
-  packetBuffer[0] = 0b11100011;   // LI, Version, Mode
-  packetBuffer[1] = 0;     // Stratum, or type of clock
-  packetBuffer[2] = 6;     // Polling Interval
-  packetBuffer[3] = 0xEC;  // Peer Clock Precision
-  // 8 bytes of zero for Root Delay & Root Dispersion
-  packetBuffer[12] = 49;
-  packetBuffer[13] = 0x4E;
-  packetBuffer[14] = 49;
-  packetBuffer[15] = 52;
-  // all NTP fields have been given values, now
-  // you can send a packet requesting a timestamp:
-  Udp.beginPacket(address, 123); //NTP requests are to port 123
-  Udp.write(packetBuffer, NTP_PACKET_SIZE);
-  Udp.endPacket();
-}

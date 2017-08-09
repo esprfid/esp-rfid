@@ -66,7 +66,7 @@ function listSCAN(obj) {
   document.getElementById("uidinp").value = uidUP;
   document.getElementById("typeinp").value = obj.type;
   document.getElementById("username").value = obj.user;
-  document.getElementById("access").value = obj.access;
+  document.getElementById("access").value = obj.acctype;
   var ref = document.getElementById("button");
   ref.style.display = "inline";
   if (isKnown === 1) {
@@ -103,13 +103,11 @@ function tableupdate(e) {
   datatosend.command = "userfile";
   datatosend.uid = e.dep;
   datatosend.user = document.getElementById(e.dep).getElementsByTagName("td")[1].innerHTML;
-  var haveAcc;
+  var acctype = 0;
   if (document.getElementById(e.dep).getElementsByTagName("td")[2].getElementsByTagName("input")[0].checked) {
-    haveAcc = "1";
-  } else {
-    haveAcc = "0";
+    acctype = "1";
   }
-  datatosend.haveAcc = haveAcc;
+  datatosend.acctype = acctype;
   websock.send(JSON.stringify(datatosend));
   websock.send("{\"command\":\"picclist\"}");
 }
@@ -124,7 +122,7 @@ function update(e) {
   datatosend.command = "userfile";
   datatosend.uid = document.getElementById("uidinp").value.toLowerCase();
   datatosend.user = document.getElementById("username").value;
-  datatosend.haveAcc = document.getElementById("access").value;
+  datatosend.acctype = document.getElementById("access").value;
   websock.send(JSON.stringify(datatosend));
   websock.send("{\"command\":\"picclist\"}");
 }
@@ -179,7 +177,7 @@ function listknownPICC(obj) {
     inp2.onclick = function() {
       tableupdate(this);
     };
-    if (obj.access[i] === 1) {
+    if (obj.acctype[i] === 1) {
       row.className = "success";
       inp2.checked = true;
     } else {

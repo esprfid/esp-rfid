@@ -1,6 +1,21 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.2] - 2017-08-09 We hit the V0.2 thanks to rneurink
+#### Added
+- BSSID Setting (This will allow to connect specific Access Point if there are more than one AP with the same SSID)
+- Available SPIFFS storage [@rneurink](https://github.com/rneurink/esp-rfid/commit/5b962538bbf1c3234c05cea9ec8bf24f81ad6561)
+
+#### Fixed
+- Incorrect time were being sent to device (without timezone offset)
+- Device Status in AP Mode [@rneurink](https://github.com/rneurink/esp-rfid)
+- ESP gets unresponsive when device is in AP Mode (https://github.com/omersiar/esp-rfid/issues/11)
+
+#### Changed
+- Colorize progress bars depending on percentage [@rneurink](https://github.com/rneurink/esp-rfid)
+- haveAcc to acctype (This will break backward compatibility if you made backup on previous version, there is a workaround that i can share if anyone wants)
+- Switched to new NTP Client Library https://github.com/gmag11/NtpClient/
+
 ## [0.2rc2] - 2017-08-07
 #### Added
 - Time Settings
@@ -16,7 +31,6 @@ All notable changes to this project will be documented in this file.
 
 #### Removed
 - Dropped NTPClient Library Usage (since we have TimeLib)
-
 
 ## [0.2rc1a] - 2017-08-03
 #### Added

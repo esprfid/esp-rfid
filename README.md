@@ -59,6 +59,7 @@ Please install Arduino IDE if you didn't already, then add ESP8266 Core (Beware!
 * [ESPAsyncTCP](https://github.com/me-no-dev/ESPAsyncTCP) - Mandatory for ESPAsyncWebServer
 * [MFRC522](https://github.com/miguelbalboa/rfid) - MFRC522 RFID Hardware Library for Arduino IDE
 * [ArduinoJson](https://github.com/bblanchon/ArduinoJson) - JSON Library for Arduino IDE
+* [NTPClientLib](https://github.com/gmag11/NtpClient/) - NTP Client Library for Arduino IDE
 
 You also need to upload web files to your ESP with ESP8266FS Uploader.
 
@@ -118,23 +119,29 @@ At least 100 unique User (RFID Tag) can be handled, the test were performed on W
 Thanks to the community, these features are come to alive with their great effort:
 
 - [X] Added captive portal. [by @rneurink](https://github.com/omersiar/esp-rfid/issues/7)
+- [X] Available SPIFFS storage [by @rneurink](https://github.com/rneurink/esp-rfid/commit/5b962538bbf1c3234c05cea9ec8bf24f81ad6561)
+- [X] Device Status in AP Mode [by @rneurink](https://github.com/rneurink/esp-rfid)
+- [X] Colorize progress bars depending on percentage [by @rneurink](https://github.com/rneurink/esp-rfid)
 
+See [ChangeLog](https://github.com/omersiar/esp-rfid/blob/master/CHANGELOG.md)
 
 ## To Do
 - [X] Backup / Restore Settings, PICC files, everything
 - [X] Polished web pages
-- [ ] Adapt to use case scenarios such as every entered user also need to exit and do not allow re-entry unless user exited before. (this needs multiple device RFID or ESP)
+- [X] Settings Panel for Wi-Fi, IP, Hostname, NTP Client, etc
+- [X] Sync Time from Browser if there is no internet connection
 - [ ] Log Access Time of Users
-- [ ] Password Protection or Authentication for Tags instead of relying to only UIDs
-- [ ] Settings Panel for Wi-Fi, IP, Hostname, PICC Password, Factory Reset, NTP Client, etc
+- [ ] Password Protection or Authentication for Tags instead of relying to only UIDs (PICC Password)
 - [ ] Globalization (language support, time zone support, etc)
 - [ ] Schedule User Access
 - [ ] Use Value Blocks to check if user have enough credits for access
-- [ ] Sync Time from Browser if there is no internet connection
 - [ ] Sanity check where needed (min WPA password lenght, return status of commands to WebSocket, etc)
 - [ ] Close security holes (there are many, for example WebSocket communication is not Authenticated at all)
 - [ ] rBoot for secondary recovery program? to flash main firmware maybe?
 - [ ] Find a way to speed up DNS query for WebSocket. Takes a lot of time
+- [ ] Factory Reset via pin or settings page
+- [ ] SPIFFS Update from Web
+- [ ] Adapt to use case scenarios such as every entered user also need to exit and do not allow re-entry unless user exited before. (this needs multiple device RFID or ESP)
 - [ ] Switch to Async JSON. This may allow much larger transfers from ESP to Browser
 
 

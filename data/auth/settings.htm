@@ -33,7 +33,6 @@
         <div>
           <button id="refstat" onclick="refreshStats()" class="btn btn-link btn-sm">Show Device Status</button>
         </div>
-        <br>
         <div id="status" class="row" style="display:none">
             <div class="col-sm-6">
               <div class="panel panel-default table-responsive">
@@ -67,6 +66,15 @@
                       </div>
                     </td>
                   </tr>
+                  				<tr>
+ 					<th>Free SPIFFS</th>
+ 					<td>			
+ 					<div class='progress' style="margin-bottom: 0 !important;">
+ 						<div id="spiffs" class="progress-bar progress-bar-primary" role="progressbar">
+ 							Progress
+ 						</div>
+ 					</div></td>
+ 			</tr>
                 </table>
               </div>
             </div>
@@ -102,8 +110,6 @@
               </div>
             </div>
           </div>
-                      <div class="row">
-            </div>
             <br>
         <div class="row">
           <div class="col-sm-6">
@@ -113,8 +119,8 @@
               <label class="col-xs-3">Wi-Fi Mode</label>
               <div class="col-xs-9">
                 <form>
-                  <label class="radio-inline"><input type="radio" value="1" name="wmode" id="wmodeap">Access Point </label>
-                  <label class="radio-inline"><input type="radio" value="0" name="wmode" id="wmodesta" checked>Client</label>
+                  <label class="radio-inline"><input type="radio" value="1" name="wmode" id="wmodeap" onclick="handleAP();">Access Point </label>
+                  <label class="radio-inline"><input type="radio" value="0" name="wmode" id="wmodesta" onclick="handleSTA();" checked>Client</label>
                 </form>
               </div>
             </div>
@@ -122,9 +128,15 @@
               <label class="col-xs-3">SSID</label> 
               <span class="col-xs-9">
               <input class="form-control input-sm" style="display:inline;max-width:150px" id="inputtohide" type="text" name="ap_ssid">
-              <select class="form-control input-sm" style="display:none;max-width:150px" id="ssid"></select>
+              <select class="form-control input-sm" style="display:none;max-width:150px" id="ssid" onchange="if (this.selectedIndex) listBSSID();"></select>
               <button id="scanb" type="button" class="btn btn-primary btn-xs" onclick="scanWifi()">Scan</button>
               </span>
+            </div>
+            <div class="row form-group" style="display:none" id="hideBSSID">
+              <label class="col-xs-3">BSSID</label> 
+              <span class="col-xs-9">
+              <input id="wifibssid" style="max-width:150px" class="form-control input-sm" type="text" name="ap_bssid">
+              </span> 
             </div>
             <div class="row form-group">
               <label class="col-xs-3">Password</label> 
@@ -188,8 +200,6 @@
             
           </div>
         </div>
-        <br>
-        <div class="row"></div>
         <br>
         <div class="row">
           <div class="col-sm-6">
