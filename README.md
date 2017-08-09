@@ -22,7 +22,7 @@ Use case scenarios can be expanded. There are several things I want to implement
 
 ## Getting Started
 This project still in its development phase. New features (and also bugs) are introduced often and some functions may become deprecated. Please feel free to comment or give feedback.
-* Latest version is v0.2rc1a
+* Latest version is v0.2
 * See [Known Issues](https://github.com/omersiar/esp-rfid#known-issues) before starting right away.
 * See [ChangeLog](https://github.com/omersiar/esp-rfid/blob/master/CHANGELOG.md)
 * See [To Do](https://github.com/omersiar/esp-rfid#to-do) for what to expect in future.
