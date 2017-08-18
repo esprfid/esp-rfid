@@ -9,8 +9,9 @@
     <link rel="icon" href="/favicon.ico">
     <title>ESP RFID</title>
     <!-- Bootstrap core CSS -->
-    <link href="/bootstrap.css" rel="stylesheet">
-    <script src="/auth/set.js" type="text/javascript" charset="utf-8"></script>
+    <link href="/required.css" rel="stylesheet">
+    <script src="/required.js" type="text/javascript"></script>
+    <script src="/auth/set.js" type="text/javascript"></script>
   </head>
   <body onload="start()">
     <div class="container">
@@ -27,10 +28,10 @@
         <div class="alert alert-warning"><strong>Warning!</strong> Settings will take effect when the device is rebooted. 
         </div>
         <div id="loading-img" class="text-center">
-          <img src="/load.gif">
-          <h5>Please wait while WebSocket connecting...</h5>
+                            <img src="/load.gif">
+                  <h5>Please wait while fetching data... <span id="loadpages"></span></h5>
         </div>
-        <div>
+                <div>
           <button id="refstat" onclick="refreshStats()" class="btn btn-link btn-sm">Show Device Status</button>
         </div>
         <div id="status" class="row" style="display:none">
@@ -147,7 +148,7 @@
             <br>
           </div>
           <div class="col-sm-6">
-            <legend>MFRC522 Hardware Settings</legend>
+            <legend>Hardware Settings</legend>
             <h6 class="text-muted">Please refer the <a href="https://github.com/omersiar/esp-rfid#pin-layout">documentation</a> for pin configuration.</h6>
             <div class="row form-group">
               <label class="col-xs-3">SPI SS</label> 
@@ -233,7 +234,7 @@
               </span>
             </div>
             <div class="row form-group">
-              <button onclick="syncBrowserTime()" class="btn btn-link btn-sm">Sync Browser Time to Device</button>
+              <div class="col-xs-3"><button onclick="syncBrowserTime()" class="btn btn-link btn-sm">Sync Browser Time to Device</button></div>
               </div>
             <div class="row form-group">
               <label class="col-xs-3">NTP Server</label> 
@@ -317,9 +318,26 @@
               <input id="restoreSet" type="file" accept="text/json" onchange="restoreSet()" style="display:none;">
             </div>
             <br>
-            <div id="pbar" class="progress" style="display:none">
-              <div id="dynamic" class="progress-bar progress-bar-success progress-bar-striped">Restoring...</div>
+            <div id="restoremodal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Please wait while restoring user data...</h4>
+      </div>
+      <div class="modal-body">
+                    <div id="pbar" class="progress">
+              <div id="dynamic" class="progress-bar progress-bar-primary progress-bar-striped active">Restoring...</div>
             </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="restoreclose" style="display:none;" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
           </div>
           <div class="col-sm-6">
             <legend>Update Firmware</legend>

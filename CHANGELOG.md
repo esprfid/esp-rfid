@@ -1,6 +1,24 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.3alpha] - 2017-08-18
+#### Added
+- Support for jQuery v1.12.4
+- Support for Bootstrap Javascript v3.3.7
+- Support for Bootstrap Glyphicons
+- Support for FooTable v3.1.6
+
+#### Changed
+- Refactored picclist command (JSON Array is now more human readable, can be queried page by page, initially 15 records per page due to Mobile Devices limiting maximum WebSocket message lenght, I do not know if this a feature or a bug)
+- Restoring User Data improved (restoring is now done one by one only when the ESP is ready to digest another userfile)
+- Backup User Data is improved (thanks to newly optimized userlist command we are getting all the data from ESP page by page)
+- Refactored User List (thanks to FooTable user list is now fully searchable, sortable, filterable, editable)
+- Refactored framework's required Javascript and CSS (All files minified and gzipped together, this will reduce requests made to ESP)
+- While restoring user data now we are showing a pop-up.
+
+#### Misc
+- Run a test where 1000! users can be handled (see https://github.com/omersiar/esp-rfid#tests)
+
 ## [0.2] - 2017-08-09 We hit the V0.2 thanks to rneurink
 #### Added
 - BSSID Setting (This will allow to connect specific Access Point if there are more than one AP with the same SSID)

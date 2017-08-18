@@ -9,9 +9,9 @@ You can connect to Web UI anytime to give users access or take it back. Web UI a
 
 Use case scenarios can be expanded. There are several things I want to implement. (such as limited time access, logging, record user's enter exit time, etc.)
 
-![IP](https://github.com/omersiar/esp-rfid/blob/master/demo/index.png?raw=true)
-![SP](https://github.com/omersiar/esp-rfid/blob/master/demo/settings.png?raw=true)
-![UP](https://github.com/omersiar/esp-rfid/blob/master/demo/users.png?raw=true)
+![IP](https://github.com/omersiar/esp-rfid/raw/master/demo/index.png)
+![SP](https://github.com/omersiar/esp-rfid/raw/master/demo/settings.png)
+![UP](https://github.com/omersiar/esp-rfid/raw/master/demo/users.png)
 
 ## Features
 * Using WebSocket protocol to exchange data between Hardware and Web Browser
@@ -22,35 +22,24 @@ Use case scenarios can be expanded. There are several things I want to implement
 
 ## Getting Started
 This project still in its development phase. New features (and also bugs) are introduced often and some functions may become deprecated. Please feel free to comment or give feedback.
-* Latest version is v0.2
+* Latest development version is v0.3alpha
+* Latest released compiled binaries are from v0.2 and can be found in directory "/compiledbin"
 * See [Known Issues](https://github.com/omersiar/esp-rfid#known-issues) before starting right away.
 * See [ChangeLog](https://github.com/omersiar/esp-rfid/blob/master/CHANGELOG.md)
 * See [To Do](https://github.com/omersiar/esp-rfid#to-do) for what to expect in future.
 
-### Steps
-* First, flash firmware to your ESP either using Arduino IDE or with your favourite flash tool
-* Flash webfiles data to SPIFFS either using ESP8266FS Uploader tool or with your favourite flash tool
-* (optional) Fire up your serial monitor to get informed
-* Power on your ESP
-* Search for Wireless Network "esp-rfid" and connect to it (It should be an open network and does not reqiure password)
-* Open your browser and type either "http://192.168.4.1" or "http://esp-rfid.local" (.local needs Bonjour installed on your computer) on address bar.
-* Log on to ESP, password is "admin" (for now, you can only change it from source) 
-* Go to "Settings" page
-* Configure your amazing access control device. Push "Scan" button to join your wireless network, configure RFID hardware, Relay Module.
-* Save settings, when rebooted your ESP will try to join your wireless network.
-* Check your new IP address from serial monitor and connect to your ESP again. (You can also connect to "http://esp-rfid.local")
-* Go to "Users" page
-* Scan a PICC (RFID Tag) then it should glimpse on your Browser's screen.
-* Type "User Name" or "Label" for the PICC you scanned.
-* Choose "Allow Access" if you want to
-* Click "Add"
-* Congratulations, everything went well, if you encounter any issue feel free to ask help on GitHub.
+### What You Will Need 
+### Hardware
+* An ESP8266 module or development board like WeMos or NodeMcu with at least 32Mbit Flash (equals to 4MBytes)(ESP32 may work too, testing needed)
+* A MFRC522 RFID PCD Module
+* A Relay Module (or you can build your own circuit)
 
-### Using Compiled Binaries
+### Software
+
+#### Using Compiled Binaries
 Compiled binaries are available in directory /compiledbin. You can use any flashing tool and do the flashing manually. The flashing process itself has been described at numerous places on Internet.
 
-
-### Building from Source
+#### Building From Source
 Please install Arduino IDE if you didn't already, then add ESP8266 Core (Beware! Install Git Version) on top of it. Additional Library download links are listed below:
 
 * [Arduino IDE](http://www.arduino.cc) - The development IDE
@@ -60,6 +49,7 @@ Please install Arduino IDE if you didn't already, then add ESP8266 Core (Beware!
 * [MFRC522](https://github.com/miguelbalboa/rfid) - MFRC522 RFID Hardware Library for Arduino IDE
 * [ArduinoJson](https://github.com/bblanchon/ArduinoJson) - JSON Library for Arduino IDE
 * [NTPClientLib](https://github.com/gmag11/NtpClient/) - NTP Client Library for Arduino IDE
+* [TimeLib](https://github.com/PaulStoffregen/Time) - Mandatory for NTP Client Library
 
 You also need to upload web files to your ESP with ESP8266FS Uploader.
 
@@ -82,13 +72,32 @@ The following table shows the typical pin layout used for connecting MFRC522 har
 2. Configurable via settings page.
 3. The SDA pin might be labeled SS on some/older MFRC522 boards.
 
+### Steps
+* First, flash firmware to your ESP either using Arduino IDE or with your favourite flash tool
+* Flash webfiles data to SPIFFS either using ESP8266FS Uploader tool or with your favourite flash tool
+* (optional) Fire up your serial monitor to get informed
+* Power on your ESP
+* Search for Wireless Network "esp-rfid" and connect to it (It should be an open network and does not reqiure password)
+* Open your browser and type either "http://192.168.4.1" or "http://esp-rfid.local" (.local needs Bonjour installed on your computer) on address bar.
+* Log on to ESP, password is "admin" (for now, you can only change it from source) 
+* Go to "Settings" page
+* Configure your amazing access control device. Push "Scan" button to join your wireless network, configure RFID hardware, Relay Module.
+* Save settings, when rebooted your ESP will try to join your wireless network.
+* Check your new IP address from serial monitor and connect to your ESP again. (You can also connect to "http://esp-rfid.local")
+* Go to "Users" page
+* Scan a PICC (RFID Tag) then it should glimpse on your Browser's screen.
+* Type "User Name" or "Label" for the PICC you scanned.
+* Choose "Allow Access" if you want to
+* Click "Add"
+* Congratulations, everything went well, if you encounter any issue feel free to ask help on GitHub.
+
 ### Known Issues
 * Built-in HTML Editor has hard-coded JavaScript that loads from CDN Internet. Text Editor won't work if there is no Internet connection.
 * Currently only Git version (2.4.0rc) of ESP8266 Core is supported, due to new function is introduced (WiFi.scanNetworksAsync()).
 * Firmware update does not authenticated (until we find a solution).
 * When you connect to ESP via mDNS url Browsers make a DNS Query for WebSocket link, it takes long time to resolve.
 
-### Time
+#### Time
 We are syncing time from a NTP Server (in Client -aka infrastructure- Mode). This will require ESP to have an Internet connection. Additionaly your ESP can also work without Internet connection too (Access Point -aka Ad-Hoc- Mode),  without giving up functionality.
 This will require you to do syncing manually. ESP can store and hold time for you approximately 51 days without a major issue, device time can drift from actual time depending on usage, temprature, etc.
 So you have to login to settings page and sync it in a timely fashion.
@@ -99,16 +108,17 @@ Since we are limited on both flash and ram size things may get ugly at some poin
 ### Tests
 
 #### How many RFID Tag can be handled?
-Write some user data on File System worth: 
+Restore some [random generated](https://github.com/omersiar/esp-rfid/raw/master/demo/demo-users-data.json) user data on File System worth: 
 
-* 100 seperate "userfile"
+* 1000 seperate "userfile"
 * random 4 Bytes long UID and
-* "Test Name Test Surname Label" as User Name and
-* each have access status integer "1" or "0". 
+* random User Names and
+* 4 bytes random Unix Time Stamp
+* each have "access type" 1 byte integer "1" or "0". 
 
-Total 4,284 Bytes
+Total 122,880 Bytes
 
-At least 100 unique User (RFID Tag) can be handled, the test were performed on WeMos D1 mini.
+At least 1000 unique User (RFID Tag) can be handled, the test were performed on WeMos D1 mini.
 
 #### Additional testing is needed:
 

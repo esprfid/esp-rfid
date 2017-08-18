@@ -9,8 +9,9 @@
       <link rel="icon" href="/favicon.ico">
       <title>ESP RFID</title>
       <!-- Bootstrap core CSS -->
-      <link href="/bootstrap.css" rel="stylesheet">
-      <script src="/auth/users.js" type="text/javascript" charset="utf-8"></script>
+      <link href="/required.css" rel="stylesheet">
+      <script src="/required.js" type="text/javascript"></script>
+      <script src="/auth/users.js" type="text/javascript"></script>
    </head>
    <body onload="start()">
       <div class="container">
@@ -24,59 +25,77 @@
             <h3 class="text-muted">ESP RFID</h3>
          </div>
          <div class="jumbotron">
-            <div class="row">
-               <div class="col-sm-6 col-sm-push-6">
-                  <legend>User List</legend>
-                  <div class="overlay">
-                     <div id="loading-img" class="text-center">
-                        <img src="/load.gif">
-                        <h5>Please wait while WebSocket connecting...</h5>
-                        <br>
-                     </div>
-                  </div>
-                  <div class="panel panel-default table-responsive">
-                     <table id="knowntable" class="table table-hover table-striped">
-                        <thead class="thead-default">
-                           <tr>
-                              <th>UID</th>
-                              <th>Label / User Name</th>
-                              <th>Access</th>
-                           </tr>
-                        </thead>
-                        <tbody id="tablebody">
-                        </tbody>
-                     </table>
-                  </div>
+            <div class="overlay">
+               <div id="loading-img" class="text-center">
+                  <img src="/load.gif">
+                  <h5>Please wait while fetching data... <span id="loadpages"></span></h5>
                </div>
-               <div class="col-sm-6 col-sm-pull-6">
-                  <legend>Add / Update User</legend>
-                  <h6 class="text-muted">Scan a PICC (RFID Tag) or choose from the list.</h6>
-                  <form id="fade">
-                     <div class="input-group">
-                        <span class="input-group-addon" style="text-align:left;min-width:110px"><strong>UID</strong></span>
-                        <input id="uidinp" type="text" style="max-width:290px" class="form-control" name="msg" placeholder="PICC UID" onChange="fixAdd()">
+               <br>
+            </div>
+            <div class="overlay">
+               <div class="text-center">
+                  <h5>You can add new users by either scanning a RFID Tag or by clicking on "New User" button.</h5>
+               </div>
+               <br>
+            </div>
+            <div class="panel panel-default">
+               <table id="usertable" class="table" data-paging="true" data-filtering="true" data-sorting="true" data-editing="true" data-state="true"></table>
+            </div>
+            <div class="modal fade" id="editor-modal" tabindex="-1" role="dialog" aria-labelledby="editor-title">
+               <style scoped>
+                  .form-group.required .control-label:after {
+                  content: "*";
+                  color: red;
+                  margin-left: 4px;
+                  }
+               </style>
+               <div class="modal-dialog" role="document">
+                  <form class="modal-content form-horizontal" id="editor">
+                     <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                        <h4 class="modal-title" id="editor-title">Add User</h4>
                      </div>
-                     <div class="input-group">
-                        <span class="input-group-addon" style="text-align:left;min-width:110px"><strong>PICC Type</strong></span>
-                        <input id="typeinp" type="text" style="max-width:290px" class="form-control" name="msg" placeholder="PICC Type" disabled>
+                     <div class="modal-body">
+                        <input type="number" id="id" name="id" class="hidden" />
+                        <div class="form-group">
+                           <label for="picctype" class="col-sm-3 control-label">PICC Type</label>
+                           <div class="col-sm-9">
+                              <input type="text" class="form-control" id="picctype" name="picctype" placeholder="PICC Type" disabled>
+                           </div>
+                        </div>
+                        <div class="form-group required">
+                           <label for="uid" class="col-sm-3 control-label">UID</label>
+                           <div class="col-sm-9">
+                              <input type="text" class="form-control" id="uid" name="uid" placeholder="UID" required>
+                           </div>
+                        </div>
+                        <div class="form-group required">
+                           <label for="username" class="col-sm-3 control-label">User Name or Label</label>
+                           <div class="col-sm-9">
+                              <input type="text" class="form-control" id="username" name="username" placeholder="User Name or Label" required>
+                           </div>
+                        </div>
+                        <div class="form-group required">
+                           <label for="acctype" class="col-sm-3 control-label">Access Type</label>
+                           <div class="col-sm-9">
+                              <select class="form-control" id="acctype" required>
+                                 <option selected="selected" value="1">Active</option>
+                                 <option value="0">Disabled</option>
+                              </select>
+                           </div>
+                        </div>
+                        <div class="form-group required">
+                           <label for="validuntil" class="col-sm-3 control-label">Valid Until</label>
+                           <div class="col-sm-9">
+                              <input type="date" class="form-control" id="validuntil" name="validuntil" value="2038-01-01" placeholder="Valid Until" required>
+                           </div>
+                        </div>
                      </div>
-                     <div class="input-group">
-                        <span class="input-group-addon" style="text-align:left;min-width:110px"><strong>User Name</strong></span>
-                        <input id="username" type="text" style="max-width:290px" class="form-control" name="msg" placeholder="User Name or Label">
-                     </div>
-                     <div class="input-group">
-                        <span class="input-group-addon" style="text-align:left;min-width:110px"><strong>Access</strong></span>
-                        <select class="form-control" style="max-width:290px" id="access">
-                           <option selected="selected" value="1">Allow Acces</option>
-                           <option value="0">Deny Access</option>
-                        </select>
+                     <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Save changes</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
                      </div>
                   </form>
-                  <br>
-                  <div>
-                     <button id="button" type="button" class="btn btn-success btn-sm" onclick="update()">Add</button>
-                     <span><button id="rembutton" type="button" class="btn btn-danger btn-sm" onclick="del()">Remove</button></span>
-                  </div>
                </div>
             </div>
          </div>

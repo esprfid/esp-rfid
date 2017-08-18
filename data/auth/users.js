@@ -1,197 +1,242 @@
 var websock;
-
-function sortTable() {
-  var table, rows, switching, i, x, y, shouldSwitch;
-  table = document.getElementById("knowntable");
-  switching = true;
-  /*Make a loop that will continue until
-  no switching has been done:*/
-  while (switching) {
-    //start by saying: no switching is done:
-    switching = false;
-    rows = table.getElementsByTagName("TR");
-    /*Loop through all table rows (except the
-    first, which contains table headers):*/
-    for (i = 1; i < (rows.length - 1); i++) {
-      //start by saying there should be no switching:
-      shouldSwitch = false;
-      /*Get the two elements you want to compare,
-      one from current row and one from the next:*/
-      x = rows[i].getElementsByTagName("TD")[1];
-      y = rows[i + 1].getElementsByTagName("TD")[1];
-      if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
-        //if so, mark as a switch and break the loop:
-        shouldSwitch = true;
-        break;
-      }
-    }
-    if (shouldSwitch) {
-      /*If a switch has been marked, make the switch
-      and mark that a switch has been done:*/
-      rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-      switching = true;
-      //Each time a switch is done, increase this count by 1:
-    }
-  }
-}
-
-function fadeOutIn(elem, speed) {
-  if (!elem.style.opacity) {
-    elem.style.opacity = 1;
-  } // end if
-  var outInterval = setInterval(function() {
-    elem.style.opacity -= 0.02;
-    if (elem.style.opacity <= 0) {
-      clearInterval(outInterval);
-      var inInterval = setInterval(function() {
-        elem.style.opacity = Number(elem.style.opacity) + 0.02;
-        if (elem.style.opacity >= 1) {
-          clearInterval(inInterval);
-        }
-      }, speed / 50);
-    } // end if
-  }, speed / 50);
-}
-
-function fixAdd() {
-  var ref = document.getElementById("button");
-  ref.className = "btn btn-success btn-sm";
-  ref.textContent = "Add";
-}
+var timezone;
+var devicetime;
+var completed = false;
+var userdata = [];
+var page = 1;
+var haspages;
 
 function listSCAN(obj) {
-  var isKnown = obj.known;
-  var uid = obj.uid;
-  var uidUP = obj.uid.toUpperCase();
-  document.getElementById("uidinp").value = uidUP;
-  document.getElementById("typeinp").value = obj.type;
-  document.getElementById("username").value = obj.user;
-  document.getElementById("access").value = obj.acctype;
-  var ref = document.getElementById("button");
-  ref.style.display = "inline";
-  if (isKnown === 1) {
-    ref.dep = uid;
-    ref.className = "btn btn-warning btn-sm";
-    ref.onclick = function() {
-      update(this);
-    };
-    ref.textContent = "Update";
+  if (obj.known === 1) {
+    $(".fooicon-remove").click();
+    document.querySelector('input.form-control[type=text]').value = obj.uid;
+    $(".fooicon-search").click();
   } else {
-    ref.dep = uid;
-    ref.className = "btn btn-success btn-sm";
-    ref.onclick = function() {
-      update(this);
-    };
-    ref.textContent = "Add";
-  }
-  fadeOutIn(document.getElementById("fade"), 250);
-}
-
-function del() {
-  var uid = document.getElementById("uidinp").value.toLowerCase();
-  var username = document.getElementById("username").value;
-  var x = confirm("This will remove " + uid + " : " + username + " from database. Are you sure?");
-  if (x) {
-    var jsontosend = "{\"uid\":\"" + uid + "\",\"command\":\"remove\"}";
-    websock.send(jsontosend);
-    websock.send("{\"command\":\"picclist\"}");
+    $(".footable-add").click();
+    document.getElementById("uid").value = obj.uid;
+    document.getElementById("picctype").value = obj.type;
+    document.getElementById("username").value = obj.user;
+    document.getElementById("acctype").value = obj.acctype;
   }
 }
 
-function tableupdate(e) {
-  var datatosend = {};
-  datatosend.command = "userfile";
-  datatosend.uid = e.dep;
-  datatosend.user = document.getElementById(e.dep).getElementsByTagName("td")[1].innerHTML;
-  var acctype = 0;
-  if (document.getElementById(e.dep).getElementsByTagName("td")[2].getElementsByTagName("input")[0].checked) {
-    acctype = "1";
+function getnextpage() {
+  document.getElementById("loadpages").innerHTML = "Loading " + page + "/" + haspages;
+  if (page < haspages) {
+    page = page + 1;
+    var commandtosend = {};
+    commandtosend.command = "userlist";
+    commandtosend.page = page;
+    websock.send(JSON.stringify(commandtosend));
   }
-  datatosend.acctype = acctype;
-  websock.send(JSON.stringify(datatosend));
-  websock.send("{\"command\":\"picclist\"}");
 }
 
-function update(e) {
-  var a = document.getElementById("uidinp").value;
-  if (a === null || a === "") {
-    alert("PICC UID cannot be empty");
-    return;
-  }
-  var datatosend = {};
-  datatosend.command = "userfile";
-  datatosend.uid = document.getElementById("uidinp").value.toLowerCase();
-  datatosend.user = document.getElementById("username").value;
-  datatosend.acctype = document.getElementById("access").value;
-  websock.send(JSON.stringify(datatosend));
-  websock.send("{\"command\":\"picclist\"}");
+function builduserdata(obj) {
+  userdata = userdata.concat(obj.list);
 }
 
-function addRowHandlers() {
-  var table = document.getElementById("tablebody");
-  var rows = table.getElementsByTagName("tr");
-  for (var i = 0; i < rows.length; i++) {
-    var currentRow = table.rows[i];
-    var createClickHandler =
-      function(row) {
-        return function() {
-          document.getElementById("uidinp").value = row.getElementsByTagName("td")[0].innerHTML;
-          document.getElementById("username").value = row.getElementsByTagName("td")[1].innerHTML;
-          document.getElementById("typeinp").value = "";
-          if (row.getElementsByTagName("td")[2].getElementsByTagName("input")[0].checked) {
-            document.getElementById("access").value = "1";
-          } else {
-            document.getElementById("access").value = "0";
+function initTable() {
+  jQuery(function($) {
+    var $modal = $('#editor-modal'),
+      $editor = $('#editor'),
+      $editorTitle = $('#editor-title'),
+      ft = FooTable.init('#usertable', {
+        columns: [{
+            "name": "uid",
+            "title": "UID",
+            "type": "text",
+          },
+          {
+            "name": "username",
+            "title": "User Name or Label"
+          },
+          {
+            "name": "acctype",
+            "title": "Access Type",
+            "breakpoints": "xs",
+            "parser": function(value) {
+              if (value === 1) {
+                return "Active";
+              } else {
+                return "Disabled";
+              }
+            },
+          },
+          {
+            "name": "validuntil",
+            "title": "Valid Until",
+            "breakpoints": "xs sm",
+              "parser": function(value) {
+                  var vuepoch = new Date(value * 1000);
+                  var formatted = vuepoch.getFullYear()
+                        + '-' + twoDigits(vuepoch.getMonth() + 1) 
+                        + '-' + twoDigits(vuepoch.getDate());
+                  return formatted;
+            },
           }
-          var ref = document.getElementById("button");
-          ref.dep = document.getElementById("uidinp").value.toLowerCase();
-          ref.className = "btn btn-warning btn-sm";
-          ref.onclick = function() {
-            update(this);
-          };
-          ref.textContent = "Update";
+        ],
+        rows: userdata,
+        editing: {
+          addRow: function() {
+            $editor[0].reset();
+            $editorTitle.text('Add a new User');
+            $modal.modal('show');
+          },
+          editRow: function(row) {
+            var acctypefinder;
+            var values = row.val();
+            if (values.acctype == "Active") {
+    acctypefinder = 1;
+  }
+  else {
+    acctypefinder = 0;
+  }
+            $editor.find('#uid').val(values.uid);
+            $editor.find('#username').val(values.username);
+            $editor.find('#acctype').val(acctypefinder);
+            $editor.find('#validuntil').val(values.validuntil);
+            $modal.data('row', row);
+            $editorTitle.text('Edit User # ' + values.username);
+            $modal.modal('show');
+          },
+          deleteRow: function(row) {
+            var uid = row.value.uid;
+            var username = row.value.username;
+            if (confirm("This will remove " + uid + " : " + username + " from database. Are you sure?")) {
+              var jsontosend = "{\"uid\":\"" + uid + "\",\"command\":\"remove\"}";
+              websock.send(jsontosend);
+              row.delete();
+            }
+          }
+        },
+        components: {
+          filtering: FooTable.MyFiltering
+        }
+      }),
+      uid = 10001;
+    $editor.on('submit', function(e) {
+      if (this.checkValidity && !this.checkValidity()) return;
+      e.preventDefault();
+      var row = $modal.data('row'),
+        values = {
+          uid: $editor.find('#uid').val(),
+          username: $editor.find('#username').val(),
+          acctype: acctypeparser(),
+          validuntil: $editor.find('#validuntil').val()
         };
-      };
-    currentRow.onclick = createClickHandler(currentRow);
+      if (row instanceof FooTable.Row) {
+        row.val(values);
+      } else {
+        values.id = uid++;
+        ft.rows.add(values);
+      }
+      var datatosend = {};
+      datatosend.command = "userfile";
+      datatosend.uid = $editor.find('#uid').val();
+      datatosend.user = $editor.find('#username').val();
+      datatosend.acctype = $editor.find('#acctype').val();
+      var validuntil = $editor.find('#validuntil').val();
+      var vuepoch = (new Date(validuntil).getTime() / 1000) + (timezone * 60 * 60);
+      datatosend.validuntil = vuepoch;
+      websock.send(JSON.stringify(datatosend));
+
+
+      $modal.modal('hide');
+    });
+  });
+}
+
+function acctypefinder() {
+  if (values.acctype === "Active") {
+    return 1;
+  }
+  else {
+    return 0;
   }
 }
 
-function listknownPICC(obj) {
-  var table = document.getElementById("knowntable").getElementsByTagName("tbody")[0];
-  for (var i = 0; i < obj.piccs.length; i++) {
-    var x = obj.piccs[i];
-    x = x.substring(3);
-    var upper = x.toUpperCase();
-    var row = table.insertRow(table.rows[0]);
-    row.className = "success";
-    row.id = x;
-    var cell1 = row.insertCell(0);
-    cell1.innerHTML = upper;
-    var cell2 = row.insertCell(1);
-    cell2.innerHTML = obj.users[i];
-    var cell3 = row.insertCell(2);
-    var inp2 = document.createElement("input");
-    inp2.type = "checkbox";
-    inp2.id = x + "C";
-    inp2.dep = x;
-    inp2.onclick = function() {
-      tableupdate(this);
-    };
-    if (obj.acctype[i] === 1) {
-      row.className = "success";
-      inp2.checked = true;
-    } else {
-      row.className = "warning";
-      inp2.checked = false;
-    }
-    cell3.appendChild(inp2);
+function acctypeparser(){
+  var $editor = $('#editor');
+  if($editor.find('#acctype option:selected').val() == 1){
+    return "Active";
+  } else {
+    return "Disabled";
   }
 }
+
+function twoDigits(value) {
+   if(value < 10) {
+    return '0' + value;
+   }
+   return value;
+}
+
+FooTable.MyFiltering = FooTable.Filtering.extend({
+  construct: function(instance) {
+    this._super(instance);
+    this.acctypes = ['1', '0'];
+    this.acctypesstr = ['Active', 'Disabled'];
+    this.def = 'Access Type';
+    this.$acctype = null;
+  },
+  $create: function() {
+    this._super();
+    var self = this,
+      $form_grp = $('<div/>', {
+        'class': 'form-group'
+      })
+      .append($('<label/>', {
+        'class': 'sr-only',
+        text: 'Status'
+      }))
+      .prependTo(self.$form);
+
+    self.$acctype = $('<select/>', {
+        'class': 'form-control'
+      })
+      .on('change', {
+        self: self
+      }, self._onStatusDropdownChanged)
+      .append($('<option/>', {
+        text: self.def
+      }))
+      .appendTo($form_grp);
+
+    $.each(self.acctypes, function(i, acctype) {
+      self.$acctype.append($('<option/>').text(self.acctypesstr[i]).val(self.acctypes[i]));
+    });
+  },
+  _onStatusDropdownChanged: function(e) {
+    var self = e.data.self,
+      selected = $(this).val();
+    if (selected !== self.def) {
+      self.addFilter('acctype', selected, ['acctype']);
+    } else {
+      self.removeFilter('acctype');
+    }
+    self.filter();
+  },
+  draw: function() {
+    this._super();
+    var acctype = this.find('acctype');
+    if (acctype instanceof FooTable.Filter) {
+      this.$acctype.val(acctype.query.val());
+    } else {
+      this.$acctype.val(this.def);
+    }
+  }
+});
 
 function start() {
   websock = new WebSocket("ws://" + window.location.hostname + "/ws");
   websock.onopen = function(evt) {
-    websock.send("{\"command\":\"picclist\"}");
+    var commandtosend = {};
+    commandtosend.command = "userlist";
+    commandtosend.page = page;
+    websock.send(JSON.stringify(commandtosend));
+    commandtosend = {};
+    commandtosend.command = "gettime";
+    websock.send(JSON.stringify(commandtosend));
   };
   websock.onclose = function(evt) {};
   websock.onerror = function(evt) {
@@ -201,15 +246,27 @@ function start() {
     var obj = JSON.parse(evt.data);
     if (obj.command === "piccscan") {
       listSCAN(obj);
-    } else if (obj.command === "picclist") {
-      var node = document.getElementById("tablebody");
-      while (node.hasChildNodes()) {
-        node.removeChild(node.lastChild);
+    } else if (obj.command === "gettime") {
+      timezone = obj.timezone;
+      devicetime = obj.epoch;
+    } else if (obj.command === "userlist") {
+      haspages = obj.haspages;
+      if (haspages === 0) {
+        document.getElementById("loading-img").style.display = "none";
+        initTable();
+        $(".footable-show").click();
       }
-      document.getElementById("loading-img").style.display = "none";
-      listknownPICC(obj);
-      sortTable();
-      addRowHandlers();
+      builduserdata(obj);
+    } else if (obj.command === "result") {
+      if (obj.resultof === "userlist") {
+        if (page < haspages && obj.result === true) {
+          getnextpage();
+        } else if (page === haspages) {
+          initTable();
+          document.getElementById("loading-img").style.display = "none";
+          $(".footable-show").click();
+        }
+      }
     }
   };
 }

@@ -43,13 +43,12 @@
 
 // Variables for whole scope
 String filename = "/P/";
-//flag to use from web update to reboot the ESP
+unsigned long previousMillis = 0;
 bool shouldReboot = false;
 bool activateRelay = false;
-unsigned long previousMillis = 0;
+bool inAPMode = false;
 int relayPin;
 int activateTime;
-bool inAPMode = false;
 int timeZone;
 
 DNSServer dnsServer;
@@ -64,13 +63,19 @@ AsyncWebSocket ws("/ws");
 
 // Set things up
 void setup() {
-  static WiFiEventHandler gotIpEventHandler, disconnectedEventHandler;
-  Serial.begin(115200);
+  Serial.begin(115200); // To match bootloader
   Serial.println();
-  Serial.println(F("[ INFO ] ESP RFID v0.2"));
+  Serial.println(F("[ INFO ] ESP RFID v0.3alpha"));
 
   // Start SPIFFS filesystem
   SPIFFS.begin();
+  
+  /* Remove Users Helper
+    Dir dir = SPIFFS.openDir("/P/");
+    while (dir.next()){
+    SPIFFS.remove(dir.fileName());
+    }
+  */
 
   // Try to load configuration file so we can connect to an Wi-Fi Access Point
   // Do not worry if no config file is present, we fall back to Access Point mode and device can be easily configured
@@ -237,7 +242,6 @@ void rfidloop() {
   String type = mfrc522.PICC_GetTypeName(piccType);
 
   // We are going to use filesystem to store known UIDs.
-  int isKnown = 0;  // First assume we don't know until we got a match
   // If we know the PICC we need to know if its User have an Access
   int AccType = 0;  // First assume User do not have access
   // Prepend /P/ on filename so we distinguish UIDs from the other files
@@ -247,7 +251,6 @@ void rfidloop() {
   File f = SPIFFS.open(filename, "r");
   // Check if we could find it above function returns true if the file is exist
   if (f) {
-    isKnown = 1; // we found it and label it as known
     // Now we need to read contents of the file to parse JSON object contains Username and Access Status
     size_t size = f.size();
     // Allocate a buffer to store contents of the file.
@@ -284,9 +287,7 @@ void rfidloop() {
       root["uid"] = uid;
       // Type of PICC
       root["type"] = type;
-      // A boolean 1 for known tags 0 for unknown
-      root["known"] = isKnown;
-      // A boolean 1 for granted 0 for denied access
+      root["known"] = 1;
       root["acctype"] = AccType;
       // Username
       root["user"] = username;
@@ -313,8 +314,7 @@ void rfidloop() {
     root["uid"] = uid;
     // Type of PICC
     root["type"] = type;
-    // A boolean 1 for known tags 0 for unknown
-    root["known"] = isKnown;
+    root["known"] = 0;
     size_t len = root.measureLength();
     AsyncWebSocketMessageBuffer * buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
     if (buffer) {
@@ -368,8 +368,9 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
           ESP.reset();
         }
       }
-      else if (strcmp(command, "picclist")  == 0) {
-        sendPICClist();
+      else if (strcmp(command, "userlist")  == 0) {
+        int page = root["page"];
+        sendUserList(page, client);
       }
       else if (strcmp(command, "status")  == 0) {
         sendStatus();
@@ -382,8 +383,9 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
         // Check if we created the file
         if (f) {
           f.print(msg);
-          f.close();
         }
+        f.close();
+        ws.textAll("{\"command\":\"result\",\"resultof\":\"userfile\",\"result\": true}");
       }
       else if (strcmp(command, "testrelay")  == 0) {
         activateRelay = true;
@@ -421,6 +423,7 @@ void sendTime() {
   JsonObject& root = jsonBuffer.createObject();
   root["command"] = "gettime";
   root["epoch"] = now();
+  root["timezone"] = timeZone;
   size_t len = root.measureLength();
   AsyncWebSocketMessageBuffer * buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
   if (buffer) {
@@ -429,39 +432,55 @@ void sendTime() {
   }
 }
 
-void sendPICClist() {
-  Dir dir = SPIFFS.openDir("/P/");
+void sendUserList(int page, AsyncWebSocketClient * client) {
   DynamicJsonBuffer jsonBuffer;
   JsonObject& root = jsonBuffer.createObject();
-  root["command"] = "picclist";
-
-  JsonArray& data = root.createNestedArray("piccs");
-  JsonArray& data2 = root.createNestedArray("users");
-  JsonArray& data3 = root.createNestedArray("acctype");
+  root["command"] = "userlist";
+  root["page"] = page;
+  JsonArray& users = root.createNestedArray("list");
+  Dir dir = SPIFFS.openDir("/P/");
+  int first = (page - 1) * 15;
+  int last = page * 15;
+  int i = 0;
   while (dir.next()) {
-    File f = SPIFFS.open(dir.fileName(), "r");
-    size_t size = f.size();
-    // Allocate a buffer to store contents of the file.
-    std::unique_ptr<char[]> buf(new char[size]);
-    // We don't use String here because ArduinoJson library requires the input
-    // buffer to be mutable. If you don't use ArduinoJson, you may as well
-    // use configFile.readString instead.
-    f.readBytes(buf.get(), size);
-    DynamicJsonBuffer jsonBuffer2;
-    JsonObject& json = jsonBuffer2.parseObject(buf.get());
-    if (json.success()) {
-      String username = json["user"];
-      int AccType = json["acctype"];
-      data2.add(username);
-      data3.add(AccType);
+    if (i >= first && i < last) {
+      JsonObject& item = users.createNestedObject();
+      String uid = dir.fileName();
+      uid.remove(0, 3);
+      item["uid"] = uid;
+      File f = SPIFFS.open(dir.fileName(), "r");
+      size_t size = f.size();
+      // Allocate a buffer to store contents of the file.
+      std::unique_ptr<char[]> buf(new char[size]);
+      // We don't use String here because ArduinoJson library requires the input
+      // buffer to be mutable. If you don't use ArduinoJson, you may as well
+      // use configFile.readString instead.
+      f.readBytes(buf.get(), size);
+      DynamicJsonBuffer jsonBuffer2;
+      JsonObject& json = jsonBuffer2.parseObject(buf.get());
+      if (json.success()) {
+        String username = json["user"];
+        int AccType = json["acctype"];
+        unsigned long validuntil = json["validuntil"];
+        item["username"] = username;
+        item["acctype"] = AccType;
+        item["validuntil"] = validuntil;
+      }
     }
-    data.add(dir.fileName());
+    i++;
   }
+  float pages = i / 15.0;
+  root["haspages"] = ceil(pages);
   size_t len = root.measureLength();
   AsyncWebSocketMessageBuffer * buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
   if (buffer) {
     root.printTo((char *)buffer->get(), len + 1);
-    ws.textAll(buffer);
+    if (client) {
+      client->text(buffer);
+      client->text("{\"command\":\"result\",\"resultof\":\"userlist\",\"result\": true}");
+    } else {
+      ws.textAll("{\"command\":\"result\",\"resultof\":\"userlist\",\"result\": false}");
+    }
   }
 }
 
@@ -611,7 +630,7 @@ bool loadConfiguration() {
 
   const char * ntpserver = json["ntpserver"];
   int ntpinter = json["ntpinterval"];
-  int timeZone = json["timezone"];
+  timeZone = json["timezone"];
 
   activateTime = json["rtime"];
   relayPin = json["rpin"];
