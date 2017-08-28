@@ -48,6 +48,7 @@ bool shouldReboot = false;
 bool activateRelay = false;
 bool inAPMode = false;
 int relayPin;
+int relayType;
 int activateTime;
 int timeZone;
 
@@ -69,7 +70,7 @@ void setup() {
 
   // Start SPIFFS filesystem
   SPIFFS.begin();
-  
+
   /* Remove Users Helper
     Dir dir = SPIFFS.openDir("/P/");
     while (dir.next()){
@@ -96,27 +97,8 @@ void setup() {
   server.serveStatic("/", SPIFFS, "/");
   // Handle what happens when requested web file couldn't be found
   server.onNotFound([](AsyncWebServerRequest * request) {
-    if (captivePortal(request)) { // If captive portal redirect instead of displaying the error page.
-      return;
-    }
-
-    String message = "File Not Found\n\n";
-    message += "URI: ";
-    message += request->url();
-    message += "\nMethod: ";
-    message += ( request->method() == HTTP_GET ) ? "GET" : "POST";
-    message += "\nArguments: ";
-    message += request->args();
-    message += "\n";
-
-    for (uint8_t i = 0; i < request->args(); i++ ) {
-      message += " " + request->argName ( i ) + ": " + request->arg ( i ) + "\n";
-    }
-
-    AsyncWebServerResponse *response = request->beginResponse(404, "text/plain", message);
-    response->addHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-    response->addHeader("Pragma", "no-cache");
-    response->addHeader("Expires", "-1");
+    AsyncWebServerResponse *response = request->beginResponse(302, "text/plain", "");
+    response->addHeader("Location", "http://192.168.4.1");
     request->send(response);
   });
 
@@ -155,6 +137,7 @@ void setup() {
     dnsServer.start(53, "*", IPAddress (192, 168, 4, 1));
   }
 
+
   // Start Web Server
   server.begin();
 }
@@ -170,46 +153,19 @@ void loop() {
   unsigned long currentMillis = millis();
   if (currentMillis - previousMillis >= activateTime && activateRelay) {
     activateRelay = false;
-    digitalWrite(relayPin, HIGH);
+    digitalWrite(relayPin, relayType);
   }
   if (activateRelay) {
-    digitalWrite(relayPin, LOW);
+    digitalWrite(relayPin, !relayType);
   }
+
   if (inAPMode) {
     dnsServer.processNextRequest();
   }
 
+
   // Another loop for RFID Events, since we are using polling method instead of Interrupt we need to check RFID hardware for events
   rfidloop();
-}
-
-boolean captivePortal(AsyncWebServerRequest *request) {
-  if (!isIp(request->host()) ) {
-    AsyncWebServerResponse *response = request->beginResponse(302, "text/plain", "");
-    response->addHeader("Location", String("http://" + ipToString(IPAddress (192, 168, 4, 1))));
-    request->send(response);
-    return true;
-  }
-  return false;
-}
-
-boolean isIp(String str) {
-  for (int i = 0; i < str.length(); i++) {
-    int c = str.charAt(i);
-    if (c != '.' && (c < '0' || c > '9')) {
-      return false;
-    }
-  }
-  return true;
-}
-
-String ipToString(IPAddress ip) {
-  String res = "";
-  for (int i = 0; i < 3; i++) {
-    res += String((ip >> (8 * i)) & 0xFF) + ".";
-  }
-  res += String(((ip >> 8 * 3)) & 0xFF);
-  return res;
 }
 
 
@@ -278,6 +234,7 @@ void rfidloop() {
       else {
         Serial.println(" does not have access");
       }
+      LogLatest(uid, username);
       // Also inform Administrator Portal
       // Encode a JSON Object and send it to All WebSocket Clients
       DynamicJsonBuffer jsonBuffer2;
@@ -306,6 +263,7 @@ void rfidloop() {
   }
   else {
     // If we don't know the UID, inform Administrator Portal so admin can give access or add it to database
+    LogLatest(uid, "Unknown");
     Serial.println(" = unknown PICC");
     DynamicJsonBuffer jsonBuffer;
     JsonObject& root = jsonBuffer.createObject();
@@ -323,6 +281,46 @@ void rfidloop() {
     }
   }
   // So far got we got UID of Scanned RFID Tag, checked it if it's on the database and access status, informed Administrator Portal
+}
+
+void LogLatest(String uid, String username) {
+  File logFile = SPIFFS.open("/auth/latestlog.json", "r");
+  if (!logFile) {
+    // Can not open file create it.
+    File logFile = SPIFFS.open("/auth/latestlog.json", "w");
+    DynamicJsonBuffer jsonBuffer3;
+    JsonObject& root = jsonBuffer3.createObject();
+    root["type"] = "latestlog";
+    JsonArray& list = root.createNestedArray("list");
+    root.printTo(logFile);
+    logFile.close();
+  }
+  else {
+    size_t size = logFile.size();
+    std::unique_ptr<char[]> buf (new char[size]);
+    logFile.readBytes(buf.get(), size);
+    DynamicJsonBuffer jsonBuffer4;
+    JsonObject& root = jsonBuffer4.parseObject(buf.get());
+    JsonArray& list = root["list"];
+    if (!root.success()) {
+      Serial.println("Impossible to read JSON file");
+    } else {
+      logFile.close();
+      if ( list.size() >= 15 ) {
+        //Serial.println("efface anciennes mesures");
+        list.removeAt(0);
+      }
+      File logFile = SPIFFS.open("/auth/latestlog.json", "w");
+      DynamicJsonBuffer jsonBuffer5;
+      JsonObject& item = jsonBuffer5.createObject();
+      item["uid"] = uid;
+      item["username"] = username;
+      item["timestamp"] = now();
+      list.add(item);
+      root.printTo(logFile);
+    }
+    logFile.close();
+  }
 }
 
 // Handles WebSocket Events
@@ -391,6 +389,18 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
         activateRelay = true;
         previousMillis = millis();
       }
+      else if (strcmp(command, "latestlog")  == 0) {
+        File logFile = SPIFFS.open("/auth/latestlog.json", "r");
+        if (logFile) {
+          size_t len = logFile.size();
+          AsyncWebSocketMessageBuffer * buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
+          if (buffer) {
+            logFile.readBytes((char *)buffer->get(), len + 1);
+            ws.textAll(buffer);
+          }
+          logFile.close();
+        }
+      }
       else if (strcmp(command, "scan")  == 0) {
         WiFi.scanNetworksAsync(printScanResult);
       }
@@ -431,6 +441,7 @@ void sendTime() {
     ws.textAll(buffer);
   }
 }
+
 
 void sendUserList(int page, AsyncWebSocketClient * client) {
   DynamicJsonBuffer jsonBuffer;
@@ -611,6 +622,7 @@ bool loadConfiguration() {
   Serial.println();
   int rfidss = json["sspin"];
   int rfidgain = json["rfidgain"];
+  Serial.println(F("[ INFO ] Trying to setup RFID Hardware"));
   setupRFID(rfidss, rfidgain);
 
   const char * hstname = json["hostnm"];
@@ -634,8 +646,9 @@ bool loadConfiguration() {
 
   activateTime = json["rtime"];
   relayPin = json["rpin"];
+  relayType = json["rtype"];
   pinMode(relayPin, OUTPUT);
-  digitalWrite(relayPin, HIGH);
+  digitalWrite(relayPin, relayType);
 
   const char * ssid = json["ssid"];
   const char * password = json["pswd"];

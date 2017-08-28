@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.3alpha1] - 2017-08-28
+#### Added
+- Support for both Active Low and Active High Relays
+- Basic loging (inefficent and limited to last 15 records)
+
+#### Fixed
+- #11 Simplified captive portal behaviour for stable AP Mode experience.
+
 ## [0.3alpha] - 2017-08-18
 #### Added
 - Support for jQuery v1.12.4
@@ -10,11 +18,11 @@ All notable changes to this project will be documented in this file.
 
 #### Changed
 - Refactored picclist command (JSON Array is now more human readable, can be queried page by page, initially 15 records per page due to Mobile Devices limiting maximum WebSocket message lenght, I do not know if this a feature or a bug)
-- Restoring User Data improved (restoring is now done one by one only when the ESP is ready to digest another userfile)
+- Restoring User Data is improved (restoring is now done one by one only when the ESP is ready to digest another userfile)
 - Backup User Data is improved (thanks to newly optimized userlist command we are getting all the data from ESP page by page)
 - Refactored User List (thanks to FooTable user list is now fully searchable, sortable, filterable, editable)
-- Refactored framework's required Javascript and CSS (All files minified and gzipped together, this will reduce requests made to ESP)
-- While restoring user data now we are showing a pop-up.
+- Refactored framework's required Javascript and CSS files (All files minified and gzipped together, this will reduce requests made to ESP)
+- While restoring user data now we are showing a pop-up (bootstrap modal)
 
 #### Misc
 - Run a test where 1000! users can be handled (see https://github.com/omersiar/esp-rfid#tests)

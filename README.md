@@ -33,6 +33,7 @@ This project still in its development phase. New features (and also bugs) are in
 * An ESP8266 module or development board like WeMos or NodeMcu with at least 32Mbit Flash (equals to 4MBytes)(ESP32 may work too, testing needed)
 * A MFRC522 RFID PCD Module
 * A Relay Module (or you can build your own circuit)
+* n quantity of Mifare Classic 1KB (recommended) PICCs (RFID Tags) equivalent to User Number
 
 ### Software
 
@@ -92,7 +93,6 @@ The following table shows the typical pin layout used for connecting MFRC522 har
 * Congratulations, everything went well, if you encounter any issue feel free to ask help on GitHub.
 
 ### Known Issues
-* Built-in HTML Editor has hard-coded JavaScript that loads from CDN Internet. Text Editor won't work if there is no Internet connection.
 * Currently only Git version (2.4.0rc) of ESP8266 Core is supported, due to new function is introduced (WiFi.scanNetworksAsync()).
 * Firmware update does not authenticated (until we find a solution).
 * When you connect to ESP via mDNS url Browsers make a DNS Query for WebSocket link, it takes long time to resolve.
@@ -140,7 +140,7 @@ See [ChangeLog](https://github.com/omersiar/esp-rfid/blob/master/CHANGELOG.md)
 - [X] Polished web pages
 - [X] Settings Panel for Wi-Fi, IP, Hostname, NTP Client, etc
 - [X] Sync Time from Browser if there is no internet connection
-- [ ] Log Access Time of Users
+- [X] Log Access Time of Users
 - [ ] Password Protection or Authentication for Tags instead of relying to only UIDs (PICC Password)
 - [ ] Globalization (language support, time zone support, etc)
 - [ ] Schedule User Access

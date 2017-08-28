@@ -17,6 +17,7 @@ function listCONF(obj) {
   document.getElementById("gpiorly").value = obj.rpin;
   document.getElementById("delay").value = obj.rtime;
   document.getElementById("adminpwd").value = obj.adminpwd;
+  document.getElementById("typerly").value = obj.rtype;
   document.getElementById("ntpserver").value = obj.ntpserver;
   document.getElementById("intervals").value = obj.ntpinterval;
   document.getElementById("DropDownTimezone").value = obj.timezone;
@@ -122,6 +123,7 @@ function saveConf() {
   datatosend.pswd = document.getElementById("wifipass").value;
   datatosend.sspin = document.getElementById("gpioss").value;
   datatosend.rfidgain = document.getElementById("gain").value;
+  datatosend.rtype = document.getElementById("typerly").value;
   datatosend.rpin = document.getElementById("gpiorly").value;
   datatosend.rtime = document.getElementById("delay").value;
   datatosend.ntpserver = document.getElementById("ntpserver").value;

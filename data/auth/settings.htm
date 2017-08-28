@@ -18,6 +18,7 @@
       <div class="header clearfix">
         <nav>
           <ul class="nav nav-pills pull-right">
+            <li role="presentation"><a href="/auth/log.htm">Logs</a> </li>
             <li role="presentation"><a href="/auth/users.htm">Users</a> </li>
             <li role="presentation" class="active"><a href="/auth/settings.htm">Settings</a> </li>
           </ul>
@@ -178,6 +179,15 @@
               </span>
             </div>
             <br>
+            <div class="row form-group">
+ 						<label class="col-xs-3">Relay Type</label> 
+ 						<span class="col-xs-9">
+ 						<select class="form-control input-sm" style="display:inline;max-width:185px" id="typerly">
+ 							<option selected="selected" value="1">Active High</option>
+ 							<option value="0">Active Low</option>
+ 						</select>
+ 						</span>
+				</div>
             <div class="row form-group">
               <label class="col-xs-3">Relay Pin</label> 
               <span class="col-xs-9">
