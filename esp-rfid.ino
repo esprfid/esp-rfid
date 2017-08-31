@@ -30,7 +30,6 @@
 #include <ESP8266WiFi.h>              // Whole thing is about using Wi-Fi networks
 #include <SPI.h>                      // RFID MFRC522 Module uses SPI protocol
 #include <ESP8266mDNS.h>              // Zero-config Library (Bonjour, Avahi) http://esp-rfid.local
-#include <DNSServer.h>                // Used for captive portal
 #include <MFRC522.h>                  // Library for Mifare RC522 Devices
 #include <ArduinoJson.h>              // JSON Library for Encoding and Parsing Json object to send browser. We do that because Javascript has built-in JSON parsing.
 #include <FS.h>                       // SPIFFS Library for storing web files to serve to web browsers
@@ -42,7 +41,7 @@
 #include <WiFiUdp.h>                  // Library for manipulating UDP packets which is used by NTP Client to get Timestamps
 
 // Variables for whole scope
-String filename = "/P/";
+
 unsigned long previousMillis = 0;
 bool shouldReboot = false;
 bool activateRelay = false;
@@ -52,7 +51,6 @@ int relayType;
 int activateTime;
 int timeZone;
 
-DNSServer dnsServer;
 
 // Create MFRC522 RFID instance
 MFRC522 mfrc522 = MFRC522();
@@ -131,11 +129,7 @@ void setup() {
   });
 
 
-  //Setting up dns for the captive portal
-  if (inAPMode) {
-    dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
-    dnsServer.start(53, "*", IPAddress (192, 168, 4, 1));
-  }
+
 
 
   // Start Web Server
@@ -159,9 +153,7 @@ void loop() {
     digitalWrite(relayPin, !relayType);
   }
 
-  if (inAPMode) {
-    dnsServer.processNextRequest();
-  }
+
 
 
   // Another loop for RFID Events, since we are using polling method instead of Interrupt we need to check RFID hardware for events
@@ -201,7 +193,7 @@ void rfidloop() {
   // If we know the PICC we need to know if its User have an Access
   int AccType = 0;  // First assume User do not have access
   // Prepend /P/ on filename so we distinguish UIDs from the other files
-  filename = "/P/";
+  String filename = "/P/";
   filename += uid;
 
   File f = SPIFFS.open(filename, "r");
@@ -353,7 +345,7 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
       // Check whatever the command is and act accordingly
       if (strcmp(command, "remove")  == 0) {
         const char* uid = root["uid"];
-        filename = "/P/";
+        String filename = "/P/";
         filename += uid;
         SPIFFS.remove(filename);
       }
@@ -375,7 +367,7 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
       }
       else if (strcmp(command, "userfile")  == 0) {
         const char* uid = root["uid"];
-        filename = "/P/";
+        String filename = "/P/";
         filename += uid;
         File f = SPIFFS.open(filename, "w+");
         // Check if we created the file
@@ -517,6 +509,7 @@ void sendStatus() {
   root["availsize"] = ESP.getFreeSketchSpace();
   root["availspiffs"] = fsinfo.totalBytes - fsinfo.usedBytes;
   root["spiffssize"] = fsinfo.totalBytes;
+  root["uptime"] = NTP.getUptimeString();
 
   if (inAPMode) {
     wifi_get_ip_info(SOFTAP_IF, &info);

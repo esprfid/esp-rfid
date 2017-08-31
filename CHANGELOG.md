@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.3alpha2] - 2017-08-31
+#### Added
+- Uptime to status
+- Tooltips for settings
+
+#### Removed
+- Captive Portal
+
 ## [0.3alpha1] - 2017-08-28
 #### Added
 - Support for both Active Low and Active High Relays

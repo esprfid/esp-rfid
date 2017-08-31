@@ -33,9 +33,9 @@
                   <h5>Please wait while fetching data... <span id="loadpages"></span></h5>
         </div>
                 <div>
-          <button id="refstat" onclick="refreshStats()" class="btn btn-link btn-sm">Show Device Status</button>
+          <button data-toggle="collapse" data-target="#status" id="refstat" onclick="refreshStats()" class="btn btn-link btn-sm">Show Device Status</button>
         </div>
-        <div id="status" class="row" style="display:none">
+        <div id="status" class="row collapse">
             <div class="col-sm-6">
               <div class="panel panel-default table-responsive">
                 <table class="table table-hover table-striped">
@@ -47,6 +47,10 @@
                   <tr>
                     <th>CPU Clock</th>
                     <td id="cpu"></td>
+                  </tr>
+                                    <tr>
+                    <th>Uptime</th>
+                    <td id="uptime"></td>
                   </tr>
                   <tr>
                     <th>Free Heap</th>
@@ -118,7 +122,7 @@
             <legend>Wi-Fi Settings</legend>
             <h6 class="text-muted">Type your Wi-Fi Network's SSID or Scan for nerby Wireless Networks to join.</h6>
             <div class="row form-group">
-              <label class="col-xs-3">Wi-Fi Mode</label>
+              <label data-toggle="tooltip" title="You can run your ESP in AP Mode or Client Mode. In client mode you will need to connect to an existing Wi-Fi network, in AP Mode ESP creates a Wi-Fi network itself." class="col-xs-3">Wi-Fi Mode</label>
               <div class="col-xs-9">
                 <form>
                   <label class="radio-inline"><input type="radio" value="1" name="wmode" id="wmodeap" onclick="handleAP();">Access Point </label>
@@ -127,7 +131,7 @@
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-xs-3">SSID</label> 
+              <label data-toggle="tooltip" title="Wi-Fi Network's Name" class="col-xs-3">SSID</label> 
               <span class="col-xs-9">
               <input class="form-control input-sm" style="display:inline;max-width:150px" id="inputtohide" type="text" name="ap_ssid">
               <select class="form-control input-sm" style="display:none;max-width:150px" id="ssid" onchange="if (this.selectedIndex) listBSSID();"></select>
@@ -135,13 +139,13 @@
               </span>
             </div>
             <div class="row form-group" style="display:none" id="hideBSSID">
-              <label class="col-xs-3">BSSID</label> 
+              <label data-toggle="tooltip" title="If you have two Wi-Fi networks with the same SSID you may want to choose the specific one by BSSID" class="col-xs-3">BSSID</label> 
               <span class="col-xs-9">
               <input id="wifibssid" style="max-width:150px" class="form-control input-sm" type="text" name="ap_bssid">
               </span> 
             </div>
             <div class="row form-group">
-              <label class="col-xs-3">Password</label> 
+              <label data-toggle="tooltip" title="Wi-Fi Password" class="col-xs-3">Password</label> 
               <span class="col-xs-9">
               <input id="wifipass" style="max-width:150px" class="form-control input-sm" type="text" name="ap_passwd">
               </span> 
@@ -152,7 +156,7 @@
             <legend>Hardware Settings</legend>
             <h6 class="text-muted">Please refer the <a href="https://github.com/omersiar/esp-rfid#pin-layout">documentation</a> for pin configuration.</h6>
             <div class="row form-group">
-              <label class="col-xs-3">SPI SS</label> 
+              <label data-toggle="tooltip" title="Choose which ESP port is connected to RFID Hardware SDA pin" class="col-xs-3">SPI SS</label> 
               <span class="col-xs-9">
                 <select class="form-control input-sm" style="max-width:185px" id="gpioss">
                   <option value="0">GPIO-0</option>
@@ -165,7 +169,7 @@
               </span>
             </div>
             <div class="row form-group">
-              <label class="col-xs-3">Antenna Gain</label> 
+              <label data-toggle="tooltip" title="Higher value means the longer RFID reader's reading distance" class="col-xs-3">Antenna Gain</label> 
               <span class="col-xs-9">
                 <select class="form-control input-sm" style="max-width:185px" id="gain">
                   <option value="112">Max (48 db)</option>
@@ -180,7 +184,7 @@
             </div>
             <br>
             <div class="row form-group">
- 						<label class="col-xs-3">Relay Type</label> 
+ 						<label data-toggle="tooltip" title="Depending on your electrical setup, you can choose the relay type" class="col-xs-3">Relay Type</label> 
  						<span class="col-xs-9">
  						<select class="form-control input-sm" style="display:inline;max-width:185px" id="typerly">
  							<option selected="selected" value="1">Active High</option>
@@ -189,7 +193,7 @@
  						</span>
 				</div>
             <div class="row form-group">
-              <label class="col-xs-3">Relay Pin</label> 
+              <label data-toggle="tooltip" title="Choose which ESP port is connected to your relay" class="col-xs-3">Relay Pin</label> 
               <span class="col-xs-9">
                 <select class="form-control input-sm" style="display:inline;max-width:150px" id="gpiorly">
                   <option value="0">GPIO-0</option>
@@ -203,9 +207,9 @@
               </span>
             </div>
             <div class="row form-group">
-              <label class="col-xs-3">Activate Time</label> 
+              <label data-toggle="tooltip" title="Relay Toggle time in Microseconds, usually 300ms is enough for the most electric door locks" class="col-xs-3">Activate Time</label> 
               <span class="col-xs-9">
-              <input class="form-control input-sm" placeholder="in Microsecond" style="display:inline;max-width:185px" id="delay" type="text" name="hightime">
+              <input class="form-control input-sm" value="300" placeholder="in Microsecond" style="display:inline;max-width:185px" id="delay" type="text" name="hightime">
               </span>
             </div>
             
@@ -216,16 +220,16 @@
           <div class="col-sm-6">
             <legend>General Settings</legend>
             <div class="row form-group">
-              <label class="col-xs-3">Admin Password</label> 
+              <label data-toggle="tooltip" title="Log On password for the Administrator" class="col-xs-3">Admin Password</label> 
               <span class="col-xs-9">
               <input class="form-control input-sm" placeholder="Administrator Password" style="display:inline;max-width:185px" id="adminpwd" type="text">
               </span>
               <br>
             </div>
                         <div class="row form-group">
-              <label class="col-xs-3">Host Name</label> 
+              <label data-toggle="tooltip" title="Hostname for your ESP, When Bonjour is installed on your computer you can access your ESP via http://hostname.local" class="col-xs-3">Host Name</label> 
               <span class="col-xs-9">
-              <input class="form-control input-sm" placeholder="Hostname" style="display:inline;max-width:185px" id="hostname" type="text">
+              <input class="form-control input-sm" placeholder="Hostname" value="esp-rfid" style="display:inline;max-width:185px" id="hostname" type="text">
               </span>
               <br>
             </div>
@@ -244,19 +248,19 @@
               </span>
             </div>
             <div class="row form-group">
-              <div class="col-xs-3"><button onclick="syncBrowserTime()" class="btn btn-link btn-sm">Sync Browser Time to Device</button></div>
+              <div data-toggle="tooltip" title="Send your PC/Phone time to ESP, useful when the ESP does not have Internet connection." class="col-xs-3"><button onclick="syncBrowserTime()" class="btn btn-link btn-sm">Sync Browser Time to Device</button></div>
               </div>
             <div class="row form-group">
-              <label class="col-xs-3">NTP Server</label> 
+              <label data-toggle="tooltip" title="The server for the time sync" class="col-xs-3">NTP Server</label> 
               <span class="col-xs-9">
-              <input class="form-control input-sm" placeholder="eg. pool.ntp.org" style="display:inline;max-width:185px" id="ntpserver" type="text">
+              <input data-toggle="tooltip" title="Choose nearest server for better accuracy, see ntp.org for servers nearby." class="form-control input-sm" placeholder="eg. pool.ntp.org" value="pool.ntp.org" style="display:inline;max-width:185px" id="ntpserver" type="text">
               </span>
               <br>
             </div>
             <div class="row form-group">
-              <label class="col-xs-3">Intervals</label> 
+              <label data-toggle="tooltip" title="Intervals between Time Sync in Minutes" class="col-xs-3">Intervals</label> 
               <span class="col-xs-9">
-              <input class="form-control input-sm" placeholder="in Minutes" style="display:inline;max-width:185px" id="intervals" type="text">
+              <input class="form-control input-sm" placeholder="in Minutes" value="30" style="display:inline;max-width:185px" id="intervals" type="text">
               </span>
               <br>
             </div>
@@ -277,7 +281,7 @@
                   <option value="-3">(GMT -3:00) Brazil, Buenos Aires, Georgetown</option>
                   <option value="-2">(GMT -2:00) Mid-Atlantic</option>
                   <option value="-1">(GMT -1:00 hour) Azores, Cape Verde Islands</option>
-                  <option value="0">(GMT) Western Europe Time, London, Lisbon, Casablanca</option>
+                  <option selected="selected" value="0">(GMT) Western Europe Time, London, Lisbon, Casablanca</option>
                   <option value="1">(GMT +1:00 hour) Brussels, Copenhagen, Madrid, Paris</option>
                   <option value="2">(GMT +2:00) Kaliningrad, South Africa</option>
                   <option value="3">(GMT +3:00) Baghdad, Riyadh, Moscow, St. Petersburg</option>

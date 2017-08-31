@@ -252,13 +252,12 @@ function colorStatusbar(ref) {
 
 function refreshStats() {
   websock.send("{\"command\":\"status\"}");
-  document.getElementById("status").style.display = "block";
-  document.getElementById("refstat").innerHTML = "Refresh";
 }
 
 function listStats(obj) {
   document.getElementById("chip").innerHTML = obj.chipid;
   document.getElementById("cpu").innerHTML = obj.cpu + " Mhz";
+  document.getElementById("uptime").innerHTML = obj.uptime;
   document.getElementById("heap").innerHTML = obj.heap + " Bytes";
   document.getElementById("heap").style.width = (obj.heap * 100) / 81920 + "%";
   colorStatusbar(document.getElementById("heap"));
@@ -289,6 +288,10 @@ function getnextpage() {
 function builduserdata(obj) {
   userdata = userdata.concat(obj.list);
 }
+
+$(document).ready(function(){
+    $('[data-toggle="tooltip"]').tooltip();   
+});
 
 function start() {
   websock = new WebSocket("ws://" + window.location.hostname + "/ws");
