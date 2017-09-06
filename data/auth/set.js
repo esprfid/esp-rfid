@@ -69,12 +69,13 @@ function handleSTA() {
 }
 
 function listSSID(obj) {
+  obj.list.sort(function(a,b){return a.rssi <= b.rssi});
   var select = document.getElementById("ssid");
-  for (var i = 0; i < obj.ssid.length; i++) {
+  for (var i = 0; i < obj.list.length; i++) {
     var opt = document.createElement("option");
-    opt.value = obj.ssid[i];
-    opt.bssidvalue = obj.bssid[i];
-    opt.innerHTML = obj.ssid[i];
+    opt.value = obj.list[i].ssid;
+    opt.bssidvalue = obj.list[i].bssid;
+    opt.innerHTML = "BSSID: " + obj.list[i].bssid + ", Signal Strength: " + obj.list[i].rssi + ", Network: " + obj.list[i].ssid;
     select.appendChild(opt);
   }
   document.getElementById("scanb").innerHTML = "Re-Scan";

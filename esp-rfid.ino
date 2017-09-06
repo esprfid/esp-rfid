@@ -43,6 +43,7 @@
 // Variables for whole scope
 
 unsigned long previousMillis = 0;
+unsigned long cooldown = 0;
 bool shouldReboot = false;
 bool activateRelay = false;
 bool inAPMode = false;
@@ -62,7 +63,7 @@ AsyncWebSocket ws("/ws");
 
 // Set things up
 void setup() {
-  Serial.begin(115200); // To match bootloader
+  Serial.begin(115200);
   Serial.println();
   Serial.println(F("[ INFO ] ESP RFID v0.3alpha"));
 
@@ -152,12 +153,10 @@ void loop() {
   if (activateRelay) {
     digitalWrite(relayPin, !relayType);
   }
-
-
-
-
   // Another loop for RFID Events, since we are using polling method instead of Interrupt we need to check RFID hardware for events
-  rfidloop();
+  if (currentMillis >= cooldown) {
+    rfidloop();
+  }
 }
 
 
@@ -176,6 +175,7 @@ void rfidloop() {
   }
   // We got UID tell PICC to stop responding
   mfrc522.PICC_HaltA();
+  cooldown = millis() + 2000;
 
   // There are Mifare PICCs which have 4 byte or 7 byte UID
   // Get PICC's UID and store on a variable
@@ -299,8 +299,7 @@ void LogLatest(String uid, String username) {
     } else {
       logFile.close();
       if ( list.size() >= 15 ) {
-        //Serial.println("efface anciennes mesures");
-        list.removeAt(0);
+        list.remove(0);
       }
       File logFile = SPIFFS.open("/auth/latestlog.json", "w");
       DynamicJsonBuffer jsonBuffer5;
@@ -394,7 +393,7 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
         }
       }
       else if (strcmp(command, "scan")  == 0) {
-        WiFi.scanNetworksAsync(printScanResult);
+        WiFi.scanNetworksAsync(printScanResult, true);
       }
       else if (strcmp(command, "gettime")  == 0) {
         sendTime();
@@ -552,12 +551,16 @@ void printScanResult(int networksFound) {
   DynamicJsonBuffer jsonBuffer;
   JsonObject& root = jsonBuffer.createObject();
   root["command"] = "ssidlist";
-  JsonArray& data2 = root.createNestedArray("bssid");
-  JsonArray& data = root.createNestedArray("ssid");
+  JsonArray& scan = root.createNestedArray("list");
   for (int i = 0; i < networksFound; ++i) {
+    JsonObject& item = scan.createNestedObject();
     // Print SSID for each network found
-    data.add(WiFi.SSID(i));
-    data2.add(WiFi.BSSIDstr(i));
+    item["ssid"] = WiFi.SSID(i);
+    item["bssid"] = WiFi.BSSIDstr(i);
+    item["rssi"] = WiFi.RSSI(i);
+    item["channel"] = WiFi.channel(i);
+    item["enctype"] = WiFi.encryptionType(i);
+    item["hidden"] = WiFi.isHidden(i)?true:false;
   }
   size_t len = root.measureLength();
   AsyncWebSocketMessageBuffer * buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.

@@ -16,14 +16,14 @@ Use case scenarios can be expanded. There are several things I want to implement
 ## Features
 * Using WebSocket protocol to exchange data between Hardware and Web Browser
 * Data is encoded as JSON object
-* Records are Timestamped (Time synced from a NTP Server) (tested but not implemented yet)
-* Bootstrap for beautiful Web Pages for both Mobile and Desktop Screens
+* Records are Timestamped (Time synced from a NTP Server)
+* Bootstrap, jQuery, FooTables for beautiful Web Pages for both Mobile and Desktop Screens
 * Thanks to ESPAsyncWebServer Library communication is Asyncronous
 
 ## Getting Started
 This project still in its development phase. New features (and also bugs) are introduced often and some functions may become deprecated. Please feel free to comment or give feedback.
 * Latest development version is v0.3alpha
-* Latest released compiled binaries are from v0.2 and can be found in directory "/compiledbin"
+* Latest released compiled binaries are from v0.3alpha and can be found in directory "/compiledbin"
 * See [Known Issues](https://github.com/omersiar/esp-rfid#known-issues) before starting right away.
 * See [ChangeLog](https://github.com/omersiar/esp-rfid/blob/master/CHANGELOG.md)
 * See [To Do](https://github.com/omersiar/esp-rfid#to-do) for what to expect in future.
@@ -33,12 +33,12 @@ This project still in its development phase. New features (and also bugs) are in
 * An ESP8266 module or development board like WeMos or NodeMcu with at least 32Mbit Flash (equals to 4MBytes)(ESP32 may work too, testing needed)
 * A MFRC522 RFID PCD Module
 * A Relay Module (or you can build your own circuit)
-* n quantity of Mifare Classic 1KB (recommended) PICCs (RFID Tags) equivalent to User Number
+* n quantity of Mifare Classic 1KB (recommended due to available code base) PICCs (RFID Tags) equivalent to User Number
 
 ### Software
 
 #### Using Compiled Binaries
-Compiled binaries are available in directory /compiledbin. You can use any flashing tool and do the flashing manually. The flashing process itself has been described at numerous places on Internet.
+Compiled binaries and a helper for flashing are available in directory /compiledbin. On Windows you can use "flash.bat" it will ask you which COM port that ESP is connected and then flashes it. You can use any flashing tool and do the flashing manually. The flashing process itself has been described at numerous places on Internet.
 
 #### Building From Source
 Please install Arduino IDE if you didn't already, then add ESP8266 Core (Beware! Install Git Version) on top of it. Additional Library download links are listed below:
@@ -74,13 +74,13 @@ The following table shows the typical pin layout used for connecting MFRC522 har
 3. The SDA pin might be labeled SS on some/older MFRC522 boards.
 
 ### Steps
-* First, flash firmware to your ESP either using Arduino IDE or with your favourite flash tool
-* Flash webfiles data to SPIFFS either using ESP8266FS Uploader tool or with your favourite flash tool
+* First, flash firmware (you can use /compiledbin/flash.bat on Windows) to your ESP either using Arduino IDE or with your favourite flash tool
+* Flash webfiles data to SPIFFS (ignore this step if you used flash.bat for flashing) either using ESP8266FS Uploader tool or with your favourite flash tool 
 * (optional) Fire up your serial monitor to get informed
 * Power on your ESP
 * Search for Wireless Network "esp-rfid" and connect to it (It should be an open network and does not reqiure password)
 * Open your browser and type either "http://192.168.4.1" or "http://esp-rfid.local" (.local needs Bonjour installed on your computer) on address bar.
-* Log on to ESP, password is "admin" (for now, you can only change it from source) 
+* Log on to ESP, default password is "admin"
 * Go to "Settings" page
 * Configure your amazing access control device. Push "Scan" button to join your wireless network, configure RFID hardware, Relay Module.
 * Save settings, when rebooted your ESP will try to join your wireless network.
@@ -93,8 +93,8 @@ The following table shows the typical pin layout used for connecting MFRC522 har
 * Congratulations, everything went well, if you encounter any issue feel free to ask help on GitHub.
 
 ### Known Issues
+* MFRC522 RFID Hardware should be connected to ESP or you will likely get a WDT Reset (boot loop) [#13](https://github.com/omersiar/esp-rfid/issues/13).
 * Currently only Git version (2.4.0rc) of ESP8266 Core is supported, due to new function is introduced (WiFi.scanNetworksAsync()).
-* Firmware update does not authenticated (until we find a solution).
 * When you connect to ESP via mDNS url Browsers make a DNS Query for WebSocket link, it takes long time to resolve.
 
 #### Time
@@ -108,7 +108,7 @@ Since we are limited on both flash and ram size things may get ugly at some poin
 ### Tests
 
 #### How many RFID Tag can be handled?
-Restore some [random generated](https://github.com/omersiar/esp-rfid/raw/master/demo/demo-users-data.json) user data on File System worth: 
+Restore some [randomly generated](https://github.com/omersiar/esp-rfid/raw/master/demo/demo-users-data.json) user data on File System worth: 
 
 * 1000 seperate "userfile"
 * random 4 Bytes long UID and
@@ -156,4 +156,10 @@ See [ChangeLog](https://github.com/omersiar/esp-rfid/blob/master/CHANGELOG.md)
 
 
 ## Donations
-If this project helps you in a way, you can buy me a beer. PayPal is not allowed in my country (what a shame) you can donate via Bitcoin however, to this address: 166XWuSAmGAurR7jvS3Nui65QkKKKcsr8R
+If this project helps you in a way, you can buy me a beer.
+PayPal is not allowed in my country (what a shame)
+You can donate via Bitcoin Cash however, to this address: 
+(only Bitcoin Cash, do not send legacy Bitcoin coins to this address)
+1F94BCWahzKw56dpg6zMCcEGcTHJcA8XTB
+
+Also you can make a donation to the ESP-RFID community with [Bountysource](https://salt.bountysource.com/teams/esp-rfid)

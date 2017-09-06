@@ -3,23 +3,32 @@ var timezone;
 var devicetime;
 var userdata = {};
 
+function twoDigits(value) {
+   if(value < 10) {
+    return "0" + value;
+   }
+   return value;
+}
+
 function initTable() {
   jQuery(function($) {
-    var ft = FooTable.init('#latestlogtable', {
+    FooTable.init("#latestlogtable", {
         columns: [
             {
             "name": "timestamp",
             "title": "Date",
-               "parser": function(value) {
-                  var vuepoch = new Date(value * 1000);
-                  var formatted = vuepoch.getUTCFullYear()
-                        + '-' + twoDigits(vuepoch.getUTCMonth() + 1) 
-                        + '-' + twoDigits(vuepoch.getUTCDate())
-                        + ' ' + twoDigits(vuepoch.getUTCHours())
-                        + ':' + twoDigits(vuepoch.getUTCMinutes())
-                        + ':' + twoDigits(vuepoch.getUTCSeconds());
-                  return formatted;
-            }
+            "parser": function(value) {
+              var vuepoch = new Date(value * 1000);
+              var formatted = vuepoch.getUTCFullYear()
+                  + "-" + twoDigits(vuepoch.getUTCMonth() + 1) 
+                  + "-" + twoDigits(vuepoch.getUTCDate())
+                  + "-" + twoDigits(vuepoch.getUTCHours())
+                  + ":" + twoDigits(vuepoch.getUTCMinutes())
+                  + ":" + twoDigits(vuepoch.getUTCSeconds());
+                return formatted;
+            },
+            "sorted": true,
+            "direction": "DESC"
             },
             {
             "name": "uid",
@@ -35,15 +44,6 @@ function initTable() {
       });
   });
 }
-
-
-function twoDigits(value) {
-   if(value < 10) {
-    return '0' + value;
-   }
-   return value;
-}
-
 
 function start() {
   websock = new WebSocket("ws://" + window.location.hostname + "/ws");

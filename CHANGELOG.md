@@ -1,6 +1,16 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.3alpha3] - 2017-09-06
+#### Added
+- New /compiledbin/flash.bat for easy flashing (For Windows Users)
+- Sort Latest Log by Date
+- 2 second cooldown for RFID Tag scans (to prevent double scans)
+
+#### Changed
+- Refactored Wi-Fi Network Scan. Now we are scanning hidden networks too, also additional info is now given to Web UI (Signal Strenght, BSSID of the Network also non used Encryption Type, Channel)
+- Scanned Wi-Fi Network List is now shorted by Signal Strenght (RSSI, greater is better)
+
 ## [0.3alpha2] - 2017-08-31
 #### Added
 - Uptime to status
