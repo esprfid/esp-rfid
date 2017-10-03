@@ -163,3 +163,8 @@ You can donate via Bitcoin Cash however, to this address:
 1F94BCWahzKw56dpg6zMCcEGcTHJcA8XTB
 
 Also you can make a donation to the ESP-RFID community with [Bountysource](https://salt.bountysource.com/teams/esp-rfid)
+
+#### Donators
+2017-10-03 [steinar-t](https://github.com/steinar-t)
+
+Thank you for your contributions.
