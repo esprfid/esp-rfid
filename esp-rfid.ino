@@ -41,7 +41,6 @@
 #include <WiFiUdp.h>                  // Library for manipulating UDP packets which is used by NTP Client to get Timestamps
 
 // Variables for whole scope
-
 unsigned long previousMillis = 0;
 unsigned long cooldown = 0;
 bool shouldReboot = false;
@@ -52,10 +51,8 @@ int relayType;
 int activateTime;
 int timeZone;
 
-
 // Create MFRC522 RFID instance
 MFRC522 mfrc522 = MFRC522();
-
 // Create AsyncWebServer instance on port "80"
 AsyncWebServer server(80);
 // Create WebSocket instance on URL "/ws"
@@ -90,7 +87,6 @@ void setup() {
   // Configure web server
   // Add Text Editor (http://esp-rfid.local/edit) to Web Server. This feature likely will be dropped on final release.
   server.addHandler(new SPIFFSEditor("admin", "admin"));
-
 
   // Serve all files in root folder
   server.serveStatic("/", SPIFFS, "/");
@@ -129,10 +125,6 @@ void setup() {
     }
   });
 
-
-
-
-
   // Start Web Server
   server.begin();
 }
@@ -158,7 +150,6 @@ void loop() {
     rfidloop();
   }
 }
-
 
 /* ------------------ RFID Functions ------------------- */
 // RFID Specific Loop
@@ -433,7 +424,6 @@ void sendTime() {
   }
 }
 
-
 void sendUserList(int page, AsyncWebSocketClient * client) {
   DynamicJsonBuffer jsonBuffer;
   JsonObject& root = jsonBuffer.createObject();
@@ -560,7 +550,7 @@ void printScanResult(int networksFound) {
     item["rssi"] = WiFi.RSSI(i);
     item["channel"] = WiFi.channel(i);
     item["enctype"] = WiFi.encryptionType(i);
-    item["hidden"] = WiFi.isHidden(i)?true:false;
+    item["hidden"] = WiFi.isHidden(i) ? true : false;
   }
   size_t len = root.measureLength();
   AsyncWebSocketMessageBuffer * buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
@@ -570,7 +560,6 @@ void printScanResult(int networksFound) {
   }
   WiFi.scanDelete();
 }
-
 
 // Fallback to AP Mode, so we can connect to ESP if there is no Internet connection
 void fallbacktoAPMode() {
@@ -584,6 +573,7 @@ void fallbacktoAPMode() {
   Serial.println(myIP);
   server.serveStatic("/auth/", SPIFFS, "/auth/").setDefaultFile("users.htm").setAuthentication("admin", "admin");
 }
+
 void parseBytes(const char* str, char sep, byte* bytes, int maxBytes, int base) {
   for (int i = 0; i < maxBytes; i++) {
     bytes[i] = strtoul(str, NULL, base);  // Convert byte
@@ -594,6 +584,7 @@ void parseBytes(const char* str, char sep, byte* bytes, int maxBytes, int base) 
     str++;                                // Point to next character after separator
   }
 }
+
 bool loadConfiguration() {
   File configFile = SPIFFS.open("/auth/config.json", "r");
   if (!configFile) {
@@ -654,6 +645,7 @@ bool loadConfiguration() {
 
   // Serve confidential files in /auth/ folder with a Basic HTTP authentication
   server.serveStatic("/auth/", SPIFFS, "/auth/").setDefaultFile("users.htm").setAuthentication("admin", adminpass);
+  ws.setAuthentication("admin", adminpass);
 
   if (wmode == 1) {
     inAPMode = true;

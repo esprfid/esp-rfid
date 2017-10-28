@@ -1,4 +1,4 @@
-var websock;
+var websock = null;
 var utcSeconds;
 var recordstorestore = 0;
 var slot = 0;

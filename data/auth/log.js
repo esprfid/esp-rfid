@@ -1,4 +1,4 @@
-var websock;
+var websock = null;
 var timezone;
 var devicetime;
 var userdata = {};
