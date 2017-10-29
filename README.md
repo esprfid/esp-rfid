@@ -15,11 +15,12 @@ Use case scenarios can be expanded. There are several things I want to implement
 ![LP](https://github.com/omersiar/esp-rfid/raw/master/demo/logs.png)
 
 ## Features
+### For Users
 * Minimal effort for setting up your Access Control system
 * Capable of managing up to 1.000 Users (even more is possible)
 * Great for Maker Spaces, Labs, Schools, etc
 * Cheap to build and easy to maintain
-
+### For Tinkerers 
 * Open Source (minimum amount of hardcoded variable, this means more freedom)
 * Using WebSocket protocol to exchange data between Hardware and Web Browser
 * Data is encoded as JSON object
