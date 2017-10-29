@@ -12,8 +12,15 @@ Use case scenarios can be expanded. There are several things I want to implement
 ![IP](https://github.com/omersiar/esp-rfid/raw/master/demo/index.png)
 ![SP](https://github.com/omersiar/esp-rfid/raw/master/demo/settings.png)
 ![UP](https://github.com/omersiar/esp-rfid/raw/master/demo/users.png)
+![LP](https://github.com/omersiar/esp-rfid/raw/master/demo/logs.png)
 
 ## Features
+* Minimal effort for setting up your Access Control system
+* Capable of managing up to 1.000 Users (even more is possible)
+* Great for Maker Spaces, Labs, Schools, etc
+* Cheap to build and easy to maintain
+
+* Open Source (minimum amount of hardcoded variable, this means more freedom)
 * Using WebSocket protocol to exchange data between Hardware and Web Browser
 * Data is encoded as JSON object
 * Records are Timestamped (Time synced from a NTP Server)
@@ -22,15 +29,15 @@ Use case scenarios can be expanded. There are several things I want to implement
 
 ## Getting Started
 This project still in its development phase. New features (and also bugs) are introduced often and some functions may become deprecated. Please feel free to comment or give feedback.
-* Latest development version is v0.3alpha
-* Latest released compiled binaries are from v0.3alpha and can be found in directory "/compiledbin"
+* Latest development version is v0.3beta
+* Latest released compiled binaries are from v0.3beta and can be found in directory "/compiledbin"
 * See [Known Issues](https://github.com/omersiar/esp-rfid#known-issues) before starting right away.
 * See [ChangeLog](https://github.com/omersiar/esp-rfid/blob/master/CHANGELOG.md)
 * See [To Do](https://github.com/omersiar/esp-rfid#to-do) for what to expect in future.
 
 ### What You Will Need 
 ### Hardware
-* An ESP8266 module or development board like WeMos or NodeMcu with at least 32Mbit Flash (equals to 4MBytes)(ESP32 may work too, testing needed)
+* An ESP8266 module or development board like WeMos or NodeMcu with at least 32Mbit Flash (equals to 4MBytes)(ESP32 does not supported at this time)
 * A MFRC522 RFID PCD Module
 * A Relay Module (or you can build your own circuit)
 * n quantity of Mifare Classic 1KB (recommended due to available code base) PICCs (RFID Tags) equivalent to User Number
@@ -93,6 +100,7 @@ The following table shows the typical pin layout used for connecting MFRC522 har
 * Congratulations, everything went well, if you encounter any issue feel free to ask help on GitHub.
 
 ### Known Issues
+* You need to download https://github.com/omersiar/ESPAsyncWebServer version of ESPAsyncWebServer Library until the fix is merged to origin.
 * MFRC522 RFID Hardware should be connected to ESP or you will likely get a WDT Reset (boot loop) [#13](https://github.com/omersiar/esp-rfid/issues/13).
 * Currently only Git version (2.4.0rc) of ESP8266 Core is supported, due to new function is introduced (WiFi.scanNetworksAsync()).
 * When you connect to ESP via mDNS url Browsers make a DNS Query for WebSocket link, it takes long time to resolve.
@@ -141,18 +149,17 @@ See [ChangeLog](https://github.com/omersiar/esp-rfid/blob/master/CHANGELOG.md)
 - [X] Settings Panel for Wi-Fi, IP, Hostname, NTP Client, etc
 - [X] Sync Time from Browser if there is no internet connection
 - [X] Log Access Time of Users
+- [X] WebSocket Basic Authentication 
 - [ ] Password Protection or Authentication for Tags instead of relying to only UIDs (PICC Password)
 - [ ] Globalization (language support, time zone support, etc)
 - [ ] Schedule User Access
 - [ ] Use Value Blocks to check if user have enough credits for access
 - [ ] Sanity check where needed (min WPA password lenght, return status of commands to WebSocket, etc)
-- [ ] Close security holes (there are many, for example WebSocket communication is not Authenticated at all)
-- [ ] rBoot for secondary recovery program? to flash main firmware maybe?
 - [ ] Find a way to speed up DNS query for WebSocket. Takes a lot of time
 - [ ] Factory Reset via pin or settings page
 - [ ] SPIFFS Update from Web
 - [ ] Adapt to use case scenarios such as every entered user also need to exit and do not allow re-entry unless user exited before. (this needs multiple device RFID or ESP)
-- [ ] Switch to Async JSON. This may allow much larger transfers from ESP to Browser
+- [ ] rBoot for secondary recovery program? to flash main firmware maybe?
 
 
 ## Donations

@@ -1,6 +1,16 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.3beta] - 2017-10-28
+#### Added
+- Basic Authentication on WebSocket
+
+#### Changed
+- minor cosmetic change
+
+#### Fixed
+- WebSocket fails without null pointer on Mac [#17](https://github.com/omersiar/esp-rfid/issues/17)
+
 ## [0.3alpha3] - 2017-09-06
 #### Added
 - New /compiledbin/flash.bat for easy flashing (For Windows Users)
