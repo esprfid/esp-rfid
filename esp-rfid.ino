@@ -693,8 +693,7 @@ bool loadConfiguration() {
 
   if (deviceHostname != 0)
     free(deviceHostname);
-  deviceHostname = (char*) malloc(sizeof(l_hostname));
-  strcpy(deviceHostname, l_hostname);
+  deviceHostname = strdup(l_hostname);
 
   const char * bssidmac = json["bssid"];
   byte bssid[6];
