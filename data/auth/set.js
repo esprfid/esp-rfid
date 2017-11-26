@@ -22,6 +22,8 @@ function listCONF(obj) {
   document.getElementById("intervals").value = obj.ntpinterval;
   document.getElementById("DropDownTimezone").value = obj.timezone;
   document.getElementById("hostname").value = obj.hostnm;
+  document.getElementById("disable_wifi_after_seconds").value = obj.disable_wifi_after_seconds;
+  document.getElementById("auto_restart_interval_seconds").value = obj.auto_restart_interval_seconds;
   if (obj.wmode === "1") {
     document.getElementById("wmodeap").checked = true;
   } else {
@@ -131,6 +133,8 @@ function saveConf() {
   datatosend.ntpinterval = document.getElementById("intervals").value;
   datatosend.timezone = document.getElementById("DropDownTimezone").value;
   datatosend.hostnm = document.getElementById("hostname").value;
+  datatosend.disable_wifi_after_seconds = document.getElementById("disable_wifi_after_seconds").value;
+  datatosend.auto_restart_interval_seconds = document.getElementById("auto_restart_interval_seconds").value;
   datatosend.adminpwd = a;
   websock.send(JSON.stringify(datatosend));
   location.reload();
