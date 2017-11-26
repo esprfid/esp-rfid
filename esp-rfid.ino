@@ -42,14 +42,28 @@
 
 // Variables for whole scope
 unsigned long previousMillis = 0;
+unsigned long previousLoopMillis = 0;
 unsigned long cooldown = 0;
 bool shouldReboot = false;
 bool activateRelay = false;
 bool inAPMode = false;
+bool isWifiConnected = false;
+
+bool wifiDisabled = true;
+bool doDisableWifi = false;
+bool doEnableWifi = false;
+unsigned long const defaultWifiTimeout = 240000;
+long wifiTimeout = defaultWifiTimeout;
+
+char * our_hostname = 0;
+
 int relayPin;
 int relayType;
 int activateTime;
 int timeZone;
+
+bool debug = true;
+
 
 // Create MFRC522 RFID instance
 MFRC522 mfrc522 = MFRC522();
@@ -92,8 +106,7 @@ void setup() {
   server.serveStatic("/", SPIFFS, "/");
   // Handle what happens when requested web file couldn't be found
   server.onNotFound([](AsyncWebServerRequest * request) {
-    AsyncWebServerResponse *response = request->beginResponse(302, "text/plain", "");
-    response->addHeader("Location", "http://192.168.4.1");
+    AsyncWebServerResponse *response = request->beginResponse(404, "text/plain", "Not found");
     request->send(response);
   });
 
@@ -138,6 +151,8 @@ void loop() {
     ESP.restart();
   }
   unsigned long currentMillis = millis();
+  unsigned long deltaTime = currentMillis-previousLoopMillis;
+  previousLoopMillis = currentMillis;
   if (currentMillis - previousMillis >= activateTime && activateRelay) {
     activateRelay = false;
     digitalWrite(relayPin, relayType);
@@ -145,10 +160,47 @@ void loop() {
   if (activateRelay) {
     digitalWrite(relayPin, !relayType);
   }
+  
+  if (wifiTimeout > 0)
+    wifiTimeout -= deltaTime;
+
+  if (wifiTimeout <= 0 && isWifiConnected == true)
+  {
+    doDisableWifi = true;
+  }
+  
+  if (doDisableWifi==true)
+  {
+    doDisableWifi=false;
+    disableWifi();
+  }
+  else if (doEnableWifi==true)
+  {
+    doEnableWifi = false;
+    if (!isWifiConnected)
+    {
+      wifiTimeout = defaultWifiTimeout;
+      enableWifi();
+    } 
+  }
+
   // Another loop for RFID Events, since we are using polling method instead of Interrupt we need to check RFID hardware for events
   if (currentMillis >= cooldown) {
     rfidloop();
   }
+}
+
+void enableWifi()
+{
+    Serial.println("Turn wifi on.");
+    if (!loadConfiguration())
+        fallbacktoAPMode();
+}
+void disableWifi()
+{
+    isWifiConnected = false;
+    WiFi.mode(WIFI_OFF);
+    Serial.println("Turn wifi off.");
 }
 
 /* ------------------ RFID Functions ------------------- */
@@ -207,12 +259,24 @@ void rfidloop() {
       AccType = json["acctype"];
       Serial.println(" = known PICC");
       Serial.print("[ INFO ] User Name: ");
-      Serial.print(username);
+      
+      if (username == "undefined")
+        Serial.print(uid);
+      else
+        Serial.print(username);
+        
       // Check if user have an access
       if (AccType == 1) {
         activateRelay = true;  // Give user Access to Door, Safe, Box whatever you like
         previousMillis = millis();
         Serial.println(" have access");
+      }
+      else if (AccType == 99)
+      {
+        previousMillis = millis();
+        doEnableWifi = true;
+        activateRelay = true;  // Give user Access to Door, Safe, Box whatever you like
+        Serial.println(" have admin access, enable wifi");
       }
       else {
         Serial.println(" does not have access");
@@ -566,12 +630,13 @@ void fallbacktoAPMode() {
   inAPMode = true;
   WiFi.mode(WIFI_AP);
   Serial.print(F("[ INFO ] Configuring access point... "));
-  Serial.println(WiFi.softAP("ESP-RFID") ? "Ready" : "Failed!");
+  Serial.println(WiFi.softAP(our_hostname) ? "Ready" : "Failed!");
   // Access Point IP
   IPAddress myIP = WiFi.softAPIP();
   Serial.print(F("[ INFO ] AP IP address: "));
   Serial.println(myIP);
   server.serveStatic("/auth/", SPIFFS, "/auth/").setDefaultFile("users.htm").setAuthentication("admin", "admin");
+  isWifiConnected = true;
 }
 
 void parseBytes(const char* str, char sep, byte* bytes, int maxBytes, int base) {
@@ -611,17 +676,22 @@ bool loadConfiguration() {
   int rfidgain = json["rfidgain"];
   Serial.println(F("[ INFO ] Trying to setup RFID Hardware"));
   setupRFID(rfidss, rfidgain);
+  const char * l_hostname = json["hostnm"];
 
-  const char * hstname = json["hostnm"];
+  if (our_hostname != 0)
+    free(our_hostname);
+  our_hostname = (char*) malloc(sizeof(l_hostname));
+  strcpy(our_hostname, l_hostname);
+
   const char * bssidmac = json["bssid"];
   byte bssid[6];
   parseBytes(bssidmac, ':', bssid, 6, 16);
 
   // Set Hostname.
-  WiFi.hostname(hstname);
+  WiFi.hostname(our_hostname);
 
   // Start mDNS service so we can connect to http://esp-rfid.local (if Bonjour installed on Windows or Avahi on Linux)
-  if (!MDNS.begin(hstname)) {
+  if (!MDNS.begin(our_hostname)) {
     Serial.println("Error setting up MDNS responder!");
   }
   // Add Web Server service to mDNS
@@ -659,6 +729,7 @@ bool loadConfiguration() {
     Serial.println(myIP);
     Serial.print(F("[ INFO ] AP SSID: "));
     Serial.println(ssid);
+    isWifiConnected = true;
     return true;
   }
   else if (!connectSTA(ssid, password, bssid)) {
@@ -707,6 +778,7 @@ bool connectSTA(const char* ssid, const char* password, byte bssid[6]) {
     Serial.println();
     Serial.print(F("[ INFO ] Client IP address: ")); // Great, we connected, inform
     Serial.println(WiFi.localIP());
+    isWifiConnected = true;
     return true;
   }
   else { // We couln't connect, time is out, inform

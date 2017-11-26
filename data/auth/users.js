@@ -57,6 +57,8 @@ function initTable() {
             "parser": function(value) {
               if (value === 1) {
                 return "Active";
+              } else if (value===99) {
+                return "Admin";
               } else {
                 return "Disabled";
               }
@@ -174,8 +176,8 @@ function twoDigits(value) {
 FooTable.MyFiltering = FooTable.Filtering.extend({
   construct: function(instance) {
     this._super(instance);
-    this.acctypes = ['1', '0'];
-    this.acctypesstr = ['Active', 'Disabled'];
+    this.acctypes = ['1', '99', '0'];
+    this.acctypesstr = ['Active', 'Admin', 'Disabled'];
     this.def = 'Access Type';
     this.$acctype = null;
   },
