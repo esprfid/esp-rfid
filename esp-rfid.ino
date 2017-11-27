@@ -691,8 +691,7 @@ bool loadConfiguration() {
   autoRestartIntervalSeconds = json["auto_restart_interval_seconds"].as<int>();
   wifiTimeout = json["disable_wifi_after_seconds"].as<int>();
 
-  if (deviceHostname != 0)
-    free(deviceHostname);
+  free(deviceHostname);
   deviceHostname = strdup(l_hostname);
 
   const char * bssidmac = json["bssid"];
