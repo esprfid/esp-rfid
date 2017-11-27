@@ -132,11 +132,11 @@
             </div>
             <div class="row form-group">
               <label data-toggle="tooltip" title="Wi-Fi Network's Name" class="col-xs-3">SSID</label> 
-              <span class="col-xs-9 col-md-5">
+              <span class="col-xs-6 col-md-5">
                 <input class="form-control input-sm" id="inputtohide" type="text" name="ap_ssid">
                 <select class="form-control input-sm" style="display:none;" id="ssid" onchange="listBSSID();"></select>
               </span>
-              <span class="col-xs-4">
+              <span class="col-xs-3">
                 <button id="scanb" type="button" class="btn btn-primary btn-xs" onclick="scanWifi()">Scan</button>
               </span>
             </div>
@@ -210,7 +210,7 @@
 				</div>
             <div class="row form-group">
               <label data-toggle="tooltip" title="Choose which ESP port is connected to your relay" class="col-xs-3">Relay Pin</label> 
-              <span class="col-xs-9 col-md-5">
+              <span class="col-xs-6 col-md-5">
                 <select class="form-control input-sm" id="gpiorly">
                   <option value="0">GPIO-0</option>
                   <option value="2">GPIO-2</option>
@@ -219,6 +219,8 @@
                   <option value="15">GPIO-15</option>
                   <option value="16">GPIO-16</option>
                 </select>
+              </span>
+              <span class="col-xs-3">
                 <button id="testb" type="button" class="btn btn-primary btn-xs" onclick="testRelay()">Test</button>
               </span>
             </div>
