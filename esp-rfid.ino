@@ -79,12 +79,12 @@ AsyncWebSocket ws("/ws");
 WiFiClient wifiClient;
 IPAddress MQTTserver();
 PubSubClient mqttClient(wifiClient);
+char *mqttHost = NULL;
+uint16_t mqttPort = 0;
 bool mqttConnected = false;
-const char *mqttHost;
-uint16_t mqttPort;
-const char *mqttTopic;
-const char *mqttUser;
-const char *mqttPwd;
+char *mqttTopic = NULL;
+char *mqttUser = NULL;
+char *mqttPwd = NULL;
 
 // Set things up
 void setup() {
@@ -731,14 +731,24 @@ bool loadConfiguration() {
   NTP.begin(ntpserver, timeZone);
   NTP.setInterval(ntpinter * 60); // Poll every x minutes
 // mqtt
-  mqttHost = json["mqtthost"];
-  mqttPort = json["mqttport"];
-  mqttTopic = json["mqtttopic"];
-  mqttUser = json["mqttuser"];
-  mqttPwd = json["mqttpwd"];
-  if (mqttClient.connected()) {
-    mqttClient.disconnect();
+  if (mqttHost != NULL) {
+    free((void *)mqttHost);
   }
+  mqttHost = strdup(json["mqtthost"]);
+  mqttPort = json["mqttport"];
+  if (mqttTopic != NULL) {
+    free((void *)mqttTopic);
+  }
+  mqttTopic = strdup(json["mqtttopic"]);
+  if (mqttUser != NULL) {
+    free((void *)mqttUser);
+  }
+  mqttUser = strdup(json["mqttuser"]);
+  if (mqttPwd != NULL) {
+    free((void *)mqttPwd);
+  }
+  mqttPwd = strdup(json["mqttpwd"]);
+  mqttClient.disconnect();
   mqttClient.setServer(mqttHost, mqttPort);
   mqttConnect();
   return true;
