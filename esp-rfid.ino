@@ -629,7 +629,7 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
 
 void mqttConnect() {
   if (mqttHost != NULL && mqttPort != 0 && mqttTopic != NULL && !mqttClient.connected() ) {
-    Serial.println(F("[ INFO ] Trying to connect to MQTT server : "));
+    Serial.print(F("[ INFO ] Trying to connect to MQTT server : "));
     //setCallback();
     unsigned char retries = 0;
     mqttConnected = false;
@@ -640,11 +640,9 @@ void mqttConnect() {
       Serial.print(".");
     }
     if (mqttConnected == true) { 
-      Serial.println();
-      Serial.println(F("[ INFO ] connected to mqttServer"));
+      Serial.println(F(" connected to mqttServer"));
     } else {
-      Serial.println();
-      Serial.println(F("[ ERROR ] MQTT connection error"));
+      Serial.println(F(" MQTT connection error"));
     }    
   }
 }
