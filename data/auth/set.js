@@ -22,6 +22,11 @@ function listCONF(obj) {
   document.getElementById("intervals").value = obj.ntpinterval;
   document.getElementById("DropDownTimezone").value = obj.timezone;
   document.getElementById("hostname").value = obj.hostnm;
+  document.getElementById("mqtthost").value = obj.mqtthost;
+  document.getElementById("mqttport").value = obj.mqttport;
+  document.getElementById("mqtttopic").value = obj.mqtttopic;
+  document.getElementById("mqttuser").value = obj.mqttuser;
+  document.getElementById("mqttpwd").value = obj.mqttpwd;
   if (obj.wmode === "1") {
     document.getElementById("wmodeap").checked = true;
   } else {
@@ -132,6 +137,11 @@ function saveConf() {
   datatosend.timezone = document.getElementById("DropDownTimezone").value;
   datatosend.hostnm = document.getElementById("hostname").value;
   datatosend.adminpwd = a;
+  datatosend.mqtthost = document.getElementById("mqtthost").value;
+  datatosend.mqttport = document.getElementById("mqttport").value;
+  datatosend.mqtttopic = document.getElementById("mqtttopic").value;
+  datatosend.mqttuser = document.getElementById("mqttuser").value;
+  datatosend.mqttpwd = document.getElementById("mqttpwd").value;
   websock.send(JSON.stringify(datatosend));
   location.reload();
 }

@@ -29,94 +29,95 @@
         <div class="alert alert-warning"><strong>Warning!</strong> Settings will take effect when the device is rebooted. 
         </div>
         <div id="loading-img" class="text-center">
-                            <img src="/load.gif">
-                  <h5>Please wait while fetching data... <span id="loadpages"></span></h5>
+          <img src="/load.gif">
+          <h5>Please wait while fetching data... <span id="loadpages"></span></h5>
         </div>
-                <div>
+        <div>
           <button data-toggle="collapse" data-target="#status" id="refstat" onclick="refreshStats()" class="btn btn-link btn-sm">Show Device Status</button>
         </div>
         <div id="status" class="row collapse">
-            <div class="col-sm-6">
-              <div class="panel panel-default table-responsive">
-                <table class="table table-hover table-striped">
-                  <caption>Device</caption>
-                  <tr>
-                    <th>Chip ID</th>
-                    <td id="chip"></td>
-                  </tr>
-                  <tr>
-                    <th>CPU Clock</th>
-                    <td id="cpu"></td>
-                  </tr>
-                                    <tr>
-                    <th>Uptime</th>
-                    <td id="uptime"></td>
-                  </tr>
-                  <tr>
-                    <th>Free Heap</th>
-                    <td>
-                      <div class="progress" style="margin-bottom: 0 !important;">
-                        <div id="heap" class="progress-bar progress-bar-primary" role="progressbar">
+          <div class="col-sm-6">
+            <div class="panel panel-default table-responsive">
+              <table class="table table-hover table-striped">
+                <caption>Device</caption>
+                <tr>
+                  <th>Chip ID</th>
+                  <td id="chip"></td>
+                </tr>
+                <tr>
+                  <th>CPU Clock</th>
+                  <td id="cpu"></td>
+                </tr>
+                <tr>
+                  <th>Uptime</th>
+                  <td id="uptime"></td>
+                </tr>
+                <tr>
+                  <th>Free Heap</th>
+                  <td>
+                    <div class="progress" style="margin-bottom: 0 !important;">
+                      <div id="heap" class="progress-bar progress-bar-primary" role="progressbar">
                           Progress
-                        </div>
                       </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <th>Free Flash</th>
-                    <td>
-                      <div class='progress' style="margin-bottom: 0 !important;">
-                        <div id="flash" class="progress-bar progress-bar-primary" role="progressbar">
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <th>Free Flash</th>
+                  <td>
+                    <div class='progress' style="margin-bottom: 0 !important;">
+                      <div id="flash" class="progress-bar progress-bar-primary" role="progressbar">
                           Progress
-                        </div>
                       </div>
-                    </td>
-                  </tr>
-                  				<tr>
- 					<th>Free SPIFFS</th>
- 					<td>			
- 					<div class='progress' style="margin-bottom: 0 !important;">
- 						<div id="spiffs" class="progress-bar progress-bar-primary" role="progressbar">
- 							Progress
- 						</div>
- 					</div></td>
- 			</tr>
-                </table>
-              </div>
-            </div>
-            <div class="col-sm-6">
-              <div class="panel panel-default table-responsive">
-                <table class="table table-hover table-striped">
-                  <caption>Network</caption>
-                  <tr>
-                    <th>SSID</th>
-                    <td id="ssidstat"></td>
-                  </tr>
-                  <tr>
-                    <th>IP</th>
-                    <td id="ip"></td>
-                  </tr>
-                  <tr>
-                    <th>Gateway</th>
-                    <td id="gate"></td>
-                  </tr>
-                  <tr>
-                    <th>Mask</th>
-                    <td id="mask"></td>
-                  </tr>
-                  <tr>
-                    <th>DNS</th>
-                    <td id="dns"></td>
-                  </tr>
-                  <tr>
-                    <th>MAC</th>
-                    <td id="mac"></td>
-                  </tr>
-                </table>
-              </div>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+ 					        <th>Free SPIFFS</th>
+ 					        <td>			
+ 					          <div class='progress' style="margin-bottom: 0 !important;">
+ 						          <div id="spiffs" class="progress-bar progress-bar-primary" role="progressbar">
+ 							            Progress
+ 						          </div>
+ 					          </div>
+ 					        </td>
+ 			          </tr>
+              </table>
             </div>
           </div>
-            <br>
+          <div class="col-sm-6">
+            <div class="panel panel-default table-responsive">
+              <table class="table table-hover table-striped">
+                <caption>Network</caption>
+                <tr>
+                  <th>SSID</th>
+                  <td id="ssidstat"></td>
+                </tr>
+                <tr>
+                  <th>IP</th>
+                  <td id="ip"></td>
+                </tr>
+                <tr>
+                  <th>Gateway</th>
+                  <td id="gate"></td>
+                </tr>
+                <tr>
+                  <th>Mask</th>
+                  <td id="mask"></td>
+                </tr>
+                <tr>
+                  <th>DNS</th>
+                  <td id="dns"></td>
+                </tr>
+                <tr>
+                  <th>MAC</th>
+                  <td id="mac"></td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+        <br>
         <div class="row">
           <div class="col-sm-6">
             <legend>Wi-Fi Settings</legend>
@@ -133,21 +134,21 @@
             <div class="row form-group">
               <label data-toggle="tooltip" title="Wi-Fi Network's Name" class="col-xs-3">SSID</label> 
               <span class="col-xs-9">
-              <input class="form-control input-sm" style="display:inline;max-width:150px" id="inputtohide" type="text" name="ap_ssid">
-              <select class="form-control input-sm" style="display:none;max-width:150px" id="ssid" onchange="listBSSID();"></select>
-              <button id="scanb" type="button" class="btn btn-primary btn-xs" onclick="scanWifi()">Scan</button>
+                <input class="form-control input-sm" style="display:inline;max-width:150px" id="inputtohide" type="text" name="ap_ssid">
+                <select class="form-control input-sm" style="display:none;max-width:150px" id="ssid" onchange="listBSSID();"></select>
+                <button id="scanb" type="button" class="btn btn-primary btn-xs" onclick="scanWifi()">Scan</button>
               </span>
             </div>
             <div class="row form-group" style="display:none" id="hideBSSID">
               <label data-toggle="tooltip" title="If you have two Wi-Fi networks with the same SSID you may want to choose the specific one by BSSID" class="col-xs-3">BSSID</label> 
               <span class="col-xs-9">
-              <input id="wifibssid" style="max-width:150px" class="form-control input-sm" type="text" name="ap_bssid">
+                <input id="wifibssid" style="max-width:150px" class="form-control input-sm" type="text" name="ap_bssid">
               </span> 
             </div>
             <div class="row form-group">
               <label data-toggle="tooltip" title="Wi-Fi Password" class="col-xs-3">Password</label> 
               <span class="col-xs-9">
-              <input id="wifipass" style="max-width:150px" class="form-control input-sm" type="text" name="ap_passwd">
+                <input id="wifipass" style="max-width:150px" class="form-control input-sm" type="text" name="ap_passwd">
               </span> 
             </div>
             <br>
@@ -179,19 +180,18 @@
                   <option value="16">23 db</option>
                   <option value="0">Min (18 db)</option>
                 </select>
-                
               </span>
             </div>
             <br>
             <div class="row form-group">
- 						<label data-toggle="tooltip" title="Depending on your electrical setup, you can choose the relay type" class="col-xs-3">Relay Type</label> 
- 						<span class="col-xs-9">
- 						<select class="form-control input-sm" style="display:inline;max-width:185px" id="typerly">
- 							<option selected="selected" value="1">Active High</option>
- 							<option value="0">Active Low</option>
- 						</select>
- 						</span>
-				</div>
+ 					    <label data-toggle="tooltip" title="Depending on your electrical setup, you can choose the relay type" class="col-xs-3">Relay Type</label> 
+ 					    <span class="col-xs-9">
+ 						    <select class="form-control input-sm" style="display:inline;max-width:185px" id="typerly">
+ 							    <option selected="selected" value="1">Active High</option>
+ 							    <option value="0">Active Low</option>
+ 						    </select>
+ 					    </span>
+				    </div>
             <div class="row form-group">
               <label data-toggle="tooltip" title="Choose which ESP port is connected to your relay" class="col-xs-3">Relay Pin</label> 
               <span class="col-xs-9">
@@ -209,10 +209,9 @@
             <div class="row form-group">
               <label data-toggle="tooltip" title="Relay Toggle time in Microseconds, usually 300ms is enough for the most electric door locks" class="col-xs-3">Activate Time</label> 
               <span class="col-xs-9">
-              <input class="form-control input-sm" value="300" placeholder="in Microsecond" style="display:inline;max-width:185px" id="delay" type="text" name="hightime">
+                <input class="form-control input-sm" value="300" placeholder="in Microsecond" style="display:inline;max-width:185px" id="delay" type="text" name="hightime">
               </span>
             </div>
-            
           </div>
         </div>
         <br>
@@ -222,14 +221,50 @@
             <div class="row form-group">
               <label data-toggle="tooltip" title="Log On password for the Administrator" class="col-xs-3">Admin Password</label> 
               <span class="col-xs-9">
-              <input class="form-control input-sm" placeholder="Administrator Password" style="display:inline;max-width:185px" id="adminpwd" type="text">
+                <input class="form-control input-sm" placeholder="Administrator Password" style="display:inline;max-width:185px" id="adminpwd" type="text">
               </span>
               <br>
             </div>
-                        <div class="row form-group">
+            <div class="row form-group">
               <label data-toggle="tooltip" title="Hostname for your ESP, When Bonjour is installed on your computer you can access your ESP via http://hostname.local" class="col-xs-3">Host Name</label> 
               <span class="col-xs-9">
-              <input class="form-control input-sm" placeholder="Hostname" value="esp-rfid" style="display:inline;max-width:185px" id="hostname" type="text">
+                <input class="form-control input-sm" placeholder="Hostname" value="esp-rfid" style="display:inline;max-width:185px" id="hostname" type="text">
+              </span>
+              <br>
+            </div>
+            <legend>MQTT Settings</legend>
+            <div class="row form-group">
+              <label data-toggle="tooltip" title="MQTT server IP Address or url" class="col-xs-3">IP</label> 
+              <span class="col-xs-9">
+                <input class="form-control input-sm" placeholder="MQTT Host" style="display:inline;max-width:185px" id="mqtthost" type="text">
+              </span>
+              <br>
+            </div>
+            <div class="row form-group">
+              <label data-toggle="tooltip" title="MQTT server port" class="col-xs-3">Port</label> 
+              <span class="col-xs-9">
+                <input class="form-control input-sm" placeholder="MQTT Port" value="" style="display:inline;max-width:185px" id="mqttport" type="text">
+              </span>
+              <br>
+            </div>
+            <div class="row form-group">
+              <label data-toggle="tooltip" title="MQTT user" class="col-xs-3">User</label> 
+              <span class="col-xs-9">
+                <input class="form-control input-sm" placeholder="" value="" style="display:inline;max-width:185px" id="mqttuser" type="text">
+              </span>
+              <br>
+            </div>
+            <div class="row form-group">
+              <label data-toggle="tooltip" title="MQTT server password if any" class="col-xs-3">Password</label> 
+              <span class="col-xs-9">
+                <input class="form-control input-sm" placeholder="" value="" style="display:inline;max-width:185px" id="mqttpwd" type="text">
+              </span>
+              <br>
+            </div>
+            <div class="row form-group">
+              <label data-toggle="tooltip" title="MQTT topic" class="col-xs-3">Topic</label> 
+              <span class="col-xs-9">
+                <input class="form-control input-sm" placeholder="MQTT topic" value="" style="display:inline;max-width:185px" id="mqtttopic" type="text">
               </span>
               <br>
             </div>
@@ -249,18 +284,18 @@
             </div>
             <div class="row form-group">
               <div data-toggle="tooltip" title="Send your PC/Phone time to ESP, useful when the ESP does not have Internet connection." class="col-xs-3"><button onclick="syncBrowserTime()" class="btn btn-link btn-sm">Sync Browser Time to Device</button></div>
-              </div>
+            </div>
             <div class="row form-group">
               <label data-toggle="tooltip" title="The server for the time sync" class="col-xs-3">NTP Server</label> 
               <span class="col-xs-9">
-              <input data-toggle="tooltip" title="Choose nearest server for better accuracy, see ntp.org for servers nearby." class="form-control input-sm" placeholder="eg. pool.ntp.org" value="pool.ntp.org" style="display:inline;max-width:185px" id="ntpserver" type="text">
+                <input data-toggle="tooltip" title="Choose nearest server for better accuracy, see ntp.org for servers nearby." class="form-control input-sm" placeholder="eg. pool.ntp.org" value="pool.ntp.org" style="display:inline;max-width:185px" id="ntpserver" type="text">
               </span>
               <br>
             </div>
             <div class="row form-group">
               <label data-toggle="tooltip" title="Intervals between Time Sync in Minutes" class="col-xs-3">Intervals</label> 
               <span class="col-xs-9">
-              <input class="form-control input-sm" placeholder="in Minutes" value="30" style="display:inline;max-width:185px" id="intervals" type="text">
+                <input class="form-control input-sm" placeholder="in Minutes" value="30" style="display:inline;max-width:185px" id="intervals" type="text">
               </span>
               <br>
             </div>
@@ -333,26 +368,24 @@
             </div>
             <br>
             <div id="restoremodal" class="modal fade" role="dialog">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal">&times;</button>
-        <h4 class="modal-title">Please wait while restoring user data...</h4>
-      </div>
-      <div class="modal-body">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Please wait while restoring user data...</h4>
+                  </div>
+                  <div class="modal-body">
                     <div id="pbar" class="progress">
-              <div id="dynamic" class="progress-bar progress-bar-primary progress-bar-striped active">Restoring...</div>
+                      <div id="dynamic" class="progress-bar progress-bar-primary progress-bar-striped active">Restoring...</div>
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" id="restoreclose" style="display:none;" class="btn btn-default" data-dismiss="modal">Close</button>
+                  </div>
+                </div>
+              </div>
             </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" id="restoreclose" style="display:none;" class="btn btn-default" data-dismiss="modal">Close</button>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-          </div>
+        </div>
           <div class="col-sm-6">
             <legend>Update Firmware</legend>
             <h6 class="text-muted">Download <a href="https://github.com/omersiar/esp-rfid/raw/master/compiledbin/latest.bin">latest version</a> from GitHub.</h6>

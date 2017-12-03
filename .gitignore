@@ -1,5 +1,7 @@
-./auth/config.json
+data/auth/config.json
 Makefile
 Makefile.ArDomo5
 windows_build.txt
 linux_build.txt
+libraries
+build*
