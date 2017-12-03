@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.3beta] - 2017-12-04
+#### Added
+- MQTT support
+
 ## [0.3beta] - 2017-10-28
 #### Added
 - Basic Authentication on WebSocket
