@@ -39,23 +39,6 @@
 #include <NtpClientLib.h>             // To timestamp RFID scans we get Unix Time from NTP Server
 #include <TimeLib.h>                  // Library for converting epochtime to a date
 #include <WiFiUdp.h>                  // Library for manipulating UDP packets which is used by NTP Client to get Timestamps
-#include <PubSubClient.h>             // Library to connect to mqtt server
-
-
-//prototypes
-bool loadConfiguration();
-void fallbacktoAPMode();
-void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len);
-void rfidloop();
-void LogLatest(String uid, String username);
-void sendUserList(int page, AsyncWebSocketClient * client);
-void sendStatus();
-void printScanResult(int networksFound);
-void sendTime();
-String printIP(IPAddress adress);
-void setupRFID(int rfidss, int rfidgain);
-bool connectSTA(const char* ssid, const char* password, byte bssid[6]);
-void ShowReaderDetails();
 
 // Variables for whole scope
 unsigned long previousMillis = 0;
@@ -74,17 +57,6 @@ MFRC522 mfrc522 = MFRC522();
 AsyncWebServer server(80);
 // Create WebSocket instance on URL "/ws"
 AsyncWebSocket ws("/ws");
-
-// MQTT
-WiFiClient wifiClient;
-IPAddress MQTTserver();
-PubSubClient mqttClient(wifiClient);
-char *mqttHost = NULL;
-uint16_t mqttPort = 0;
-bool mqttConnected = false;
-char *mqttTopic = NULL;
-char *mqttUser = NULL;
-char *mqttPwd = NULL;
 
 // Set things up
 void setup() {
@@ -177,10 +149,6 @@ void loop() {
   if (currentMillis >= cooldown) {
     rfidloop();
   }
-  mqttConnect();
-  if (mqttClient.connected()) {
-    mqttClient.loop();
-  }
 }
 
 /* ------------------ RFID Functions ------------------- */
@@ -208,10 +176,6 @@ void rfidloop() {
     uid += String(mfrc522.uid.uidByte[i], HEX);
   }
   Serial.print(uid);
-  if (mqttClient.connected()) {
-    mqttClient.publish(mqttTopic, uid.c_str(), false);
-  }
-
   // Get PICC type
   MFRC522::PICC_Type piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
   String type = mfrc522.PICC_GetTypeName(piccType);
@@ -299,7 +263,7 @@ void rfidloop() {
       ws.textAll(buffer);
     }
   }
-  // So far we got UID of Scanned RFID Tag, checked it if it's on the database and access status, informed Administrator Portal
+  // So far got we got UID of Scanned RFID Tag, checked it if it's on the database and access status, informed Administrator Portal
 }
 
 void LogLatest(String uid, String username) {
@@ -621,32 +585,6 @@ void parseBytes(const char* str, char sep, byte* bytes, int maxBytes, int base) 
   }
 }
 
-void mqttCallback(char* topic, byte* payload, unsigned int length) {
-  if (length == 0) {
-    return;
-  }
-}
-
-void mqttConnect() {
-  if (mqttHost != NULL && mqttPort != 0 && mqttTopic != NULL && !mqttClient.connected() ) {
-    Serial.print(F("[ INFO ] Trying to connect to MQTT server : "));
-    //setCallback();
-    unsigned char retries = 0;
-    mqttConnected = false;
-    while (mqttConnected == false && retries < 20) {
-      mqttConnected = mqttClient.connect("ESP-RFID", mqttUser, mqttPwd);
-      retries++;
-      delay(1000);
-      Serial.print(".");
-    }
-    if (mqttConnected == true) { 
-      Serial.println(F(" connected to mqttServer"));
-    } else {
-      Serial.println(F(" MQTT connection error"));
-    }    
-  }
-}
-
 bool loadConfiguration() {
   File configFile = SPIFFS.open("/auth/config.json", "r");
   if (!configFile) {
@@ -705,8 +643,6 @@ bool loadConfiguration() {
 
   const char * adminpass = json["adminpwd"];
 
-  
-  
   // Serve confidential files in /auth/ folder with a Basic HTTP authentication
   server.serveStatic("/auth/", SPIFFS, "/auth/").setDefaultFile("users.htm").setAuthentication("admin", adminpass);
   ws.setAuthentication("admin", adminpass);
@@ -730,27 +666,7 @@ bool loadConfiguration() {
   }
   NTP.begin(ntpserver, timeZone);
   NTP.setInterval(ntpinter * 60); // Poll every x minutes
-// mqtt
-  if (mqttHost != NULL) {
-    free((void *)mqttHost);
-  }
-  mqttHost = strdup(json["mqtthost"]);
-  mqttPort = json["mqttport"];
-  if (mqttTopic != NULL) {
-    free((void *)mqttTopic);
-  }
-  mqttTopic = strdup(json["mqtttopic"]);
-  if (mqttUser != NULL) {
-    free((void *)mqttUser);
-  }
-  mqttUser = strdup(json["mqttuser"]);
-  if (mqttPwd != NULL) {
-    free((void *)mqttPwd);
-  }
-  mqttPwd = strdup(json["mqttpwd"]);
-  mqttClient.disconnect();
-  mqttClient.setServer(mqttHost, mqttPort);
-  mqttConnect();
+
   return true;
 }
 
