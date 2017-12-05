@@ -20,8 +20,9 @@ Use case scenarios can be expanded. There are several things I want to implement
 * Capable of managing up to 1.000 Users (even more is possible)
 * Great for Maker Spaces, Labs, Schools, etc
 * Cheap to build and easy to maintain
-### For Tinkerers 
+### For Tinkerers
 * Open Source (minimum amount of hardcoded variable, this means more freedom)
+* By default MQTT is not supported, thanks to [@thunderace](https://github.com/omersiar/esp-rfid/tree/mqtt) MQTT enabled version is on another branch 
 * Using WebSocket protocol to exchange data between Hardware and Web Browser
 * Data is encoded as JSON object
 * Records are Timestamped (Time synced from a NTP Server)
@@ -141,6 +142,7 @@ Thanks to the community, these features are come to alive with their great effor
 - [X] Available SPIFFS storage [by @rneurink](https://github.com/rneurink/esp-rfid/commit/5b962538bbf1c3234c05cea9ec8bf24f81ad6561)
 - [X] Device Status in AP Mode [by @rneurink](https://github.com/rneurink/esp-rfid)
 - [X] Colorize progress bars depending on percentage [by @rneurink](https://github.com/rneurink/esp-rfid)
+- [X] MQTT Support [by @thunderace](https://github.com/omersiar/esp-rfid/tree/mqtt)
 
 See [ChangeLog](https://github.com/omersiar/esp-rfid/blob/master/CHANGELOG.md)
 
