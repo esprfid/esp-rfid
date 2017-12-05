@@ -102,10 +102,8 @@ The following table shows the typical pin layout used for connecting MFRC522 har
 * Congratulations, everything went well, if you encounter any issue feel free to ask help on GitHub.
 
 ### Known Issues
-* You need to download https://github.com/omersiar/ESPAsyncWebServer version of ESPAsyncWebServer Library until the fix is merged to origin.
 * MFRC522 RFID Hardware should be connected to ESP or you will likely get a WDT Reset (boot loop) [#13](https://github.com/omersiar/esp-rfid/issues/13).
 * Currently only Git version (2.4.0rc) of ESP8266 Core is supported, due to new function is introduced (WiFi.scanNetworksAsync()).
-* When you connect to ESP via mDNS url Browsers make a DNS Query for WebSocket link, it takes long time to resolve.
 
 #### Time
 We are syncing time from a NTP Server (in Client -aka infrastructure- Mode). This will require ESP to have an Internet connection. Additionaly your ESP can also work without Internet connection too (Access Point -aka Ad-Hoc- Mode),  without giving up functionality.
