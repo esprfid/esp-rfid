@@ -62,9 +62,6 @@ int relayType;
 int activateTime;
 int timeZone;
 
-bool debug = true;
-
-
 // Create MFRC522 RFID instance
 MFRC522 mfrc522 = MFRC522();
 // Create AsyncWebServer instance on port "80"
