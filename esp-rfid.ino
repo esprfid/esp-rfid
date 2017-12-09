@@ -42,10 +42,21 @@
 
 // Variables for whole scope
 unsigned long previousMillis = 0;
+unsigned long previousLoopMillis = 0;
 unsigned long cooldown = 0;
 bool shouldReboot = false;
 bool activateRelay = false;
 bool inAPMode = false;
+bool isWifiConnected = false;
+int autoRestartIntervalSeconds = 0;
+
+bool wifiDisabled = true;
+bool doDisableWifi = false;
+bool doEnableWifi = false;
+int wifiTimeout = -1;
+unsigned long wiFiUptimeMillis = 0;
+char * deviceHostname = 0;
+
 int relayPin;
 int relayType;
 int activateTime;
@@ -80,6 +91,12 @@ void setup() {
     fallbacktoAPMode();
   }
 
+  startServer();
+
+}
+
+void startServer()
+{
   // Start WebSocket Plug-in and handle incoming message on "onWsEvent" function
   server.addHandler(&ws);
   ws.onEvent(onWsEvent);
@@ -92,8 +109,7 @@ void setup() {
   server.serveStatic("/", SPIFFS, "/");
   // Handle what happens when requested web file couldn't be found
   server.onNotFound([](AsyncWebServerRequest * request) {
-    AsyncWebServerResponse *response = request->beginResponse(302, "text/plain", "");
-    response->addHeader("Location", "http://192.168.4.1");
+    AsyncWebServerResponse *response = request->beginResponse(404, "text/plain", "Not found");
     request->send(response);
   });
 
@@ -131,13 +147,24 @@ void setup() {
 
 // Main Loop
 void loop() {
+
+  unsigned long currentMillis = millis();
+  unsigned long deltaTime = currentMillis-previousLoopMillis;
+  unsigned long uptime = NTP.getUptime();
+  previousLoopMillis = currentMillis;
+
+  if (autoRestartIntervalSeconds > 0 && uptime > autoRestartIntervalSeconds*1000)
+  {
+    Serial.println(F("[ UPDT ] Auto restarting..."));
+    shouldReboot = true;
+  }
+
   // check for a new update and restart
   if (shouldReboot) {
     Serial.println(F("[ UPDT ] Rebooting..."));
     delay(100);
     ESP.restart();
   }
-  unsigned long currentMillis = millis();
   if (currentMillis - previousMillis >= activateTime && activateRelay) {
     activateRelay = false;
     digitalWrite(relayPin, relayType);
@@ -145,10 +172,48 @@ void loop() {
   if (activateRelay) {
     digitalWrite(relayPin, !relayType);
   }
+
+  if (isWifiConnected)
+    wiFiUptimeMillis += deltaTime;
+  
+  if (wifiTimeout>0 && wiFiUptimeMillis>(wifiTimeout*1000) && isWifiConnected == true)
+  {
+    doDisableWifi = true;
+  }
+
+  if (doDisableWifi==true)
+  {
+    doDisableWifi=false;
+    wiFiUptimeMillis = 0;
+    disableWifi();
+  }
+  else if (doEnableWifi==true)
+  {
+    doEnableWifi = false;
+    if (!isWifiConnected)
+    {
+      wiFiUptimeMillis = 0;
+      enableWifi();
+    } 
+  }
+
   // Another loop for RFID Events, since we are using polling method instead of Interrupt we need to check RFID hardware for events
   if (currentMillis >= cooldown) {
     rfidloop();
   }
+}
+
+void enableWifi()
+{
+    Serial.println("Turn wifi on.");
+    if (!loadConfiguration())
+        fallbacktoAPMode();
+}
+void disableWifi()
+{
+    isWifiConnected = false;
+    WiFi.disconnect(true);
+    Serial.println("Turn wifi off.");
 }
 
 /* ------------------ RFID Functions ------------------- */
@@ -207,12 +272,24 @@ void rfidloop() {
       AccType = json["acctype"];
       Serial.println(" = known PICC");
       Serial.print("[ INFO ] User Name: ");
-      Serial.print(username);
+      
+      if (username == "undefined")
+        Serial.print(uid);
+      else
+        Serial.print(username);
+        
       // Check if user have an access
       if (AccType == 1) {
         activateRelay = true;  // Give user Access to Door, Safe, Box whatever you like
         previousMillis = millis();
         Serial.println(" have access");
+      }
+      else if (AccType == 99)
+      {
+        previousMillis = millis();
+        doEnableWifi = true;
+        activateRelay = true;  // Give user Access to Door, Safe, Box whatever you like
+        Serial.println(" have admin access, enable wifi");
       }
       else {
         Serial.println(" does not have access");
@@ -566,12 +643,13 @@ void fallbacktoAPMode() {
   inAPMode = true;
   WiFi.mode(WIFI_AP);
   Serial.print(F("[ INFO ] Configuring access point... "));
-  Serial.println(WiFi.softAP("ESP-RFID") ? "Ready" : "Failed!");
+  Serial.println(WiFi.softAP(deviceHostname) ? "Ready" : "Failed!");
   // Access Point IP
   IPAddress myIP = WiFi.softAPIP();
   Serial.print(F("[ INFO ] AP IP address: "));
   Serial.println(myIP);
   server.serveStatic("/auth/", SPIFFS, "/auth/").setDefaultFile("users.htm").setAuthentication("admin", "admin");
+  isWifiConnected = true;
 }
 
 void parseBytes(const char* str, char sep, byte* bytes, int maxBytes, int base) {
@@ -611,17 +689,23 @@ bool loadConfiguration() {
   int rfidgain = json["rfidgain"];
   Serial.println(F("[ INFO ] Trying to setup RFID Hardware"));
   setupRFID(rfidss, rfidgain);
+  const char * l_hostname = json["hostnm"];
 
-  const char * hstname = json["hostnm"];
+  autoRestartIntervalSeconds = json["auto_restart_interval_seconds"].as<int>();
+  wifiTimeout = json["disable_wifi_after_seconds"].as<int>();
+
+  free(deviceHostname);
+  deviceHostname = strdup(l_hostname);
+
   const char * bssidmac = json["bssid"];
   byte bssid[6];
   parseBytes(bssidmac, ':', bssid, 6, 16);
 
   // Set Hostname.
-  WiFi.hostname(hstname);
+  WiFi.hostname(deviceHostname);
 
   // Start mDNS service so we can connect to http://esp-rfid.local (if Bonjour installed on Windows or Avahi on Linux)
-  if (!MDNS.begin(hstname)) {
+  if (!MDNS.begin(deviceHostname)) {
     Serial.println("Error setting up MDNS responder!");
   }
   // Add Web Server service to mDNS
@@ -659,6 +743,7 @@ bool loadConfiguration() {
     Serial.println(myIP);
     Serial.print(F("[ INFO ] AP SSID: "));
     Serial.println(ssid);
+    isWifiConnected = true;
     return true;
   }
   else if (!connectSTA(ssid, password, bssid)) {
@@ -684,9 +769,13 @@ void setupRFID(int rfidss, int rfidgain) {
 
 // Try to connect Wi-Fi
 bool connectSTA(const char* ssid, const char* password, byte bssid[6]) {
+  
+  WiFi.disconnect(true);
   WiFi.mode(WIFI_STA);
+
   // First connect to a wi-fi network
   WiFi.begin(ssid, password, 0, bssid);
+
   // Inform user we are trying to connect
   Serial.print(F("[ INFO ] Trying to connect WiFi: "));
   Serial.print(ssid);
@@ -707,6 +796,7 @@ bool connectSTA(const char* ssid, const char* password, byte bssid[6]) {
     Serial.println();
     Serial.print(F("[ INFO ] Client IP address: ")); // Great, we connected, inform
     Serial.println(WiFi.localIP());
+    isWifiConnected = true;
     return true;
   }
   else { // We couln't connect, time is out, inform
