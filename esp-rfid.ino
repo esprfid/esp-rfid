@@ -94,6 +94,12 @@ void setup() {
     fallbacktoAPMode();
   }
 
+  startServer();
+
+}
+
+void startServer()
+{
   // Start WebSocket Plug-in and handle incoming message on "onWsEvent" function
   server.addHandler(&ws);
   ws.onEvent(onWsEvent);
