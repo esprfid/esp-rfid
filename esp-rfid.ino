@@ -55,7 +55,7 @@ bool doDisableWifi = false;
 bool doEnableWifi = false;
 int wifiTimeout = -1;
 unsigned long wiFiUptimeMillis = 0;
-char * deviceHostname = 0;
+char * deviceHostname = NULL;
 
 int relayPin;
 int relayType;
@@ -638,18 +638,30 @@ void printScanResult(int networksFound) {
   WiFi.scanDelete();
 }
 
-// Fallback to AP Mode, so we can connect to ESP if there is no Internet connection
-void fallbacktoAPMode() {
+bool startAP(const char * ssid, const char * password = NULL) {
   inAPMode = true;
   WiFi.mode(WIFI_AP);
   Serial.print(F("[ INFO ] Configuring access point... "));
-  Serial.println(WiFi.softAP(deviceHostname) ? "Ready" : "Failed!");
+  bool success = WiFi.softAP(ssid, password);
+  Serial.println(success ? "Ready" : "Failed!");
   // Access Point IP
   IPAddress myIP = WiFi.softAPIP();
   Serial.print(F("[ INFO ] AP IP address: "));
   Serial.println(myIP);
+  Serial.printf("[ INFO ] AP SSID: %s\n", ssid);
+  isWifiConnected = success;
+  return success;
+}
+
+// Fallback to AP Mode, so we can connect to ESP if there is no Internet connection
+void fallbacktoAPMode() {
+  Serial.println(F("[ INFO ] ESP-RFID is running in Fallback AP Mode"));
+  uint8_t macAddr[6];
+  WiFi.softAPmacAddress(macAddr);
+  char ssid[15];
+  sprintf(ssid, "ESP-RFID-%02x%02x%02x", macAddr[3], macAddr[4], macAddr[5]);
+  isWifiConnected = startAP(ssid);
   server.serveStatic("/auth/", SPIFFS, "/auth/").setDefaultFile("users.htm").setAuthentication("admin", "admin");
-  isWifiConnected = true;
 }
 
 void parseBytes(const char* str, char sep, byte* bytes, int maxBytes, int base) {
@@ -732,19 +744,8 @@ bool loadConfiguration() {
   ws.setAuthentication("admin", adminpass);
 
   if (wmode == 1) {
-    inAPMode = true;
     Serial.println(F("[ INFO ] ESP-RFID is running in AP Mode "));
-    WiFi.mode(WIFI_AP);
-    Serial.print(F("[ INFO ] Configuring access point... "));
-    Serial.println(WiFi.softAP(ssid, password) ? "Ready" : "Failed!");
-    // Access Point IP
-    IPAddress myIP = WiFi.softAPIP();
-    Serial.print(F("[ INFO ] AP IP address: "));
-    Serial.println(myIP);
-    Serial.print(F("[ INFO ] AP SSID: "));
-    Serial.println(ssid);
-    isWifiConnected = true;
-    return true;
+    return startAP(ssid, password);
   }
   else if (!connectSTA(ssid, password, bssid)) {
     return false;
