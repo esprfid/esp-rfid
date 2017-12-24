@@ -133,7 +133,13 @@ At least 1000 unique User (RFID Tag) can be handled, the test were performed on 
 * Logging needs testing. How long should it need to log access? What if a Boss needs whole year log?
 * Realiability on Flash (these NOR Flash have limited write cycle on their cells). It depends on manufacturer choice of Flash Chip and usage.
 
-## Contributions
+## Community
+* [![Chat at https://gitter.im/esp-rfid/Lobby](https://badges.gitter.im/esp-rfid.svg)](https://gitter.im/esp-rfid/Lobby) Join community chat on Gitter
+
+### Projects that is based on esp-rfid
+* [ESP-IO](https://github.com/Pako2/EventGhostPlugins/tree/master/ESP-IO)
+
+### Contributions
 Thanks to the community, these features are come to alive with their great effort:
 
 - [X] Added captive portal. [by @rneurink](https://github.com/omersiar/esp-rfid/issues/7)
