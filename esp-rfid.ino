@@ -73,7 +73,7 @@ AsyncWebSocket ws("/ws");
 void setup() {
   Serial.begin(115200);
   Serial.println();
-  Serial.println(F("[ INFO ] ESP RFID v0.3alpha"));
+  Serial.println(F("[ INFO ] ESP RFID v0.3beta"));
 
   // Start SPIFFS filesystem
   SPIFFS.begin();
@@ -90,13 +90,10 @@ void setup() {
   if (!loadConfiguration()) {
     fallbacktoAPMode();
   }
-
   startServer();
-
 }
 
-void startServer()
-{
+void startServer() {
   // Start WebSocket Plug-in and handle incoming message on "onWsEvent" function
   server.addHandler(&ws);
   ws.onEvent(onWsEvent);
@@ -147,14 +144,12 @@ void startServer()
 
 // Main Loop
 void loop() {
-
   unsigned long currentMillis = millis();
-  unsigned long deltaTime = currentMillis-previousLoopMillis;
+  unsigned long deltaTime = currentMillis - previousLoopMillis;
   unsigned long uptime = NTP.getUptime();
   previousLoopMillis = currentMillis;
 
-  if (autoRestartIntervalSeconds > 0 && uptime > autoRestartIntervalSeconds*1000)
-  {
+  if (autoRestartIntervalSeconds > 0 && uptime > autoRestartIntervalSeconds * 1000) {
     Serial.println(F("[ UPDT ] Auto restarting..."));
     shouldReboot = true;
   }
@@ -172,48 +167,40 @@ void loop() {
   if (activateRelay) {
     digitalWrite(relayPin, !relayType);
   }
-
-  if (isWifiConnected)
+  if (isWifiConnected) {
     wiFiUptimeMillis += deltaTime;
-  
-  if (wifiTimeout>0 && wiFiUptimeMillis>(wifiTimeout*1000) && isWifiConnected == true)
-  {
+  }
+  if (wifiTimeout > 0 && wiFiUptimeMillis > (wifiTimeout * 1000) && isWifiConnected == true) {
     doDisableWifi = true;
   }
-
-  if (doDisableWifi==true)
-  {
-    doDisableWifi=false;
+  if (doDisableWifi == true) {
+    doDisableWifi = false;
     wiFiUptimeMillis = 0;
     disableWifi();
   }
-  else if (doEnableWifi==true)
-  {
+  else if (doEnableWifi == true) {
     doEnableWifi = false;
-    if (!isWifiConnected)
-    {
+    if (!isWifiConnected) {
       wiFiUptimeMillis = 0;
       enableWifi();
-    } 
+    }
   }
-
   // Another loop for RFID Events, since we are using polling method instead of Interrupt we need to check RFID hardware for events
   if (currentMillis >= cooldown) {
     rfidloop();
   }
 }
 
-void enableWifi()
-{
-    Serial.println("Turn wifi on.");
-    if (!loadConfiguration())
-        fallbacktoAPMode();
+void enableWifi() {
+  Serial.println("Turn wifi on.");
+  if (!loadConfiguration())
+    fallbacktoAPMode();
 }
-void disableWifi()
-{
-    isWifiConnected = false;
-    WiFi.disconnect(true);
-    Serial.println("Turn wifi off.");
+
+void disableWifi() {
+  isWifiConnected = false;
+  WiFi.disconnect(true);
+  Serial.println("Turn wifi off.");
 }
 
 /* ------------------ RFID Functions ------------------- */
@@ -272,12 +259,12 @@ void rfidloop() {
       AccType = json["acctype"];
       Serial.println(" = known PICC");
       Serial.print("[ INFO ] User Name: ");
-      
+
       if (username == "undefined")
         Serial.print(uid);
       else
         Serial.print(username);
-        
+
       // Check if user have an access
       if (AccType == 1) {
         activateRelay = true;  // Give user Access to Door, Safe, Box whatever you like
@@ -770,13 +757,10 @@ void setupRFID(int rfidss, int rfidgain) {
 
 // Try to connect Wi-Fi
 bool connectSTA(const char* ssid, const char* password, byte bssid[6]) {
-  
   WiFi.disconnect(true);
   WiFi.mode(WIFI_STA);
-
   // First connect to a wi-fi network
   WiFi.begin(ssid, password, 0, bssid);
-
   // Inform user we are trying to connect
   Serial.print(F("[ INFO ] Trying to connect WiFi: "));
   Serial.print(ssid);

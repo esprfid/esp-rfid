@@ -87,10 +87,13 @@ function initTable() {
           editRow: function(row) {
             var acctypefinder;
             var values = row.val();
-            if (values.acctype == "Active") {
+            if (values.acctype === "Active") {
     acctypefinder = 1;
   }
-  else {
+  else if (values.acctype === "Admin") {
+    acctypefinder = 99;
+  }
+  else if (values.acctype === "Disabled"){
     acctypefinder = 0;
   }
             $editor.find('#uid').val(values.uid);
@@ -152,6 +155,9 @@ function acctypefinder() {
   if (values.acctype === "Active") {
     return 1;
   }
+  else if (values.acctype === "Admin"){
+    return 99;
+  }
   else {
     return 0;
   }
@@ -161,6 +167,8 @@ function acctypeparser(){
   var $editor = $('#editor');
   if($editor.find('#acctype option:selected').val() == 1){
     return "Active";
+  } else if ($editor.find('#acctype option:selected').val() == 99) {
+    return "Admin";
   } else {
     return "Disabled";
   }

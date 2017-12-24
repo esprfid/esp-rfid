@@ -32,14 +32,14 @@ Use case scenarios can be expanded. There are several things I want to implement
 ## Getting Started
 This project still in its development phase. New features (and also bugs) are introduced often and some functions may become deprecated. Please feel free to comment or give feedback.
 * Latest development version is v0.3beta
-* Latest released compiled binaries are from v0.3beta and can be found in directory "/compiledbin"
+* Latest released compiled binaries are from v0.3beta and can be found in directory [/compiledbin](https://github.com/omersiar/esp-rfid/tree/master/compiledbin)
 * See [Known Issues](https://github.com/omersiar/esp-rfid#known-issues) before starting right away.
 * See [ChangeLog](https://github.com/omersiar/esp-rfid/blob/master/CHANGELOG.md)
 * See [To Do](https://github.com/omersiar/esp-rfid#to-do) for what to expect in future.
 
 ### What You Will Need 
 ### Hardware
-* An ESP8266 module or development board like WeMos or NodeMcu with at least 32Mbit Flash (equals to 4MBytes)(ESP32 does not supported at this time)
+* An ESP8266 module or development board like **WeMos D1 mini** or **NodeMcu 1.0** with at least **32Mbit Flash (equals to 4MBytes)** (ESP32 does not supported for now)
 * A MFRC522 RFID PCD Module
 * A Relay Module (or you can build your own circuit)
 * n quantity of Mifare Classic 1KB (recommended due to available code base) PICCs (RFID Tags) equivalent to User Number
@@ -47,10 +47,10 @@ This project still in its development phase. New features (and also bugs) are in
 ### Software
 
 #### Using Compiled Binaries
-Compiled binaries and a helper for flashing are available in directory /compiledbin. On Windows you can use "flash.bat" it will ask you which COM port that ESP is connected and then flashes it. You can use any flashing tool and do the flashing manually. The flashing process itself has been described at numerous places on Internet.
+[Compiled binaries and the flasher tool](https://github.com/omersiar/esp-rfid/tree/master/compiledbin) are available in directory /compiledbin. On Windows you can use "flash.bat" it will ask you which COM port that ESP is connected and then flashes it. You can use any flashing tool and do the flashing manually. The flashing process itself has been described at numerous places on Internet.
 
 #### Building From Source
-Please install Arduino IDE if you didn't already, then add ESP8266 Core (Beware! Install Git Version) on top of it. Additional Library download links are listed below:
+Please install Arduino IDE if you didn't already, then add ESP8266 Core (**Beware! [Install Git Version](https://github.com/esp8266/Arduino#using-git-version)**) on top of it. Additional Library download links are listed below:
 
 * [Arduino IDE](http://www.arduino.cc) - The development IDE
 * [ESP8266 Core for Arduino IDE](https://github.com/esp8266/Arduino) - ESP8266 Core
@@ -141,6 +141,10 @@ Thanks to the community, these features are come to alive with their great effor
 - [X] Device Status in AP Mode [by @rneurink](https://github.com/rneurink/esp-rfid)
 - [X] Colorize progress bars depending on percentage [by @rneurink](https://github.com/rneurink/esp-rfid)
 - [X] MQTT Support [by @thunderace](https://github.com/omersiar/esp-rfid/tree/mqtt)
+- [X] Automatically disconnects wifi until an "admin" card is read in by the user [by @zeraien](https://github.com/omersiar/esp-rfid/pull/29)
+- [X] Add automatic restart setting, to lessen risk of memory leaks and crashes. [by @zeraien](https://github.com/omersiar/esp-rfid/pull/29)
+- [X] The wifi network created will have the same name as the "hostname", in case you have multiple units nearby [by @zeraien](https://github.com/omersiar/esp-rfid/pull/29)
+- [X] Also some minor tweaks to web interface. [by @zeraien](https://github.com/omersiar/esp-rfid/pull/29)
 
 See [ChangeLog](https://github.com/omersiar/esp-rfid/blob/master/CHANGELOG.md)
 
@@ -173,6 +177,7 @@ You can donate via Bitcoin Cash however, to this address:
 Also you can make a donation to the ESP-RFID community with [Bountysource](https://salt.bountysource.com/teams/esp-rfid)
 
 #### Donators
-2017-10-03 [steinar-t](https://github.com/steinar-t)
+* 2017-10-03 [steinar-t](https://github.com/steinar-t)
+* 2017-12-10 [saschaludwig](https://github.com/saschaludwig)
 
 Thank you for your contributions.

@@ -1,6 +1,28 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.3beta] - 2017-12-24
+#### Fixed
+- Partly fixed (We still have a quirk with adding new user, may fixed by library level) [#33](https://github.com/omersiar/esp-rfid/issues/33)
+
+## [0.3beta] - 2017-12-09 (zeraien)
+#### Fixed
+- Fallback AP now gets SSID ESP-RFID-xxxxxx (last 6 digits of mac).
+- Also refactored to remove code duplication, new method startAP(ssid, password=NULL) rather than duplicating AP creation.
+
+## [0.3beta] - 2017-12-09 (zeraien)
+#### Added
+- Automatically disconnects wifi until an "admin" card is read in by the user. Default is to keep wifi on unless configured otherwise.
+- Add automatic restart setting, to lessen risk of memory leaks and crashes.
+- The wifi network created will have the same name as the "hostname", in case you have multiple units nearby
+
+#### Changed
+- Also some minor tweaks to web interface.
+
+## [0.3beta] - 2017-12-03 (thunderace)
+#### Added
+- [MQTT support](https://github.com/omersiar/esp-rfid/tree/mqtt) is on another branch.
+
 ## [0.3beta] - 2017-10-28
 #### Added
 - Basic Authentication on WebSocket
@@ -19,7 +41,7 @@ All notable changes to this project will be documented in this file.
 
 #### Changed
 - Refactored Wi-Fi Network Scan. Now we are scanning hidden networks too, also additional info is now given to Web UI (Signal Strenght, BSSID of the Network also non used Encryption Type, Channel)
-- Scanned Wi-Fi Network List is now shorted by Signal Strenght (RSSI, greater is better)
+- Scanned Wi-Fi Network List is now sorted by Signal Strenght (RSSI, greater is better)
 
 ## [0.3alpha2] - 2017-08-31
 #### Added
