@@ -299,9 +299,9 @@ $(document).ready(function(){
 });
 
 function start() {
-  var protocol = 'ws://'; 
-  if (window.location.protocol === 'https:') {
-    protocol = 'wss://';
+  var protocol = "ws://"; 
+  if (window.location.protocol === "https:") {
+    protocol = "wss://";
   }
   var wsUri =protocol+ window.location.hostname + "/ws"; 
   websock = new WebSocket(wsUri);
