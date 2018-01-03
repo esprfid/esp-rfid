@@ -299,7 +299,12 @@ $(document).ready(function(){
 });
 
 function start() {
-  websock = new WebSocket("ws://" + window.location.hostname + "/ws");
+  var protocol = "ws://"; 
+  if (window.location.protocol === "https:") {
+    protocol = "wss://";
+  }
+  var wsUri =protocol+ window.location.hostname + "/ws"; 
+  websock = new WebSocket(wsUri);
   websock.onopen = function(evt) {
     websock.send("{\"command\":\"getconf\"}");
     websock.send("{\"command\":\"gettime\"}");
