@@ -299,7 +299,12 @@ $(document).ready(function(){
 });
 
 function start() {
-  websock = new WebSocket("ws://" + window.location.hostname + "/ws");
+  var protocol = "ws://"; 
+  if (window.location.protocol === "https:") {
+    protocol = "wss://";
+  }
+  var wsUri =protocol+ window.location.hostname + "/ws"; 
+  websock = new WebSocket(wsUri);
   websock.onopen = function(evt) {
     websock.send("{\"command\":\"getconf\"}");
     websock.send("{\"command\":\"gettime\"}");
@@ -333,10 +338,9 @@ function start() {
           getnextpage(page);
         }
         else if (page === haspages) {
-
-  file.type = "esp-rfid-userbackup";
-  file.version = "v0.4";
-  file.list = userdata;
+          file.type = "esp-rfid-userbackup";
+          file.version = "v0.4";
+          file.list = userdata;
           piccBackup(file);
         }
       }
