@@ -238,7 +238,12 @@ FooTable.MyFiltering = FooTable.Filtering.extend({
 });
 
 function start() {
-  websock = new WebSocket("ws://" + window.location.hostname + "/ws");
+  var protocol = "ws://"; 
+  if (window.location.protocol === "https:") {
+    protocol = "wss://";
+  }
+  var wsUri =protocol+ window.location.hostname + "/ws"; 
+  websock = new WebSocket(wsUri);
   websock.onopen = function(evt) {
     var commandtosend = {};
     commandtosend.command = "userlist";
