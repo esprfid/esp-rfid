@@ -2,12 +2,12 @@ var websock = null;
 var utcSeconds;
 var recordstorestore = 0;
 var slot = 0;
-var userdata;
 var page = 1;
 var haspages;
 var file = {};
 var userdata = [];
 var completed = false;
+var wsUri;
 
 function listCONF(obj) {
   document.getElementById("inputtohide").value = obj.ssid;
@@ -15,7 +15,7 @@ function listCONF(obj) {
   document.getElementById("gpioss").value = obj.sspin;
   document.getElementById("gain").value = obj.rfidgain;
   document.getElementById("gpiorly").value = obj.rpin;
-  document.getElementById("delay").value = obj.rtime;
+  document.getElementById("delay").value = obj.rtime || "";
   document.getElementById("adminpwd").value = obj.adminpwd;
   document.getElementById("typerly").value = obj.rtype;
   document.getElementById("ntpserver").value = obj.ntpserver;
@@ -303,47 +303,62 @@ function start() {
   if (window.location.protocol === "https:") {
     protocol = "wss://";
   }
-  var wsUri =protocol+ window.location.hostname + "/ws"; 
+  wsUri =protocol+ window.location.hostname + "/ws"; 
   websock = new WebSocket(wsUri);
+  websock.addEventListener('message', socketMessageListener);
+  websock.addEventListener('error', socketErrorListener);
+  websock.addEventListener('close', socketCloseListener);
+
   websock.onopen = function(evt) {
     websock.send("{\"command\":\"getconf\"}");
-    websock.send("{\"command\":\"gettime\"}");
     document.getElementById("loading-img").style.display = "none";
   };
-  websock.onclose = function(evt) {};
-  websock.onerror = function(evt) {
-    console.log(evt);
-  };
-  websock.onmessage = function(evt) {
-    var obj = JSON.parse(evt.data);
-    if (obj.command === "ssidlist") {
-      listSSID(obj);
-    } else if (obj.command === "configfile") {
-      listCONF(obj);
-    } else if (obj.command === "gettime") {
-      utcSeconds = obj.epoch;
-    } else if (obj.command === "userlist") {
-            haspages = obj.haspages;
-      builduserdata(obj);
-    } else if (obj.command === "status") {
-      listStats(obj);
-    } else if (obj.command === "result") {
-      if (obj.resultof === "userfile") {
-        if (!completed && obj.result === true) {
-          restore1by1(slot, recordstorestore, userdata);
-        }
-      }
-      else if (obj.resultof === "userlist") {
-        if (page < haspages && obj.result === true) {
-          getnextpage(page);
-        }
-        else if (page === haspages) {
-          file.type = "esp-rfid-userbackup";
-          file.version = "v0.4";
-          file.list = userdata;
-          piccBackup(file);
-        }
+}
+
+function socketMessageListener(evt) {
+  var obj = JSON.parse(evt.data);
+  if (obj.command === "ssidlist") {
+    listSSID(obj);
+  } else if (obj.command === "configfile") {
+    listCONF(obj);
+    document.getElementById("loading-img").style.display = "none";
+    websock.send("{\"command\":\"gettime\"}");
+  } else if (obj.command === "gettime") {
+    utcSeconds = obj.epoch;
+  } else if (obj.command === "userlist") {
+          haspages = obj.haspages;
+    builduserdata(obj);
+  } else if (obj.command === "status") {
+    listStats(obj);
+  } else if (obj.command === "result") {
+    if (obj.resultof === "userfile") {
+      if (!completed && obj.result === true) {
+        restore1by1(slot, recordstorestore, userdata);
       }
     }
-  };
+    else if (obj.resultof === "userlist") {
+      if (page < haspages && obj.result === true) {
+        getnextpage(page);
+      }
+      else if (page === haspages) {
+        file.type = "esp-rfid-userbackup";
+        file.version = "v0.4";
+        file.list = userdata;
+        piccBackup(file);
+      }
+    }
+  }
+}
+
+function socketCloseListener(evt) {
+    console.log('socket closed');
+    websock = new WebSocket(wsUri);
+    websock.addEventListener('message', socketMessageListener);
+    websock.addEventListener('close', socketCloseListener);
+    websock.addEventListener('error', socketErrorListener);
+}
+
+function socketErrorListener(evt) {
+    console.log('socket error');
+    console.log(evt);
 }
