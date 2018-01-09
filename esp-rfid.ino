@@ -40,6 +40,24 @@
 #include <TimeLib.h>                  // Library for converting epochtime to a date
 #include <WiFiUdp.h>                  // Library for manipulating UDP packets which is used by NTP Client to get Timestamps
 
+//prototypes
+bool loadConfiguration();
+void fallbacktoAPMode();
+void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len);
+void rfidloop();
+void LogLatest(String uid, String username);
+void sendUserList(int page, AsyncWebSocketClient * client);
+void sendStatus();
+void printScanResult(int networksFound);
+void sendTime();
+String printIP(IPAddress adress);
+void setupRFID(int rfidss, int rfidgain);
+bool connectSTA(const char* ssid, const char* password, byte bssid[6]);
+void ShowReaderDetails();
+void startServer();
+void enableWifi();
+void disableWifi();
+
 // Variables for whole scope
 unsigned long previousMillis = 0;
 unsigned long previousLoopMillis = 0;
@@ -296,7 +314,7 @@ void rfidloop() {
       // Username
       root["user"] = username;
       size_t len = root.measureLength();
-      AsyncWebSocketMessageBuffer * buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
+      AsyncWebSocketMessageBuffer * buffer = ws.makeBuffer(len + 1); //  creates a buffer (len + 1) for you.
       if (buffer) {
         root.printTo((char *)buffer->get(), len + 1);
         ws.textAll(buffer);
@@ -321,7 +339,7 @@ void rfidloop() {
     root["type"] = type;
     root["known"] = 0;
     size_t len = root.measureLength();
-    AsyncWebSocketMessageBuffer * buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
+    AsyncWebSocketMessageBuffer * buffer = ws.makeBuffer(len + 1); //  creates a buffer (len + 1) for you.
     if (buffer) {
       root.printTo((char *)buffer->get(), len + 1);
       ws.textAll(buffer);
@@ -439,7 +457,7 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
         File logFile = SPIFFS.open("/auth/latestlog.json", "r");
         if (logFile) {
           size_t len = logFile.size();
-          AsyncWebSocketMessageBuffer * buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
+          AsyncWebSocketMessageBuffer * buffer = ws.makeBuffer(len + 1); //  creates a buffer (len + 1) for you.
           if (buffer) {
             logFile.readBytes((char *)buffer->get(), len + 1);
             ws.textAll(buffer);
@@ -462,7 +480,7 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
         File configFile = SPIFFS.open("/auth/config.json", "r");
         if (configFile) {
           size_t len = configFile.size();
-          AsyncWebSocketMessageBuffer * buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
+          AsyncWebSocketMessageBuffer * buffer = ws.makeBuffer(len + 1); //  creates a buffer (len + 1) for you.
           if (buffer) {
             configFile.readBytes((char *)buffer->get(), len + 1);
             ws.textAll(buffer);
@@ -481,7 +499,7 @@ void sendTime() {
   root["epoch"] = now();
   root["timezone"] = timeZone;
   size_t len = root.measureLength();
-  AsyncWebSocketMessageBuffer * buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
+  AsyncWebSocketMessageBuffer * buffer = ws.makeBuffer(len + 1); //  creates a buffer (len + 1) for you.
   if (buffer) {
     root.printTo((char *)buffer->get(), len + 1);
     ws.textAll(buffer);
@@ -528,7 +546,7 @@ void sendUserList(int page, AsyncWebSocketClient * client) {
   float pages = i / 15.0;
   root["haspages"] = ceil(pages);
   size_t len = root.measureLength();
-  AsyncWebSocketMessageBuffer * buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
+  AsyncWebSocketMessageBuffer * buffer = ws.makeBuffer(len + 1); //  creates a buffer (len + 1) for you.
   if (buffer) {
     root.printTo((char *)buffer->get(), len + 1);
     if (client) {
@@ -589,7 +607,7 @@ void sendStatus() {
   root["netmask"] = printIP(nmaddr);
 
   size_t len = root.measureLength();
-  AsyncWebSocketMessageBuffer * buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
+  AsyncWebSocketMessageBuffer * buffer = ws.makeBuffer(len + 1); //  creates a buffer (len + 1) for you.
   if (buffer) {
     root.printTo((char *)buffer->get(), len + 1);
     ws.textAll(buffer);
@@ -617,7 +635,7 @@ void printScanResult(int networksFound) {
     item["hidden"] = WiFi.isHidden(i) ? true : false;
   }
   size_t len = root.measureLength();
-  AsyncWebSocketMessageBuffer * buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
+  AsyncWebSocketMessageBuffer * buffer = ws.makeBuffer(len + 1); //  creates a buffer (len + 1) for you.
   if (buffer) {
     root.printTo((char *)buffer->get(), len + 1);
     ws.textAll(buffer);
