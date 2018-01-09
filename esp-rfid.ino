@@ -40,24 +40,6 @@
 #include <TimeLib.h>                  // Library for converting epochtime to a date
 #include <WiFiUdp.h>                  // Library for manipulating UDP packets which is used by NTP Client to get Timestamps
 
-//prototypes
-bool loadConfiguration();
-void fallbacktoAPMode();
-void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len);
-void rfidloop();
-void LogLatest(String uid, String username);
-void sendUserList(int page, AsyncWebSocketClient * client);
-void sendStatus();
-void printScanResult(int networksFound);
-void sendTime();
-String printIP(IPAddress adress);
-void setupRFID(int rfidss, int rfidgain);
-bool connectSTA(const char* ssid, const char* password, byte bssid[6]);
-void ShowReaderDetails();
-void startServer();
-void enableWifi();
-void disableWifi();
-
 // Variables for whole scope
 unsigned long previousMillis = 0;
 unsigned long previousLoopMillis = 0;
