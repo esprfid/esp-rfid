@@ -1,10 +1,9 @@
 var websock = null;
 var timezone;
-var devicetime;
-var completed = false;
 var userdata = [];
 var page = 1;
 var haspages;
+var wsUri;
 
 function listSCAN(obj) {
   if (obj.known === 1) {
@@ -242,46 +241,51 @@ function start() {
   if (window.location.protocol === "https:") {
     protocol = "wss://";
   }
-  var wsUri =protocol+ window.location.hostname + "/ws"; 
+  wsUri =protocol+ window.location.hostname + "/ws"; 
   websock = new WebSocket(wsUri);
   websock.onopen = function(evt) {
     var commandtosend = {};
-    commandtosend.command = "userlist";
-    commandtosend.page = page;
-    websock.send(JSON.stringify(commandtosend));
-    commandtosend = {};
-    commandtosend.command = "gettime";
-    websock.send(JSON.stringify(commandtosend));
+    websock.send("{\"command\":\"userlist\", \"page\":page}");
   };
-  websock.onclose = function(evt) {};
-  websock.onerror = function(evt) {
-    console.log(evt);
-  };
-  websock.onmessage = function(evt) {
-    var obj = JSON.parse(evt.data);
-    if (obj.command === "piccscan") {
-      listSCAN(obj);
-    } else if (obj.command === "gettime") {
-      timezone = obj.timezone;
-      devicetime = obj.epoch;
-    } else if (obj.command === "userlist") {
-      haspages = obj.haspages;
-      if (haspages === 0) {
-        document.getElementById("loading-img").style.display = "none";
+}
+
+function socketMessageListener(evt) {
+  var obj = JSON.parse(evt.data);
+  if (obj.command === "piccscan") {
+    listSCAN(obj);
+  } else if (obj.command === "gettime") {
+    timezone = obj.timezone;
+  } else if (obj.command === "userlist") {
+    haspages = obj.haspages;
+    if (haspages === 0) {
+      document.getElementById("loading-img").style.display = "none";
+      initTable();
+      $(".footable-show").click();
+    }
+    builduserdata(obj);
+  } else if (obj.command === "result") {
+    if (obj.resultof === "userlist") {
+      if (page < haspages && obj.result === true) {
+        getnextpage();
+      } else if (page === haspages) {
         initTable();
+        document.getElementById("loading-img").style.display = "none";
         $(".footable-show").click();
-      }
-      builduserdata(obj);
-    } else if (obj.command === "result") {
-      if (obj.resultof === "userlist") {
-        if (page < haspages && obj.result === true) {
-          getnextpage();
-        } else if (page === haspages) {
-          initTable();
-          document.getElementById("loading-img").style.display = "none";
-          $(".footable-show").click();
-        }
+		    websock.send("{\"command\":\"gettime\"}");
       }
     }
-  };
+  }
+}
+
+function socketCloseListener(evt) {
+    console.log('socket closed');
+    websock = new WebSocket(wsUri);
+    websock.addEventListener('message', socketMessageListener);
+    websock.addEventListener('close', socketCloseListener);
+    websock.addEventListener('error', socketErrorListener);
+}
+
+function socketErrorListener(evt) {
+    console.log('socket error');
+    console.log(evt);
 }

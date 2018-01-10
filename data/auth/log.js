@@ -1,7 +1,6 @@
 var websock = null;
-var timezone;
-var devicetime;
-var userdata = {};
+var logdata;
+var wsUri;
 
 function twoDigits(value) {
    if(value < 10) {
@@ -40,7 +39,7 @@ function initTable() {
             "title": "User Name or Label"
           }
         ],
-        rows: userdata
+        rows: logdata
       });
   });
 }
@@ -50,8 +49,11 @@ function start() {
   if (window.location.protocol === "https:") {
     protocol = "wss://";
   }
-  var wsUri =protocol+ window.location.hostname + "/ws"; 
+  wsUri =protocol+ window.location.hostname + "/ws"; 
   websock = new WebSocket(wsUri);
+  websock.addEventListener('message', socketMessageListener);
+  websock.addEventListener('close', socketCloseListener);
+  websock.addEventListener('error', socketErrorListener);
   websock.onopen = function(evt) {
     var commandtosend = {};
     commandtosend.command = "latestlog";
@@ -60,19 +62,26 @@ function start() {
     commandtosend.command = "gettime";
     websock.send(JSON.stringify(commandtosend));
   };
-  websock.onclose = function(evt) {};
-  websock.onerror = function(evt) {
+}
+
+function socketMessageListener(evt) {
+  var obj = JSON.parse(evt.data);
+  if (obj.type === "latestlog") {
+    logdata = obj.list;
+    initTable();
+    document.getElementById("loading-img").style.display = "none";
+  }
+}
+
+function socketCloseListener(evt) {
+    console.log('socket closed');
+    websock = new WebSocket(wsUri);
+    websock.addEventListener('message', socketMessageListener);
+    websock.addEventListener('close', socketCloseListener);
+    websock.addEventListener('error', socketErrorListener);
+}
+
+function socketErrorListener(evt) {
+    console.log('socket error');
     console.log(evt);
-  };
-  websock.onmessage = function(evt) {
-    var obj = JSON.parse(evt.data);
-    if (obj.type === "latestlog") {
-      userdata = obj.list;
-      initTable();
-      document.getElementById("loading-img").style.display = "none";
-    } else if (obj.command === "gettime") {
-      timezone = obj.timezone;
-      devicetime = obj.epoch;
-    }
-  };
 }
