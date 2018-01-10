@@ -97,11 +97,6 @@ void startServer() {
   // Start WebSocket Plug-in and handle incoming message on "onWsEvent" function
   server.addHandler(&ws);
   ws.onEvent(onWsEvent);
-
-  // Configure web server
-  // Add Text Editor (http://esp-rfid.local/edit) to Web Server. This feature likely will be dropped on final release.
-  server.addHandler(new SPIFFSEditor("admin", "admin"));
-
   // Serve all files in root folder
   server.serveStatic("/", SPIFFS, "/");
   // Handle what happens when requested web file couldn't be found
@@ -684,7 +679,10 @@ bool loadConfiguration() {
   Serial.println(F("[ INFO ] Config file found"));
   json.prettyPrintTo(Serial);
   Serial.println();
-  int rfidss = json["sspin"];
+  int rfidss = 15;
+  if (json.containsKey("sspin")) {
+    rfidss = json["sspin"];
+  }
   int rfidgain = json["rfidgain"];
   Serial.println(F("[ INFO ] Trying to setup RFID Hardware"));
   setupRFID(rfidss, rfidgain);
@@ -729,6 +727,8 @@ bool loadConfiguration() {
   // Serve confidential files in /auth/ folder with a Basic HTTP authentication
   server.serveStatic("/auth/", SPIFFS, "/auth/").setDefaultFile("users.htm").setAuthentication("admin", adminpass);
   ws.setAuthentication("admin", adminpass);
+  // Add Text Editor (http://esp-rfid.local/edit) to Web Server. This feature likely will be dropped on final release.
+  server.addHandler(new SPIFFSEditor("admin", adminpass));
 
   if (wmode == 1) {
     Serial.println(F("[ INFO ] ESP-RFID is running in AP Mode "));
