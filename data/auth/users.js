@@ -245,7 +245,7 @@ function start() {
   websock = new WebSocket(wsUri);
   websock.onopen = function(evt) {
     var commandtosend = {};
-    websock.send("{\"command\":\"userlist\", \"page\":page}");
+    websock.send("{\"command\":\"userlist\", \"page\":" + page + "}");
   };
 }
 
