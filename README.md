@@ -1,11 +1,11 @@
 # ESP RFID - Access Control with ESP8266, RC522
-Access Control demonstration using a cheap MFRC522 RFID Hardware and Espressif's ESP8266 Microcontroller.
+Access Control demonstration using a cheap MFRC522 RFID Hardware or Wiegand RFID readers and Espressif's ESP8266 Microcontroller.
 
 [![Chat at https://gitter.im/esp-rfid/Lobby](https://badges.gitter.im/esp-rfid.svg)](https://gitter.im/esp-rfid/Lobby) Join community chat
 
 Its easy to use web based interface makes everything smooth. Once you setup your hardware, you can associate RFID tags to "Users" (or just label them), give them ability to unlock a electric controlled door or whatever you want give access.
 
-You can connect to Web UI anytime to give users access or take it back. Web UI accessible via Wi-Fi network, if your Wi-Fi Access Point is connected to Internet, you can sync Time from NTP Server to timestamp User's access. 
+You can connect to Web UI anytime to give users access or take it back. Web UI accessible via Wi-Fi network, if your Wi-Fi Access Point is connected to Internet, you can sync Time from NTP Server to timestamp User's access.
 
 Use case scenarios can be expanded. There are several things I want to implement. (such as limited time access, logging, record user's enter exit time, etc.)
 
@@ -22,7 +22,7 @@ Use case scenarios can be expanded. There are several things I want to implement
 * Cheap to build and easy to maintain
 ### For Tinkerers
 * Open Source (minimum amount of hardcoded variable, this means more freedom)
-* By default MQTT is not supported, thanks to [@thunderace](https://github.com/omersiar/esp-rfid/tree/mqtt) MQTT enabled version is on another branch 
+* By default MQTT is not supported, thanks to [@thunderace](https://github.com/omersiar/esp-rfid/tree/mqtt) MQTT enabled version is on another branch
 * Using WebSocket protocol to exchange data between Hardware and Web Browser
 * Data is encoded as JSON object
 * Records are Timestamped (Time synced from a NTP Server)
@@ -37,10 +37,10 @@ This project still in its development phase. New features (and also bugs) are in
 * See [ChangeLog](https://github.com/omersiar/esp-rfid/blob/master/CHANGELOG.md)
 * See [To Do](https://github.com/omersiar/esp-rfid#to-do) for what to expect in future.
 
-### What You Will Need 
+### What You Will Need
 ### Hardware
 * An ESP8266 module or development board like **WeMos D1 mini** or **NodeMcu 1.0** with at least **32Mbit Flash (equals to 4MBytes)** (ESP32 does not supported for now)
-* A MFRC522 RFID PCD Module
+* A MFRC522 RFID PCD Module Or Wiegand based RFID reader
 * A Relay Module (or you can build your own circuit)
 * n quantity of Mifare Classic 1KB (recommended due to available code base) PICCs (RFID Tags) equivalent to User Number
 
@@ -57,6 +57,7 @@ Please install Arduino IDE if you didn't already, then add ESP8266 Core (**Bewar
 * [ESPAsyncWebServer](https://github.com/me-no-dev/ESPAsyncWebServer) - Asyncrone Web Server with WebSocket Plug-in
 * [ESPAsyncTCP](https://github.com/me-no-dev/ESPAsyncTCP) - Mandatory for ESPAsyncWebServer
 * [MFRC522](https://github.com/miguelbalboa/rfid) - MFRC522 RFID Hardware Library for Arduino IDE
+* [Wiegand](https://github.com/monkeyboard/Wiegand-Protocol-Library-for-Arduino) - Wiegand 4 bit, 8 bit, 26 bit, 32 bit and 34 bit library for Arduino
 * [ArduinoJson](https://github.com/bblanchon/ArduinoJson) - JSON Library for Arduino IDE
 * [NTPClientLib](https://github.com/gmag11/NtpClient/) - NTP Client Library for Arduino IDE
 * [TimeLib](https://github.com/PaulStoffregen/Time) - Mandatory for NTP Client Library
@@ -68,6 +69,7 @@ You also need to upload web files to your ESP with ESP8266FS Uploader.
 Unlisted libraries are part of ESP8266 Core for Arduino IDE, so you don't need to download them.
 
 ### Pin Layout
+
 The following table shows the typical pin layout used for connecting MFRC522 hardware to ESP:
 
 | Signal        | MFRC522       | WeMos D1 mini  | NodeMcu | Generic      |
@@ -82,9 +84,11 @@ The following table shows the typical pin layout used for connecting MFRC522 har
 2. Configurable via settings page.
 3. The SDA pin might be labeled SS on some/older MFRC522 boards.
 
+For Wiegand based readers, you can configure D0 and D1 pins via settings page. By default, D0 is GPIO-4 and D1 is GPIO-5
+
 ### Steps
 * First, flash firmware (you can use /compiledbin/flash.bat on Windows) to your ESP either using Arduino IDE or with your favourite flash tool
-* Flash webfiles data to SPIFFS (ignore this step if you used flash.bat for flashing) either using ESP8266FS Uploader tool or with your favourite flash tool 
+* Flash webfiles data to SPIFFS (ignore this step if you used flash.bat for flashing) either using ESP8266FS Uploader tool or with your favourite flash tool
 * (optional) Fire up your serial monitor to get informed
 * Power on your ESP
 * Search for Wireless Network "esp-rfid" and connect to it (It should be an open network and does not reqiure password)
@@ -116,13 +120,13 @@ Since we are limited on both flash and ram size things may get ugly at some poin
 ### Tests
 
 #### How many RFID Tag can be handled?
-Restore some [randomly generated](https://github.com/omersiar/esp-rfid/raw/master/demo/demo-users-data.json) user data on File System worth: 
+Restore some [randomly generated](https://github.com/omersiar/esp-rfid/raw/master/demo/demo-users-data.json) user data on File System worth:
 
 * 1000 seperate "userfile"
 * random 4 Bytes long UID and
 * random User Names and
 * 4 bytes random Unix Time Stamp
-* each have "access type" 1 byte integer "1" or "0". 
+* each have "access type" 1 byte integer "1" or "0".
 
 Total 122,880 Bytes
 
@@ -160,7 +164,7 @@ See [ChangeLog](https://github.com/omersiar/esp-rfid/blob/master/CHANGELOG.md)
 - [X] Settings Panel for Wi-Fi, IP, Hostname, NTP Client, etc
 - [X] Sync Time from Browser if there is no internet connection
 - [X] Log Access Time of Users
-- [X] WebSocket Basic Authentication 
+- [X] WebSocket Basic Authentication
 - [ ] Password Protection or Authentication for Tags instead of relying to only UIDs (PICC Password)
 - [ ] Globalization (language support, time zone support, etc)
 - [ ] Schedule User Access
@@ -176,7 +180,7 @@ See [ChangeLog](https://github.com/omersiar/esp-rfid/blob/master/CHANGELOG.md)
 ## Donations
 If this project helps you in a way, you can buy me a beer.
 PayPal is not allowed in my country (what a shame)
-You can donate via Bitcoin Cash however, to this address: 
+You can donate via Bitcoin Cash however, to this address:
 (only Bitcoin Cash, do not send legacy Bitcoin coins to this address)
 1F94BCWahzKw56dpg6zMCcEGcTHJcA8XTB
 

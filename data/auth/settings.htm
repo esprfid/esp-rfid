@@ -26,7 +26,7 @@
         <h3 class="text-muted">ESP RFID</h3>
       </div>
       <div class="jumbotron">
-        <div class="alert alert-warning"><strong>Warning!</strong> Settings will take effect when the device is rebooted. 
+        <div class="alert alert-warning"><strong>Warning!</strong> Settings will take effect when the device is rebooted.
         </div>
         <div id="loading-img" class="text-center">
                             <img src="/load.gif">
@@ -74,7 +74,7 @@
                   </tr>
                   				<tr>
  					<th>Free SPIFFS</th>
- 					<td>			
+ 					<td>
  					<div class='progress' style="margin-bottom: 0 !important;">
  						<div id="spiffs" class="progress-bar progress-bar-primary" role="progressbar">
  							Progress
@@ -131,7 +131,7 @@
               </div>
             </div>
             <div class="row form-group">
-              <label data-toggle="tooltip" title="Wi-Fi Network's Name" class="col-xs-3">SSID</label> 
+              <label data-toggle="tooltip" title="Wi-Fi Network's Name" class="col-xs-3">SSID</label>
               <span class="col-xs-6 col-md-5">
                 <input class="form-control input-sm" id="inputtohide" type="text" name="ap_ssid">
                 <select class="form-control input-sm" style="display:none;" id="ssid" onchange="listBSSID();"></select>
@@ -141,20 +141,20 @@
               </span>
             </div>
             <div class="row form-group" style="display:none" id="hideBSSID">
-              <label data-toggle="tooltip" title="If you have two Wi-Fi networks with the same SSID you may want to choose the specific one by BSSID" class="col-xs-3">BSSID</label> 
+              <label data-toggle="tooltip" title="If you have two Wi-Fi networks with the same SSID you may want to choose the specific one by BSSID" class="col-xs-3">BSSID</label>
               <span class="col-xs-9 col-md-5">
               <input id="wifibssid" class="form-control input-sm" type="text" name="ap_bssid">
-              </span> 
+              </span>
             </div>
             <div class="row form-group">
-              <label data-toggle="tooltip" title="Wi-Fi Password" class="col-xs-3">Password</label> 
+              <label data-toggle="tooltip" title="Wi-Fi Password" class="col-xs-3">Password</label>
               <span class="col-xs-9 col-md-5">
               <input id="wifipass" class="form-control input-sm" type="text" name="ap_passwd">
-              </span> 
+              </span>
             </div>
             <br>
             <div class="row form-group">
-              <label data-toggle="tooltip" title="Disable WiFi after a time interval, to conserve power in battery powered units. WiFi is re-enabled when an admin card is scanned, or device is rebooted. Remember that you need to have enough time to upload your configuration, so don't set it too low." class="col-xs-3">Auto Disable Wifi</label> 
+              <label data-toggle="tooltip" title="Disable WiFi after a time interval, to conserve power in battery powered units. WiFi is re-enabled when an admin card is scanned, or device is rebooted. Remember that you need to have enough time to upload your configuration, so don't set it too low." class="col-xs-3">Auto Disable Wifi</label>
               <span class="col-xs-9 col-md-5">
                 <select class="form-control" id="disable_wifi_after_seconds" name="auto_restart_interval_seconds">
                   <option value='0'>Always on</option>
@@ -172,36 +172,87 @@
           <div class="col-sm-6">
             <legend>Hardware Settings</legend>
             <h6 class="text-muted">Please refer the <a href="https://github.com/omersiar/esp-rfid#pin-layout">documentation</a> for pin configuration.</h6>
+
             <div class="row form-group">
-              <label data-toggle="tooltip" title="Choose which ESP port is connected to RFID Hardware SDA pin" class="col-xs-3">SPI SS</label> 
-              <span class="col-xs-9 col-md-5">
-                <select class="form-control input-sm" id="gpioss">
-                  <option value="0">GPIO-0</option>
-                  <option value="2">GPIO-2</option>
-                  <option value="4">GPIO-4</option>
-                  <option value="5">GPIO-5</option>
-                  <option selected="selected" value="15">GPIO-15</option>
-                  <option value="16">GPIO-16</option>
-                </select>
-              </span>
+                <label data-toggle="tooltip" title="" class="col-xs-3" data-original-title="Choose RFID reader type.">Reader type</label>
+              <div class="col-xs-9">
+                <form id="readerType">
+                  <label class="radio-inline"><input type="radio" value="0" name="readerType" id="mfrc522" onclick="handleMFRC522();">MFRC522</label>
+                  <label class="radio-inline"><input type="radio" value="1" name="readerType" id="wiegand" onclick="handlewiegand();">Wiegand</label>
+                </form>
+              </div>
             </div>
-            <div class="row form-group">
-              <label data-toggle="tooltip" title="Higher value means the longer RFID reader's reading distance" class="col-xs-3">Antenna Gain</label> 
-              <span class="col-xs-9 col-md-5">
-                <select class="form-control input-sm" id="gain">
-                  <option value="112">Max (48 db)</option>
-                  <option value="96">43 db</option>
-                  <option value="48">38 db</option>
-                  <option selected="selected" value="32">Avg (33 db)</option>
-                  <option value="16">23 db</option>
-                  <option value="0">Min (18 db)</option>
-                </select>
-                
-              </span>
+
+            <div class="" id="wiegandForm" style="display:none">
+              <div class="row form-group">
+                <label data-toggle="tooltip" title="Choose Wiegand D0 pin." class="col-xs-3">Pin D0</label>
+                <span class="col-xs-9 col-md-5">
+                  <select class="form-control input-sm" id="wg0pin">
+                    <option value="0">GPIO-0</option>
+                    <option value="2">GPIO-1</option>
+                    <option value="2">GPIO-2</option>
+                    <option selected="selected" value="4">GPIO-4</option>
+                    <option value="5">GPIO-5</option>
+                    <option value="5">GPIO-12</option>
+                    <option value="5">GPIO-13</option>
+                    <option value="5">GPIO-14</option>
+                    <option value="15">GPIO-15</option>
+                    <option value="16">GPIO-16</option>
+                  </select>
+                </span>
+              </div>
+
+              <div class="row form-group">
+                <label data-toggle="tooltip" title="Choose Wiegand D1 pin." class="col-xs-3">Pin D1</label>
+                <span class="col-xs-9 col-md-5">
+                  <select class="form-control input-sm" id="wg1pin">
+                    <option value="0">GPIO-0</option>
+                    <option value="2">GPIO-1</option>
+                    <option value="2">GPIO-2</option>
+                    <option value="4">GPIO-4</option>
+                    <option selected="selected" value="5">GPIO-5</option>
+                    <option value="5">GPIO-12</option>
+                    <option value="5">GPIO-13</option>
+                    <option value="5">GPIO-14</option>
+                    <option value="15">GPIO-15</option>
+                    <option value="16">GPIO-16</option>
+                  </select>
+                </span>
+              </div>
             </div>
+            <div class="" id="mfrc522Form" style="display:none">
+              <div class="row form-group">
+                <label data-toggle="tooltip" title="Choose which ESP port is connected to RFID Hardware SDA pin" class="col-xs-3">SPI SS</label>
+                <span class="col-xs-9 col-md-5">
+                  <select class="form-control input-sm" id="gpioss">
+                    <option value="0">GPIO-0</option>
+                    <option value="2">GPIO-2</option>
+                    <option value="4">GPIO-4</option>
+                    <option value="5">GPIO-5</option>
+                    <option selected="selected" value="15">GPIO-15</option>
+                    <option value="16">GPIO-16</option>
+                  </select>
+                </span>
+              </div>
+              <div class="row form-group">
+                <label data-toggle="tooltip" title="Higher value means the longer RFID reader's reading distance" class="col-xs-3">Antenna Gain</label>
+                <span class="col-xs-9 col-md-5">
+                  <select class="form-control input-sm" id="gain">
+                    <option value="112">Max (48 db)</option>
+                    <option value="96">43 db</option>
+                    <option value="48">38 db</option>
+                    <option selected="selected" value="32">Avg (33 db)</option>
+                    <option value="16">23 db</option>
+                    <option value="0">Min (18 db)</option>
+                  </select>
+                </span>
+              </div>
+            </div>
+
             <br>
+
             <div class="row form-group">
- 						<label data-toggle="tooltip" title="Depending on your electrical setup, you can choose the relay type" class="col-xs-3">Relay Type</label> 
+ 						<label data-toggle="tooltip" title="Depending on your electrical setup, you can choose the relay type" class="col-xs-3">Relay Type</label>
  						<span class="col-xs-9 col-md-5">
  						<select class="form-control input-sm" id="typerly">
  							<option selected="selected" value="1">Active High</option>
@@ -210,15 +261,15 @@
  						</span>
 				</div>
             <div class="row form-group">
-              <label data-toggle="tooltip" title="Choose which ESP port is connected to your relay" class="col-xs-3">Relay Pin</label> 
+              <label data-toggle="tooltip" title="Choose which ESP port is connected to your relay" class="col-xs-3">Relay Pin</label>
               <span class="col-xs-6 col-md-5">
                 <select class="form-control input-sm" id="gpiorly">
                   <option value="0">GPIO-0</option>
                   <option value="2">GPIO-2</option>
-                  <option selected="selected" value="4">GPIO-4</option>
+                  <option value="4">GPIO-4</option>
                   <option value="5">GPIO-5</option>
                   <option value="15">GPIO-15</option>
-                  <option value="16">GPIO-16</option>
+                  <option selected="selected" value="16">GPIO-16</option>
                 </select>
               </span>
               <span class="col-xs-3">
@@ -226,12 +277,12 @@
               </span>
             </div>
             <div class="row form-group">
-              <label data-toggle="tooltip" title="Relay Toggle time in Microseconds, usually 300ms is enough for the most electric door locks" class="col-xs-3">Activate Time</label> 
+              <label data-toggle="tooltip" title="Relay Toggle time in Microseconds, usually 300ms is enough for the most electric door locks" class="col-xs-3">Activate Time</label>
               <span class="col-xs-9 col-md-5">
               <input class="form-control input-sm" value="300" placeholder="in Microsecond" id="delay" type="text" name="hightime">
               </span>
             </div>
-            
+
           </div>
         </div>
         <br>
@@ -239,21 +290,21 @@
           <div class="col-sm-6">
             <legend>General Settings</legend>
             <div class="row form-group">
-              <label data-toggle="tooltip" title="Log On password for the Administrator" class="col-xs-3">Admin Password</label> 
+              <label data-toggle="tooltip" title="Log On password for the Administrator" class="col-xs-3">Admin Password</label>
               <span class="col-xs-9 col-md-5">
               <input class="form-control input-sm" placeholder="Administrator Password" id="adminpwd" type="text">
               </span>
               <br>
             </div>
             <div class="row form-group">
-              <label data-toggle="tooltip" title="Hostname for your ESP, When Bonjour is installed on your computer you can access your ESP via http://hostname.local" class="col-xs-3">Host Name</label> 
+              <label data-toggle="tooltip" title="Hostname for your ESP, When Bonjour is installed on your computer you can access your ESP via http://hostname.local" class="col-xs-3">Host Name</label>
               <span class="col-xs-9 col-md-5">
               <input class="form-control input-sm" placeholder="Hostname" value="esp-rfid" id="hostname" type="text">
               </span>
               <br>
             </div>
             <div class="row form-group">
-              <label data-toggle="tooltip" title="How often to automatically restart the unit to lessen risk of memory leaks and crashes." class="col-xs-3">Auto Restart</label> 
+              <label data-toggle="tooltip" title="How often to automatically restart the unit to lessen risk of memory leaks and crashes." class="col-xs-3">Auto Restart</label>
               <span class="col-xs-9 col-md-5">
                 <select class="form-control" id="auto_restart_interval_seconds" name="auto_restart_interval_seconds">
                   <option value='0'>Never</option>
@@ -269,12 +320,12 @@
             <legend>Time Settings</legend>
             <h6 class="text-muted">Small differences between device time and local time can be ignored. Please see <a href="https://github.com/omersiar/esp-rfid#time">documentation</a> for additional information.</h6>
             <div class="row form-group">
-              <label class="col-xs-3">Device Time</label> 
+              <label class="col-xs-3">Device Time</label>
               <span id="utc" class="col-xs-9 col-md-5">
               </span>
             </div>
             <div class="row form-group">
-              <label class="col-xs-3">Browser Time</label> 
+              <label class="col-xs-3">Browser Time</label>
               <span id="rtc" class="col-xs-9 col-md-5">
               </span>
             </div>
@@ -282,21 +333,21 @@
               <div data-toggle="tooltip" title="Send your PC/Phone time to ESP, useful when the ESP does not have Internet connection." class="col-xs-3"><button onclick="syncBrowserTime()" class="btn btn-link btn-sm">Sync Browser Time to Device</button></div>
               </div>
             <div class="row form-group">
-              <label data-toggle="tooltip" title="The server for the time sync" class="col-xs-3">NTP Server</label> 
+              <label data-toggle="tooltip" title="The server for the time sync" class="col-xs-3">NTP Server</label>
               <span class="col-xs-9 col-md-5">
               <input data-toggle="tooltip" title="Choose nearest server for better accuracy, see ntp.org for servers nearby." class="form-control input-sm" placeholder="eg. pool.ntp.org" value="pool.ntp.org" id="ntpserver" type="text">
               </span>
               <br>
             </div>
             <div class="row form-group">
-              <label data-toggle="tooltip" title="Intervals between Time Sync in Minutes" class="col-xs-3">Intervals</label> 
+              <label data-toggle="tooltip" title="Intervals between Time Sync in Minutes" class="col-xs-3">Intervals</label>
               <span class="col-xs-9 col-md-5">
               <input class="form-control input-sm" placeholder="in Minutes" value="30" id="intervals" type="text">
               </span>
               <br>
             </div>
             <div class="row form-group">
-              <label class="col-xs-3">Time Zone</label> 
+              <label class="col-xs-3">Time Zone</label>
               <span class="col-xs-9 col-md-5">
                 <select class="form-control input-sm" name="DropDownTimezone" id="DropDownTimezone">
                   <option value="-12">(GMT -12:00) Eniwetok, Kwajalein</option>
@@ -338,7 +389,7 @@
         </div>
         <hr>
         <div>
-          <button onclick="saveConf()" class="btn btn-primary btn-sm pull-right">Save & Reboot</button> 
+          <button onclick="saveConf()" class="btn btn-primary btn-sm pull-right">Save & Reboot</button>
         </div>
         <br>
       </div>

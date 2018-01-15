@@ -12,6 +12,18 @@ var wsUri;
 function listCONF(obj) {
   document.getElementById("inputtohide").value = obj.ssid;
   document.getElementById("wifipass").value = obj.pswd;
+
+  if (obj.readerType == 0) {
+    document.getElementById("mfrc522").checked=true;
+    handleMFRC522();
+  } else if (obj.readerType == 1) {
+    document.getElementById("wiegand").checked=true;
+    handlewiegand();
+  }
+
+  document.getElementById("wg0pin").value = obj.wgd0pin;
+  document.getElementById("wg1pin").value = obj.wgd1pin;
+
   document.getElementById("gpioss").value = obj.sspin;
   document.getElementById("gain").value = obj.rfidgain;
   document.getElementById("gpiorly").value = obj.rpin;
@@ -70,6 +82,16 @@ function handleSTA() {
   document.getElementById("hideBSSID").style.display = "block";
 }
 
+function handleMFRC522() {
+  document.getElementById("wiegandForm").style.display = "none";
+  document.getElementById("mfrc522Form").style.display = "block";
+}
+
+function handlewiegand() {
+  document.getElementById("wiegandForm").style.display = "block";
+  document.getElementById("mfrc522Form").style.display = "none";
+}
+
 function listSSID(obj) {
   obj.list.sort(function(a,b){return a.rssi <= b.rssi});
   var select = document.getElementById("ssid");
@@ -124,6 +146,13 @@ function saveConf() {
   datatosend.ssid = ssid;
   datatosend.wmode = wmode;
   datatosend.pswd = document.getElementById("wifipass").value;
+
+  // vea add - those 3  variales
+  var form = document.getElementById("readerType");
+  datatosend.readerType = form.elements["readerType"].value
+  datatosend.wgd0pin = document.getElementById("wg0pin").value;
+  datatosend.wgd1pin = document.getElementById("wg1pin").value;
+
   datatosend.sspin = document.getElementById("gpioss").value;
   datatosend.rfidgain = document.getElementById("gain").value;
   datatosend.rtype = document.getElementById("typerly").value;
@@ -295,15 +324,15 @@ function builduserdata(obj) {
 }
 
 $(document).ready(function(){
-    $('[data-toggle="tooltip"]').tooltip();   
+    $('[data-toggle="tooltip"]').tooltip();
 });
 
 function start() {
-  var protocol = "ws://"; 
+  var protocol = "ws://";
   if (window.location.protocol === "https:") {
     protocol = "wss://";
   }
-  wsUri =protocol+ window.location.hostname + "/ws"; 
+  wsUri =protocol+ window.location.hostname + "/ws";
   websock = new WebSocket(wsUri);
   websock.addEventListener('message', socketMessageListener);
   websock.addEventListener('error', socketErrorListener);
