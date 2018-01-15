@@ -243,6 +243,9 @@ function start() {
   }
   wsUri =protocol+ window.location.hostname + "/ws"; 
   websock = new WebSocket(wsUri);
+  websock.addEventListener('message', socketMessageListener);
+  websock.addEventListener('close', socketCloseListener);
+  websock.addEventListener('error', socketErrorListener);
   websock.onopen = function(evt) {
     var commandtosend = {};
     websock.send("{\"command\":\"userlist\", \"page\":" + page + "}");
@@ -261,6 +264,7 @@ function socketMessageListener(evt) {
       document.getElementById("loading-img").style.display = "none";
       initTable();
       $(".footable-show").click();
+      $(".fooicon-remove").click();
     }
     builduserdata(obj);
   } else if (obj.command === "result") {
@@ -271,6 +275,7 @@ function socketMessageListener(evt) {
         initTable();
         document.getElementById("loading-img").style.display = "none";
         $(".footable-show").click();
+        $(".fooicon-remove").click();
 		    websock.send("{\"command\":\"gettime\"}");
       }
     }
