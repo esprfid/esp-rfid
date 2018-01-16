@@ -31,10 +31,10 @@ function listCONF(obj) {
   document.getElementById("inputtohide").value = obj.ssid;
   document.getElementById("wifipass").value = obj.pswd;
 
-  if (obj.readerType == 0) {
+  if (obj.readerType === 0) {
     document.getElementById("mfrc522").checked=true;
     handleMFRC522();
-  } else if (obj.readerType == 1) {
+  } else if (obj.readerType === 1) {
     document.getElementById("wiegand").checked=true;
     handlewiegand();
   }
