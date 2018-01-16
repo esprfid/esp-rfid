@@ -68,6 +68,12 @@ You also need to upload web files to your ESP with ESP8266FS Uploader.
 
 Unlisted libraries are part of ESP8266 Core for Arduino IDE, so you don't need to download them.
 
+#### Building With PlatformioFrom
+Install platformio
+
+Build and upload filesystem : pio run --target uploadfs
+Build and upload code : pio run --target upload --upload-port COM12
+
 ### Pin Layout
 
 The following table shows the typical pin layout used for connecting MFRC522 hardware to ESP:
