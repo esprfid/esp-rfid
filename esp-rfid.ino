@@ -11,7 +11,7 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 
-  The following table shows the typical pin layout used:
+  The following table shows the typical pin layout used for MFRC522:
 
   | Signal        | MFRC522       | WeMos D1 mini  | NodeMcu | Generic      |
   |---------------|:-------------:|:--------------:| :------:|:------------:|
@@ -25,12 +25,15 @@
   2. Configurable via web page
   3. The SDA pin might be labeled SS on some/older MFRC522 boards.
 
+  Wiegand based reader's D0 and D1 pins are configurable via settings web page.
+
 */
 
 #include <ESP8266WiFi.h>              // Whole thing is about using Wi-Fi networks
 #include <SPI.h>                      // RFID MFRC522 Module uses SPI protocol
 #include <ESP8266mDNS.h>              // Zero-config Library (Bonjour, Avahi) http://esp-rfid.local
 #include <MFRC522.h>                  // Library for Mifare RC522 Devices
+#include <Wiegand.h>                  // Library for Wiegand based readers
 #include <ArduinoJson.h>              // JSON Library for Encoding and Parsing Json object to send browser. We do that because Javascript has built-in JSON parsing.
 #include <FS.h>                       // SPIFFS Library for storing web files to serve to web browsers
 #include <ESPAsyncTCP.h>              // Async TCP Library is mandatory for Async Web Server
@@ -57,11 +60,14 @@ int wifiTimeout = -1;
 unsigned long wiFiUptimeMillis = 0;
 char * deviceHostname = NULL;
 
+int readerType;
 int relayPin;
 int relayType;
 int activateTime;
 int timeZone;
 
+// Create instance for Wiegand reade
+WIEGAND wg;
 // Create MFRC522 RFID instance
 MFRC522 mfrc522 = MFRC522();
 // Create AsyncWebServer instance on port "80"
@@ -184,6 +190,7 @@ void loop() {
   if (currentMillis >= cooldown) {
     rfidloop();
   }
+
 }
 
 void enableWifi() {
@@ -201,31 +208,48 @@ void disableWifi() {
 /* ------------------ RFID Functions ------------------- */
 // RFID Specific Loop
 void rfidloop() {
-  //If a new PICC placed to RFID reader continue
-  if ( ! mfrc522.PICC_IsNewCardPresent()) {
-    delay(50);
-    return;
-  }
-  //Since a PICC placed get Serial (UID) and continue
-  if ( ! mfrc522.PICC_ReadCardSerial()) {
-    delay(50);
-    return;
-  }
-  // We got UID tell PICC to stop responding
-  mfrc522.PICC_HaltA();
-  cooldown = millis() + 2000;
 
-  // There are Mifare PICCs which have 4 byte or 7 byte UID
-  // Get PICC's UID and store on a variable
-  Serial.print(F("[ INFO ] PICC's UID: "));
   String uid = "";
-  for (int i = 0; i < mfrc522.uid.size; ++i) {
-    uid += String(mfrc522.uid.uidByte[i], HEX);
+  String type = "";
+
+  // this way of constantly checking the reader type is simply not how it should be.. but let's make it for a proof of a concept ...
+  if (readerType == 0) {
+
+    //If a new PICC placed to RFID reader continue
+    if ( ! mfrc522.PICC_IsNewCardPresent()) {
+      delay(50);
+      return;
+    }
+    //Since a PICC placed get Serial (UID) and continue
+    if ( ! mfrc522.PICC_ReadCardSerial()) {
+      delay(50);
+      return;
+    }
+    // We got UID tell PICC to stop responding
+    mfrc522.PICC_HaltA();
+    cooldown = millis() + 2000;
+
+    // There are Mifare PICCs which have 4 byte or 7 byte UID
+    // Get PICC's UID and store on a variable
+    Serial.print(F("[ INFO ] PICC's UID: "));
+    for (int i = 0; i < mfrc522.uid.size; ++i) {
+      uid += String(mfrc522.uid.uidByte[i], HEX);
+    }
+    Serial.print(uid);
+    // Get PICC type
+    MFRC522::PICC_Type piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
+    String type = mfrc522.PICC_GetTypeName(piccType);
+
+  } else if (readerType == 1) {
+    if(wg.available()) {
+      Serial.print(F("[ INFO ] PICC's UID: "));
+      Serial.println(wg.getCode());
+      uid = String(wg.getCode(), HEX);
+      type = String(wg.getWiegandType(), HEX);
+    } else {
+      return;
+    }
   }
-  Serial.print(uid);
-  // Get PICC type
-  MFRC522::PICC_Type piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
-  String type = mfrc522.PICC_GetTypeName(piccType);
 
   // We are going to use filesystem to store known UIDs.
   // If we know the PICC we need to know if its User have an Access
@@ -676,16 +700,28 @@ bool loadConfiguration() {
     Serial.println(F("[ WARN ] Failed to parse config file"));
     return false;
   }
+
   Serial.println(F("[ INFO ] Config file found"));
   json.prettyPrintTo(Serial);
   Serial.println();
-  int rfidss = 15;
-  if (json.containsKey("sspin")) {
-    rfidss = json["sspin"];
-  }
-  int rfidgain = json["rfidgain"];
   Serial.println(F("[ INFO ] Trying to setup RFID Hardware"));
-  setupRFID(rfidss, rfidgain);
+  readerType = json["readerType"];
+
+  if ( readerType == 1 ) {
+    int wgd0pin = json["wgd0pin"];
+    int wgd1pin = json["wgd1pin"];
+    Serial.println(F("[ INFO ] Trying to setup RFID Wiegand Hardware"));
+    setupWiegandReader(wgd0pin, wgd1pin); // also some other settings like weather to use keypad or not, LED pin, BUZZER pin, Wiegand 26/34 version
+  } else if ( readerType == 0 ) {
+    int rfidss = 15;
+    if (json.containsKey("sspin")) {
+      rfidss = json["sspin"];
+    }
+     int rfidgain = json["rfidgain"];
+     Serial.println(F("[ INFO ] Trying to setup RFID MFRC533 Hardware"));
+     setupMFRC533Reader(rfidss, rfidgain);
+  }
+
   const char * l_hostname = json["hostnm"];
 
   autoRestartIntervalSeconds = json["auto_restart_interval_seconds"].as<int>();
@@ -744,7 +780,8 @@ bool loadConfiguration() {
 }
 
 // Configure RFID Hardware
-void setupRFID(int rfidss, int rfidgain) {
+//void setupRFID(int rfidss, int rfidgain) {
+void setupMFRC533Reader(int rfidss, int rfidgain) {
   SPI.begin();           // MFRC522 Hardware uses SPI protocol
   mfrc522.PCD_Init(rfidss, UINT8_MAX);    // Initialize MFRC522 Hardware
   // Set RFID Hardware Antenna Gain
@@ -752,7 +789,12 @@ void setupRFID(int rfidss, int rfidgain) {
   mfrc522.PCD_SetAntennaGain(rfidgain);
   Serial.printf("[ INFO ] RFID SS_PIN: %u and Gain Factor: %u", rfidss, rfidgain);
   Serial.println("");
-  ShowReaderDetails(); // Show details of PCD - MFRC522 Card Reader details
+  ShowMFRC522ReaderDetails(); // Show details of PCD - MFRC522 Card Reader details
+}
+
+void setupWiegandReader(int d0, int d1) {
+  wg.begin(d0, d0, d1, d1);
+  ShowWiegandReaderDetails(); // Show details of PCD - MFRC522 Card Reader details
 }
 
 // Try to connect Wi-Fi
@@ -791,7 +833,11 @@ bool connectSTA(const char* ssid, const char* password, byte bssid[6]) {
   }
 }
 
-void ShowReaderDetails() {
+void ShowWiegandReaderDetails() {
+  Serial.print(F("[ INFO ] Wiegand Reader"));
+}
+
+void ShowMFRC522ReaderDetails() {
   // Get the MFRC522 software version
   byte v = mfrc522.PCD_ReadRegister(mfrc522.VersionReg);
   Serial.print(F("[ INFO ] MFRC522 Version: 0x"));
@@ -810,4 +856,3 @@ void ShowReaderDetails() {
     Serial.println(F("[ WARN ] Communication failure, check if MFRC522 properly connected"));
   }
 }
-
