@@ -149,7 +149,7 @@ function saveConf() {
 
   // vea add - those 3  variales
   var form = document.getElementById("readerType");
-  datatosend.readerType = form.elements["readerType"].value
+  datatosend.readerType = form.elements["readerType"].value;
   datatosend.wgd0pin = document.getElementById("wg0pin").value;
   datatosend.wgd1pin = document.getElementById("wg1pin").value;
 
