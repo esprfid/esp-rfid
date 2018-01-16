@@ -9,6 +9,24 @@ var userdata = [];
 var completed = false;
 var wsUri;
 
+function handleAP() {
+  document.getElementById("hideBSSID").style.display = "none";
+}
+
+function handleSTA() {
+  document.getElementById("hideBSSID").style.display = "block";
+}
+
+function handleMFRC522() {
+  document.getElementById("wiegandForm").style.display = "none";
+  document.getElementById("mfrc522Form").style.display = "block";
+}
+
+function handlewiegand() {
+  document.getElementById("wiegandForm").style.display = "block";
+  document.getElementById("mfrc522Form").style.display = "none";
+}
+
 function listCONF(obj) {
   document.getElementById("inputtohide").value = obj.ssid;
   document.getElementById("wifipass").value = obj.pswd;
@@ -72,24 +90,6 @@ function syncBrowserTime() {
   datatosend.epoch = timestamp;
   websock.send(JSON.stringify(datatosend));
   location.reload();
-}
-
-function handleAP() {
-  document.getElementById("hideBSSID").style.display = "none";
-}
-
-function handleSTA() {
-  document.getElementById("hideBSSID").style.display = "block";
-}
-
-function handleMFRC522() {
-  document.getElementById("wiegandForm").style.display = "none";
-  document.getElementById("mfrc522Form").style.display = "block";
-}
-
-function handlewiegand() {
-  document.getElementById("wiegandForm").style.display = "block";
-  document.getElementById("mfrc522Form").style.display = "none";
 }
 
 function listSSID(obj) {
