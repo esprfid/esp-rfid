@@ -1,14 +1,14 @@
 # ESP RFID - Access Control with ESP8266, RC522
-Access Control demonstration using a cheap MFRC522 RFID Hardware or Wiegand RFID readers and Espressif's ESP8266 Microcontroller. This is a community driven project. 
+Access Control demonstration using a cheap MFRC522 RFID Hardware or Wiegand RFID readers and Espressif's ESP8266 Microcontroller. This is a community driven project.
 
 This is the **development branch** of the project, if you are looking for stable, production ready version of esp-rfid please use **stable** branch.
 
 [![Chat at https://gitter.im/esp-rfid/Lobby](https://badges.gitter.im/esp-rfid.svg)](https://gitter.im/esp-rfid/Lobby) Join community chat
 
-![IP](https://github.com/omersiar/esp-rfid/raw/master/demo/index.png)
-![SP](https://github.com/omersiar/esp-rfid/raw/master/demo/settings.png)
-![UP](https://github.com/omersiar/esp-rfid/raw/master/demo/users.png)
-![LP](https://github.com/omersiar/esp-rfid/raw/master/demo/logs.png)
+![IP](https://github.com/omersiar/esp-rfid/raw/development/demo/index.png)
+![SP](https://github.com/omersiar/esp-rfid/raw/development//demo/settings.png)
+![UP](https://github.com/omersiar/esp-rfid/raw/development//demo/users.png)
+![LP](https://github.com/omersiar/esp-rfid/raw/development//demo/logs.png)
 
 ## Features
 ### For Users
