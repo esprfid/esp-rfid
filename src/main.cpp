@@ -29,6 +29,8 @@
 
 */
 
+#include <Arduino.h>                  // For building out of Arduino IDE
+
 #include <ESP8266WiFi.h>              // Whole thing is about using Wi-Fi networks
 #include <SPI.h>                      // RFID MFRC522 Module uses SPI protocol
 #include <ESP8266mDNS.h>              // Zero-config Library (Bonjour, Avahi) http://esp-rfid.local
@@ -75,29 +77,30 @@ AsyncWebServer server(80);
 // Create WebSocket instance on URL "/ws"
 AsyncWebSocket ws("/ws");
 
-// Set things up
-void setup() {
-  Serial.begin(115200);
-  Serial.println();
-  Serial.println(F("[ INFO ] ESP RFID v0.3beta"));
 
-  // Start SPIFFS filesystem
-  SPIFFS.begin();
 
-  /* Remove Users Helper
-    Dir dir = SPIFFS.openDir("/P/");
-    while (dir.next()){
-    SPIFFS.remove(dir.fileName());
-    }
-  */
-
-  // Try to load configuration file so we can connect to an Wi-Fi Access Point
-  // Do not worry if no config file is present, we fall back to Access Point mode and device can be easily configured
-  if (!loadConfiguration()) {
-    fallbacktoAPMode();
-  }
-  startServer();
-}
+// Define functions first
+void startServer();
+void enableWifi();
+void disableWifi();
+void rfidloop();
+void LogLatest(String uid, String username);
+void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len);
+void sendTime();
+void sendUserList(int page, AsyncWebSocketClient * client);
+void sendStatus();
+String printIP(IPAddress adress);
+void printScanResult(int networksFound);
+bool startAP(const char * ssid, const char * password);
+void fallbacktoAPMode();
+void parseBytes(const char* str, char sep, byte* bytes, int maxBytes, int base);
+bool loadConfiguration();
+void setupMFRC533Reader(int rfidss, int rfidgain);
+void setupWiegandReader(int d0, int d1);
+bool connectSTA(const char* ssid, const char* password, byte bssid[6]);
+void ShowReaderDetails();
+void ShowWiegandReaderDetails();
+void ShowMFRC522ReaderDetails();
 
 void startServer() {
   // Start WebSocket Plug-in and handle incoming message on "onWsEvent" function
@@ -141,56 +144,6 @@ void startServer() {
 
   // Start Web Server
   server.begin();
-}
-
-// Main Loop
-void loop() {
-  unsigned long currentMillis = millis();
-  unsigned long deltaTime = currentMillis - previousLoopMillis;
-  unsigned long uptime = NTP.getUptime();
-  previousLoopMillis = currentMillis;
-
-  if (autoRestartIntervalSeconds > 0 && uptime > autoRestartIntervalSeconds * 1000) {
-    Serial.println(F("[ UPDT ] Auto restarting..."));
-    shouldReboot = true;
-  }
-
-  // check for a new update and restart
-  if (shouldReboot) {
-    Serial.println(F("[ UPDT ] Rebooting..."));
-    delay(100);
-    ESP.restart();
-  }
-  if (currentMillis - previousMillis >= activateTime && activateRelay) {
-    activateRelay = false;
-    digitalWrite(relayPin, relayType);
-  }
-  if (activateRelay) {
-    digitalWrite(relayPin, !relayType);
-  }
-  if (isWifiConnected) {
-    wiFiUptimeMillis += deltaTime;
-  }
-  if (wifiTimeout > 0 && wiFiUptimeMillis > (wifiTimeout * 1000) && isWifiConnected == true) {
-    doDisableWifi = true;
-  }
-  if (doDisableWifi == true) {
-    doDisableWifi = false;
-    wiFiUptimeMillis = 0;
-    disableWifi();
-  }
-  else if (doEnableWifi == true) {
-    doEnableWifi = false;
-    if (!isWifiConnected) {
-      wiFiUptimeMillis = 0;
-      enableWifi();
-    }
-  }
-  // Another loop for RFID Events, since we are using polling method instead of Interrupt we need to check RFID hardware for events
-  if (currentMillis >= cooldown) {
-    rfidloop();
-  }
-
 }
 
 void enableWifi() {
@@ -855,4 +808,78 @@ void ShowMFRC522ReaderDetails() {
   if ((v == 0x00) || (v == 0xFF)) {
     Serial.println(F("[ WARN ] Communication failure, check if MFRC522 properly connected"));
   }
+}
+
+// Set things up
+void setup() {
+  Serial.begin(115200);
+  Serial.println();
+  Serial.println(F("[ INFO ] ESP RFID v0.3beta"));
+
+  // Start SPIFFS filesystem
+  SPIFFS.begin();
+
+  /* Remove Users Helper
+    Dir dir = SPIFFS.openDir("/P/");
+    while (dir.next()){
+    SPIFFS.remove(dir.fileName());
+    }
+  */
+
+  // Try to load configuration file so we can connect to an Wi-Fi Access Point
+  // Do not worry if no config file is present, we fall back to Access Point mode and device can be easily configured
+  if (!loadConfiguration()) {
+    fallbacktoAPMode();
+  }
+  startServer();
+}
+
+// Main Loop
+void loop() {
+  unsigned long currentMillis = millis();
+  unsigned long deltaTime = currentMillis - previousLoopMillis;
+  unsigned long uptime = NTP.getUptime();
+  previousLoopMillis = currentMillis;
+
+  if (autoRestartIntervalSeconds > 0 && uptime > autoRestartIntervalSeconds * 1000) {
+    Serial.println(F("[ UPDT ] Auto restarting..."));
+    shouldReboot = true;
+  }
+
+  // check for a new update and restart
+  if (shouldReboot) {
+    Serial.println(F("[ UPDT ] Rebooting..."));
+    delay(100);
+    ESP.restart();
+  }
+  if (currentMillis - previousMillis >= activateTime && activateRelay) {
+    activateRelay = false;
+    digitalWrite(relayPin, relayType);
+  }
+  if (activateRelay) {
+    digitalWrite(relayPin, !relayType);
+  }
+  if (isWifiConnected) {
+    wiFiUptimeMillis += deltaTime;
+  }
+  if (wifiTimeout > 0 && wiFiUptimeMillis > (wifiTimeout * 1000) && isWifiConnected == true) {
+    doDisableWifi = true;
+  }
+  if (doDisableWifi == true) {
+    doDisableWifi = false;
+    wiFiUptimeMillis = 0;
+    disableWifi();
+  }
+  else if (doEnableWifi == true) {
+    doEnableWifi = false;
+    if (!isWifiConnected) {
+      wiFiUptimeMillis = 0;
+      enableWifi();
+    }
+  }
+  // Another loop for RFID Events, since we are using polling method instead of Interrupt we need to check RFID hardware for events
+  if (currentMillis >= cooldown) {
+    rfidloop();
+  }
+
 }
