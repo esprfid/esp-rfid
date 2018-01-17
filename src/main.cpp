@@ -11,21 +11,21 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 
-  The following table shows the typical pin layout used for MFRC522:
+  1. The following table shows the typical pin layout used for MFRC522:
 
-  | Signal        | MFRC522       | WeMos D1 mini  | NodeMcu | Generic      |
-  |---------------|:-------------:|:--------------:| :------:|:------------:|
-  | RST/Reset     | RST           | NC             | NC      | NC           |
-  | SPI SS        | SDA [3]       | D8 [2]         | D8 [2]  | GPIO-15 [2]  |
-  | SPI MOSI      | MOSI          | D7             | D7      | GPIO-13      |
-  | SPI MISO      | MISO          | D6             | D6      | GPIO-12      |
-  | SPI SCK       | SCK           | D5             | D5      | GPIO-14      |
+    | Signal        | MFRC522       | WeMos D1 mini  | NodeMcu | Generic      |
+    |---------------|:-------------:|:--------------:| :------:|:------------:|
+    | RST/Reset     | RST           | NC             | NC      | NC           |
+    | SPI SS        | SDA [3]       | D8 [2]         | D8 [2]  | GPIO-15 [2]  |
+    | SPI MOSI      | MOSI          | D7             | D7      | GPIO-13      |
+    | SPI MISO      | MISO          | D6             | D6      | GPIO-12      |
+    | SPI SCK       | SCK           | D5             | D5      | GPIO-14      |
 
-  NC. Not Connected
-  2. Configurable via web page
-  3. The SDA pin might be labeled SS on some/older MFRC522 boards.
+    NC. Not Connected
+    2. Configurable via web page
+    3. The SDA pin might be labeled SS on some/older MFRC522 boards.
 
-  Wiegand based reader's D0 and D1 pins are configurable via settings web page.
+  2. Wiegand based reader's D0 and D1 pins are configurable via settings web page.
 
 */
 
@@ -44,6 +44,12 @@
 #include <NtpClientLib.h>             // To timestamp RFID scans we get Unix Time from NTP Server
 #include <TimeLib.h>                  // Library for converting epochtime to a date
 #include <WiFiUdp.h>                  // Library for manipulating UDP packets which is used by NTP Client to get Timestamps
+
+#ifdef ESP8266
+extern "C" {
+#include "user_interface.h"  // Used to get Wifi status information
+}
+#endif
 
 // Variables for whole scope
 unsigned long previousMillis = 0;
@@ -77,8 +83,6 @@ AsyncWebServer server(80);
 // Create WebSocket instance on URL "/ws"
 AsyncWebSocket ws("/ws");
 
-
-
 // Define functions first
 void startServer();
 void enableWifi();
@@ -102,6 +106,24 @@ void ShowReaderDetails();
 void ShowWiegandReaderDetails();
 void ShowMFRC522ReaderDetails();
 
+/* ------------------ TRIVIAL Functions ------------------- */
+String printIP(IPAddress adress) {
+  return (String)adress[0] + "." + (String)adress[1] + "." + (String)adress[2] + "." + (String)adress[3];
+}
+
+void parseBytes(const char* str, char sep, byte* bytes, int maxBytes, int base) {
+  for (int i = 0; i < maxBytes; i++) {
+    bytes[i] = strtoul(str, NULL, base);  // Convert byte
+    str = strchr(str, sep);               // Find next separator
+    if (str == NULL || *str == '\0') {
+      break;                            // No more separators, exit
+    }
+    str++;                                // Point to next character after separator
+  }
+}
+
+
+/* ------------------ BASIC SYSTEM Functions ------------------- */
 void startServer() {
   // Start WebSocket Plug-in and handle incoming message on "onWsEvent" function
   server.addHandler(&ws);
@@ -158,6 +180,69 @@ void disableWifi() {
   Serial.println("Turn wifi off.");
 }
 
+bool startAP(const char * ssid, const char * password = NULL) {
+  inAPMode = true;
+  WiFi.mode(WIFI_AP);
+  Serial.print(F("[ INFO ] Configuring access point... "));
+  bool success = WiFi.softAP(ssid, password);
+  Serial.println(success ? "Ready" : "Failed!");
+  // Access Point IP
+  IPAddress myIP = WiFi.softAPIP();
+  Serial.print(F("[ INFO ] AP IP address: "));
+  Serial.println(myIP);
+  Serial.printf("[ INFO ] AP SSID: %s\n", ssid);
+  isWifiConnected = success;
+  return success;
+}
+
+// Fallback to AP Mode, so we can connect to ESP if there is no Internet connection
+void fallbacktoAPMode() {
+  Serial.println(F("[ INFO ] ESP-RFID is running in Fallback AP Mode"));
+  uint8_t macAddr[6];
+  WiFi.softAPmacAddress(macAddr);
+  char ssid[15];
+  sprintf(ssid, "ESP-RFID-%02x%02x%02x", macAddr[3], macAddr[4], macAddr[5]);
+  isWifiConnected = startAP(ssid);
+  server.serveStatic("/auth/", SPIFFS, "/auth/").setDefaultFile("users.htm").setAuthentication("admin", "admin");
+}
+
+// Try to connect Wi-Fi
+bool connectSTA(const char* ssid, const char* password, byte bssid[6]) {
+  WiFi.disconnect(true);
+  WiFi.mode(WIFI_STA);
+  // First connect to a wi-fi network
+  WiFi.begin(ssid, password, 0, bssid);
+  // Inform user we are trying to connect
+  Serial.print(F("[ INFO ] Trying to connect WiFi: "));
+  Serial.print(ssid);
+  // We try it for 20 seconds and give up on if we can't connect
+  unsigned long now = millis();
+  uint8_t timeout = 20; // define when to time out in seconds
+  // Wait until we connect or 20 seconds pass
+  do {
+    if (WiFi.status() == WL_CONNECTED) {
+      break;
+    }
+    delay(500);
+    Serial.print(F("."));
+  }
+  while (millis() - now < timeout * 1000);
+  // We now out of the while loop, either time is out or we connected. check what happened
+  if (WiFi.status() == WL_CONNECTED) { // Assume time is out first and check
+    Serial.println();
+    Serial.print(F("[ INFO ] Client IP address: ")); // Great, we connected, inform
+    Serial.println(WiFi.localIP());
+    isWifiConnected = true;
+    return true;
+  }
+  else { // We couln't connect, time is out, inform
+    Serial.println();
+    Serial.println(F("[ WARN ] Couldn't connect in time"));
+    return false;
+  }
+}
+
+
 /* ------------------ RFID Functions ------------------- */
 // RFID Specific Loop
 void rfidloop() {
@@ -165,7 +250,7 @@ void rfidloop() {
   String uid = "";
   String type = "";
 
-  // this way of constantly checking the reader type is simply not how it should be.. but let's make it for a proof of a concept ...
+  // This way of constantly checking the reader type is simply not how it should be.. but leave it for now
   if (readerType == 0) {
 
     //If a new PICC placed to RFID reader continue
@@ -300,6 +385,47 @@ void rfidloop() {
     }
   }
   // So far got we got UID of Scanned RFID Tag, checked it if it's on the database and access status, informed Administrator Portal
+}
+
+// Configure RFID Hardware
+void setupMFRC533Reader(int rfidss, int rfidgain) {
+  SPI.begin();           // MFRC522 Hardware uses SPI protocol
+  mfrc522.PCD_Init(rfidss, UINT8_MAX);    // Initialize MFRC522 Hardware
+  // Set RFID Hardware Antenna Gain
+  // This may not work with some boards
+  mfrc522.PCD_SetAntennaGain(rfidgain);
+  Serial.printf("[ INFO ] RFID SS_PIN: %u and Gain Factor: %u", rfidss, rfidgain);
+  Serial.println("");
+  ShowMFRC522ReaderDetails(); // Show details of PCD - MFRC522 Card Reader details
+}
+
+void setupWiegandReader(int d0, int d1) {
+  wg.begin(d0, d0, d1, d1);
+  ShowWiegandReaderDetails(); // Show details of PCD - MFRC522 Card Reader details
+}
+
+void ShowMFRC522ReaderDetails() {
+  // Get the MFRC522 software version
+  byte v = mfrc522.PCD_ReadRegister(mfrc522.VersionReg);
+  Serial.print(F("[ INFO ] MFRC522 Version: 0x"));
+  Serial.print(v, HEX);
+  if (v == 0x91)
+    Serial.print(F(" = v1.0"));
+  else if (v == 0x92)
+    Serial.print(F(" = v2.0"));
+  else if (v == 0x88)
+    Serial.print(F(" = clone"));
+  else
+    Serial.print(F(" (unknown)"));
+  Serial.println("");
+  // When 0x00 or 0xFF is returned, communication probably failed
+  if ((v == 0x00) || (v == 0xFF)) {
+    Serial.println(F("[ WARN ] Communication failure, check if MFRC522 properly connected"));
+  }
+}
+
+void ShowWiegandReaderDetails() {
+  Serial.print(F("[ INFO ] Wiegand Reader"));
 }
 
 void LogLatest(String uid, String username) {
@@ -512,12 +638,8 @@ void sendUserList(int page, AsyncWebSocketClient * client) {
   }
 }
 
-#ifdef ESP8266
-extern "C" {
-#include "user_interface.h"  // Used to get Wifi status information
-}
-#endif
-
+/* ------------------ Other Functions ------------------- */
+// Send system status on a WS request
 void sendStatus() {
   struct ip_info info;
   FSInfo fsinfo;
@@ -568,10 +690,6 @@ void sendStatus() {
   }
 }
 
-String printIP(IPAddress adress) {
-  return (String)adress[0] + "." + (String)adress[1] + "." + (String)adress[2] + "." + (String)adress[3];
-}
-
 // Send Scanned SSIDs to websocket clients as JSON object
 void printScanResult(int networksFound) {
   DynamicJsonBuffer jsonBuffer;
@@ -595,43 +713,6 @@ void printScanResult(int networksFound) {
     ws.textAll(buffer);
   }
   WiFi.scanDelete();
-}
-
-bool startAP(const char * ssid, const char * password = NULL) {
-  inAPMode = true;
-  WiFi.mode(WIFI_AP);
-  Serial.print(F("[ INFO ] Configuring access point... "));
-  bool success = WiFi.softAP(ssid, password);
-  Serial.println(success ? "Ready" : "Failed!");
-  // Access Point IP
-  IPAddress myIP = WiFi.softAPIP();
-  Serial.print(F("[ INFO ] AP IP address: "));
-  Serial.println(myIP);
-  Serial.printf("[ INFO ] AP SSID: %s\n", ssid);
-  isWifiConnected = success;
-  return success;
-}
-
-// Fallback to AP Mode, so we can connect to ESP if there is no Internet connection
-void fallbacktoAPMode() {
-  Serial.println(F("[ INFO ] ESP-RFID is running in Fallback AP Mode"));
-  uint8_t macAddr[6];
-  WiFi.softAPmacAddress(macAddr);
-  char ssid[15];
-  sprintf(ssid, "ESP-RFID-%02x%02x%02x", macAddr[3], macAddr[4], macAddr[5]);
-  isWifiConnected = startAP(ssid);
-  server.serveStatic("/auth/", SPIFFS, "/auth/").setDefaultFile("users.htm").setAuthentication("admin", "admin");
-}
-
-void parseBytes(const char* str, char sep, byte* bytes, int maxBytes, int base) {
-  for (int i = 0; i < maxBytes; i++) {
-    bytes[i] = strtoul(str, NULL, base);  // Convert byte
-    str = strchr(str, sep);               // Find next separator
-    if (str == NULL || *str == '\0') {
-      break;                            // No more separators, exit
-    }
-    str++;                                // Point to next character after separator
-  }
 }
 
 bool loadConfiguration() {
@@ -730,84 +811,6 @@ bool loadConfiguration() {
   NTP.setInterval(ntpinter * 60); // Poll every x minutes
 
   return true;
-}
-
-// Configure RFID Hardware
-//void setupRFID(int rfidss, int rfidgain) {
-void setupMFRC533Reader(int rfidss, int rfidgain) {
-  SPI.begin();           // MFRC522 Hardware uses SPI protocol
-  mfrc522.PCD_Init(rfidss, UINT8_MAX);    // Initialize MFRC522 Hardware
-  // Set RFID Hardware Antenna Gain
-  // This may not work with some boards
-  mfrc522.PCD_SetAntennaGain(rfidgain);
-  Serial.printf("[ INFO ] RFID SS_PIN: %u and Gain Factor: %u", rfidss, rfidgain);
-  Serial.println("");
-  ShowMFRC522ReaderDetails(); // Show details of PCD - MFRC522 Card Reader details
-}
-
-void setupWiegandReader(int d0, int d1) {
-  wg.begin(d0, d0, d1, d1);
-  ShowWiegandReaderDetails(); // Show details of PCD - MFRC522 Card Reader details
-}
-
-// Try to connect Wi-Fi
-bool connectSTA(const char* ssid, const char* password, byte bssid[6]) {
-  WiFi.disconnect(true);
-  WiFi.mode(WIFI_STA);
-  // First connect to a wi-fi network
-  WiFi.begin(ssid, password, 0, bssid);
-  // Inform user we are trying to connect
-  Serial.print(F("[ INFO ] Trying to connect WiFi: "));
-  Serial.print(ssid);
-  // We try it for 20 seconds and give up on if we can't connect
-  unsigned long now = millis();
-  uint8_t timeout = 20; // define when to time out in seconds
-  // Wait until we connect or 20 seconds pass
-  do {
-    if (WiFi.status() == WL_CONNECTED) {
-      break;
-    }
-    delay(500);
-    Serial.print(F("."));
-  }
-  while (millis() - now < timeout * 1000);
-  // We now out of the while loop, either time is out or we connected. check what happened
-  if (WiFi.status() == WL_CONNECTED) { // Assume time is out first and check
-    Serial.println();
-    Serial.print(F("[ INFO ] Client IP address: ")); // Great, we connected, inform
-    Serial.println(WiFi.localIP());
-    isWifiConnected = true;
-    return true;
-  }
-  else { // We couln't connect, time is out, inform
-    Serial.println();
-    Serial.println(F("[ WARN ] Couldn't connect in time"));
-    return false;
-  }
-}
-
-void ShowWiegandReaderDetails() {
-  Serial.print(F("[ INFO ] Wiegand Reader"));
-}
-
-void ShowMFRC522ReaderDetails() {
-  // Get the MFRC522 software version
-  byte v = mfrc522.PCD_ReadRegister(mfrc522.VersionReg);
-  Serial.print(F("[ INFO ] MFRC522 Version: 0x"));
-  Serial.print(v, HEX);
-  if (v == 0x91)
-    Serial.print(F(" = v1.0"));
-  else if (v == 0x92)
-    Serial.print(F(" = v2.0"));
-  else if (v == 0x88)
-    Serial.print(F(" = clone"));
-  else
-    Serial.print(F(" (unknown)"));
-  Serial.println("");
-  // When 0x00 or 0xFF is returned, communication probably failed
-  if ((v == 0x00) || (v == 0xFF)) {
-    Serial.println(F("[ WARN ] Communication failure, check if MFRC522 properly connected"));
-  }
 }
 
 // Set things up
