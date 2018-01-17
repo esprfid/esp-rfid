@@ -1,13 +1,9 @@
 # ESP RFID - Access Control with ESP8266, RC522
-Access Control demonstration using a cheap MFRC522 RFID Hardware or Wiegand RFID readers and Espressif's ESP8266 Microcontroller.
+Access Control demonstration using a cheap MFRC522 RFID Hardware or Wiegand RFID readers and Espressif's ESP8266 Microcontroller. This is a community driven project. 
+
+This is the **development branch** of the project, if you are looking for stable, production ready version of esp-rfid please use **stable** branch.
 
 [![Chat at https://gitter.im/esp-rfid/Lobby](https://badges.gitter.im/esp-rfid.svg)](https://gitter.im/esp-rfid/Lobby) Join community chat
-
-Its easy to use web based interface makes everything smooth. Once you setup your hardware, you can associate RFID tags to "Users" (or just label them), give them ability to unlock a electric controlled door or whatever you want give access.
-
-You can connect to Web UI anytime to give users access or take it back. Web UI accessible via Wi-Fi network, if your Wi-Fi Access Point is connected to Internet, you can sync Time from NTP Server to timestamp User's access.
-
-Use case scenarios can be expanded. There are several things I want to implement. (such as limited time access, logging, record user's enter exit time, etc.)
 
 ![IP](https://github.com/omersiar/esp-rfid/raw/master/demo/index.png)
 ![SP](https://github.com/omersiar/esp-rfid/raw/master/demo/settings.png)
@@ -22,10 +18,10 @@ Use case scenarios can be expanded. There are several things I want to implement
 * Cheap to build and easy to maintain
 ### For Tinkerers
 * Open Source (minimum amount of hardcoded variable, this means more freedom)
-* By default MQTT is not supported, thanks to [@thunderace](https://github.com/omersiar/esp-rfid/tree/mqtt) MQTT enabled version is on another branch
 * Using WebSocket protocol to exchange data between Hardware and Web Browser
 * Data is encoded as JSON object
 * Records are Timestamped (Time synced from a NTP Server)
+* MQTT enabled
 * Bootstrap, jQuery, FooTables for beautiful Web Pages for both Mobile and Desktop Screens
 * Thanks to ESPAsyncWebServer Library communication is Asyncronous
 
@@ -48,25 +44,6 @@ This project still in its development phase. New features (and also bugs) are in
 
 #### Using Compiled Binaries
 [Compiled binaries and the flasher tool](https://github.com/omersiar/esp-rfid/tree/master/compiledbin) are available in directory /compiledbin. On Windows you can use "flash.bat" it will ask you which COM port that ESP is connected and then flashes it. You can use any flashing tool and do the flashing manually. The flashing process itself has been described at numerous places on Internet.
-
-#### Building From Source
-Please install Arduino IDE if you didn't already, then add ESP8266 Core (**Beware! [Install Git Version](https://github.com/esp8266/Arduino#using-git-version)**) on top of it. Additional Library download links are listed below:
-
-* [Arduino IDE](http://www.arduino.cc) - The development IDE
-* [ESP8266 Core for Arduino IDE](https://github.com/esp8266/Arduino) - ESP8266 Core
-* [ESPAsyncWebServer](https://github.com/me-no-dev/ESPAsyncWebServer) - Asyncrone Web Server with WebSocket Plug-in
-* [ESPAsyncTCP](https://github.com/me-no-dev/ESPAsyncTCP) - Mandatory for ESPAsyncWebServer
-* [MFRC522](https://github.com/miguelbalboa/rfid) - MFRC522 RFID Hardware Library for Arduino IDE
-* [Wiegand](https://github.com/monkeyboard/Wiegand-Protocol-Library-for-Arduino) - Wiegand 4 bit, 8 bit, 26 bit, 32 bit and 34 bit library for Arduino
-* [ArduinoJson](https://github.com/bblanchon/ArduinoJson) - JSON Library for Arduino IDE
-* [NTPClientLib](https://github.com/gmag11/NtpClient/) - NTP Client Library for Arduino IDE
-* [TimeLib](https://github.com/PaulStoffregen/Time) - Mandatory for NTP Client Library
-
-You also need to upload web files to your ESP with ESP8266FS Uploader.
-
-* [ESP8266FS Uploader](https://github.com/esp8266/arduino-esp8266fs-plugin) - Arduino ESP8266 filesystem uploader
-
-Unlisted libraries are part of ESP8266 Core for Arduino IDE, so you don't need to download them.
 
 #### Building With Platformio
 Install platformio
@@ -151,50 +128,23 @@ At least 1000 unique User (RFID Tag) can be handled, the test were performed on 
 * [ESP-IO](https://github.com/Pako2/EventGhostPlugins/tree/master/ESP-IO)
 
 ### Contributions
-Thanks to the community, these features are come to alive with their great effort:
+Thanks to the community, ESP-RFID come to alive with their great effort:
 
-- [X] Added captive portal. [by @rneurink](https://github.com/omersiar/esp-rfid/issues/7)
-- [X] Available SPIFFS storage [by @rneurink](https://github.com/rneurink/esp-rfid/commit/5b962538bbf1c3234c05cea9ec8bf24f81ad6561)
-- [X] Device Status in AP Mode [by @rneurink](https://github.com/rneurink/esp-rfid)
-- [X] Colorize progress bars depending on percentage [by @rneurink](https://github.com/rneurink/esp-rfid)
-- [X] MQTT Support [by @thunderace](https://github.com/omersiar/esp-rfid/tree/mqtt)
-- [X] Automatically disconnects wifi until an "admin" card is read in by the user [by @zeraien](https://github.com/omersiar/esp-rfid/pull/29)
-- [X] Add automatic restart setting, to lessen risk of memory leaks and crashes. [by @zeraien](https://github.com/omersiar/esp-rfid/pull/29)
-- [X] The wifi network created will have the same name as the "hostname", in case you have multiple units nearby [by @zeraien](https://github.com/omersiar/esp-rfid/pull/29)
-- [X] Also some minor tweaks to web interface. [by @zeraien](https://github.com/omersiar/esp-rfid/pull/29)
+- @rneurink
+- @thunderace
+- @zeraien
+- @nardev
 
 See [ChangeLog](https://github.com/omersiar/esp-rfid/blob/master/CHANGELOG.md)
 
-## To Do
-- [X] Backup / Restore Settings, PICC files, everything
-- [X] Polished web pages
-- [X] Settings Panel for Wi-Fi, IP, Hostname, NTP Client, etc
-- [X] Sync Time from Browser if there is no internet connection
-- [X] Log Access Time of Users
-- [X] WebSocket Basic Authentication
-- [ ] Password Protection or Authentication for Tags instead of relying to only UIDs (PICC Password)
-- [ ] Globalization (language support, time zone support, etc)
-- [ ] Schedule User Access
-- [ ] Use Value Blocks to check if user have enough credits for access
-- [ ] Sanity check where needed (min WPA password lenght, return status of commands to WebSocket, etc)
-- [ ] Find a way to speed up DNS query for WebSocket. Takes a lot of time
-- [ ] Factory Reset via pin or settings page
-- [ ] SPIFFS Update from Web
-- [ ] Adapt to use case scenarios such as every entered user also need to exit and do not allow re-entry unless user exited before. (this needs multiple device RFID or ESP)
-- [ ] rBoot for secondary recovery program? to flash main firmware maybe?
-
-
 ## Donations
-If this project helps you in a way, you can buy me a beer.
-PayPal is not allowed in my country (what a shame)
-You can donate via Bitcoin Cash however, to this address:
-(only Bitcoin Cash, do not send legacy Bitcoin coins to this address)
-1F94BCWahzKw56dpg6zMCcEGcTHJcA8XTB
-
-Also you can make a donation to the ESP-RFID community with [Bountysource](https://salt.bountysource.com/teams/esp-rfid)
+If this project helps you in a way, you can buy us a beer. You can make a donation to the ESP-RFID community with [Bountysource](https://salt.bountysource.com/teams/esp-rfid)
 
 #### Donators
 * 2017-10-03 [steinar-t](https://github.com/steinar-t)
 * 2017-12-10 [saschaludwig](https://github.com/saschaludwig)
 
 Thank you for your contributions.
+
+## License
+UNLICENSE
