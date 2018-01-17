@@ -6,9 +6,9 @@ This is the **development branch** of the project, if you are looking for stable
 [![Chat at https://gitter.im/esp-rfid/Lobby](https://badges.gitter.im/esp-rfid.svg)](https://gitter.im/esp-rfid/Lobby) Join community chat
 
 ![IP](https://github.com/omersiar/esp-rfid/raw/development/demo/index.png)
-![SP](https://github.com/omersiar/esp-rfid/raw/development//demo/settings.png)
-![UP](https://github.com/omersiar/esp-rfid/raw/development//demo/users.png)
-![LP](https://github.com/omersiar/esp-rfid/raw/development//demo/logs.png)
+![SP](https://github.com/omersiar/esp-rfid/raw/development/demo/settings.png)
+![UP](https://github.com/omersiar/esp-rfid/raw/development/demo/users.png)
+![LP](https://github.com/omersiar/esp-rfid/raw/development/demo/logs.png)
 
 ## Features
 ### For Users
