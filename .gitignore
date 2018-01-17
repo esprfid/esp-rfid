@@ -1,0 +1,4 @@
+.pioenvs
+.piolibdeps
+data/*.gz
+data/auth/config.json
