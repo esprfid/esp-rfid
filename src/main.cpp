@@ -1,5 +1,6 @@
 /*
    Copyright (c) 2017 Omer Siar Baysal
+   Copyright (c) 2018 ESP-RFID Community
 
    Released to Public Domain
 
