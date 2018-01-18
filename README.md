@@ -1,3 +1,8 @@
+# Update: Please be patience while we are switching to new development environment, if you are new to esp-rfid project please get latest stable source files from the github's [release](https://github.com/omersiar/esp-rfid/releases) facility and get instructions from the downloaded "readme.md" file.
+
+
+
+
 # ESP RFID - Access Control with ESP8266, RC522
 Access Control demonstration using a cheap MFRC522 RFID Hardware or Wiegand RFID readers and Espressif's ESP8266 Microcontroller. This is a community driven project.
 
