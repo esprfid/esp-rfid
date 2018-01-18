@@ -52,6 +52,9 @@ Build and upload filesystem : pio run --target uploadfs
 
 Build and upload code : pio run --target upload --upload-port COM12
 
+NOTE: In case you want to automate the process without writing commands, set "upload_port = /dev/ttyUSB0" to point to your port and also, you might want to set "build_flags = -Wl,-Tesp8266.flash.4m.ld" according to your pletform spiffs size.
+
+
 ### Pin Layout
 
 The following table shows the typical pin layout used for connecting MFRC522 hardware to ESP:
