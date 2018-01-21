@@ -1,0 +1,16 @@
+{
+  "name": "uglifier",
+  "version": "0.0.1",
+  "description": "Combine all js and css files into one and gzip them for the ESP-RFID project",
+  "main": "unglify.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "ESP-RFID Developers",
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-concat": "^2.6.1",
+    "gulp-gzip": "^1.4.2"
+  }
+}
