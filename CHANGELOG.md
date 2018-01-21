@@ -1,6 +1,16 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.4alpha] - 2018-01-21
+#### Added
+- Initial Wiegand Reader (RFID Reader) support. - @nardev
+- Use secure WebSocket protocol if there is a reverse proxy available. - @thunderace
+
+#### Changed
+- Default IDE is now PlatformIO, from now on Arduino IDE support is dropped.
+- SPIFFS Editor's password is now same with the administration password -@thunderace
+- SPI SS pin is now have a default value 15 when there is no configuration file. - @thunderace
+
 ## [0.3beta] - 2017-12-24
 #### Fixed
 - Partly fixed (We still have a quirk with adding new user, may fixed by library level) [#33](https://github.com/omersiar/esp-rfid/issues/33)
