@@ -3,7 +3,7 @@ var timezone;
 var userdata = [];
 var page = 1;
 var haspages;
-var wsUri;
+var wsUri = "ws://" + window.location.hostname + "/ws";
 
 function listSCAN(obj) {
   if (obj.known === 1) {
@@ -237,11 +237,12 @@ FooTable.MyFiltering = FooTable.Filtering.extend({
 });
 
 function start() {
-  var protocol = "ws://"; 
   if (window.location.protocol === "https:") {
-    protocol = "wss://";
+    wsUri = "wss://" + window.location.hostname + "/ws";
   }
-  wsUri =protocol+ window.location.hostname + "/ws"; 
+  else if (window.location.protocol === "file:") {
+	wsUri = "ws://" + "localhost" + "/ws";
+  }   
   websock = new WebSocket(wsUri);
   websock.addEventListener('message', socketMessageListener);
   websock.addEventListener('close', socketCloseListener);
@@ -276,7 +277,7 @@ function socketMessageListener(evt) {
         document.getElementById("loading-img").style.display = "none";
         $(".footable-show").click();
         $(".fooicon-remove").click();
-		    websock.send("{\"command\":\"gettime\"}");
+		websock.send("{\"command\":\"gettime\"}");
       }
     }
   }

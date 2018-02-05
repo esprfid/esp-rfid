@@ -1,6 +1,6 @@
 var websock = null;
 var logdata;
-var wsUri;
+var wsUri = "ws://" + window.location.hostname + "/ws";
 
 function twoDigits(value) {
    if(value < 10) {
@@ -45,11 +45,12 @@ function initTable() {
 }
 
 function start() {
-  var protocol = "ws://"; 
-  if (window.location.protocol === "https:") {
-    protocol = "wss://";
+if (window.location.protocol === "https:") {
+    wsUri = "wss://" + window.location.hostname + "/ws";
   }
-  wsUri =protocol+ window.location.hostname + "/ws"; 
+  else if (window.location.protocol === "file:") {
+	wsUri = "ws://" + "localhost" + "/ws";
+  }  
   websock = new WebSocket(wsUri);
   websock.addEventListener('message', socketMessageListener);
   websock.addEventListener('close', socketCloseListener);

@@ -1,6 +1,5 @@
 Import("env")
 import shutil
-import gzip
 import os
 #
 # Dump build environment (for debug)
@@ -11,18 +10,17 @@ import os
 # Upload actions
 #
 
-def before_buildfs(source, target, env):
-	try:
-		os.remove('./data/required.css.gz');
-		os.remove('./data/required.js.gz');
-	except OSError:
-		pass	
-	with open('./datafiles/required.css', 'rb') as f_in:
-		with gzip.open('./data/required.css.gz', 'wb') as f_out:
-			shutil.copyfileobj(f_in, f_out)
-	with open('./datafiles/required.js', 'rb') as f_in:
-		with gzip.open('./data/required.js.gz', 'wb') as f_out:
-			shutil.copyfileobj(f_in, f_out)
+env.Replace(
+    MYUPLOADERFLAGS=[
+        "-vv",
+        "-cd", "nodemcu",
+        "-cb", "$UPLOAD_SPEED",
+        "-cp", "$UPLOAD_PORT",
+        "-ca", "0x00000",
+        "-cf", "$SOURCE"
+    ],
+    UPLOADCMD='$UPLOADER $MYUPLOADERFLAGS',
+)
 
 def after_buildfs(source, target, env):
 	shutil.copy(spiffs_source, 'compiledbin/latestspiffs.bin')

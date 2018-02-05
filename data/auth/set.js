@@ -7,7 +7,7 @@ var haspages;
 var file = {};
 var userdata = [];
 var completed = false;
-var wsUri;
+var wsUri = "ws://" + window.location.hostname + "/ws";
 
 function handleAP() {
   document.getElementById("hideBSSID").style.display = "none";
@@ -328,11 +328,12 @@ $(document).ready(function(){
 });
 
 function start() {
-  var protocol = "ws://";
   if (window.location.protocol === "https:") {
-    protocol = "wss://";
+    wsUri = "wss://" + window.location.hostname + "/ws";
   }
-  wsUri =protocol+ window.location.hostname + "/ws";
+  else if (window.location.protocol === "file:") {
+	wsUri = "ws://" + "localhost" + "/ws";
+  }
   websock = new WebSocket(wsUri);
   websock.addEventListener('message', socketMessageListener);
   websock.addEventListener('error', socketErrorListener);

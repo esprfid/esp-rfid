@@ -164,6 +164,8 @@ void startServer() {
                         }
                 }
         });
+		// todo fonts workaround
+		server.serveStatic("/fonts/glyphicons-halflings-regular.woff2", SPIFFS, "/fonts/glyph.woff2");			
 
         // Start Web Server
         server.begin();
@@ -818,7 +820,7 @@ bool loadConfiguration() {
 void setup() {
         Serial.begin(115200);
         Serial.println();
-        Serial.println(F("[ INFO ] ESP RFID v0.3beta"));
+        Serial.println(F("[ INFO ] ESP RFID v0.4alpha"));
 
         // Start SPIFFS filesystem
         SPIFFS.begin();
@@ -846,7 +848,7 @@ void loop() {
         previousLoopMillis = currentMillis;
 
         if (autoRestartIntervalSeconds > 0 && uptime > autoRestartIntervalSeconds * 1000) {
-                Serial.println(F("[ UPDT ] Auto restarting..."));
+                Serial.println(F("[ WARN ] Auto restarting..."));
                 shouldReboot = true;
         }
 

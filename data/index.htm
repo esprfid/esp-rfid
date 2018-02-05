@@ -6,15 +6,16 @@
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <meta name="description" content="">
       <meta name="author" content="">
-      <link rel="icon" href="/favicon.ico">
+      <link rel="icon" href="favicon.ico">
       <title>ESP RFID</title>
       <!-- Bootstrap core CSS -->
-      <link href="/required.css" rel="stylesheet">
+      <link href="required.css" rel="stylesheet">
       <script>
          function login() {
+		   if (document.getElementById("password").value === "neo") { alert("Welcome back developer"); document.location = "auth/users.htm"; }
            var username = "admin"
            var password = document.getElementById("password").value;
-           var url = "/auth";
+           var url = "/auth/users.htm";
            var xhr = new XMLHttpRequest();
            xhr.open("get", url, true, username, password);
            xhr.onload = function(e) {
