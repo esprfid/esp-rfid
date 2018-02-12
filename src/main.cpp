@@ -89,7 +89,7 @@ void startServer();
 void enableWifi();
 void disableWifi();
 void rfidloop();
-void LogLatest(String uid, String username);
+void LogLatest(String uid, String username, int acctype);
 void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len);
 void sendTime();
 void sendUserList(int page, AsyncWebSocketClient * client);
@@ -167,11 +167,11 @@ void startServer() {
 		// Bootstrap Fonts hardcode workaround
 		// Inspect impact on memory, firmware size.
 		server.serveStatic("/fonts/glyphicons-halflings-regular.eot", SPIFFS, "/fonts/glyph.eot");
-		server.serveStatic("/fonts/glyphicons-halflings-regular.svg", SPIFFS, "/fonts/glyph.svg");	
-		server.serveStatic("/fonts/glyphicons-halflings-regular.ttf", SPIFFS, "/fonts/glyph.ttf");	
-		server.serveStatic("/fonts/glyphicons-halflings-regular.woff", SPIFFS, "/fonts/glyph.woff");	
+		server.serveStatic("/fonts/glyphicons-halflings-regular.svg", SPIFFS, "/fonts/glyph.svg");
+		server.serveStatic("/fonts/glyphicons-halflings-regular.ttf", SPIFFS, "/fonts/glyph.ttf");
+		server.serveStatic("/fonts/glyphicons-halflings-regular.woff", SPIFFS, "/fonts/glyph.woff");
 		server.serveStatic("/fonts/glyphicons-halflings-regular.woff2", SPIFFS, "/fonts/glyph.woff2");
-		
+
 
         // Start Web Server
         server.begin();
@@ -347,7 +347,7 @@ void rfidloop() {
                         else {
                                 Serial.println(" does not have access");
                         }
-                        LogLatest(uid, username);
+                        LogLatest(uid, username, AccType);
                         // Also inform Administrator Portal
                         // Encode a JSON Object and send it to All WebSocket Clients
                         DynamicJsonBuffer jsonBuffer2;
@@ -376,7 +376,7 @@ void rfidloop() {
         }
         else {
                 // If we don't know the UID, inform Administrator Portal so admin can give access or add it to database
-                LogLatest(uid, "Unknown");
+                LogLatest(uid, "Unknown", 3);
                 Serial.println(" = unknown PICC");
                 DynamicJsonBuffer jsonBuffer;
                 JsonObject& root = jsonBuffer.createObject();
@@ -437,7 +437,7 @@ void ShowWiegandReaderDetails() {
         Serial.print(F("[ INFO ] Wiegand Reader"));
 }
 
-void LogLatest(String uid, String username) {
+void LogLatest(String uid, String username, int acctype) {
         File logFile = SPIFFS.open("/auth/latestlog.json", "r");
         if (!logFile) {
                 // Can not open file create it.
@@ -469,6 +469,7 @@ void LogLatest(String uid, String username) {
                         item["uid"] = uid;
                         item["username"] = username;
                         item["timestamp"] = now();
+                        item["acctype"] = acctype;
                         list.add(item);
                         root.printTo(logFile);
                 }

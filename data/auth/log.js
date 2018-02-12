@@ -19,7 +19,7 @@ function initTable() {
             "parser": function(value) {
               var vuepoch = new Date(value * 1000);
               var formatted = vuepoch.getUTCFullYear()
-                  + "-" + twoDigits(vuepoch.getUTCMonth() + 1) 
+                  + "-" + twoDigits(vuepoch.getUTCMonth() + 1)
                   + "-" + twoDigits(vuepoch.getUTCDate())
                   + "-" + twoDigits(vuepoch.getUTCHours())
                   + ":" + twoDigits(vuepoch.getUTCMinutes())
@@ -37,6 +37,21 @@ function initTable() {
           {
             "name": "username",
             "title": "User Name or Label"
+          },
+          {
+            "name": "acctype",
+            "title": "Access",
+            "parser": function(value) {
+            if (value == 1) {
+              return "Granted";
+            } else if (value == 99) {
+              return "GrantedAdmin";
+            } else if (value == 0) {
+              return "Disabled";
+            } else {
+            return "Unknown";
+              }
+            }
           }
         ],
         rows: logdata
@@ -50,7 +65,7 @@ if (window.location.protocol === "https:") {
   }
   else if (window.location.protocol === "file:") {
 	wsUri = "ws://" + "localhost" + "/ws";
-  }  
+  }
   websock = new WebSocket(wsUri);
   websock.addEventListener('message', socketMessageListener);
   websock.addEventListener('close', socketCloseListener);
