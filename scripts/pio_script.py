@@ -28,8 +28,6 @@ def after_buildfs(source, target, env):
 def after_build(source, target, env):
 	shutil.copy(firmware_source, 'compiledbin/latest.bin')
 
-
-env.AddPreAction('$BUILD_DIR/spiffs.bin', before_buildfs);
 env.AddPostAction('$BUILD_DIR/spiffs.bin', after_buildfs);
 env.AddPostAction("buildprog", after_build)
 
