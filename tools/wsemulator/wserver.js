@@ -1,6 +1,6 @@
 console.log("[ INFO ] Starting ESP-RFID WebSocket Emulation Server");
 
-const WebSocket = require('ws');
+const WebSocket = require("ws");
 
 console.log("[ INFO ] You can connect to ws://localhost (default port is 80)");
 
@@ -15,6 +15,95 @@ wss.broadcast = function broadcast(data) {
         }
     });
 };
+
+var epoch = Math.floor((new Date).getTime()/1000);
+
+var networks = {
+  "command": "ssidlist",
+  "list": [
+    {
+      "ssid": "Company's Network",
+      "bssid": "4c:f4:39:a1:41",
+      "rssi": "-84"
+    },
+    {
+      "ssid": "Home Router",
+      "bssid": "8a:e6:63:a8:15",
+      "rssi": "-42"
+    },
+    {
+      "ssid": "SSID Shown Here",
+      "bssid": "8a:f5:86:c3:12",
+      "rssi": "-77"
+    },
+    {
+      "ssid": "Great Wall of WPA",
+      "bssid": "9c:f1:90:c5:15",
+      "rssi": "-80"
+    },
+    {
+      "ssid": "Not Internet",
+      "bssid": "8c:e4:57:c5:16",
+      "rssi": "-87"
+    }
+  ]
+}
+
+var latestlog = {
+  "type": "latestlog",
+  "list": [
+    {
+      "timestamp": 1518198383,
+      "uid": "8ab424c10",
+      "username": "Moody Bond"
+    },
+    {
+      "timestamp": 1514952461,
+      "uid": "4de212c96",
+      "username": "Unknown"
+    },
+    {
+      "timestamp": 1516598710,
+      "uid": "8de284c27",
+      "username": "Marta Cooley"
+    },
+    {
+      "timestamp": 1516649998,
+      "uid": "4db504c86",
+      "username": "Simmons Sosa"
+    },
+    {
+      "timestamp": 1517133201,
+      "uid": "9db178a36",
+      "username": "Jimmie Sheppard"
+    },
+    {
+      "timestamp": 1516257556,
+      "uid": "4cf690a75",
+      "username": "Rutledge Murray"
+    },
+    {
+      "timestamp": 1515661586,
+      "uid": "4ab792d39",
+      "username": "Unknown"
+    },
+    {
+      "timestamp": 1515524537,
+      "uid": "9cf869a85",
+      "username": "Rollins Villarreal"
+    },
+    {
+      "timestamp": 1515823122,
+      "uid": "9db221c40",
+      "username": "Hayden Baird"
+    },
+    {
+      "timestamp": 1515066066,
+      "uid": "8cb891d34",
+      "username": "Tucker Boyer"
+    }
+  ]
+}
 
 var users = [{
         "uid": "12c9298d",
@@ -180,16 +269,61 @@ var users = [{
     }
 ]
 
-var configfile = {};
+var configfile = {
+	"command":"configfile",
+	"bssid":"8a:e6:63:a8:15",
+	"ssid":"Home Router",
+	"wmode":"0",
+	"pswd":"33355555",
+	"readerType":"0",
+	"wgd0pin":"4",
+	"wgd1pin":"5",
+	"sspin":"15",
+	"rfidgain":"32",
+	"rtype":"1",
+	"rpin":"16",
+	"rtime":"300",
+	"ntpserver":"pool.ntp.org",
+	"ntpinterval":"30",
+	"timezone":"0",
+	"hostnm":"esp-rfid",
+	"disable_wifi_after_seconds":"0",
+	"auto_restart_interval_seconds":"86400",
+	"adminpwd":"admin"
+};
 
 function remove(uidKey) {
     for (var i = 0; i < users.length; i++) {
         if (users[i].uid === uidKey) {
             console.log("[ INFO ] Removed: " + JSON.stringify(users[i]));
-            users = users.slice(i);
+            users.splice(i,1);
         }
     }
 }
+
+function updateuser(obj) {
+    for (var i = 0; i < users.length; i++) {
+        if (users[i].uid === obj.uid) {
+            console.log("[ INFO ] Old User settings: " + JSON.stringify(users[i]));
+            users.splice(i,1);
+			break;
+		}
+	}
+	var newdata = {};
+	newdata.uid = obj.uid;
+	newdata.username = obj.user;
+	newdata.acctype = obj.acctype;
+	newdata.validuntil = obj.validuntil;
+	console.log("[ INFO ] New User settings: " + JSON.stringify(newdata));
+	users.push(newdata);
+	var res = {
+		"command": "result",
+		"resultof": "userfile",
+		"result": true
+	};
+	wss.broadcast(res);
+}
+
 
 function sendUserList(page) {
     var datatosend = {};
@@ -233,6 +367,7 @@ function sendStatus() {
 }
 
 wss.on('connection', function connection(ws) {
+	ws.on("error", () => console.log("[ WARN ] WebSocket Error - Assume a client is disconnected."));
     ws.on('message', function incoming(message) {
         var obj = JSON.parse(message);
         console.log("[ INFO ] Got Command: " + obj.command);
@@ -242,19 +377,56 @@ wss.on('connection', function connection(ws) {
                 remove(obj.uid);
                 break;
             case "configfile":
-                configfile = JSON.stringify(obj, null, 2);
-                console.log("[ INFO ] New configuration is recieved" + configfile);
+                configfile = obj;
+                console.log("[ INFO ] New configuration file is recieved");
                 break;
             case "userlist":
-                console.log("[ INFO ] Sending User List Page: " + obj.page);
+                console.log("[ INFO ] Sending User List, page: " + obj.page);
                 sendUserList(obj.page);
                 break;
 			case "status":
 				console.log("[ INFO ] Sending Fake Emulator Status");
 				sendStatus();
 				break;
+			case "userfile":
+				console.log("[ INFO ] User Update " + obj.uid);
+				updateuser(obj);
+				break;
+			case "testrelay":
+				console.log("[ INFO ] Test relay button");
+				process.stderr.write("\007");
+				break;
+            case "latestlog":
+				console.log("[ INFO ] Sending latest log file");
+				wss.broadcast(latestlog);
+				break;
+			case "scan":
+				console.log("[ INFO ] Sending Fake Wireless Networks");
+				wss.broadcast(networks);
+				break;
+			case "gettime":
+				console.log("[ INFO ] Sending time");
+				var res = {};
+				res.command = "gettime";
+				res.epoch = epoch;
+				res.timezone = configfile.timezone;
+				wss.broadcast(res);
+				break;
+			case "settime":
+			    console.log("[ INFO ] Setting time (fake)");
+				var res = {};
+				res.command = "gettime";
+				res.epoch = epoch;
+				res.timezone = configfile.timezone;
+				wss.broadcast(res);
+				break;
+			case "getconf":
+				console.log("[ INFO ] Sending configuration file (if set any)");
+				wss.broadcast(configfile);
+				break;
             default:
                 console.log("[ WARN ] Unknown command ");
+				break;
         }
     });
 });

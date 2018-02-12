@@ -5,6 +5,8 @@ var page = 1;
 var haspages;
 var wsUri = "ws://" + window.location.hostname + "/ws";
 
+NProgress.start();
+
 function listSCAN(obj) {
   if (obj.known === 1) {
     $(".fooicon-remove").click();
@@ -275,6 +277,7 @@ function socketMessageListener(evt) {
       } else if (page === haspages) {
         initTable();
         document.getElementById("loading-img").style.display = "none";
+		NProgress.done();
         $(".footable-show").click();
         $(".fooicon-remove").click();
 		websock.send("{\"command\":\"gettime\"}");

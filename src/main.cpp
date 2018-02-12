@@ -164,8 +164,14 @@ void startServer() {
                         }
                 }
         });
-		// todo fonts workaround
-		server.serveStatic("/fonts/glyphicons-halflings-regular.woff2", SPIFFS, "/fonts/glyph.woff2");			
+		// Bootstrap Fonts hardcode workaround
+		// Inspect impact on memory, firmware size.
+		server.serveStatic("/fonts/glyphicons-halflings-regular.eot", SPIFFS, "/fonts/glyph.eot");
+		server.serveStatic("/fonts/glyphicons-halflings-regular.svg", SPIFFS, "/fonts/glyph.svg");	
+		server.serveStatic("/fonts/glyphicons-halflings-regular.ttf", SPIFFS, "/fonts/glyph.ttf");	
+		server.serveStatic("/fonts/glyphicons-halflings-regular.woff", SPIFFS, "/fonts/glyph.woff");	
+		server.serveStatic("/fonts/glyphicons-halflings-regular.woff2", SPIFFS, "/fonts/glyph.woff2");
+		
 
         // Start Web Server
         server.begin();
