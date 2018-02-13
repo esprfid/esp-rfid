@@ -1,6 +1,19 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+#### Added
+- Travis CI
+- NProgress.js
+- Glyphicons redirection for SPIFFS's limited 32 char filename.
+- WebSocket emulator for rapid web page development. (This require node.js)
+- Gulp script for auto css/js file concat and gzip
+- Offline static web page development capability (enter "neo" as admin password for local testing)
+
+#### Changed
+- Platformio target to include many more ESP8266 module and development board.
+- Clean and beautify main.cpp @nardev
+
 ## [0.4alpha] - 2018-01-21
 #### Added
 - Initial Wiegand Reader (RFID Reader) support. - @nardev
