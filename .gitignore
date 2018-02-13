@@ -7,7 +7,6 @@ data/required.js
 data/auth/config.json
 .clang_complete
 .gcc-flags.json
-.travis.yml
 
 # node js
 
