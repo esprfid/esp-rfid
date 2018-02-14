@@ -13,8 +13,12 @@ All notable changes to this project will be documented in this file.
 - Offline static web page development capability (enter "neo" as admin password for local testing)
 
 #### Changed
+- Hardcoded FooTable Add/Edit text
 - Platformio target to include many more ESP8266 module and development board.
 - Clean and beautify main.cpp @nardev
+- Minor cosmetic changes
+- Javascript loading moved to end of the html
+- index.html for more modern look and feel.
 
 ## [0.4alpha] - 2018-01-21
 #### Added

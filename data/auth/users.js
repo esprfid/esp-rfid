@@ -80,6 +80,8 @@ function initTable() {
         ],
         rows: userdata,
         editing: {
+		  showText: "<span class=\"fooicon fooicon-pencil\" aria-hidden=\"true\"></span> Edit Users",
+		  addText: "New User",
           addRow: function() {
             $editor[0].reset();
             $editorTitle.text('Add a new User');
