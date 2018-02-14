@@ -54,6 +54,11 @@ function listCONF(obj) {
   document.getElementById("hostname").value = obj.hostnm;
   document.getElementById("disable_wifi_after_seconds").value = obj.disable_wifi_after_seconds;
   document.getElementById("auto_restart_interval_seconds").value = obj.auto_restart_interval_seconds;
+  document.getElementById("mqtthost").value = obj.mqtthost;
+  document.getElementById("mqttport").value = obj.mqttport;
+  document.getElementById("mqtttopic").value = obj.mqtttopic;
+  document.getElementById("mqttuser").value = obj.mqttuser;
+  document.getElementById("mqttpwd").value = obj.mqttpwd;
   if (obj.wmode === "1") {
     document.getElementById("wmodeap").checked = true;
   } else {
@@ -165,6 +170,11 @@ function saveConf() {
   datatosend.disable_wifi_after_seconds = document.getElementById("disable_wifi_after_seconds").value;
   datatosend.auto_restart_interval_seconds = document.getElementById("auto_restart_interval_seconds").value;
   datatosend.adminpwd = a;
+  datatosend.mqtthost = document.getElementById("mqtthost").value;
+  datatosend.mqttport = document.getElementById("mqttport").value;
+  datatosend.mqtttopic = document.getElementById("mqtttopic").value;
+  datatosend.mqttuser = document.getElementById("mqttuser").value;
+  datatosend.mqttpwd = document.getElementById("mqttpwd").value;
   websock.send(JSON.stringify(datatosend));
   location.reload();
 }

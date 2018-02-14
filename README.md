@@ -1,5 +1,7 @@
 # ESP RFID - Access Control with ESP8266, RC522
+
 [![Chat at https://gitter.im/esp-rfid/Lobby](https://badges.gitter.im/esp-rfid.svg)](https://gitter.im/esp-rfid/Lobby) [![Build Status](https://travis-ci.org/omersiar/esp-rfid.svg?branch=development)](https://travis-ci.org/omersiar/esp-rfid) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/fc424f75d12644da8b6fe248a5e95157)](https://www.codacy.com/app/omersiar/esp-rfid?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=omersiar/esp-rfid&amp;utm_campaign=Badge_Grade)
+
 Access Control demonstration using a cheap MFRC522 RFID Hardware or Wiegand RFID readers and Espressif's ESP8266 Microcontroller. This is a community driven project.
 
 This is the **development branch** of the project, if you are looking for stable, production ready version of esp-rfid please use **stable** branch.
@@ -24,12 +26,12 @@ This project still in its development phase. New features (and also bugs) are in
 
 * Get the latest release [here](https://github.com/omersiar/esp-rfid/releases)
 * See [Known Issues](https://github.com/omersiar/esp-rfid#known-issues) before starting right away.
+* See [Security](https://github.com/omersiar/esp-rfid#security) for your safety.
 * See [ChangeLog](https://github.com/omersiar/esp-rfid/blob/master/CHANGELOG.md)
-* See [To Do](https://github.com/omersiar/esp-rfid#to-do) for what to expect in future.
 
 ### What You Will Need
 ### Hardware
-* An ESP8266 module or development board like **WeMos D1 mini** or **NodeMcu 1.0** with at least **32Mbit Flash (equals to 4MBytes)** (ESP32 does not supported for now)
+* An ESP8266 module or a development board like **WeMos D1 mini** or **NodeMcu 1.0** with at least **32Mbit Flash (equals to 4MBytes)** (ESP32 does not supported for now)
 * A MFRC522 RFID PCD Module or Wiegand based RFID reader
 * A Relay Module (or you can build your own circuit)
 * n quantity of Mifare Classic 1KB (recommended due to available code base) PICCs (RFID Tags) equivalent to User Number
@@ -52,7 +54,7 @@ platformio run
 
 When you run ```platformio run``` for the first time, it will download the toolchains and all necessary libraries automatically.
 
-### Useful commands:
+#### Useful commands:
 
 * ```platformio run``` - process/build all targets
 * ```platformio run -e nodemcu``` - process/build just the ESP12e target (the NodeMcu v2)
@@ -99,8 +101,8 @@ For Wiegand based readers, you can configure D0 and D1 pins via settings page. B
 * Congratulations, everything went well, if you encounter any issue feel free to ask help on GitHub.
 
 ### Known Issues
-* MFRC522 RFID Hardware should be connected to ESP or you will likely get a WDT Reset (boot loop) [#13](https://github.com/omersiar/esp-rfid/issues/13).
-* Currently only Git version (2.4.0rc) of ESP8266 Core is supported, due to new function is introduced (WiFi.scanNetworksAsync()).
+* Nothing for now.
+
 
 #### Time
 We are syncing time from a NTP Server (in Client -aka infrastructure- Mode). This will require ESP to have an Internet connection. Additionaly your ESP can also work without Internet connection too (Access Point -aka Ad-Hoc- Mode),  without giving up functionality.
@@ -154,6 +156,7 @@ Thanks to the community, ESP-RFID come to alive with their great effort:
 - @thunderace
 - @zeraien
 - @nardev
+- @romanzava
 
 See [ChangeLog](https://github.com/omersiar/esp-rfid/blob/master/CHANGELOG.md)
 

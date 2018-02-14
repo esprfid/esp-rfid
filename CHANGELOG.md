@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 #### Added
+- MQTT to main branch.
+- Access column to logs for the information, if the access was granted or not @romanzava
 - Travis CI
 - NProgress.js
 - Glyphicons redirection for SPIFFS's limited 32 char filename.
@@ -198,7 +200,7 @@ All notable changes to this project will be documented in this file.
 - Logging In Authorization is now done via Async XMR Request. Browsers does not complain about it being synchronous anymore. (Tested with Chrome and Firefox)
 
 #### Changed
-- Inform web user while pages are loading https://www.nngroup.com/articles/response-times-3-important-limits/ 
+- Inform web user while pages are loading https://www.nngroup.com/articles/response-times-3-important-limits/
 - Configuration rutine
 - Seperate settings page and Users specific page
 

@@ -55,52 +55,62 @@ var latestlog = {
     {
       "timestamp": 1518198383,
       "uid": "8ab424c10",
-      "username": "Moody Bond"
+      "username": "Moody Bond",
+	  "acctype": 1
     },
     {
       "timestamp": 1514952461,
       "uid": "4de212c96",
-      "username": "Unknown"
+      "username": "Unknown",
+	  "acctype": 0
     },
     {
       "timestamp": 1516598710,
       "uid": "8de284c27",
-      "username": "Marta Cooley"
+      "username": "Marta Cooley",
+	  "acctype": 99
     },
     {
       "timestamp": 1516649998,
       "uid": "4db504c86",
-      "username": "Simmons Sosa"
+      "username": "Simmons Sosa",
+	  "acctype": 1
     },
     {
       "timestamp": 1517133201,
       "uid": "9db178a36",
-      "username": "Jimmie Sheppard"
+      "username": "Jimmie Sheppard",
+	  "acctype": 1
     },
     {
       "timestamp": 1516257556,
       "uid": "4cf690a75",
-      "username": "Rutledge Murray"
+      "username": "Rutledge Murray",
+	  "acctype": 1
     },
     {
       "timestamp": 1515661586,
       "uid": "4ab792d39",
-      "username": "Unknown"
+      "username": "Unknown",
+	  "acctype": 0
     },
     {
       "timestamp": 1515524537,
       "uid": "9cf869a85",
-      "username": "Rollins Villarreal"
+      "username": "Rollins Villarreal",
+	  "acctype": 1
     },
     {
       "timestamp": 1515823122,
       "uid": "9db221c40",
-      "username": "Hayden Baird"
+      "username": "Hayden Baird",
+	  "acctype": 1
     },
     {
       "timestamp": 1515066066,
       "uid": "8cb891d34",
-      "username": "Tucker Boyer"
+      "username": "Tucker Boyer",
+	  "acctype": 1
     }
   ]
 }
