@@ -87,6 +87,11 @@ function socketMessageListener(evt) {
     initTable();
     document.getElementById("loading-img").style.display = "none";
   }
+  else if (obj.type === "result") {
+    document.getElementById("loading-img").style.display = "none";
+    logdata = {};
+    initTable();
+  }
 }
 
 function socketCloseListener(evt) {

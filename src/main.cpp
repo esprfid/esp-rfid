@@ -566,6 +566,9 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
                                         }
                                         logFile.close();
                                 }
+                                else {
+                                  ws.textAll("{\"type\":\"result\",\"resultof\":\"latestlog\",\"result\": false}");
+                                }
                         }
                         else if (strcmp(command, "scan")  == 0) {
                                 WiFi.scanNetworksAsync(printScanResult, true);
