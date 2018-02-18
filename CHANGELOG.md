@@ -3,22 +3,36 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 #### Added
-- MQTT to main branch.
-- Access column to logs for the information, if the access was granted or not @romanzava
-- Travis CI
-- NProgress.js
-- Glyphicons redirection for SPIFFS's limited 32 char filename.
-- WebSocket emulator for rapid web page development. (This require node.js)
-- Gulp script for auto css/js file concat and gzip
-- Offline static web page development capability (enter "neo" as admin password for local testing)
+- [firmware + webui] Embeded web files
+- [firmware + webui] MQTT to main branch.
+- [firmware + webui] Access column to logs for the information, if the access was granted or not @romanzava
+- [build] Travis CI
+- [webui] NProgress.js
+- [firmware] Glyphicons redirection for SPIFFS's limited 32 char filename.
+- [dev tools] WebSocket emulator for rapid web page development. (This require node.js)
+- [build] Gulp script for auto css/js file concat and gzip
+- [dev tools] Offline static web page development capability (enter "neo" as admin password for local testing)
+- [dev tools] gulp script for PROGMEM web files.
 
 #### Changed
-- Hardcoded FooTable Add/Edit text
-- Platformio target to include many more ESP8266 module and development board.
-- Clean and beautify main.cpp @nardev
-- Minor cosmetic changes
-- Javascript loading moved to end of the html
-- index.html for more modern look and feel.
+- [webui] Hardcoded FooTable Add/Edit text
+- [webui] Only support woff glyphicons font
+- [dev tools] Clean and beautify main.cpp @nardev
+- [webui] Minor cosmetic changes
+- [webui] Javascript loading moved to end of the html
+- [webui] index.html for more modern look and feel.
+- [build] more meaningful directories for web files.
+- [webui] RSSI percent calculation
+- [firmware] Limit printScanResult to 5 best (based on RSSI) networks around (esp becomes unresponsive if there are too many networks)
+
+#### Fixed
+- [firmware + webui] MQTT - UID publish was missing.
+
+#### Removed
+- [firmware] Web files no longer contained in SPIFFS
+- [firmware] SPIFFS Editor.
+- [firmware] Confusion about MFRC533 reader.
+- [build] pio script where we were trying to modify flashing parameters it was affecting SPIFFS upload too.
 
 ## [0.4alpha] - 2018-01-21
 #### Added

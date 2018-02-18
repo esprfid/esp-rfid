@@ -2,8 +2,9 @@
 
 .pioenvs
 .piolibdeps
-data/required.css
-data/required.js
+src/websrc/css/required.css
+src/websrc/js/required.js
+src/websrc/gzipped
 data/auth/config.json
 .clang_complete
 .gcc-flags.json

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <meta name="description" content="">
+        <meta name="author" content="">
+        <link rel="shortcut icon" href="data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAQAABILAAASCwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIaGhgAAAAAAQ0NDEDs7OzA4ODgrPj4+DFJSUgMoKCgsISEhZSIiInsaGhpfHx8fIZSUlABGRkYAAAAAAAAAAAAAAAAAPDw8QTExMcErKyvtJycn6SQkJL0iIiKiGhoa4xUVFf4RERH/Dg4O/Q0NDdcWFhZU8fHxAUBAQAAAAAAAPz8/HzExMc0qKir/JSUl/yAgIP8cHBz/FxcX/xUVFf8RERH/Dw8P/wsLC/8DAwP/BQUF4xMTEzkJCQkAAAAAADc3N1crKyv3IyMj/0pKSv+IiIj/MjIy/zExMf8WFhb/CwsL/xUVFf9sbGz/VVVV/yUlJf8pKSmhU1NTD+jo6AAyMjJ7JiYm/iEhIf+UlJT/4+Pj/3l5ef+9vb3/Nzc3/1BQUP8pKSn/i4uL/9zc3P/Kysr/uLi4+KKiorh1dXUqODg4qiAgIP84ODj/ycnJ/9TU1P+6urr/2dnZ/01NTf+bm5v/MjIy/4eHh/+ampr/0NDQ/+np6f/R0dH8p6enaygoKKsbGxv/dnZ2/8jIyP+urq7/zc3N/7y8vP9mZmb/jo6O/yUlJf+srKz/cHBw/5ubm/+3t7f/vLy8+MDAwF4pKSlaGxsb8VlZWf9cXFz/Y2Nj/25ubv+BgYH/cHBw/1xcXP8+Pj7/urq6/3h4eP+zs7P/s7Oz/83NzdqsrKwlMjIyCB0dHXoSEhLnDAwM/QsLC/8ICAj/DAwM/x4eHv8zMzP/TExM/729vf+0tLT/vLy8/8LCwv/GxsaQDw8PAzc3NwA/Pz8EICAgLBEREVUODg5xCAgI5QMDA/8VFRX/NTU1/0xMTP9zc3P/m5ub87e3t6+zs7N+kpKSGJ6engAAAAAAAAAAAAAAAAAvLy8Af39/ARcXF1UZGRnQNTU1+UxMTP5ZWVn4YGBg0WNjY2BUVFQGs7OzAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHNzcwD19fUAR0dHGk9PT01XV1diZWVlSHFxcRnY2NgAl5eXAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//8AAP//AADABwAAgAMAAAADAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAQAA8AcAAPgPAAD//wAA//8AAA==">
+        <title>esp-rfid</title>
+        <!-- Bootstrap core CSS -->
+        <link href="css/required.css" rel="stylesheet">
+    </head>
+    <body>
+        <div class="wrapper">
+            <!-- Sidebar Holder -->
+            <nav id="sidebar">
+                <div class="sidebar-header">
+                    <h1>
+                        esp-rfid <span class="glyphicon glyphicon-tags" aria-hidden="true"></span>
+                    </h1>
+                </div>
+                <ul class="list-unstyled components">
+                    <li class="active">
+                        <a href="#">Status</a>
+                    </li>
+                    <li>
+                        <a href="#homeSubmenu" data-toggle="collapse" aria-expanded="false">Settings</a>
+                        <ul class="collapse list-unstyled" id="homeSubmenu">
+                            <li>
+                                <a href="#">Wireless Network</a>
+                            </li>
+                            <li>
+                                <a href="#">Hardware Settings</a>
+                            </li>
+                            <li>
+                                <a href="#">General Settings</a>
+                            </li>
+                            <li>
+                                <a href="#">MQTT Settings</a>
+                            </li>
+                            <li>
+                                <a href="#">NTP (Time) Settings</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#">Users</a>
+                    </li>
+                    <li>
+                        <a href="#logsSubmenu" data-toggle="collapse" aria-expanded="false">Logs</a>
+                        <ul class="collapse list-unstyled" id="logsSubmenu">
+                            <li>
+                                <a href="#">Latest Access Log</a>
+                            </li>
+                            <li>
+                                <a href="#">User Statics</a>
+                            </li>
+                            <li>
+                                <a href="#">Reports</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#backSubmenu" data-toggle="collapse" aria-expanded="false">Backup & Restore</a>
+                        <ul class="collapse list-unstyled" id="backSubmenu">
+                            <li>
+                                <a href="#">Backup</a>
+                            </li>
+                            <li>
+                                <a href="#">Restore</a>
+                            </li>
+                            <li>
+                                <a href="#">Factory Reset</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#">Update</a>
+                    </li>
+                </ul>
+                <ul class="list-unstyled CTAs">
+                    <li>
+                        <a href="https://github.com/omersiar/esp-rfid" class="download">Project's GitHub Page</a>
+                    </li>
+                    <li>
+                        <a href="#" class="article">Logout</a>
+                    </li>
+					<li>
+                        <h6>esp-rfid v0.5 New Fields</h6>
+                    </li>
+                </ul>
+            </nav>
+            <!-- Page Content Holder -->
+            <div id="content">
+                <nav class="navbar navbar-default">
+                    <div class="container-fluid">
+                        <div class="navbar-header">
+                            <button type="button" id="sidebarCollapse" class="navbar-btn">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </button>
+                        </div>
+                    </div>
+                </nav>
+                <h2>Collapsible Sidebar Using Bootstrap 3</h2>
+                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                <div class="line"></div>
+                <h2>Lorem Ipsum Dolor</h2>
+                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                <div class="line"></div>
+                <h2>Lorem Ipsum Dolor</h2>
+                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                <div class="line"></div>
+                <h3>Lorem Ipsum Dolor</h3>
+                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+            </div>
+        </div>
+        <script src="js/required.js"></script>
+        <script type="text/javascript">
+            $(document).ready(function () {
+                 $('#sidebarCollapse').on('click', function () {
+                     $('#sidebar').toggleClass('active');
+                     $(this).toggleClass('active');
+                 });
+             });
+        </script>
+    </body>
+</html>

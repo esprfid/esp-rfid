@@ -41,11 +41,17 @@
 #include <FS.h>                       // SPIFFS Library for storing web files to serve to web browsers
 #include <ESPAsyncTCP.h>              // Async TCP Library is mandatory for Async Web Server
 #include <ESPAsyncWebServer.h>        // Async Web Server with built-in WebSocket Plug-in
-#include <SPIFFSEditor.h>             // This creates a web page on server which can be used to edit text based files.
+// #include <SPIFFSEditor.h>             // This creates a web page on server which can be used to edit text based files.
 #include <NtpClientLib.h>             // To timestamp RFID scans we get Unix Time from NTP Server
 #include <TimeLib.h>                  // Library for converting epochtime to a date
 #include <WiFiUdp.h>                  // Library for manipulating UDP packets which is used by NTP Client to get Timestamps
 #include <PubSubClient.h>             // Library to connect to mqtt server
+
+// Include the header file we create with gulp
+#include "glyphicons-halflings-regular.woff.gz.h"
+#include "index.html.gz.h"
+#include "required.css.gz.h"
+#include "required.js.gz.h"
 
 #ifdef ESP8266
 extern "C" {
@@ -69,6 +75,7 @@ bool doEnableWifi = false;
 int wifiTimeout = -1;
 unsigned long wiFiUptimeMillis = 0;
 char * deviceHostname = NULL;
+char * adminpass = NULL;
 
 // MQTT
 WiFiClient wifiClient;
@@ -97,7 +104,7 @@ AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
 
 // Define functions first
-void startServer();
+void setupWebServer();
 void enableWifi();
 void disableWifi();
 void rfidloop();
@@ -112,12 +119,11 @@ bool startAP(const char * ssid, const char * password);
 void fallbacktoAPMode();
 void parseBytes(const char* str, char sep, byte* bytes, int maxBytes, int base);
 bool loadConfiguration();
-void setupMFRC533Reader(int rfidss, int rfidgain);
+void setupMFRC522Reader(int rfidss, int rfidgain);
 void setupWiegandReader(int d0, int d1);
 bool connectSTA(const char* ssid, const char* password, byte bssid[6]);
-void ShowReaderDetails();
-void ShowWiegandReaderDetails();
 void ShowMFRC522ReaderDetails();
+
 
 /* ------------------ TRIVIAL Functions ------------------- */
 String printIP(IPAddress adress) {
@@ -133,60 +139,6 @@ void parseBytes(const char* str, char sep, byte* bytes, int maxBytes, int base) 
                 }
                 str++;                    // Point to next character after separator
         }
-}
-
-
-/* ------------------ BASIC SYSTEM Functions ------------------- */
-void startServer() {
-        // Start WebSocket Plug-in and handle incoming message on "onWsEvent" function
-        server.addHandler(&ws);
-        ws.onEvent(onWsEvent);
-        // Serve all files in root folder
-        server.serveStatic("/", SPIFFS, "/");
-        // Handle what happens when requested web file couldn't be found
-        server.onNotFound([](AsyncWebServerRequest * request) {
-                AsyncWebServerResponse *response = request->beginResponse(404, "text/plain", "Not found");
-                request->send(response);
-        });
-
-        // Simple Firmware Update Handler
-        server.on("/auth/update", HTTP_POST, [](AsyncWebServerRequest * request) {
-                shouldReboot = !Update.hasError();
-                AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", shouldReboot ? "OK" : "FAIL");
-                response->addHeader("Connection", "close");
-                request->send(response);
-        }, [](AsyncWebServerRequest * request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
-                if (!index) {
-                        Serial.printf("[ UPDT ] Firmware update started: %s\n", filename.c_str());
-                        Update.runAsync(true);
-                        if (!Update.begin((ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000)) {
-                                Update.printError(Serial);
-                        }
-                }
-                if (!Update.hasError()) {
-                        if (Update.write(data, len) != len) {
-                                Update.printError(Serial);
-                        }
-                }
-                if (final) {
-                        if (Update.end(true)) {
-                                Serial.printf("[ UPDT ] Firmware update finished: %uB\n", index + len);
-                        } else {
-                                Update.printError(Serial);
-                        }
-                }
-        });
-		// Bootstrap Fonts hardcode workaround
-		// Inspect impact on memory, firmware size.
-		server.serveStatic("/fonts/glyphicons-halflings-regular.eot", SPIFFS, "/fonts/glyph.eot");
-		server.serveStatic("/fonts/glyphicons-halflings-regular.svg", SPIFFS, "/fonts/glyph.svg");
-		server.serveStatic("/fonts/glyphicons-halflings-regular.ttf", SPIFFS, "/fonts/glyph.ttf");
-		server.serveStatic("/fonts/glyphicons-halflings-regular.woff", SPIFFS, "/fonts/glyph.woff");
-		server.serveStatic("/fonts/glyphicons-halflings-regular.woff2", SPIFFS, "/fonts/glyph.woff2");
-
-
-        // Start Web Server
-        server.begin();
 }
 
 void enableWifi() {
@@ -224,7 +176,7 @@ void fallbacktoAPMode() {
         char ssid[15];
         sprintf(ssid, "ESP-RFID-%02x%02x%02x", macAddr[3], macAddr[4], macAddr[5]);
         isWifiConnected = startAP(ssid);
-        server.serveStatic("/auth/", SPIFFS, "/auth/").setDefaultFile("users.htm").setAuthentication("admin", "admin");
+        //server.serveStatic("/auth/", SPIFFS, "/auth/").setAuthentication("admin", "admin");
 }
 
 // Try to connect Wi-Fi
@@ -308,6 +260,9 @@ void rfidloop() {
                 } else {
                         return;
                 }
+        }
+        if (mqttClient.connected()) {
+            mqttClient.publish(mqttTopic, uid.c_str(), false);
         }
 
         // We are going to use filesystem to store known UIDs.
@@ -409,7 +364,7 @@ void rfidloop() {
 }
 
 // Configure RFID Hardware
-void setupMFRC533Reader(int rfidss, int rfidgain) {
+void setupMFRC522Reader(int rfidss, int rfidgain) {
         SPI.begin();     // MFRC522 Hardware uses SPI protocol
         mfrc522.PCD_Init(rfidss, UINT8_MAX); // Initialize MFRC522 Hardware
         // Set RFID Hardware Antenna Gain
@@ -422,7 +377,7 @@ void setupMFRC533Reader(int rfidss, int rfidgain) {
 
 void setupWiegandReader(int d0, int d1) {
         wg.begin(d0, d0, d1, d1);
-        ShowWiegandReaderDetails(); // Show details of PCD - MFRC522 Card Reader details
+        Serial.print(F("[ INFO ] Wiegand Reader"));
 }
 
 void ShowMFRC522ReaderDetails() {
@@ -443,10 +398,6 @@ void ShowMFRC522ReaderDetails() {
         if ((v == 0x00) || (v == 0xFF)) {
                 Serial.println(F("[ WARN ] Communication failure, check if MFRC522 properly connected"));
         }
-}
-
-void ShowWiegandReaderDetails() {
-        Serial.print(F("[ INFO ] Wiegand Reader"));
 }
 
 void LogLatest(String uid, String username, int acctype) {
@@ -717,19 +668,40 @@ void sendStatus() {
 
 // Send Scanned SSIDs to websocket clients as JSON object
 void printScanResult(int networksFound) {
+  // sort by RSSI
+  int n = networksFound;
+int indices[n];
+int skip[n];
+int loops = 0;
+for (int i = 0; i < networksFound; i++) {
+    indices[i] = i;
+  }
+  for (int i = 0; i < networksFound; i++) {
+    for (int j = i + 1; j < networksFound; j++) {
+      if (WiFi.RSSI(indices[j]) > WiFi.RSSI(indices[i])) {
+        loops++;
+        //int temp = indices[j];
+        //indices[j] = indices[i];
+        //indices[i] = temp;
+        std::swap(indices[i], indices[j]);
+        std::swap(skip[i], skip[j]);
+      }
+    }
+  }
+
         DynamicJsonBuffer jsonBuffer;
         JsonObject& root = jsonBuffer.createObject();
         root["command"] = "ssidlist";
         JsonArray& scan = root.createNestedArray("list");
-        for (int i = 0; i < networksFound; ++i) {
+        for (int i = 0; i < 5; ++i) {
                 JsonObject& item = scan.createNestedObject();
                 // Print SSID for each network found
-                item["ssid"] = WiFi.SSID(i);
-                item["bssid"] = WiFi.BSSIDstr(i);
-                item["rssi"] = WiFi.RSSI(i);
-                item["channel"] = WiFi.channel(i);
-                item["enctype"] = WiFi.encryptionType(i);
-                item["hidden"] = WiFi.isHidden(i) ? true : false;
+                item["ssid"] = WiFi.SSID(indices[i]);
+                item["bssid"] = WiFi.BSSIDstr(indices[i]);
+                item["rssi"] = WiFi.RSSI(indices[i]);
+                item["channel"] = WiFi.channel(indices[i]);
+                item["enctype"] = WiFi.encryptionType(indices[i]);
+                item["hidden"] = WiFi.isHidden(indices[i]) ? true : false;
         }
         size_t len = root.measureLength();
         AsyncWebSocketMessageBuffer * buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
@@ -804,8 +776,8 @@ bool loadConfiguration() {
                         rfidss = json["sspin"];
                 }
                 int rfidgain = json["rfidgain"];
-                Serial.println(F("[ INFO ] Trying to setup RFID MFRC533 Hardware"));
-                setupMFRC533Reader(rfidss, rfidgain);
+                Serial.println(F("[ INFO ] Trying to setup RFID MFRC522 Hardware"));
+                setupMFRC522Reader(rfidss, rfidgain);
         }
 
         const char * l_hostname = json["hostnm"];
@@ -844,13 +816,13 @@ bool loadConfiguration() {
         const char * password = json["pswd"];
         int wmode = json["wmode"];
 
-        const char * adminpass = json["adminpwd"];
+        adminpass = strdup(json["adminpwd"]);
 
         // Serve confidential files in /auth/ folder with a Basic HTTP authentication
-        server.serveStatic("/auth/", SPIFFS, "/auth/").setDefaultFile("users.htm").setAuthentication("admin", adminpass);
+        // server.serveStatic("/auth/", SPIFFS, "/auth/").setAuthentication("admin", adminpass);
         ws.setAuthentication("admin", adminpass);
         // Add Text Editor (http://esp-rfid.local/edit) to Web Server. This feature likely will be dropped on final release.
-        server.addHandler(new SPIFFSEditor("admin", adminpass));
+        //server.addHandler(new SPIFFSEditor("admin", adminpass));
 
         if (wmode == 1) {
                 Serial.println(F("[ INFO ] ESP-RFID is running in AP Mode "));
@@ -885,11 +857,92 @@ bool loadConfiguration() {
         return true;
 }
 
+/* ------------------ BASIC SYSTEM Functions ------------------- */
+void setupWebServer() {
+  // Start WebSocket Plug-in and handle incoming message on "onWsEvent" function
+  server.addHandler(&ws);
+  ws.onEvent(onWsEvent);
+  // Serve all files in root folder
+  // server.serveStatic("/", SPIFFS, "/");
+  // Handle what happens when requested web file couldn't be found
+  server.onNotFound([](AsyncWebServerRequest * request) {
+    AsyncWebServerResponse * response = request->beginResponse(404, "text/plain", "Not found");
+    request->send(response);
+  });
+
+  // Simple Firmware Update Handler
+  server.on("/update", HTTP_POST, [](AsyncWebServerRequest * request) {
+    shouldReboot = !Update.hasError();
+    AsyncWebServerResponse * response = request->beginResponse(200, "text/plain", shouldReboot ? "OK" : "FAIL");
+    response->addHeader("Connection", "close");
+    request->send(response);
+  }, [](AsyncWebServerRequest * request, String filename, size_t index, uint8_t * data, size_t len, bool final) {
+    if (!index) {
+      Serial.printf("[ UPDT ] Firmware update started: %s\n", filename.c_str());
+      Update.runAsync(true);
+      if (!Update.begin((ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000)) {
+        Update.printError(Serial);
+      }
+    }
+    if (!Update.hasError()) {
+      if (Update.write(data, len) != len) {
+        Update.printError(Serial);
+      }
+    }
+    if (final) {
+      if (Update.end(true)) {
+        Serial.printf("[ UPDT ] Firmware update finished: %uB\n", index + len);
+      } else {
+        Update.printError(Serial);
+      }
+    }
+  });
+  // Bootstrap Fonts hardcode workaround
+  // Inspect impact on memory, firmware size.
+
+  server.on("/fonts/glyphicons-halflings-regular.woff", HTTP_GET, [](AsyncWebServerRequest * request) {
+    // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
+    AsyncWebServerResponse * response = request->beginResponse_P(200, "font/woff", glyphicons_halflings_regular_woff_gz, glyphicons_halflings_regular_woff_gz_len);
+    // Tell the browswer the contemnt is Gzipped
+    response->addHeader("Content-Encoding", "gzip");
+    request->send(response);
+  });
+
+  server.on("/css/required.css", HTTP_GET, [](AsyncWebServerRequest * request) {
+    // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
+    AsyncWebServerResponse * response = request->beginResponse_P(200, "text/css", required_css_gz, required_css_gz_len);
+    // Tell the browswer the contemnt is Gzipped
+    response->addHeader("Content-Encoding", "gzip");
+    request->send(response);
+  });
+
+  server.on("/js/required.js", HTTP_GET, [](AsyncWebServerRequest * request) {
+    // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
+    AsyncWebServerResponse * response = request->beginResponse_P(200, "text/javascript", required_js_gz, required_js_gz_len);
+    // Tell the browswer the contemnt is Gzipped
+    response->addHeader("Content-Encoding", "gzip");
+    request-> send(response);
+  });
+
+  server.on("/index.html", HTTP_GET, [](AsyncWebServerRequest * request) {
+    // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
+    AsyncWebServerResponse * response = request->beginResponse_P(200, "text/html", index_html_gz, index_html_gz_len);
+    // Tell the browswer the contemnt is Gzipped
+    response->addHeader("Content-Encoding", "gzip");
+    request->send(response);
+  });
+
+  server.rewrite("/", "/index.html");
+
+  // Start Web Server
+  server.begin();
+}
+
 // Set things up
 void setup() {
         Serial.begin(115200);
         Serial.println();
-        Serial.println(F("[ INFO ] ESP RFID v0.4alpha"));
+        Serial.println(F("[ INFO ] ESP RFID v0.5"));
 
         // Start SPIFFS filesystem
         SPIFFS.begin();
@@ -906,7 +959,7 @@ void setup() {
         if (!loadConfiguration()) {
                 fallbacktoAPMode();
         }
-        startServer();
+        setupWebServer();
 }
 
 // Main Loop
