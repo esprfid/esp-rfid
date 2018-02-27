@@ -60,6 +60,8 @@ extern "C" {
 #endif
 
 // Variables for whole scope
+const char* http_username = "admin";
+char * http_pass = NULL;
 unsigned long previousMillis = 0;
 unsigned long previousLoopMillis = 0;
 unsigned long cooldown = 0;
@@ -75,7 +77,7 @@ bool doEnableWifi = false;
 int wifiTimeout = -1;
 unsigned long wiFiUptimeMillis = 0;
 char * deviceHostname = NULL;
-char * adminpass = NULL;
+
 
 // MQTT
 WiFiClient wifiClient;
@@ -377,7 +379,6 @@ void setupMFRC522Reader(int rfidss, int rfidgain) {
 
 void setupWiegandReader(int d0, int d1) {
         wg.begin(d0, d0, d1, d1);
-        Serial.print(F("[ INFO ] Wiegand Reader"));
 }
 
 void ShowMFRC522ReaderDetails() {
@@ -762,13 +763,13 @@ bool loadConfiguration() {
         Serial.println(F("[ INFO ] Config file found"));
         json.prettyPrintTo(Serial);
         Serial.println();
-        Serial.println(F("[ INFO ] Trying to setup RFID Hardware"));
+        Serial.print(F("[ INFO ] Trying to setup RFID Hardware :"));
         readerType = json["readerType"];
 
         if ( readerType == 1 ) {
                 int wgd0pin = json["wgd0pin"];
                 int wgd1pin = json["wgd1pin"];
-                Serial.println(F("[ INFO ] Trying to setup RFID Wiegand Hardware"));
+                Serial.println(F("Wiegand"));
                 setupWiegandReader(wgd0pin, wgd1pin); // also some other settings like weather to use keypad or not, LED pin, BUZZER pin, Wiegand 26/34 version
         } else if ( readerType == 0 ) {
                 int rfidss = 15;
@@ -776,7 +777,7 @@ bool loadConfiguration() {
                         rfidss = json["sspin"];
                 }
                 int rfidgain = json["rfidgain"];
-                Serial.println(F("[ INFO ] Trying to setup RFID MFRC522 Hardware"));
+                Serial.println(F("MFRC522"));
                 setupMFRC522Reader(rfidss, rfidgain);
         }
 
@@ -816,11 +817,11 @@ bool loadConfiguration() {
         const char * password = json["pswd"];
         int wmode = json["wmode"];
 
-        adminpass = strdup(json["adminpwd"]);
+        http_pass = strdup(json["adminpwd"]);
 
         // Serve confidential files in /auth/ folder with a Basic HTTP authentication
         // server.serveStatic("/auth/", SPIFFS, "/auth/").setAuthentication("admin", adminpass);
-        ws.setAuthentication("admin", adminpass);
+        ws.setAuthentication("admin", http_pass);
         // Add Text Editor (http://esp-rfid.local/edit) to Web Server. This feature likely will be dropped on final release.
         //server.addHandler(new SPIFFSEditor("admin", adminpass));
 
@@ -931,6 +932,13 @@ void setupWebServer() {
     response->addHeader("Content-Encoding", "gzip");
     request->send(response);
   });
+
+  // HTTP basic authentication
+server.on("/login", HTTP_GET, [](AsyncWebServerRequest *request){
+  if(!request->authenticate(http_username, http_pass))
+      return request->requestAuthentication();
+  request->send(200, "text/plain", "Login Success!");
+});
 
   server.rewrite("/", "/index.html");
 

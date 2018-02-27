@@ -15,6 +15,9 @@
         <div class="wrapper">
             <!-- Sidebar Holder -->
             <nav id="sidebar">
+			                <div id="dismiss">
+                    <i class="glyphicon glyphicon-arrow-left"></i>
+                </div>
                 <div class="sidebar-header">
                     <h1>
                         esp-rfid <span class="glyphicon glyphicon-tags" aria-hidden="true"></span>
@@ -87,45 +90,87 @@
                         <a href="#" class="article">Logout</a>
                     </li>
 					<li>
-                        <h6>esp-rfid v0.5 New Fields</h6>
+                        <h6 class="text-center">esp-rfid v0.5 New Fields</h6>
                     </li>
                 </ul>
             </nav>
             <!-- Page Content Holder -->
             <div id="content">
+
                 <nav class="navbar navbar-default">
                     <div class="container-fluid">
                         <div class="navbar-header">
-                            <button type="button" id="sidebarCollapse" class="navbar-btn">
-                                <span></span>
-                                <span></span>
-                                <span></span>
+                            <button type="button" id="sidebarCollapse" class="btn btn-info navbar-btn">
+                                <i class="glyphicon glyphicon-align-left"></i>
+                                <span>Menu</span>
                             </button>
                         </div>
                     </div>
                 </nav>
-                <h2>Collapsible Sidebar Using Bootstrap 3</h2>
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-                <div class="line"></div>
-                <h2>Lorem Ipsum Dolor</h2>
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-                <div class="line"></div>
-                <h2>Lorem Ipsum Dolor</h2>
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-                <div class="line"></div>
-                <h3>Lorem Ipsum Dolor</h3>
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+
+			<div class="col-md-4 col-md-offset-4">
+               <div class="login-panel panel panel-default">
+                  <div class="panel-heading">
+                     <h3 class="panel-title">Please Sign In</h3>
+                  </div>
+                  <div class="panel-body">
+                     <form role="form" onsubmit="login(); return false">
+                        <fieldset>
+                           <div class="form-group">
+                              <input id="password" class="form-control" placeholder="Password" name="password" type="password" value="" required="" title="Please enter your password">
+                           </div>
+                           <button type="submit" class="btn btn-success btn-md pull-right">Login</button>
+                        </fieldset>
+                     </form>
+                  </div>
+               </div>
             </div>
+				
         </div>
+
+
+
+        <div class="overlay"></div>
         <script src="js/required.js"></script>
-        <script type="text/javascript">
-            $(document).ready(function () {
-                 $('#sidebarCollapse').on('click', function () {
-                     $('#sidebar').toggleClass('active');
-                     $(this).toggleClass('active');
-                 });
-             });
+        <script>
+		      function login() {
+        if (document.getElementById("password").value === "neo") { 
+		alert("Welcome back developer"); 
+		}
+		var username = "admin"
+              var password = document.getElementById("password").value;
+              var url = "/login";
+              var xhr = new XMLHttpRequest();
+              xhr.open("get", url, true, username, password);
+              xhr.onload = function(e) {
+                if (xhr.readyState === 4) {
+                  if (xhr.status === 200) {
+                    alert(xhr.responseText);
+                  } else {
+                    alert("Incorrect password!");
+                  }
+                }
+              };
+              xhr.send(null);
+              
+      }
+                $(document).ready(function () {
+                $("#sidebar").mCustomScrollbar({
+                    theme: "minimal"
+                });
+
+                $('#dismiss, .overlay').on('click', function () {
+                    $('#sidebar').removeClass('active');
+                    $('.overlay').fadeOut();
+                });
+
+                $('#sidebarCollapse').on('click', function () {
+                    $('#sidebar').addClass('active');
+                    $('.overlay').fadeIn();
+                    $('.collapse.in').toggleClass('in');
+                    $('a[aria-expanded=true]').attr('aria-expanded', 'false');
+                });
+            });
         </script>
     </body>
 </html>

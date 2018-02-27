@@ -69,7 +69,7 @@ gulp.task("scripts", ["scripts-concat"], function() {
 });
 
 gulp.task('scripts-concat', function() {
-    return gulp.src(['../../src/websrc/js/jquery-1.12.4.min.js', '../../src/websrc/js/bootstrap-3.3.7.min.js', '../../src/websrc/js/footable-3.1.6.min.js', '../../src/websrc/js/nprogress-0.2.0.js'])
+    return gulp.src(['../../src/websrc/js/jquery-1.12.4.min.js', '../../src/websrc/js/bootstrap-3.3.7.min.js', '../../src/websrc/js/footable-3.1.6.min.js', '../../src/websrc/js/nprogress-0.2.0.js', '../../src/websrc/js/sidebar.min.js'])
         .pipe(concat({
             path: 'required.js',
             stat: {
@@ -84,7 +84,7 @@ gulp.task('scripts-concat', function() {
 });
 
 gulp.task('styles-concat', function() {
-    return gulp.src(['../../src/websrc/css/bootstrap-3.3.7.min.css', '../../src/websrc/css/footable.bootstrap-3.1.6.min.css', '../../src/websrc/css/nprogress-0.2.0.css', '../../src/websrc/css/sidebar.css'])
+    return gulp.src(['../../src/websrc/css/bootstrap-3.3.7.min.css', '../../src/websrc/css/footable.bootstrap-3.1.6.min.css', '../../src/websrc/css/nprogress-0.2.0.css', '../../src/websrc/css/sidebar.css', '../../src/websrc/css/sidebarcollapse.css'])
         .pipe(concat({
             path: 'required.css',
             stat: {
