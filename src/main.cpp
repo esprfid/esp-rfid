@@ -49,9 +49,13 @@
 
 // Include the header file we create with gulp
 #include "glyphicons-halflings-regular.woff.gz.h"
-#include "index.html.gz.h"
 #include "required.css.gz.h"
 #include "required.js.gz.h"
+#include "esprfid.js.gz.h"
+
+#include "index.html.gz.h"
+#include "login.html.gz.h"
+#include "status.htm.gz.h"
 
 #ifdef ESP8266
 extern "C" {
@@ -70,6 +74,8 @@ bool activateRelay = false;
 bool inAPMode = false;
 bool isWifiConnected = false;
 int autoRestartIntervalSeconds = 0;
+// Variable to hold the last modification datetime
+char last_modified[50];
 
 bool wifiDisabled = true;
 bool doDisableWifi = false;
@@ -902,45 +908,126 @@ void setupWebServer() {
   // Inspect impact on memory, firmware size.
 
   server.on("/fonts/glyphicons-halflings-regular.woff", HTTP_GET, [](AsyncWebServerRequest * request) {
+        // Check if the client already has the same version and respond with a 304 (Not modified)
+    if (request->header("If-Modified-Since").equals(last_modified)) {
+        request->send(304);
+ 
+    } else {
     // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
     AsyncWebServerResponse * response = request->beginResponse_P(200, "font/woff", glyphicons_halflings_regular_woff_gz, glyphicons_halflings_regular_woff_gz_len);
     // Tell the browswer the contemnt is Gzipped
     response->addHeader("Content-Encoding", "gzip");
+            // And set the last-modified datetime so we can check if we need to send it again next time or not
+        response->addHeader("Last-Modified", last_modified);
     request->send(response);
+}
   });
 
   server.on("/css/required.css", HTTP_GET, [](AsyncWebServerRequest * request) {
+        // Check if the client already has the same version and respond with a 304 (Not modified)
+    if (request->header("If-Modified-Since").equals(last_modified)) {
+        request->send(304);
+ 
+    } else {
     // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
     AsyncWebServerResponse * response = request->beginResponse_P(200, "text/css", required_css_gz, required_css_gz_len);
     // Tell the browswer the contemnt is Gzipped
     response->addHeader("Content-Encoding", "gzip");
+            // And set the last-modified datetime so we can check if we need to send it again next time or not
+        response->addHeader("Last-Modified", last_modified);
     request->send(response);
+}
   });
 
   server.on("/js/required.js", HTTP_GET, [](AsyncWebServerRequest * request) {
+        // Check if the client already has the same version and respond with a 304 (Not modified)
+    if (request->header("If-Modified-Since").equals(last_modified)) {
+        request->send(304);
+ 
+    } else {
     // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
     AsyncWebServerResponse * response = request->beginResponse_P(200, "text/javascript", required_js_gz, required_js_gz_len);
     // Tell the browswer the contemnt is Gzipped
     response->addHeader("Content-Encoding", "gzip");
+            // And set the last-modified datetime so we can check if we need to send it again next time or not
+        response->addHeader("Last-Modified", last_modified);
     request-> send(response);
+}
+  });
+
+    server.on("/js/esprfid.js", HTTP_GET, [](AsyncWebServerRequest * request) {
+        // Check if the client already has the same version and respond with a 304 (Not modified)
+    if (request->header("If-Modified-Since").equals(last_modified)) {
+        request->send(304);
+ 
+    } else {
+    // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
+    AsyncWebServerResponse * response = request->beginResponse_P(200, "text/javascript", esprfid_js_gz, esprfid_js_gz_len);
+    // Tell the browswer the contemnt is Gzipped
+    response->addHeader("Content-Encoding", "gzip");
+            // And set the last-modified datetime so we can check if we need to send it again next time or not
+        response->addHeader("Last-Modified", last_modified);
+    request-> send(response);
+}
   });
 
   server.on("/index.html", HTTP_GET, [](AsyncWebServerRequest * request) {
+        // Check if the client already has the same version and respond with a 304 (Not modified)
+    if (request->header("If-Modified-Since").equals(last_modified)) {
+        request->send(304);
+ 
+    } else {
     // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
     AsyncWebServerResponse * response = request->beginResponse_P(200, "text/html", index_html_gz, index_html_gz_len);
     // Tell the browswer the contemnt is Gzipped
     response->addHeader("Content-Encoding", "gzip");
+            // And set the last-modified datetime so we can check if we need to send it again next time or not
+        response->addHeader("Last-Modified", last_modified);
     request->send(response);
+    }  
   });
+
+    server.on("/status.htm", HTTP_GET, [](AsyncWebServerRequest * request) {
+        // Check if the client already has the same version and respond with a 304 (Not modified)
+    if (request->header("If-Modified-Since").equals(last_modified)) {
+        request->send(304);
+ 
+    } else {
+    // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
+    AsyncWebServerResponse * response = request->beginResponse_P(200, "text/html", status_htm_gz, status_htm_gz_len);
+    // Tell the browswer the contemnt is Gzipped
+    response->addHeader("Content-Encoding", "gzip");
+            // And set the last-modified datetime so we can check if we need to send it again next time or not
+        response->addHeader("Last-Modified", last_modified);
+    request->send(response);
+    }  
+  });
+
+    server.on("/login.html", HTTP_GET, [](AsyncWebServerRequest * request) {
+            // Check if the client already has the same version and respond with a 304 (Not modified)
+    if (request->header("If-Modified-Since").equals(last_modified)) {
+        request->send(304);
+ 
+    } else {
+    // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
+    AsyncWebServerResponse * response = request->beginResponse_P(200, "text/html", login_html_gz, login_html_gz_len);
+    // Tell the browswer the contemnt is Gzipped
+    response->addHeader("Content-Encoding", "gzip");
+            // And set the last-modified datetime so we can check if we need to send it again next time or not
+        response->addHeader("Last-Modified", last_modified);
+    request->send(response);
+}
+  });
+
 
   // HTTP basic authentication
 server.on("/login", HTTP_GET, [](AsyncWebServerRequest *request){
   if(!request->authenticate(http_username, http_pass))
       return request->requestAuthentication();
-  request->send(200, "text/plain", "Login Success!");
+  request->send(200, "text/plain", "Success");
 });
 
-  server.rewrite("/", "/index.html");
+  server.rewrite("/", "/login.html");
 
   // Start Web Server
   server.begin();
@@ -948,6 +1035,9 @@ server.on("/login", HTTP_GET, [](AsyncWebServerRequest *request){
 
 // Set things up
 void setup() {
+        // Populate the last modification date based on build datetime
+        sprintf(last_modified, "%s %s GMT", __DATE__, __TIME__);
+
         Serial.begin(115200);
         Serial.println();
         Serial.println(F("[ INFO ] ESP RFID v0.5"));

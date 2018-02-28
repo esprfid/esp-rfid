@@ -6,80 +6,99 @@
         <meta name="viewport" content="width=device-width,initial-scale=1">
         <meta name="description" content="">
         <meta name="author" content="">
-        <link rel="shortcut icon" href="data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAQAABILAAASCwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIaGhgAAAAAAQ0NDEDs7OzA4ODgrPj4+DFJSUgMoKCgsISEhZSIiInsaGhpfHx8fIZSUlABGRkYAAAAAAAAAAAAAAAAAPDw8QTExMcErKyvtJycn6SQkJL0iIiKiGhoa4xUVFf4RERH/Dg4O/Q0NDdcWFhZU8fHxAUBAQAAAAAAAPz8/HzExMc0qKir/JSUl/yAgIP8cHBz/FxcX/xUVFf8RERH/Dw8P/wsLC/8DAwP/BQUF4xMTEzkJCQkAAAAAADc3N1crKyv3IyMj/0pKSv+IiIj/MjIy/zExMf8WFhb/CwsL/xUVFf9sbGz/VVVV/yUlJf8pKSmhU1NTD+jo6AAyMjJ7JiYm/iEhIf+UlJT/4+Pj/3l5ef+9vb3/Nzc3/1BQUP8pKSn/i4uL/9zc3P/Kysr/uLi4+KKiorh1dXUqODg4qiAgIP84ODj/ycnJ/9TU1P+6urr/2dnZ/01NTf+bm5v/MjIy/4eHh/+ampr/0NDQ/+np6f/R0dH8p6enaygoKKsbGxv/dnZ2/8jIyP+urq7/zc3N/7y8vP9mZmb/jo6O/yUlJf+srKz/cHBw/5ubm/+3t7f/vLy8+MDAwF4pKSlaGxsb8VlZWf9cXFz/Y2Nj/25ubv+BgYH/cHBw/1xcXP8+Pj7/urq6/3h4eP+zs7P/s7Oz/83NzdqsrKwlMjIyCB0dHXoSEhLnDAwM/QsLC/8ICAj/DAwM/x4eHv8zMzP/TExM/729vf+0tLT/vLy8/8LCwv/GxsaQDw8PAzc3NwA/Pz8EICAgLBEREVUODg5xCAgI5QMDA/8VFRX/NTU1/0xMTP9zc3P/m5ub87e3t6+zs7N+kpKSGJ6engAAAAAAAAAAAAAAAAAvLy8Af39/ARcXF1UZGRnQNTU1+UxMTP5ZWVn4YGBg0WNjY2BUVFQGs7OzAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHNzcwD19fUAR0dHGk9PT01XV1diZWVlSHFxcRnY2NgAl5eXAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//8AAP//AADABwAAgAMAAAADAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAQAA8AcAAPgPAAD//wAA//8AAA==">
         <title>esp-rfid</title>
         <!-- Bootstrap core CSS -->
         <link href="css/required.css" rel="stylesheet">
+        <style>
+        html {
+  position: relative;
+  min-height: 100%;
+}
+body {
+  margin-bottom: 60px; /* Margin bottom by footer height */
+}
+.footer {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  height: 45px; /* Set the fixed height of the footer here */
+  background-color: #f5f5f5;
+}
+    </style>
     </head>
-    <body>
+    <body onload="start()">
         <div class="wrapper">
             <!-- Sidebar Holder -->
             <nav id="sidebar">
-			                <div id="dismiss">
+			 <div id="dismiss">
                     <i class="glyphicon glyphicon-arrow-left"></i>
                 </div>
                 <div class="sidebar-header">
+                    <br>
                     <h1>
                         esp-rfid <span class="glyphicon glyphicon-tags" aria-hidden="true"></span>
                     </h1>
                 </div>
                 <ul class="list-unstyled components">
+
                     <li class="active">
-                        <a href="#">Status</a>
+
+                        <a href="#"><i style="margin-right: 1em" class="glyphicon glyphicon-home"></i>Status</a>
+
                     </li>
                     <li>
-                        <a href="#homeSubmenu" data-toggle="collapse" aria-expanded="false">Settings</a>
+                        <a href="#homeSubmenu" data-toggle="collapse" aria-expanded="false"><i style="margin-right: 1em" class="glyphicon glyphicon-cog"></i>Settings</a>
                         <ul class="collapse list-unstyled" id="homeSubmenu">
                             <li>
-                                <a href="#">Wireless Network</a>
+                                <a href="#"><i style="margin-right: 1em" class="glyphicon glyphicon-signal"></i>Wireless Network</a>
                             </li>
                             <li>
-                                <a href="#">Hardware Settings</a>
+                                <a href="#"><i style="margin-right: 1em" class="glyphicon glyphicon-wrench"></i>Hardware Settings</a>
                             </li>
                             <li>
-                                <a href="#">General Settings</a>
+                                <a href="#"><i style="margin-right: 1em" class="glyphicon glyphicon-list-alt"></i>General Settings</a>
                             </li>
                             <li>
-                                <a href="#">MQTT Settings</a>
+                                <a href="#"><i style="margin-right: 1em" class="glyphicon glyphicon-link"></i>MQTT Settings</a>
                             </li>
                             <li>
-                                <a href="#">NTP (Time) Settings</a>
+                                <a href="#"><i style="margin-right: 1em" class="glyphicon glyphicon-hourglass"></i>NTP (Time) Settings</a>
                             </li>
                         </ul>
                     </li>
                     <li>
-                        <a href="#">Users</a>
+                        <a href="#"><i style="margin-right: 1em" class="glyphicon glyphicon-user"></i>Users</a>
                     </li>
                     <li>
-                        <a href="#logsSubmenu" data-toggle="collapse" aria-expanded="false">Logs</a>
+                        <a href="#logsSubmenu" data-toggle="collapse" aria-expanded="false"><i style="margin-right: 1em" class="glyphicon glyphicon-folder-open"></i>Logs</a>
                         <ul class="collapse list-unstyled" id="logsSubmenu">
                             <li>
-                                <a href="#">Latest Access Log</a>
+                                <a href="#"><i style="margin-right: 1em" class="glyphicon glyphicon-calendar"></i>Latest Access Log</a>
                             </li>
                             <li>
-                                <a href="#">User Statics</a>
+                                <a href="#"><i style="margin-right: 1em" class="glyphicon glyphicon-transfer"></i>User Statics</a>
                             </li>
                             <li>
-                                <a href="#">Reports</a>
+                                <a href="#"><i style="margin-right: 1em" class="glyphicon glyphicon-book"></i>Reports</a>
                             </li>
                         </ul>
                     </li>
                     <li>
-                        <a href="#backSubmenu" data-toggle="collapse" aria-expanded="false">Backup & Restore</a>
+                        <a href="#backSubmenu" data-toggle="collapse" aria-expanded="false"><i style="margin-right: 1em" class="glyphicon glyphicon-floppy-disk"></i>Backup & Restore</a>
                         <ul class="collapse list-unstyled" id="backSubmenu">
                             <li>
-                                <a href="#">Backup</a>
+                                <a href="#"><i style="margin-right: 1em" class="glyphicon glyphicon-floppy-save"></i>Backup</a>
                             </li>
                             <li>
-                                <a href="#">Restore</a>
+                                <a href="#"><i style="margin-right: 1em" class="glyphicon glyphicon-floppy-open"></i>Restore</a>
                             </li>
                             <li>
-                                <a href="#">Factory Reset</a>
+                                <a href="#"><i style="margin-right: 1em" class="glyphicon glyphicon-repeat"></i>Factory Reset</a>
                             </li>
                         </ul>
                     </li>
                     <li>
-                        <a href="#">Update</a>
+                        <a href="#"><i style="margin-right: 1em" class="glyphicon glyphicon-open"></i>Update</a>
                     </li>
                 </ul>
                 <ul class="list-unstyled CTAs">
@@ -97,80 +116,30 @@
             <!-- Page Content Holder -->
             <div id="content">
 
-                <nav class="navbar navbar-default">
-                    <div class="container-fluid">
-                        <div class="navbar-header">
+
                             <button type="button" id="sidebarCollapse" class="btn btn-info navbar-btn">
-                                <i class="glyphicon glyphicon-align-left"></i>
+                                <i class="glyphicon glyphicon-menu-hamburger"></i>
                                 <span>Menu</span>
                             </button>
-                        </div>
-                    </div>
-                </nav>
 
-			<div class="col-md-4 col-md-offset-4">
-               <div class="login-panel panel panel-default">
-                  <div class="panel-heading">
-                     <h3 class="panel-title">Please Sign In</h3>
-                  </div>
-                  <div class="panel-body">
-                     <form role="form" onsubmit="login(); return false">
-                        <fieldset>
-                           <div class="form-group">
-                              <input id="password" class="form-control" placeholder="Password" name="password" type="password" value="" required="" title="Please enter your password">
-                           </div>
-                           <button type="submit" class="btn btn-success btn-md pull-right">Login</button>
-                        </fieldset>
-                     </form>
-                  </div>
-               </div>
+
+
+
+            <div id="ajaxcontent">
             </div>
+
 				
         </div>
+            <footer class="footer">
+      <div class="container">
+        <h6 class="text-muted">esp-rfid - This is a <a href="https://github.com/omersiar/esp-rfid/blob/master/LICENSE">free</a> software</h6>
+      </div>
+    </footer>
 
 
 
         <div class="overlay"></div>
         <script src="js/required.js"></script>
-        <script>
-		      function login() {
-        if (document.getElementById("password").value === "neo") { 
-		alert("Welcome back developer"); 
-		}
-		var username = "admin"
-              var password = document.getElementById("password").value;
-              var url = "/login";
-              var xhr = new XMLHttpRequest();
-              xhr.open("get", url, true, username, password);
-              xhr.onload = function(e) {
-                if (xhr.readyState === 4) {
-                  if (xhr.status === 200) {
-                    alert(xhr.responseText);
-                  } else {
-                    alert("Incorrect password!");
-                  }
-                }
-              };
-              xhr.send(null);
-              
-      }
-                $(document).ready(function () {
-                $("#sidebar").mCustomScrollbar({
-                    theme: "minimal"
-                });
-
-                $('#dismiss, .overlay').on('click', function () {
-                    $('#sidebar').removeClass('active');
-                    $('.overlay').fadeOut();
-                });
-
-                $('#sidebarCollapse').on('click', function () {
-                    $('#sidebar').addClass('active');
-                    $('.overlay').fadeIn();
-                    $('.collapse.in').toggleClass('in');
-                    $('a[aria-expanded=true]').attr('aria-expanded', 'false');
-                });
-            });
-        </script>
+        <script src="js/esprfid.js"></script>
     </body>
 </html>

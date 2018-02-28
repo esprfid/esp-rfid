@@ -5,11 +5,28 @@ var gzip = require('gulp-gzip');
 var flatmap = require('gulp-flatmap');
 var path = require('path');
 var htmlmin = require('gulp-htmlmin');
+var uglify = require('gulp-uglify');
+var pump = require('pump');
 
-gulp.task("indexgz", ["indexprep"], function() {
+gulp.task('esprfidjs', function (cb) {
+  pump([
+        gulp.src('../../src/websrc/js/esprfid.js'),
+        uglify(),
+        gulp.dest('../../src/websrc/gzipped/js/'),
+    ],
+    cb
+    );
+});
 
-    var source = "../../src/websrc/gzipped/" + "index.html.gz";
-    var destination = "../../src/" + "index.html.gz.h";
+gulp.task('esprfidjsgz', ["esprfidjs"], function() {
+    gulp.src('../../src/websrc/gzipped/js/esprfid.js')
+        .pipe(gzip({
+            append: true
+        }))
+        .pipe(gulp.dest('../../src/websrc/gzipped/js/'));
+
+    var source = "../../src/websrc/gzipped/js/" + "esprfid.js.gz";
+    var destination = "../../src/" + "esprfid.js.gz.h";
  
     var wstream = fs.createWriteStream(destination);
     wstream.on('error', function (err) {
@@ -18,8 +35,8 @@ gulp.task("indexgz", ["indexprep"], function() {
  
     var data = fs.readFileSync(source);
  
-    wstream.write('#define index_html_gz_len ' + data.length + '\n');
-    wstream.write('const uint8_t index_html_gz[] PROGMEM = {')
+    wstream.write('#define esprfid_js_gz_len ' + data.length + '\n');
+    wstream.write('const uint8_t esprfid_js_gz[] PROGMEM = {')
  
     for (i=0; i<data.length; i++) {
         if (i % 1000 == 0) wstream.write("\n");
@@ -29,17 +46,6 @@ gulp.task("indexgz", ["indexprep"], function() {
  
     wstream.write('\n};')
     wstream.end();
-	
-});
-
-gulp.task('indexprep', function() {
-    return gulp.src('../../src/websrc/index.html')
-	    .pipe(htmlmin({collapseWhitespace: true}))
-        .pipe(gulp.dest('../../src/websrc/gzipped/'))
-        .pipe(gzip({
-            append: true
-        }))
-        .pipe(gulp.dest('../../src/websrc/gzipped/'));
 });
 
 gulp.task("scripts", ["scripts-concat"], function() {
@@ -68,8 +74,8 @@ gulp.task("scripts", ["scripts-concat"], function() {
 	
 });
 
-gulp.task('scripts-concat', function() {
-    return gulp.src(['../../src/websrc/js/jquery-1.12.4.min.js', '../../src/websrc/js/bootstrap-3.3.7.min.js', '../../src/websrc/js/footable-3.1.6.min.js', '../../src/websrc/js/nprogress-0.2.0.js', '../../src/websrc/js/sidebar.min.js'])
+gulp.task('scripts-concat', ["esprfidjsgz"], function() {
+    return gulp.src(['../../src/websrc/js/jquery-1.12.4.min.js', '../../src/websrc/js/bootstrap-3.3.7.min.js', '../../src/websrc/js/footable-3.1.6.min.js'])
         .pipe(concat({
             path: 'required.js',
             stat: {
@@ -83,8 +89,10 @@ gulp.task('scripts-concat', function() {
         .pipe(gulp.dest('../../src/websrc/gzipped/js/'));
 });
 
+
+
 gulp.task('styles-concat', function() {
-    return gulp.src(['../../src/websrc/css/bootstrap-3.3.7.min.css', '../../src/websrc/css/footable.bootstrap-3.1.6.min.css', '../../src/websrc/css/nprogress-0.2.0.css', '../../src/websrc/css/sidebar.css', '../../src/websrc/css/sidebarcollapse.css'])
+    return gulp.src(['../../src/websrc/css/bootstrap-3.3.7.min.css', '../../src/websrc/css/footable.bootstrap-3.1.6.min.css', '../../src/websrc/css/sidebar.css'])
         .pipe(concat({
             path: 'required.css',
             stat: {
@@ -160,4 +168,47 @@ gulp.task("fonts", ["fontgz"], function() {
         }));
 });
 
-gulp.task('default', ['scripts', 'styles', "fonts", "indexgz"]);
+gulp.task('htmlsprep', function() {
+    return gulp.src('../../src/websrc/*.htm*')
+        .pipe(htmlmin({collapseWhitespace: true, minifyJS: true}))
+        .pipe(gulp.dest('../../src/websrc/gzipped/'))
+        .pipe(gzip({
+            append: true
+        }))
+        .pipe(gulp.dest('../../src/websrc/gzipped/'));
+});
+
+gulp.task("htmlsgz", ["htmlsprep"], function() {
+    return gulp.src("../../src/websrc/*.htm*")
+        .pipe(gzip({
+            append: true
+        }))
+    .pipe(gulp.dest('../../src/websrc/gzipped/'));
+});
+
+gulp.task("htmls", ["htmlsgz"], function() {
+    return gulp.src("../../src/websrc/gzipped/*.gz")
+        .pipe(flatmap(function(stream, file) {
+            var filename = path.basename(file.path);
+            var wstream = fs.createWriteStream("../../src/" + filename + ".h");
+            wstream.on("error", function(err) {
+                gutil.log(err);
+            });
+            var data = file.contents;
+            wstream.write("#define " + filename.replace(/\.|-/g, "_") + "_len " + data.length + "\n");
+            wstream.write("const uint8_t " + filename.replace(/\.|-/g, "_") + "[] PROGMEM = {")
+            
+            for (i = 0; i < data.length; i++) {
+                if (i % 1000 == 0) wstream.write("\n");
+                wstream.write('0x' + ('00' + data[i].toString(16)).slice(-2));
+                if (i < data.length - 1) wstream.write(',');
+            }
+
+            wstream.write("\n};")
+            wstream.end();
+
+            return stream;
+        }));
+});
+
+gulp.task('default', ['scripts', 'styles', "fonts", "htmls"]);

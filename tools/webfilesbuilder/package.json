@@ -12,7 +12,8 @@
     "gulp": "^3.9.1",
     "gulp-concat": "^2.6.1",
     "gulp-flatmap": "^1.0.2",
-    "gulp-gzip": "^1.4.2"
+    "gulp-gzip": "^1.4.2",
+    "gulp-uglify": "^3.0.0"
   },
   "dependencies": {
     "gulp-htmlmin": "^4.0.0"
