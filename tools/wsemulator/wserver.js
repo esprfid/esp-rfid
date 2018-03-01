@@ -50,7 +50,7 @@ var networks = {
 }
 
 var latestlog = {
-  "type": "latestlog",
+  "command": "latestlog",
   "list": [
     {
       "timestamp": 1518198383,
@@ -362,7 +362,7 @@ function sendStatus() {
         "heap": 30000,
         "chipid": "emu413",
 		"cpu": "80/160",
-		"availsize": 55555,
+		"availsize": 555555,
 		"availspiffs": 445555,
 		"spiffssize": 888888,
 		"uptime": "1 Day 6 Hours",

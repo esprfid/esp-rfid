@@ -55,7 +55,10 @@
 
 #include "index.html.gz.h"
 #include "login.html.gz.h"
+
 #include "status.htm.gz.h"
+#include "users.htm.gz.h"
+#include "log.htm.gz.h"
 
 #ifdef ESP8266
 extern "C" {
@@ -414,7 +417,7 @@ void LogLatest(String uid, String username, int acctype) {
                 File logFile = SPIFFS.open("/auth/latestlog.json", "w");
                 DynamicJsonBuffer jsonBuffer3;
                 JsonObject& root = jsonBuffer3.createObject();
-                root["type"] = "latestlog";
+                root["command"] = "latestlog";
                 JsonArray& list = root.createNestedArray("list");
                 root.printTo(logFile);
                 logFile.close();
@@ -995,6 +998,38 @@ void setupWebServer() {
     } else {
     // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
     AsyncWebServerResponse * response = request->beginResponse_P(200, "text/html", status_htm_gz, status_htm_gz_len);
+    // Tell the browswer the contemnt is Gzipped
+    response->addHeader("Content-Encoding", "gzip");
+            // And set the last-modified datetime so we can check if we need to send it again next time or not
+        response->addHeader("Last-Modified", last_modified);
+    request->send(response);
+    }  
+  });
+
+        server.on("/users.htm", HTTP_GET, [](AsyncWebServerRequest * request) {
+        // Check if the client already has the same version and respond with a 304 (Not modified)
+    if (request->header("If-Modified-Since").equals(last_modified)) {
+        request->send(304);
+ 
+    } else {
+    // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
+    AsyncWebServerResponse * response = request->beginResponse_P(200, "text/html", users_htm_gz, users_htm_gz_len);
+    // Tell the browswer the contemnt is Gzipped
+    response->addHeader("Content-Encoding", "gzip");
+            // And set the last-modified datetime so we can check if we need to send it again next time or not
+        response->addHeader("Last-Modified", last_modified);
+    request->send(response);
+    }  
+  });
+
+                server.on("/log.htm", HTTP_GET, [](AsyncWebServerRequest * request) {
+        // Check if the client already has the same version and respond with a 304 (Not modified)
+    if (request->header("If-Modified-Since").equals(last_modified)) {
+        request->send(304);
+ 
+    } else {
+    // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
+    AsyncWebServerResponse * response = request->beginResponse_P(200, "text/html", log_htm_gz, log_htm_gz_len);
     // Tell the browswer the contemnt is Gzipped
     response->addHeader("Content-Encoding", "gzip");
             // And set the last-modified datetime so we can check if we need to send it again next time or not

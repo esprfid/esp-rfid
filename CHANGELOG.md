@@ -3,11 +3,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 #### Added
-- [firmware + webui] Embeded web files
+- [firmware + webui] Embedded web files
 - [firmware + webui] MQTT to main branch.
 - [firmware + webui] Access column to logs for the information, if the access was granted or not @romanzava
 - [build] Travis CI
-- [webui] NProgress.js
 - [firmware] Glyphicons redirection for SPIFFS's limited 32 char filename.
 - [dev tools] WebSocket emulator for rapid web page development. (This require node.js)
 - [build] Gulp script for auto css/js file concat and gzip
@@ -24,6 +23,7 @@ All notable changes to this project will be documented in this file.
 - [build] more meaningful directories for web files.
 - [webui] RSSI percent calculation
 - [firmware] Limit printScanResult to 5 best (based on RSSI) networks around (esp becomes unresponsive if there are too many networks)
+- [build] pio script where we were trying to modify flashing parameters it was affecting SPIFFS upload too.
 
 #### Fixed
 - [firmware + webui] MQTT - UID publish was missing.
@@ -32,7 +32,6 @@ All notable changes to this project will be documented in this file.
 - [firmware] Web files no longer contained in SPIFFS
 - [firmware] SPIFFS Editor.
 - [firmware] Confusion about MFRC533 reader.
-- [build] pio script where we were trying to modify flashing parameters it was affecting SPIFFS upload too.
 
 ## [0.4alpha] - 2018-01-21
 #### Added

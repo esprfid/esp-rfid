@@ -39,7 +39,7 @@ This project still in its development phase. New features (and also bugs) are in
 ### Software
 
 #### Using Compiled Binaries
-[Compiled binaries and the flasher tool](https://github.com/omersiar/esp-rfid/tree/master/compiledbin) are available in directory **/compiledbin**. On Windows you can use **"flash.bat"** it will ask you which COM port that ESP is connected and then flashes it. You can use any flashing tool and do the flashing manually. The flashing process itself has been described at numerous places on Internet.
+Compiled firmware binary and flasher tool for Windows PCs are available in directory **/bin**. On Windows you can use **"flash.bat"**, it will ask you which COM port that ESP is connected and then flashes it. You can use any flashing tool and do the flashing manually. The flashing process itself has been described at numerous places on Internet.
 
 #### Building With PlatformIO
 The build enviroment is based on [PlatformIO](http://platformio.org). Follow the instructions found here: http://platformio.org/#!/get-started for installing it but skip the ```platform init``` step as this has already been done, modified and it is included in this repository. In summary:
@@ -57,11 +57,10 @@ When you run ```platformio run``` for the first time, it will download the toolc
 #### Useful commands:
 
 * ```platformio run``` - process/build all targets
-* ```platformio run -e nodemcu``` - process/build just the ESP12e target (the NodeMcu v2)
-* ```platformio run -t uploadfs``` - prepare web files and flash them
+* ```platformio run -e nodemcu -t upload``` - process/build and flash just the ESP12e target (the NodeMcu v2)
 * ```platformio run -t clean``` - clean project (remove compiled files)
 
-The resulting image(s) can be found in the directory ```/compiledbin``` created during the build process.
+The resulting (built) image(s) can be found in the directory ```/bin``` created during the build process.
 
 ### Pin Layout
 
@@ -101,7 +100,8 @@ For Wiegand based readers, you can configure D0 and D1 pins via settings page. B
 * Congratulations, everything went well, if you encounter any issue feel free to ask help on GitHub.
 
 ### Known Issues
-* Nothing for now.
+* MQTT does not publish the UID anymore when disconnected from MQTT server.
+* Please also check [GitHub issues](https://github.com/omersiar/esp-rfid/issues).
 
 
 #### Time
@@ -125,8 +125,8 @@ Since we are limited on both flash and ram size things may get ugly at some poin
 
 ### Tests
 
-#### How many RFID Tag can be handled?
-Restore some [randomly generated](https://github.com/omersiar/esp-rfid/raw/development/demo/demo-users-data.json) user data on File System worth:
+#### 1) How many RFID Tag can be handled?
+Restore some randomly generated user data on File System worth:
 
 * 1000 seperate "userfile"
 * random 4 Bytes long UID and

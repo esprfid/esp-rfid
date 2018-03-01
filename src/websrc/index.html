@@ -9,22 +9,6 @@
         <title>esp-rfid</title>
         <!-- Bootstrap core CSS -->
         <link href="css/required.css" rel="stylesheet">
-        <style>
-        html {
-  position: relative;
-  min-height: 100%;
-}
-body {
-  margin-bottom: 60px; /* Margin bottom by footer height */
-}
-.footer {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  height: 45px; /* Set the fixed height of the footer here */
-  background-color: #f5f5f5;
-}
-    </style>
     </head>
     <body onload="start()">
         <div class="wrapper">
@@ -43,62 +27,78 @@ body {
 
                     <li class="active">
 
-                        <a href="#"><i style="margin-right: 1em" class="glyphicon glyphicon-home"></i>Status</a>
+                        <a href="#" id="status"><i class="glyphicon glyphicon-home"></i>Status</a>
 
                     </li>
                     <li>
-                        <a href="#homeSubmenu" data-toggle="collapse" aria-expanded="false"><i style="margin-right: 1em" class="glyphicon glyphicon-cog"></i>Settings</a>
+                        <a href="#homeSubmenu" data-toggle="collapse" aria-expanded="false"><i  class="glyphicon glyphicon-cog"></i>Settings</a>
                         <ul class="collapse list-unstyled" id="homeSubmenu">
                             <li>
-                                <a href="#"><i style="margin-right: 1em" class="glyphicon glyphicon-signal"></i>Wireless Network</a>
+                                <a href="#"><i class="glyphicon glyphicon-signal"></i>Wireless Network</a>
                             </li>
                             <li>
-                                <a href="#"><i style="margin-right: 1em" class="glyphicon glyphicon-wrench"></i>Hardware Settings</a>
+                                <a href="#"><i class="glyphicon glyphicon-wrench"></i>Hardware Settings</a>
                             </li>
                             <li>
-                                <a href="#"><i style="margin-right: 1em" class="glyphicon glyphicon-list-alt"></i>General Settings</a>
+                                <a href="#"><i class="glyphicon glyphicon-list-alt"></i>General Settings</a>
                             </li>
                             <li>
-                                <a href="#"><i style="margin-right: 1em" class="glyphicon glyphicon-link"></i>MQTT Settings</a>
+                                <a href="#"><i class="glyphicon glyphicon-link"></i>MQTT Settings</a>
                             </li>
                             <li>
-                                <a href="#"><i style="margin-right: 1em" class="glyphicon glyphicon-hourglass"></i>NTP (Time) Settings</a>
+                                <a href="#"><i class="glyphicon glyphicon-hourglass"></i>NTP (Time) Settings</a>
                             </li>
                         </ul>
                     </li>
                     <li>
-                        <a href="#"><i style="margin-right: 1em" class="glyphicon glyphicon-user"></i>Users</a>
+                        <a href="#" id="users"><i  class="glyphicon glyphicon-user"></i>Users</a>
                     </li>
                     <li>
-                        <a href="#logsSubmenu" data-toggle="collapse" aria-expanded="false"><i style="margin-right: 1em" class="glyphicon glyphicon-folder-open"></i>Logs</a>
+                        <a href="#logsSubmenu" data-toggle="collapse" aria-expanded="false"><i  class="glyphicon glyphicon-folder-open"></i>Logs</a>
                         <ul class="collapse list-unstyled" id="logsSubmenu">
                             <li>
-                                <a href="#"><i style="margin-right: 1em" class="glyphicon glyphicon-calendar"></i>Latest Access Log</a>
+                                <a href="#" id="latestlog"><i  class="glyphicon glyphicon-calendar"></i>Latest Access Log</a>
                             </li>
                             <li>
-                                <a href="#"><i style="margin-right: 1em" class="glyphicon glyphicon-transfer"></i>User Statics</a>
+                                <a href="#" class="noimp"><i  class="glyphicon glyphicon-transfer"></i>User Statics</a>
                             </li>
                             <li>
-                                <a href="#"><i style="margin-right: 1em" class="glyphicon glyphicon-book"></i>Reports</a>
+                                <a href="#" class="noimp"><i  class="glyphicon glyphicon-book"></i>Reports</a>
                             </li>
                         </ul>
                     </li>
                     <li>
-                        <a href="#backSubmenu" data-toggle="collapse" aria-expanded="false"><i style="margin-right: 1em" class="glyphicon glyphicon-floppy-disk"></i>Backup & Restore</a>
+                    <a href="#plugSubmenu" data-toggle="collapse" aria-expanded="false"><i  class="glyphicon glyphicon-plus-sign"></i>Plugins</a>
+                        <ul class="collapse list-unstyled" id="plugSubmenu">
+                            <li>
+                                <a href="#" class="noimp"><i  class="glyphicon glyphicon-tag"></i>Plugin 1</a>
+                            </li>
+                            <li>
+                                <a href="#" class="noimp"><i  class="glyphicon glyphicon-tag"></i>Plugin 2</a>
+                            </li>
+                            <li>
+                                <a href="#" class="noimp"><i  class="glyphicon glyphicon-tag"></i>Plugin 3</a>
+                            </li>
+                        </ul>
+                    </li>
+                    
+
+                    <li>
+                        <a href="#backSubmenu" data-toggle="collapse" aria-expanded="false"><i  class="glyphicon glyphicon-floppy-disk"></i>Backup & Restore</a>
                         <ul class="collapse list-unstyled" id="backSubmenu">
                             <li>
-                                <a href="#"><i style="margin-right: 1em" class="glyphicon glyphicon-floppy-save"></i>Backup</a>
+                                <a href="#"><i  class="glyphicon glyphicon-floppy-save"></i>Backup</a>
                             </li>
                             <li>
-                                <a href="#"><i style="margin-right: 1em" class="glyphicon glyphicon-floppy-open"></i>Restore</a>
+                                <a href="#"><i  class="glyphicon glyphicon-floppy-open"></i>Restore</a>
                             </li>
                             <li>
-                                <a href="#"><i style="margin-right: 1em" class="glyphicon glyphicon-repeat"></i>Factory Reset</a>
+                                <a href="#" class="noimp"><i  class="glyphicon glyphicon-repeat"></i>Factory Reset</a>
                             </li>
                         </ul>
                     </li>
                     <li>
-                        <a href="#"><i style="margin-right: 1em" class="glyphicon glyphicon-open"></i>Update</a>
+                        <a href="#" class="noimp"><i  class="glyphicon glyphicon-open"></i>Update</a>
                     </li>
                 </ul>
                 <ul class="list-unstyled CTAs">
@@ -106,7 +106,7 @@ body {
                         <a href="https://github.com/omersiar/esp-rfid" class="download">Project's GitHub Page</a>
                     </li>
                     <li>
-                        <a href="#" class="article">Logout</a>
+                        <a href="#" class="article noimp">Logout</a>
                     </li>
 					<li>
                         <h6 class="text-center">esp-rfid v0.5 New Fields</h6>
@@ -128,7 +128,26 @@ body {
             <div id="ajaxcontent">
             </div>
 
-				
+				<!-- Modal -->
+<div id="noimp" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Sorry :(</h4>
+      </div>
+      <div class="modal-body">
+        <p>This is not implemented yet</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+
+  </div>
+</div>
         </div>
             <footer class="footer">
       <div class="container">
