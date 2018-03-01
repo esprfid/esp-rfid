@@ -81,7 +81,7 @@ The following table shows the typical pin layout used for connecting MFRC522 har
 For Wiegand based readers, you can configure D0 and D1 pins via settings page. By default, D0 is GPIO-4 and D1 is GPIO-5
 
 ### Steps
-* First, flash firmware (you can use /compiledbin/flash.bat on Windows) to your ESP either using Arduino IDE or with your favourite flash tool
+* First, flash firmware (you can use /bin/flash.bat on Windows) to your ESP either using Arduino IDE or with your favourite flash tool
 * Flash webfiles data to SPIFFS (ignore this step if you used flash.bat for flashing) either using ESP8266FS Uploader tool or with your favourite flash tool
 * (optional) Fire up your serial monitor to get informed
 * Power on your ESP
