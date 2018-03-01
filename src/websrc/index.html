@@ -34,10 +34,10 @@
                         <a href="#homeSubmenu" data-toggle="collapse" aria-expanded="false"><i  class="glyphicon glyphicon-cog"></i>Settings</a>
                         <ul class="collapse list-unstyled" id="homeSubmenu">
                             <li>
-                                <a href="#"><i class="glyphicon glyphicon-signal"></i>Wireless Network</a>
+                                <a href="#" id="network"><i class="glyphicon glyphicon-signal"></i>Wireless Network</a>
                             </li>
                             <li>
-                                <a href="#"><i class="glyphicon glyphicon-wrench"></i>Hardware Settings</a>
+                                <a href="#" id="hardware"><i class="glyphicon glyphicon-wrench"></i>Hardware Settings</a>
                             </li>
                             <li>
                                 <a href="#"><i class="glyphicon glyphicon-list-alt"></i>General Settings</a>
@@ -148,10 +148,31 @@
 
   </div>
 </div>
+
+<div id="revcommit" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Please review changes</h4>
+      </div>
+      <div class="modal-body">
+        <pre id="jsonholder"></pre>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+        <button type="button" onclick="commit();" class="btn btn-success">Save & Reboot</button>
+      </div>
+    </div>
+
+  </div>
+</div>
         </div>
             <footer class="footer">
-      <div class="container">
-        <h6 class="text-muted">esp-rfid - This is a <a href="https://github.com/omersiar/esp-rfid/blob/master/LICENSE">free</a> software</h6>
+      <div id="commit" class="container">
+        <h6 class="text-muted">esp-rfid - Unlicensed <a href="https://github.com/omersiar/esp-rfid/blob/master/LICENSE">free</a> software.</h6>
       </div>
     </footer>
 

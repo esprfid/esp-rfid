@@ -1,0 +1,121 @@
+<br>
+<br>
+<legend>Hardware Settings</legend>
+            <h6 class="text-muted">Please refer the <a href="https://github.com/omersiar/esp-rfid#pin-layout">documentation</a> for pin configuration.</h6>
+
+            <div class="row form-group">
+                <label class="col-xs-3">Reader type<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Choose RFID reader type."></i></label>
+              <div class="col-xs-9">
+                <select class="form-control input-sm" id="readerType" onchange="handleReader();">
+                    <option selected="selected" value="0">MFRC522</option>
+                    <option value="1">Wiegand</option>
+                    <option value="2" disabled="">PN532</option>
+                  </select>
+              </div>
+            </div>
+
+            <div class="" id="wiegandForm" style="display:none">
+              <div class="row form-group">
+                <label class="col-xs-3">Pin D0<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Choose Wiegand D0 pin."></i></label>
+                <span class="col-xs-9 col-md-5">
+                  <select class="form-control input-sm" id="wg0pin">
+                    <option value="0">GPIO-0</option>
+                    <option value="1">GPIO-1</option>
+                    <option value="2">GPIO-2</option>
+                    <option selected="selected" value="4">GPIO-4</option>
+                    <option value="5">GPIO-5</option>
+                    <option value="12">GPIO-12</option>
+                    <option value="13">GPIO-13</option>
+                    <option value="14">GPIO-14</option>
+                    <option value="15">GPIO-15</option>
+                    <option value="16">GPIO-16</option>
+                  </select>
+                </span>
+              </div>
+
+              <div class="row form-group">
+                <label class="col-xs-3">Pin D1<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Choose Wiegand D1 pin."></i></label>
+                <span class="col-xs-9 col-md-5">
+                  <select class="form-control input-sm" id="wg1pin">
+                    <option value="0">GPIO-0</option>
+                    <option value="1">GPIO-1</option>
+                    <option value="2">GPIO-2</option>
+                    <option value="4">GPIO-4</option>
+                    <option selected="selected" value="5">GPIO-5</option>
+                    <option value="12">GPIO-12</option>
+                    <option value="13">GPIO-13</option>
+                    <option value="14">GPIO-14</option>
+                    <option value="15">GPIO-15</option>
+                    <option value="16">GPIO-16</option>
+                  </select>
+                </span>
+              </div>
+            </div>
+            <div class="" id="mfrc522Form" style="display:none">
+              <div class="row form-group">
+                <label class="col-xs-3">SPI SS<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Choose which ESP port is connected to RFID Hardware SDA pin"></i></label>
+                <span class="col-xs-9 col-md-5">
+                  <select class="form-control input-sm" id="gpioss">
+                    <option value="0">GPIO-0</option>
+                    <option value="2">GPIO-2</option>
+                    <option value="4">GPIO-4</option>
+                    <option value="5">GPIO-5</option>
+                    <option selected="selected" value="15">GPIO-15</option>
+                    <option value="16">GPIO-16</option>
+                  </select>
+                </span>
+              </div>
+              <div class="row form-group">
+                <label class="col-xs-3">Antenna Gain<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Higher value means further the RFID reader's reading distance"></i></label>
+                <span class="col-xs-9 col-md-5">
+                  <select class="form-control input-sm" id="gain">
+                    <option value="112">Max (48 db)</option>
+                    <option value="96">43 db</option>
+                    <option value="48">38 db</option>
+                    <option selected="selected" value="32">Avg (33 db)</option>
+                    <option value="16">23 db</option>
+                    <option value="0">Min (18 db)</option>
+                  </select>
+                </span>
+              </div>
+            </div>
+
+            <br>
+
+            <div class="row form-group">
+ 						<label class="col-xs-3">Relay Type<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Depending on your electrical setup, you can choose the relay type"></i></label>
+ 						<span class="col-xs-9 col-md-5">
+ 						<select class="form-control input-sm" id="typerly">
+ 							<option selected="selected" value="1">Active High</option>
+ 							<option value="0">Active Low</option>
+ 						</select>
+ 						</span>
+				</div>
+            <div class="row form-group">
+              <label class="col-xs-3">Relay Pin<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Choose which ESP port is connected to your relay"></i></label>
+              <span class="col-xs-6 col-md-5">
+                <select class="form-control input-sm" id="gpiorly">
+                  <option value="0">GPIO-0</option>
+                  <option value="2">GPIO-2</option>
+                  <option value="4">GPIO-4</option>
+                  <option value="5">GPIO-5</option>
+                  <option value="15">GPIO-15</option>
+                  <option selected="selected" value="16">GPIO-16</option>
+                </select>
+              </span>
+              <span class="col-xs-3">
+                <button id="testb" type="button" class="btn btn-primary btn-xs" onclick="testRelay()">Test</button><i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="left" data-content="Test previous relay setting. Keep in mind that this is actually triggers the relay."></i>
+              </span>
+            </div>
+            <div class="row form-group">
+              <label class="col-xs-3">Activate Time<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Relay Toggle time in Microseconds, usually 300ms is enough for the most electric door locks"></i></label>
+              <span class="col-xs-9 col-md-5">
+              <input class="form-control input-sm" value="300" placeholder="in Microsecond" id="delay" type="text" name="hightime">
+              </span>
+              <br>
+              <br>
+              <div class="col-xs-9 col-md-8">
+              <button onclick="savehardware()" class="btn btn-primary btn-sm pull-right">Save</button>
+              </div>
+            </div>
+        <br>
