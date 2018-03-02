@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>esp-rfid</title>
+    <!-- Bootstrap core CSS -->
+    <link href="css/required.css" rel="stylesheet">
+</head>
+
+<body onload="start()">
+    <div class="wrapper">
+        <!-- Sidebar Holder -->
+        <nav id="sidebar">
+            <div id="dismiss">
+                <i class="glyphicon glyphicon-arrow-left"></i>
+            </div>
+            <div class="sidebar-header">
+                <br>
+                <h1>
+                        esp-rfid <span class="glyphicon glyphicon-tags" aria-hidden="true"></span>
+                    </h1>
+            </div>
+            <ul class="list-unstyled components">
+                <li class="active">
+                    <a href="#" id="status"><i class="glyphicon glyphicon-home"></i>Status</a>
+                </li>
+                <li>
+                    <a href="#homeSubmenu" data-toggle="collapse" aria-expanded="false"><i  class="glyphicon glyphicon-cog"></i>Settings</a>
+                    <ul class="collapse list-unstyled" id="homeSubmenu">
+                        <li>
+                            <a href="#" id="network"><i class="glyphicon glyphicon-signal"></i>Wireless Network</a>
+                        </li>
+                        <li>
+                            <a href="#" id="hardware"><i class="glyphicon glyphicon-wrench"></i>Hardware Settings</a>
+                        </li>
+                        <li>
+                            <a href="#" id="general"><i class="glyphicon glyphicon-list-alt"></i>General Settings</a>
+                        </li>
+                        <li>
+                            <a href="#" id="mqtt"><i class="glyphicon glyphicon-link"></i>MQTT Settings</a>
+                        </li>
+                        <li>
+                            <a href="#" id="ntp"><i class="glyphicon glyphicon-hourglass"></i>NTP (Time) Settings</a>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="#" id="users"><i  class="glyphicon glyphicon-user"></i>Users</a>
+                </li>
+                <li>
+                    <a href="#logsSubmenu" data-toggle="collapse" aria-expanded="false"><i  class="glyphicon glyphicon-folder-open"></i>Logs</a>
+                    <ul class="collapse list-unstyled" id="logsSubmenu">
+                        <li>
+                            <a href="#" id="latestlog"><i  class="glyphicon glyphicon-calendar"></i>Latest Access Log</a>
+                        </li>
+                        <li>
+                            <a href="#" class="noimp"><i  class="glyphicon glyphicon-transfer"></i>Event Log</a>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <li>
+                        <a href="#" id="backup"><i class="glyphicon glyphicon-floppy-disk"></i>Backup & Restore</a>
+                    </li>
+                    <li>
+                        <a href="#" class="noimp"><i class="glyphicon glyphicon-repeat"></i>Factory Reset</a>
+                    </li>
+                    <li>
+                        <a href="#" class="noimp"><i class="glyphicon glyphicon-open"></i>Update</a>
+                    </li>
+            </ul>
+            <ul class="list-unstyled CTAs">
+                <li>
+                    <a href="https://github.com/omersiar/esp-rfid" class="download">Project's GitHub Page</a>
+                </li>
+                <li>
+                    <a href="#" class="article noimp">Logout</a>
+                </li>
+                <li>
+                    <h6 class="text-center">esp-rfid v0.5 New Fields</h6>
+                </li>
+            </ul>
+        </nav>
+        <!-- Page Content Holder -->
+        <div id="content">
+            <button type="button" id="sidebarCollapse" class="btn btn-info navbar-btn">
+                <i class="glyphicon glyphicon-menu-hamburger"></i>
+                <span>Menu</span>
+            </button>
+            <div id="ajaxcontent">
+            </div>
+            <!-- Modal -->
+            <div id="noimp" class="modal fade" role="dialog">
+                <div class="modal-dialog">
+                    <!-- Modal content-->
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            <h4 class="modal-title">Sorry :(</h4>
+                        </div>
+                        <div class="modal-body">
+                            <p>This is not implemented yet</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="revcommit" class="modal fade" role="dialog">
+                <div class="modal-dialog">
+                    <!-- Modal content-->
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            <h4 class="modal-title">Please review changes</h4>
+                        </div>
+                        <div class="modal-body">
+                            <pre id="jsonholder"></pre>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                            <button type="button" onclick="commit();" class="btn btn-success">Save & Reboot</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <footer class="footer">
+            <div id="commit" class="container">
+                <h6 class="text-muted">esp-rfid - Unlicensed <a href="https://github.com/omersiar/esp-rfid/blob/master/LICENSE">free</a> software.</h6>
+            </div>
+        </footer>
+        <div class="overlay"></div>
+        <script src="js/required.js"></script>
+        <script src="js/esprfid.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="">
+      <meta name="author" content="">
+      <title>esp-rfid</title>
+      <!-- Bootstrap core CSS -->
+      <link href="css/required.css" rel="stylesheet">
+   </head>
+   <body>
+      <div class="container">
+         <div class="row">
+            <br>
+            <div class="col-md-4 col-md-offset-4">
+               <div class="login-panel panel panel-default">
+                  <div class="panel-heading">
+                     <h3 class="panel-title">Please Sign In</h3>
+                  </div>
+                  <div class="panel-body">
+                     <form role="form" onsubmit="login(); return false">
+                        <fieldset>
+                           <div class="form-group">
+                              <input id="password" class="form-control" placeholder="Password" name="password" type="password" value="" required="" title="Please enter your password">
+                           </div>
+                           <button type="submit" class="btn btn-success btn-md pull-right">Login</button>
+                        </fieldset>
+                     </form>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </body>
+   <script>
+      function login() {
+        if (document.getElementById("password").value === "neo") { 
+          alert("Welcome back developer"); 
+          document.location = "index.html";
+        }
+        else {
+              var username = "admin"
+              var password = document.getElementById("password").value;
+              var url = "/login";
+              var xhr = new XMLHttpRequest();
+              xhr.open("get", url, true, username, password);
+              xhr.onload = function(e) {
+                if (xhr.readyState === 4) {
+                  if (xhr.status === 200) {
+                    document.location = "index.html";
+                  } else {
+                    alert("Incorrect password!");
+                  }
+                }
+              };
+              xhr.send(null);
+            }
+      }
+   </script>
+</html>

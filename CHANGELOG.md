@@ -1,6 +1,48 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+#### Added
+- [firmware + webui] Embedded web files
+- [firmware + webui] MQTT to main branch.
+- [firmware + webui] Access column to logs for the information, if the access was granted or not @romanzava
+- [build] Travis CI
+- [firmware] Glyphicons redirection for SPIFFS's limited 32 char filename.
+- [dev tools] WebSocket emulator for rapid web page development. (This require node.js)
+- [build] Gulp script for auto css/js file concat and gzip
+- [dev tools] Offline static web page development capability (enter "neo" as admin password for local testing)
+- [dev tools] gulp script for PROGMEM web files.
+
+#### Changed
+- [webui] New look and feel - refactored Web UI
+- [webui] Hardcoded FooTable Add/Edit text
+- [webui] Only support woff glyphicons font
+- [dev tools] Clean and beautify main.cpp @nardev
+- [webui] Minor cosmetic changes
+- [webui] Javascript loading moved to end of the html
+- [build] more meaningful directories for web files.
+- [webui] RSSI percent calculation
+- [firmware] Limit printScanResult to 5 best (based on RSSI) networks around (esp becomes unresponsive if there are too many networks)
+- [build] pio script where we were trying to modify flashing parameters it was affecting SPIFFS upload too.
+
+#### Fixed
+- [firmware + webui] MQTT - UID publish was missing.
+
+#### Removed
+- [firmware] Web files no longer contained in SPIFFS
+- [firmware] SPIFFS Editor.
+- [firmware] Confusion about MFRC533 reader.
+
+## [0.4alpha] - 2018-01-21
+#### Added
+- Initial Wiegand Reader (RFID Reader) support. - @nardev
+- Use secure WebSocket protocol if there is a reverse proxy available. - @thunderace
+
+#### Changed
+- Default IDE is now PlatformIO, from now on Arduino IDE support is dropped.
+- SPIFFS Editor's password is now same with the administration password -@thunderace
+- SPI SS pin is now have a default value 15 when there is no configuration file. - @thunderace
+
 ## [0.3beta] - 2017-12-24
 #### Fixed
 - Partly fixed (We still have a quirk with adding new user, may fixed by library level) [#33](https://github.com/omersiar/esp-rfid/issues/33)
@@ -175,7 +217,7 @@ All notable changes to this project will be documented in this file.
 - Logging In Authorization is now done via Async XMR Request. Browsers does not complain about it being synchronous anymore. (Tested with Chrome and Firefox)
 
 #### Changed
-- Inform web user while pages are loading https://www.nngroup.com/articles/response-times-3-important-limits/ 
+- Inform web user while pages are loading https://www.nngroup.com/articles/response-times-3-important-limits/
 - Configuration rutine
 - Seperate settings page and Users specific page
 

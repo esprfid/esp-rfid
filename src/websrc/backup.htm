@@ -1,0 +1,42 @@
+<br>
+<br>
+<div class="row">
+    <div class="col-sm-6">
+        <legend>Backup</legend>
+        <h6 class="text-muted">Please make sure that you have made a backup before updating the firmware.</h6>
+        <div>
+            <button class="btn btn-link btn-sm" onclick="backupuser()">Backup User Data</button>
+            <a id="downloadUser" style="display:none"></a>
+            <button class="btn btn-link btn-sm" onclick="backupset()">Backup Settings</button>
+            <a id="downloadSet" style="display:none"></a>
+        </div>
+        <br>
+        <div>
+            <legend>Restore</legend>
+            <h6 class="text-muted">Click on links and choose your backup file to restore.</h6>
+            <label for="restoreUser" class="btn btn-link btn-sm">Restore User Data</label>
+            <input id="restoreUser" type="file" accept="text/json" onchange="restoreUser()" style="display:none;">
+            <label for="restoreSet" class="btn btn-link btn-sm">Restore Settings</label>
+            <input id="restoreSet" type="file" accept="text/json" onchange="restoreSet()" style="display:none;">
+        </div>
+        <br>
+        <div id="restoremodal" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Please wait while restoring user data...</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div id="pbar" class="progress">
+                            <div id="dynamic" class="progress-bar progress-bar-primary progress-bar-striped active">Restoring...</div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" id="restoreclose" style="display:none;" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

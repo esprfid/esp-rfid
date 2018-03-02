@@ -1,0 +1,73 @@
+<div id="loading-img" class="text-center">
+                  <h5>Please wait while fetching data... <span id="loadpages"></span></h5>
+      </div>
+               <br>
+            </div>
+               <div class="text-center">
+                  <h5>You can add new users by either scanning a RFID Tag or by clicking on "New User" button.</h5>
+               </div>
+               <br>
+
+            <div class="panel panel-default">
+               <table id="usertable" class="table" data-paging="true" data-filtering="true" data-sorting="true" data-editing="true" data-state="true"></table>
+            </div>
+            <div class="modal fade" id="editor-modal" tabindex="-1" role="dialog" aria-labelledby="editor-title">
+               <style scoped>
+                  .form-group.required .control-label:after {
+                  content: "*";
+                  color: red;
+                  margin-left: 4px;
+                  }
+               </style>
+               <div class="modal-dialog" role="document">
+                  <form class="modal-content form-horizontal" id="editor">
+                     <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                        <h4 class="modal-title" id="editor-title">Add User</h4>
+                     </div>
+                     <div class="modal-body">
+                        <input type="number" id="id" name="id" class="hidden" />
+                        <div class="form-group">
+                           <label for="picctype" class="col-sm-3 control-label">PICC Type</label>
+                           <div class="col-sm-9">
+                              <input type="text" class="form-control" id="picctype" name="picctype" placeholder="PICC Type" disabled>
+                           </div>
+                        </div>
+                        <div class="form-group required">
+                           <label for="uid" class="col-sm-3 control-label">UID</label>
+                           <div class="col-sm-9">
+                              <input type="text" class="form-control" id="uid" name="uid" placeholder="UID" required>
+                           </div>
+                        </div>
+                        <div class="form-group required">
+                           <label for="username" class="col-sm-3 control-label">User Name or Label</label>
+                           <div class="col-sm-9">
+                              <input type="text" class="form-control" id="username" name="username" placeholder="User Name or Label" required>
+                           </div>
+                        </div>
+                        <div class="form-group required">
+                           <label for="acctype" class="col-sm-3 control-label">Access Type</label>
+                           <div class="col-sm-9">
+                              <select class="form-control" id="acctype" required>
+                                 <option selected="selected" value="1">Active</option>
+                                 <option value="99">Admin</option>
+                                 <option value="0">Disabled</option>
+                              </select>
+                           </div>
+                        </div>
+                        <div class="form-group required">
+                           <label for="validuntil" class="col-sm-3 control-label">Valid Until</label>
+                           <div class="col-sm-9">
+                              <input type="date" class="form-control" id="validuntil" name="validuntil" value="2038-01-01" placeholder="Valid Until" required>
+                           </div>
+                        </div>
+                     </div>
+                     <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Save changes</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                     </div>
+                  </form>
+               </div>
+            </div>
+            <br>
+            <br>

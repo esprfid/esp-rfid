@@ -1,0 +1,88 @@
+<div class="row text-center">
+   <div class="col-md-4 col-md-offset-4">
+      <h1>Welcome</h1>
+      <p>Here you can find some information about your device status.</p>
+                  <div class="panel panel-default">
+               <div class="panel-body">
+                  <span>esp-rfid Access Control</span>&nbsp; <small><strong>v<span>0.5 New Fields</span></strong></small>
+               </div>
+            </div>
+   </div>
+<div class="col-md-4 col-md-offset-4">
+              <div class="panel panel-default table-responsive">
+                <table class="table table-hover table-striped table-condensed">
+                  <caption>Device</caption>
+                  <tr>
+                    <th>Chip ID</th>
+                    <td id="chip"></td>
+                  </tr>
+                  <tr>
+                    <th>CPU Clock</th>
+                    <td id="cpu"></td>
+                  </tr>
+                                    <tr>
+                    <th>Uptime</th>
+                    <td id="uptime"></td>
+                  </tr>
+                  <tr>
+                    <th>Free Heap</th>
+                    <td>
+                      <div class="progress" style="margin-bottom: 0 !important;">
+                        <div id="heap" class="progress-bar progress-bar-primary" role="progressbar">
+                          Progress
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <th>Free Flash</th>
+                    <td>
+                      <div class='progress' style="margin-bottom: 0 !important;">
+                        <div id="flash" class="progress-bar progress-bar-primary" role="progressbar">
+                          Progress
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                              <tr>
+               <th>Free SPIFFS</th>
+               <td>
+               <div class='progress' style="margin-bottom: 0 !important;">
+                  <div id="spiffs" class="progress-bar progress-bar-primary" role="progressbar">
+                     Progress
+                  </div>
+               </div></td>
+         </tr>
+                </table>
+              </div>
+              <div class="panel panel-default table-responsive">
+                <table class="table table-hover table-striped table-condensed">
+                  <caption>Network</caption>
+                  <tr>
+                    <th>SSID</th>
+                    <td id="ssidstat"></td>
+                  </tr>
+                  <tr>
+                    <th>IP</th>
+                    <td id="ip"></td>
+                  </tr>
+                  <tr>
+                    <th>Gateway</th>
+                    <td id="gate"></td>
+                  </tr>
+                  <tr>
+                    <th>Mask</th>
+                    <td id="mask"></td>
+                  </tr>
+                  <tr>
+                    <th>DNS</th>
+                    <td id="dns"></td>
+                  </tr>
+                  <tr>
+                    <th>MAC</th>
+                    <td id="mac"></td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+<br>

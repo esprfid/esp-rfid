@@ -1,0 +1,14 @@
+{
+  "name": "wsemulator",
+  "version": "0.0.1",
+  "description": "Emulate websocket communication ",
+  "main": "wserver.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "esp-rfid developers",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "ws": "^4.0.0"
+  }
+}
