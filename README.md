@@ -1,10 +1,8 @@
 # ESP RFID - Access Control with ESP8266, RC522
 
-[![Chat at https://gitter.im/esp-rfid/Lobby](https://badges.gitter.im/esp-rfid.svg)](https://gitter.im/esp-rfid/Lobby) [![Build Status](https://travis-ci.org/omersiar/esp-rfid.svg?branch=development)](https://travis-ci.org/omersiar/esp-rfid) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/fc424f75d12644da8b6fe248a5e95157)](https://www.codacy.com/app/omersiar/esp-rfid?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=omersiar/esp-rfid&amp;utm_campaign=Badge_Grade) [![Bountysource](https://api.bountysource.com/badge/team?team_id=242217)](https://salt.bountysource.com/checkout/amount?team=esp-rfid)
+[![Chat at https://gitter.im/esp-rfid/Lobby](https://badges.gitter.im/esp-rfid.svg)](https://gitter.im/esp-rfid/Lobby) [![Build Status](https://travis-ci.org/omersiar/esp-rfid.svg?branch=stable)](https://travis-ci.org/omersiar/esp-rfid) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/fc424f75d12644da8b6fe248a5e95157)](https://www.codacy.com/app/omersiar/esp-rfid?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=omersiar/esp-rfid&amp;utm_campaign=Badge_Grade) [![Bountysource](https://api.bountysource.com/badge/team?team_id=242217)](https://salt.bountysource.com/checkout/amount?team=esp-rfid)
 
 Access Control demonstration using a cheap MFRC522 RFID Hardware or Wiegand RFID readers and Espressif's ESP8266 Microcontroller. This is a community driven project.
-
-This is the **development branch** of the project, if you are looking for stable, production ready version of esp-rfid please use **stable** branch.
 
 ## Features
 ### For Users
