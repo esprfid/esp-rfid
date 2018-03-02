@@ -311,8 +311,8 @@ var configfile =  {
 		"pswd": ""
 	},
 	"ntp": {
-		"ntpserver": "pool.ntp.org",
-		"ntpinterval": "30",
+		"server": "pool.ntp.org",
+		"interval": "30",
 		"timezone": "0"
 	}
 };

@@ -14,12 +14,12 @@ All notable changes to this project will be documented in this file.
 - [dev tools] gulp script for PROGMEM web files.
 
 #### Changed
+- [webui] New look and feel - refactored Web UI
 - [webui] Hardcoded FooTable Add/Edit text
 - [webui] Only support woff glyphicons font
 - [dev tools] Clean and beautify main.cpp @nardev
 - [webui] Minor cosmetic changes
 - [webui] Javascript loading moved to end of the html
-- [webui] index.html for more modern look and feel.
 - [build] more meaningful directories for web files.
 - [webui] RSSI percent calculation
 - [firmware] Limit printScanResult to 5 best (based on RSSI) networks around (esp becomes unresponsive if there are too many networks)

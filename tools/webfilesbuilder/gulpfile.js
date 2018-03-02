@@ -8,7 +8,7 @@ var htmlmin = require('gulp-htmlmin');
 var uglify = require('gulp-uglify');
 var pump = require('pump');
 
-gulp.task('esprfidjs', function (cb) {
+gulp.task('esprfidjsminify', function (cb) {
   pump([
         gulp.src('../../src/websrc/js/esprfid.js'),
         uglify(),
@@ -18,13 +18,15 @@ gulp.task('esprfidjs', function (cb) {
     );
 });
 
-gulp.task('esprfidjsgz', ["esprfidjs"], function() {
-    gulp.src('../../src/websrc/gzipped/js/esprfid.js')
+gulp.task("esprfidjsgz", ["esprfidjsminify"], function() {
+    return gulp.src("../../src/websrc/gzipped/js/esprfid.js")
         .pipe(gzip({
             append: true
         }))
-        .pipe(gulp.dest('../../src/websrc/gzipped/js/'));
+    .pipe(gulp.dest('../../src/websrc/gzipped/js/'));
+});
 
+gulp.task('esprfidjsgzh', ["esprfidjsgz"] , function() {
     var source = "../../src/websrc/gzipped/js/" + "esprfid.js.gz";
     var destination = "../../src/" + "esprfid.js.gz.h";
  
@@ -47,6 +49,8 @@ gulp.task('esprfidjsgz', ["esprfidjs"], function() {
     wstream.write('\n};')
     wstream.end();
 });
+
+
 
 gulp.task("scripts", ["scripts-concat"], function() {
 
@@ -74,7 +78,7 @@ gulp.task("scripts", ["scripts-concat"], function() {
 	
 });
 
-gulp.task('scripts-concat', ["esprfidjsgz"], function() {
+gulp.task('scripts-concat', ["esprfidjsgzh"], function() {
     return gulp.src(['../../src/websrc/js/jquery-1.12.4.min.js', '../../src/websrc/js/bootstrap-3.3.7.min.js', '../../src/websrc/js/footable-3.1.6.min.js'])
         .pipe(concat({
             path: 'required.js',
