@@ -7,9 +7,7 @@ install:
 
 script:
     - platformio run
-    
-    language: python
-    
+
 deploy:
   provider: releases
   skip_cleanup: true
