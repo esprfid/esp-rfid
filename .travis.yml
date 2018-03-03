@@ -6,7 +6,7 @@ install:
     - pip install -U platformio
 
 script:
-    - platformio run
+    - platformio -e deploy
     
 deploy:
   provider: releases
