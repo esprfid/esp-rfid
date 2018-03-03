@@ -18,4 +18,4 @@ deploy:
   on:
     repo: omersiar/esp-rfid
     all_branches: true
-    condition: $TRAVIS_TAG =~ ^[0-9]+\.[0-9]+\.[0-9]+$
+    condition: $TRAVIS_TAG =~ ^[0-9]+\.[0-9]+$
