@@ -8,15 +8,13 @@ install:
 script:
     - platformio run
     
-    language: python
-    
 deploy:
   provider: releases
   skip_cleanup: true
   overwrite: true
   api_key:
     secure: "vXThGoGjfTxcZr5YXZkl0izxY2090SvYB0loWXq8xCOFGQDzG0D4JLdn4HFZEgi6jcxqj2z6DJASpqBOOsnuEjtxBtade2ubPDjxfdbJPpiEWrRCRZ716lkXDosUAaS5jVDRzrHk+naQp3mRiTzm5DFyfV7TJgBjghhGGcz62cga1RqRGty/qwFFCnluXTyjqDLf7eYVS6u0URZ24NgwZfDRLDQRNUjnTF6yW8kplAWppXR6lcw9Up0XWedyKk/62wahtQDBP35p4y1/rPYsls/Ex0t43hxdPfSppPKeQO2csrjwu8MgAOVIpsE3yV7hdFZJlIBVzwQdZLBfTh0ArzH19ewKshRuCpqx2//dL1mAdDANTds6lY9k8G3uj3o8aUd7F9q6KdaZPcdNiNGfFY4RxJhu0AT8SOWH7qM0KOLsWTtKemBfzLP18j6DZN8qMIuXIA5GM8AEJ7fD4FxMvon8f/GNYi0ws6Rv8iJ2RGUGxCMo5sQ9VYmYJNTfr6WnZtKQ/ByRWk7eLqU4mu9k47RApoL/yt28rirZEomVC5H0EslD4D5jIuBbHtPe0KN2w6JMyw3FgZUIl2SRfc5VQYXM8MBHJmUa3Zo1y+QJH/cTKoUrzfGYjgYtq2wgIhvnizrk0G0b2s4dVsGvneA7qnWqX2sPac/aqpuY/HFpMjU="
-  file: "bin/firmware.bin"
+  file: "bin/*.*"
   on:
     repo: omersiar/esp-rfid
     all_branches: true
