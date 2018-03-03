@@ -15,7 +15,10 @@ deploy:
   overwrite: true
   api_key:
     secure: DVtDvBE9D2FiTxNkACdJoYrQ0ApV+3HwTMUyLOqZu9uJUtbDX1eqlcfaSoIEyTEyKlzDkWpIbkBN9YeHBQ69jAIxvvmnnwJ9iqc9S80BrGaPzGJ7lMPnHm+88OxXHrv7SDVZf9+0Lv59NNyl1vS9euBV2oBHBM7gMb3wz65thWkePsXT4HlksxMjd7F24dYeZ82nVAhUMYuV0vfOu6ySnQlRq5T9ZxLQcXcSLNg80MZOZI6L3Ptd1L7BYizJrV+yoqq2xpTrKiRLJM7YGIWRXIvohuwrIMpCd5GA/m2KySWEU8slXedlRWy5xSkdpWlGKLdIwCxRCaWWWCZDy6Eze4o+O0WVfNsgvXtg6dYOtwsneQrIuTOiZSuWCdjg7v03nKaiX/DkrdiPgyPHCK9dU9yynb4wKQ9kmXgiG/IDvxSltGLTQ2Y9kJtICY2Xqt+vBizr9HZ97es0dPXpopbaCds+zArxcfVu0oMr9e9c1Twwy3K5d941x5ncQ9hzK0JAkN/lbFvNs+uW88Oq//Xaz+FXamkkfydtBJ8LFCW64JVb4iZwWEXc44ihK3iTG1wubsGWma48DvirijtJrltZLyVzVr3fXF+moAw6kBMrHaQOLYKeR2Qbecx+FV4Alh/FY+zpiZ6FTW3ufZExolmLuGsUsGBWqMTNYOlT3hMsgnk=
-  file: bin/*
+  file: 
+    - "bin/firmware.bin"
+    - "bin/esptool.exe"
+    - "bin/flash.bat"
   on:
     repo: omersiar/esp-rfid
     all_branches: true
