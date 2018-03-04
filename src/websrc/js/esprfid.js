@@ -3,9 +3,7 @@ var wsUri = "ws://" + window.location.hostname + "/ws";
 var utcSeconds;
 var timezone;
 var userdata = [];
-var timer = false;
-var t = null;
-var tt = null;
+
 var config = {
     "command": "configfile",
     "network": {
@@ -58,16 +56,13 @@ var backupstarted = false;
 
 function browserTime() {
     var today = new Date();
-    var d = today.toUTCString();
-    document.getElementById("rtc").innerHTML = d;
+    document.getElementById("rtc").innerHTML = today;
 }
 
 function deviceTime() {
     var t = new Date(0); // The 0 there is the key, which sets the date to the epoch
     t.setUTCSeconds(utcSeconds);
-    var d = t.toUTCString();
-    document.getElementById("utc").innerHTML = d;
-    utcSeconds = utcSeconds + 1;
+    document.getElementById("utc").innerHTML = t;
 }
 
 function syncBrowserTime() {
@@ -77,8 +72,6 @@ function syncBrowserTime() {
     datatosend.command = "settime";
     datatosend.epoch = timestamp;
     websock.send(JSON.stringify(datatosend));
-    window.clearInterval(t);
-    window.clearInterval(tt);
     $("#ntp").click();
 }
 
@@ -107,7 +100,6 @@ function handleReader() {
 }
 
 function listlog() {
-
     websock.send("{\"command\":\"latestlog\"}");
 }
 
@@ -115,10 +107,9 @@ function listntp() {
     $('#dismiss').click();
     document.getElementById("ntpserver").value = config.ntp.server;
     document.getElementById("intervals").value = config.ntp.interval;
-    document.getElementById("DropDownTimezone").value = config.ntp.timezone;
-    t = setInterval(browserTime, 1000);
-    tt = setInterval(deviceTime, 1000);
-    timer = true;
+    document.getElementById("DropDownTimezone").value = config.ntp.timezone
+ browserTime();
+ deviceTime()
 }
 
 function savehardware() {
@@ -362,7 +353,7 @@ function getmqtthtm() {
 }
 
 function getntphtm() {
-    websock.send("{\"command\":\"gettime\"}");
+websock.send("{\"command\":\"gettime\"}");
     $("#ajaxcontent").load("ntp.htm", function(responseTxt, statusTxt, xhr) {
         if (statusTxt == "success") listntp();
     });
@@ -794,8 +785,6 @@ function socketMessageListener(evt) {
 
                         $(".footable-show").click();
                         $(".fooicon-remove").click();
-
-                        websock.send("{\"command\":\"gettime\"}");
                     } else {
                         file.type = "esp-rfid-userbackup";
                         file.version = "v0.5";
@@ -860,11 +849,6 @@ $('.noimp').on('click', function() {
 });
 
 $(document).ajaxComplete(function() {
-    if (!timer) {
-        window.clearInterval(t);
-        window.clearInterval(tt);
-    }
-    timer = false;
     $('[data-toggle="popover"]').popover({
         container: 'body'
     });

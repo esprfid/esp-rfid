@@ -16,8 +16,6 @@ wss.broadcast = function broadcast(data) {
     });
 };
 
-var epoch = Math.floor((new Date).getTime()/1000);
-
 var networks = {
   "command": "ssidlist",
   "list": [
@@ -433,7 +431,7 @@ wss.on('connection', function connection(ws) {
 				console.log("[ INFO ] Sending time");
 				var res = {};
 				res.command = "gettime";
-				res.epoch = epoch;
+				res.epoch =  Math.floor((new Date).getTime()/1000);
 				res.timezone = configfile.timezone;
 				wss.broadcast(res);
 				break;
@@ -441,7 +439,7 @@ wss.on('connection', function connection(ws) {
 			    console.log("[ INFO ] Setting time (fake)");
 				var res = {};
 				res.command = "gettime";
-				res.epoch = epoch;
+				res.epoch =  Math.floor((new Date).getTime()/1000);
 				res.timezone = configfile.timezone;
 				wss.broadcast(res);
 				break;
