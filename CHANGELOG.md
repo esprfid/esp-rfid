@@ -2,7 +2,21 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+#### Added
+- **!!!! Breaking Change !!!!** [firmware] Factory reset on boot if GPIO-16 is LOW or SPIFFS is corrupted. Make changes accordingly.
+- [webui] Touch detect on touch enabled devices in order to open/close sidebar on swipe.
+- [webui] Logout is now live (this is actually a dirty hack);
 
+#### Fixed
+- [webui] NTP functions causing ESP become unresponsive.
+- [dev tools] - Websocket emulator time was static
+
+#### Changed
+- [webui] Embarrassing multiple HTM pages now reduced to one.
+- [webui] Better representing of device and browser times on NTP settings.
+
+#### Removed
+- [webui] Removed GPIO-16 options due to it is being used for Factory Reset
 
 ## [0.5beta] - 2018-03-02
 #### Added

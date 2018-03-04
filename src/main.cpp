@@ -46,24 +46,17 @@
 #include <WiFiUdp.h>                  // Library for manipulating UDP packets which is used by NTP Client to get Timestamps
 #include <PubSubClient.h>             // Library to connect to mqtt server
 
-// Include the header files we create with gulp
+// these are from vendors
 #include "glyphicons-halflings-regular.woff.gz.h"
 #include "required.css.gz.h"
 #include "required.js.gz.h"
+
+// these are from us which can be updated and changed
 #include "esprfid.js.gz.h"
-
-#include "index.html.gz.h"
+#include "esprfid.htm.gz.h"
 #include "login.html.gz.h"
+#include "index.html.gz.h"
 
-#include "status.htm.gz.h"
-#include "users.htm.gz.h"
-#include "log.htm.gz.h"
-#include "network.htm.gz.h"
-#include "hardware.htm.gz.h"
-#include "general.htm.gz.h"
-#include "mqtt.htm.gz.h"
-#include "ntp.htm.gz.h"
-#include "backup.htm.gz.h"
 
 #ifdef ESP8266
 extern "C" {
@@ -72,7 +65,7 @@ extern "C" {
 #endif
 
 #define DEBUG true
-#define FRESETPIN 5
+#define FRESETPIN 16
 
 // Variables for whole scope
 const char* http_username = "admin";
@@ -1005,14 +998,14 @@ void setupWebServer() {
     }  
   });
 
-    server.on("/status.htm", HTTP_GET, [](AsyncWebServerRequest * request) {
+    server.on("/esprfid.htm", HTTP_GET, [](AsyncWebServerRequest * request) {
         // Check if the client already has the same version and respond with a 304 (Not modified)
     if (request->header("If-Modified-Since").equals(last_modified)) {
         request->send(304);
  
     } else {
     // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
-    AsyncWebServerResponse * response = request->beginResponse_P(200, "text/html", status_htm_gz, status_htm_gz_len);
+    AsyncWebServerResponse * response = request->beginResponse_P(200, "text/html", esprfid_htm_gz, esprfid_htm_gz_len);
     // Tell the browswer the contemnt is Gzipped
     response->addHeader("Content-Encoding", "gzip");
             // And set the last-modified datetime so we can check if we need to send it again next time or not
@@ -1021,129 +1014,9 @@ void setupWebServer() {
     }  
   });
 
-        server.on("/hardware.htm", HTTP_GET, [](AsyncWebServerRequest * request) {
-        // Check if the client already has the same version and respond with a 304 (Not modified)
-    if (request->header("If-Modified-Since").equals(last_modified)) {
-        request->send(304);
- 
-    } else {
-    // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
-    AsyncWebServerResponse * response = request->beginResponse_P(200, "text/html", hardware_htm_gz, hardware_htm_gz_len);
-    // Tell the browswer the contemnt is Gzipped
-    response->addHeader("Content-Encoding", "gzip");
-            // And set the last-modified datetime so we can check if we need to send it again next time or not
-        response->addHeader("Last-Modified", last_modified);
-    request->send(response);
-    }  
-  });
 
-        server.on("/users.htm", HTTP_GET, [](AsyncWebServerRequest * request) {
-        // Check if the client already has the same version and respond with a 304 (Not modified)
-    if (request->header("If-Modified-Since").equals(last_modified)) {
-        request->send(304);
- 
-    } else {
-    // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
-    AsyncWebServerResponse * response = request->beginResponse_P(200, "text/html", users_htm_gz, users_htm_gz_len);
-    // Tell the browswer the contemnt is Gzipped
-    response->addHeader("Content-Encoding", "gzip");
-            // And set the last-modified datetime so we can check if we need to send it again next time or not
-        response->addHeader("Last-Modified", last_modified);
-    request->send(response);
-    }  
-  });
 
-                server.on("/log.htm", HTTP_GET, [](AsyncWebServerRequest * request) {
-        // Check if the client already has the same version and respond with a 304 (Not modified)
-    if (request->header("If-Modified-Since").equals(last_modified)) {
-        request->send(304);
- 
-    } else {
-    // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
-    AsyncWebServerResponse * response = request->beginResponse_P(200, "text/html", log_htm_gz, log_htm_gz_len);
-    // Tell the browswer the contemnt is Gzipped
-    response->addHeader("Content-Encoding", "gzip");
-            // And set the last-modified datetime so we can check if we need to send it again next time or not
-        response->addHeader("Last-Modified", last_modified);
-    request->send(response);
-    }  
-  });
-                                server.on("/network.htm", HTTP_GET, [](AsyncWebServerRequest * request) {
-        // Check if the client already has the same version and respond with a 304 (Not modified)
-    if (request->header("If-Modified-Since").equals(last_modified)) {
-        request->send(304);
- 
-    } else {
-    // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
-    AsyncWebServerResponse * response = request->beginResponse_P(200, "text/html", network_htm_gz, network_htm_gz_len);
-    // Tell the browswer the contemnt is Gzipped
-    response->addHeader("Content-Encoding", "gzip");
-            // And set the last-modified datetime so we can check if we need to send it again next time or not
-        response->addHeader("Last-Modified", last_modified);
-    request->send(response);
-    }  
-  });
-   server.on("/general.htm", HTTP_GET, [](AsyncWebServerRequest * request) {
-        // Check if the client already has the same version and respond with a 304 (Not modified)
-    if (request->header("If-Modified-Since").equals(last_modified)) {
-        request->send(304);
- 
-    } else {
-    // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
-    AsyncWebServerResponse * response = request->beginResponse_P(200, "text/html", general_htm_gz, general_htm_gz_len);
-    // Tell the browswer the contemnt is Gzipped
-    response->addHeader("Content-Encoding", "gzip");
-            // And set the last-modified datetime so we can check if we need to send it again next time or not
-        response->addHeader("Last-Modified", last_modified);
-    request->send(response);
-    }  
-  });
 
-server.on("/mqtt.htm", HTTP_GET, [](AsyncWebServerRequest * request) {
-        // Check if the client already has the same version and respond with a 304 (Not modified)
-    if (request->header("If-Modified-Since").equals(last_modified)) {
-        request->send(304);
- 
-    } else {
-    // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
-    AsyncWebServerResponse * response = request->beginResponse_P(200, "text/html", mqtt_htm_gz, mqtt_htm_gz_len);
-    // Tell the browswer the contemnt is Gzipped
-    response->addHeader("Content-Encoding", "gzip");
-            // And set the last-modified datetime so we can check if we need to send it again next time or not
-        response->addHeader("Last-Modified", last_modified);
-    request->send(response);
-    }  
-  });
-server.on("/ntp.htm", HTTP_GET, [](AsyncWebServerRequest * request) {
-        // Check if the client already has the same version and respond with a 304 (Not modified)
-    if (request->header("If-Modified-Since").equals(last_modified)) {
-        request->send(304);
- 
-    } else {
-    // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
-    AsyncWebServerResponse * response = request->beginResponse_P(200, "text/html", ntp_htm_gz, ntp_htm_gz_len);
-    // Tell the browswer the contemnt is Gzipped
-    response->addHeader("Content-Encoding", "gzip");
-            // And set the last-modified datetime so we can check if we need to send it again next time or not
-        response->addHeader("Last-Modified", last_modified);
-    request->send(response);
-    }  
-  });
-server.on("/backup.htm", HTTP_GET, [](AsyncWebServerRequest * request) {
-        // Check if the client already has the same version and respond with a 304 (Not modified)
-    if (request->header("If-Modified-Since").equals(last_modified)) {
-        request->send(304);
- 
-    } else {
-    // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
-    AsyncWebServerResponse * response = request->beginResponse_P(200, "text/html", backup_htm_gz, backup_htm_gz_len);
-    // Tell the browswer the contemnt is Gzipped
-    response->addHeader("Content-Encoding", "gzip");
-            // And set the last-modified datetime so we can check if we need to send it again next time or not
-        response->addHeader("Last-Modified", last_modified);
-    request->send(response);
-    }  
-  });
 
 
     server.on("/login.html", HTTP_GET, [](AsyncWebServerRequest * request) {
