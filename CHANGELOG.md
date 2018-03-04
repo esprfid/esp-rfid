@@ -2,6 +2,9 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+
+
+## [0.5beta] - 2018-03-02
 #### Added
 - [firmware + webui] Embedded web files
 - [firmware + webui] MQTT to main branch.

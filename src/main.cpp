@@ -71,6 +71,9 @@ extern "C" {
 }
 #endif
 
+#define DEBUG true
+#define FRESETPIN 5
+
 // Variables for whole scope
 const char* http_username = "admin";
 char * http_pass = "admin";
@@ -1177,13 +1180,29 @@ server.on("/login", HTTP_GET, [](AsyncWebServerRequest *request){
 void setup() {
         // Populate the last modification date based on build datetime
         sprintf(last_modified, "%s %s GMT", __DATE__, __TIME__);
-
+        delay(2000);
         Serial.begin(115200);
         Serial.println();
         Serial.println(F("[ INFO ] ESP RFID v0.5"));
 
+        pinMode(FRESETPIN, INPUT_PULLUP);
         // Start SPIFFS filesystem
-        SPIFFS.begin();
+        if (!SPIFFS.begin() || digitalRead(FRESETPIN) == LOW) {
+            #ifdef DEBUG
+            Serial.print(F("[ WARN ] Formatting filesystem..."));
+            #endif
+            if (SPIFFS.format()) {
+                #ifdef DEBUG
+                Serial.println(F(" completed!"));
+                #endif
+            }
+            else {
+                #ifdef DEBUG
+                Serial.println(F(" failed!"));
+                Serial.println(F("[ WARN ] Could not format filesystem!"));
+                #endif
+            }
+        }
 
         /* Remove Users Helper
            Dir dir = SPIFFS.openDir("/P/");
