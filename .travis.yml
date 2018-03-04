@@ -1,23 +1,22 @@
 language: python
+
 python:
-    - "2.7"
+- '2.7'
 
 install:
-    - pip install -U platformio
+- pip install -U platformio
 
 script:
-    - platformio run
-    
-    language: python
-    
+- pio --version
+- pio run -e deploy
+
 deploy:
   provider: releases
-  skip_cleanup: true
-  overwrite: true
   api_key:
-    secure: "vXThGoGjfTxcZr5YXZkl0izxY2090SvYB0loWXq8xCOFGQDzG0D4JLdn4HFZEgi6jcxqj2z6DJASpqBOOsnuEjtxBtade2ubPDjxfdbJPpiEWrRCRZ716lkXDosUAaS5jVDRzrHk+naQp3mRiTzm5DFyfV7TJgBjghhGGcz62cga1RqRGty/qwFFCnluXTyjqDLf7eYVS6u0URZ24NgwZfDRLDQRNUjnTF6yW8kplAWppXR6lcw9Up0XWedyKk/62wahtQDBP35p4y1/rPYsls/Ex0t43hxdPfSppPKeQO2csrjwu8MgAOVIpsE3yV7hdFZJlIBVzwQdZLBfTh0ArzH19ewKshRuCpqx2//dL1mAdDANTds6lY9k8G3uj3o8aUd7F9q6KdaZPcdNiNGfFY4RxJhu0AT8SOWH7qM0KOLsWTtKemBfzLP18j6DZN8qMIuXIA5GM8AEJ7fD4FxMvon8f/GNYi0ws6Rv8iJ2RGUGxCMo5sQ9VYmYJNTfr6WnZtKQ/ByRWk7eLqU4mu9k47RApoL/yt28rirZEomVC5H0EslD4D5jIuBbHtPe0KN2w6JMyw3FgZUIl2SRfc5VQYXM8MBHJmUa3Zo1y+QJH/cTKoUrzfGYjgYtq2wgIhvnizrk0G0b2s4dVsGvneA7qnWqX2sPac/aqpuY/HFpMjU="
-  file: "bin/firmware.bin"
+    secure: DVtDvBE9D2FiTxNkACdJoYrQ0ApV+3HwTMUyLOqZu9uJUtbDX1eqlcfaSoIEyTEyKlzDkWpIbkBN9YeHBQ69jAIxvvmnnwJ9iqc9S80BrGaPzGJ7lMPnHm+88OxXHrv7SDVZf9+0Lv59NNyl1vS9euBV2oBHBM7gMb3wz65thWkePsXT4HlksxMjd7F24dYeZ82nVAhUMYuV0vfOu6ySnQlRq5T9ZxLQcXcSLNg80MZOZI6L3Ptd1L7BYizJrV+yoqq2xpTrKiRLJM7YGIWRXIvohuwrIMpCd5GA/m2KySWEU8slXedlRWy5xSkdpWlGKLdIwCxRCaWWWCZDy6Eze4o+O0WVfNsgvXtg6dYOtwsneQrIuTOiZSuWCdjg7v03nKaiX/DkrdiPgyPHCK9dU9yynb4wKQ9kmXgiG/IDvxSltGLTQ2Y9kJtICY2Xqt+vBizr9HZ97es0dPXpopbaCds+zArxcfVu0oMr9e9c1Twwy3K5d941x5ncQ9hzK0JAkN/lbFvNs+uW88Oq//Xaz+FXamkkfydtBJ8LFCW64JVb4iZwWEXc44ihK3iTG1wubsGWma48DvirijtJrltZLyVzVr3fXF+moAw6kBMrHaQOLYKeR2Qbecx+FV4Alh/FY+zpiZ6FTW3ufZExolmLuGsUsGBWqMTNYOlT3hMsgnk=
+  file_glob: true
+  file: bin/*
   on:
     repo: omersiar/esp-rfid
     all_branches: true
-    condition: $TRAVIS_TAG =~ ^[0-9]+\.[0-9]+\.[0-9]+$
+    condition: $TRAVIS_TAG =~ ^[0-9]+\.[0-9]+$
