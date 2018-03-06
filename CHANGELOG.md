@@ -1,9 +1,16 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+#### Added
+- [webui] Factory reset within Web UI.
+
+#### Changed
+- [webui] Changes suggested from Codacy.
+
 ## [0.5hotfix1] - 2018-03-06
 #### Added
-- **!!!! Breaking Change !!!!** [firmware] Factory reset on boot if GPIO-16 is LOW or SPIFFS is corrupted. Make changes accordingly.
+- [firmware] **!!!! Breaking Change !!!!** Factory reset on boot if GPIO-16 is LOW or SPIFFS is corrupted. Make changes accordingly.
 - [webui] Touch detect on touch enabled devices in order to open/close sidebar on swipe.
 - [webui] Logout is now live (this is actually a dirty hack);
 

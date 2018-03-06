@@ -665,14 +665,12 @@ void printScanResult(int networksFound) {
   int n = networksFound;
 int indices[n];
 int skip[n];
-int loops = 0;
 for (int i = 0; i < networksFound; i++) {
     indices[i] = i;
   }
   for (int i = 0; i < networksFound; i++) {
     for (int j = i + 1; j < networksFound; j++) {
       if (WiFi.RSSI(indices[j]) > WiFi.RSSI(indices[i])) {
-        loops++;
         //int temp = indices[j];
         //indices[j] = indices[i];
         //indices[i] = temp;

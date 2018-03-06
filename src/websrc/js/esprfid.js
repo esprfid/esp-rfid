@@ -3,6 +3,7 @@ var wsUri = "ws://" + window.location.hostname + "/ws";
 var utcSeconds;
 var timezone;
 var userdata = [];
+var ajaxobj;
 
 var config = {
     "command": "configfile",
@@ -80,7 +81,7 @@ function syncBrowserTime() {
 
 
 function listhardware() {
-    $('#dismiss').click();
+    $("#dismiss").click();
     document.getElementById("readerType").value = config.hardware.readerType;
     document.getElementById("wg0pin").value = config.hardware.wgd0pin;
     document.getElementById("wg1pin").value = config.hardware.wgd1pin;
@@ -108,7 +109,7 @@ function listlog() {
 
 function listntp() {
     websock.send("{\"command\":\"gettime\"}");
-    $('#dismiss').click();
+    $("#dismiss").click();
     document.getElementById("ntpserver").value = config.ntp.server;
     document.getElementById("intervals").value = config.ntp.interval;
     document.getElementById("DropDownTimezone").value = config.ntp.timezone
@@ -179,7 +180,7 @@ function savenetwork() {
 
 function revcommit() {
     document.getElementById("jsonholder").innerText = JSON.stringify(config, null, 2);
-    $('#revcommit').modal('show');
+    $("#revcommit").modal("show");
 }
 
 function commit() {
@@ -188,18 +189,18 @@ function commit() {
 }
 
 function uncommited() {
-    $('#commit').fadeOut(200, function() {
-        $(this).css('background', 'gold').fadeIn(1000);
+    $("#commit").fadeOut(200, function() {
+        $(this).css("background", "gold").fadeIn(1000);
     });
     document.getElementById("commit").innerHTML = "<h6>You have uncommited changes, please click here to commit and reboot (you will a have chance to review changes).</h6>";
-    $('#commit').click(function() {
+    $("#commit").click(function() {
         revcommit();
         return false;
     });
 }
 
 function listnetwork() {
-    $('#dismiss').click();
+    $("#dismiss").click();
     document.getElementById("inputtohide").value = config.network.ssid;
     document.getElementById("wifipass").value = config.network.pswd;
     if (config.network.wmode === "1") {
@@ -215,14 +216,14 @@ function listnetwork() {
 }
 
 function listgeneral() {
-    $('#dismiss').click();
+    $("#dismiss").click();
     document.getElementById("adminpwd").value = config.general.pswd;
     document.getElementById("hostname").value = config.general.hostnm;
     document.getElementById("autorestart").value = config.general.restart;
 }
 
 function listmqtt() {
-    $('#dismiss').click();
+    $("#dismiss").click();
     document.getElementById("mqtthost").value = config.mqtt.host;
     document.getElementById("mqttport").value = config.mqtt.port;
     document.getElementById("mqtttopic").value = config.mqtt.topic;
@@ -281,7 +282,7 @@ function getUsers() {
 function listSCAN(obj) {
     if (obj.known === 1) {
         $(".fooicon-remove").click();
-        document.querySelector('input.form-control[type=text]').value = obj.uid;
+        document.querySelector("input.form-control[type=text]").value = obj.uid;
         $(".fooicon-search").click();
     } else {
         $(".footable-add").click();
@@ -323,7 +324,7 @@ function getContent(contentname) {
                     listStats();
                     break;
                 case "#backupcontent":
-                    $('#dismiss').click();
+                    $("#dismiss").click();
                     break;
                 case "#ntpcontent":
                     listntp();
@@ -461,7 +462,7 @@ function restoreUser() {
                     if (x) {
                         recordstorestore = json.list.length;
                         userdata = json.list;
-                        $("#restoremodal").modal({ backdrop: 'static', keyboard: false });
+                        $("#restoremodal").modal({ backdrop: "static", keyboard: false });
                         restore1by1(slot, recordstorestore, userdata);
                     }
                 }
@@ -472,7 +473,7 @@ function restoreUser() {
 }
 
 function initLogTable() {
-    $('#dismiss').click();
+    $("#dismiss").click();
     jQuery(function($) {
         FooTable.init("#latestlogtable", {
             columns: [{
@@ -523,12 +524,12 @@ function initLogTable() {
 }
 
 function initUserTable() {
-    $('#dismiss').click();
+    $("#dismiss").click();
     jQuery(function($) {
-        var $modal = $('#editor-modal'),
-            $editor = $('#editor'),
-            $editorTitle = $('#editor-title'),
-            ft = FooTable.init('#usertable', {
+        var $modal = $("#editor-modal"),
+            $editor = $("#editor"),
+            $editorTitle = $("#editor-title"),
+            ft = FooTable.init("#usertable", {
                 columns: [{
                         "name": "uid",
                         "title": "UID",
@@ -559,8 +560,8 @@ function initUserTable() {
                         "parser": function(value) {
                             var vuepoch = new Date(value * 1000);
                             var formatted = vuepoch.getFullYear() +
-                                '-' + twoDigits(vuepoch.getMonth() + 1) +
-                                '-' + twoDigits(vuepoch.getDate());
+                                "-" + twoDigits(vuepoch.getMonth() + 1) +
+                                "-" + twoDigits(vuepoch.getDate());
                             return formatted;
                         },
                     }
@@ -571,8 +572,8 @@ function initUserTable() {
                     addText: "New User",
                     addRow: function() {
                         $editor[0].reset();
-                        $editorTitle.text('Add a new User');
-                        $modal.modal('show');
+                        $editorTitle.text("Add a new User");
+                        $modal.modal("show");
                     },
                     editRow: function(row) {
                         var acctypefinder;
@@ -584,13 +585,13 @@ function initUserTable() {
                         } else if (values.acctype === "Disabled") {
                             acctypefinder = 0;
                         }
-                        $editor.find('#uid').val(values.uid);
-                        $editor.find('#username').val(values.username);
-                        $editor.find('#acctype').val(acctypefinder);
-                        $editor.find('#validuntil').val(values.validuntil);
-                        $modal.data('row', row);
-                        $editorTitle.text('Edit User # ' + values.username);
-                        $modal.modal('show');
+                        $editor.find("#uid").val(values.uid);
+                        $editor.find("#username").val(values.username);
+                        $editor.find("#acctype").val(acctypefinder);
+                        $editor.find("#validuntil").val(values.validuntil);
+                        $modal.data("row", row);
+                        $editorTitle.text("Edit User # " + values.username);
+                        $modal.modal("show");
                     },
                     deleteRow: function(row) {
                         var uid = row.value.uid;
@@ -607,15 +608,15 @@ function initUserTable() {
                 }
             }),
             uid = 10001;
-        $editor.on('submit', function(e) {
+        $editor.on("submit", function(e) {
             if (this.checkValidity && !this.checkValidity()) return;
             e.preventDefault();
-            var row = $modal.data('row'),
+            var row = $modal.data("row"),
                 values = {
-                    uid: $editor.find('#uid').val(),
-                    username: $editor.find('#username').val(),
+                    uid: $editor.find("#uid").val(),
+                    username: $editor.find("#username").val(),
                     acctype: acctypeparser(),
-                    validuntil: $editor.find('#validuntil').val()
+                    validuntil: $editor.find("#validuntil").val()
                 };
             if (row instanceof FooTable.Row) {
                 row.val(values);
@@ -625,14 +626,14 @@ function initUserTable() {
             }
             var datatosend = {};
             datatosend.command = "userfile";
-            datatosend.uid = $editor.find('#uid').val();
-            datatosend.user = $editor.find('#username').val();
-            datatosend.acctype = $editor.find('#acctype').val();
-            var validuntil = $editor.find('#validuntil').val();
+            datatosend.uid = $editor.find("#uid").val();
+            datatosend.user = $editor.find("#username").val();
+            datatosend.acctype = $editor.find("#acctype").val();
+            var validuntil = $editor.find("#validuntil").val();
             var vuepoch = (new Date(validuntil).getTime() / 1000) + (timezone * 60 * 60);
             datatosend.validuntil = vuepoch;
             websock.send(JSON.stringify(datatosend));
-            $modal.modal('hide');
+            $modal.modal("hide");
         });
     });
 }
@@ -650,10 +651,10 @@ function acctypefinder() {
 }
 
 function acctypeparser() {
-    var $editor = $('#editor');
-    if ($editor.find('#acctype option:selected').val() == 1) {
+    var $editor = $("#editor");
+    if ($editor.find("#acctype option:selected").val() == 1) {
         return "Active";
-    } else if ($editor.find('#acctype option:selected').val() == 99) {
+    } else if ($editor.find("#acctype option:selected").val() == 99) {
         return "Admin";
     } else {
         return "Disabled";
@@ -662,7 +663,7 @@ function acctypeparser() {
 
 function twoDigits(value) {
     if (value < 10) {
-        return '0' + value;
+        return "0" + value;
     }
     return value;
 }
@@ -670,13 +671,13 @@ function twoDigits(value) {
 
 function colorStatusbar(ref) {
     var percentage = ref.style.width.slice(0, -1);
-    if (percentage > 50) ref.className = "progress-bar progress-bar-success";
-    else if (percentage > 25) ref.className = "progress-bar progress-bar-warning";
-    else ref.class = "progress-bar progress-bar-danger";
+    if (percentage > 50) { ref.className = "progress-bar progress-bar-success"; } 
+    else if (percentage > 25) { ref.className = "progress-bar progress-bar-warning"; } 
+    else { ref.class = "progress-bar progress-bar-danger"; }
 }
 
 function listStats() {
-    $('#dismiss').click();
+    $("#dismiss").click();
     document.getElementById("chip").innerHTML = ajaxobj.chipid;
     document.getElementById("cpu").innerHTML = ajaxobj.cpu + " Mhz";
     document.getElementById("uptime").innerHTML = ajaxobj.uptime;
@@ -696,24 +697,6 @@ function listStats() {
     document.getElementById("dns").innerHTML = ajaxobj.dns;
     document.getElementById("mac").innerHTML = ajaxobj.mac;
     websock.send("{\"command\":\"getconf\"}");
-}
-
-
-
-function start() {
-    if (window.location.protocol === "https:") {
-        wsUri = "wss://" + window.location.hostname + "/ws";
-    } else if (window.location.protocol === "file:") {
-        wsUri = "ws://" + "localhost" + "/ws";
-    }
-    websock = new WebSocket(wsUri);
-    websock.addEventListener('message', socketMessageListener);
-    websock.addEventListener('error', socketErrorListener);
-    websock.addEventListener('close', socketCloseListener);
-
-    websock.onopen = function(evt) {
-        websock.send("{\"command\":\"status\"}");
-    };
 }
 
 function socketMessageListener(evt) {
@@ -760,13 +743,13 @@ function socketMessageListener(evt) {
             console.log("[ WARN ] Unknown command " + JSON.stringify(obj));
             break;
     }
-    if (obj.hasOwnProperty('resultof')) {
+    if (obj.hasOwnProperty("resultof")) {
 
 
         switch (obj.resultof) {
             case "latestlog":
                 if (obj.result === false) {
-                    $('#dismiss').click();
+                    $("#dismiss").click();
                     logdata = [];
                     initLogTable();
                     document.getElementById("loading-img").style.display = "none";
@@ -807,23 +790,26 @@ function socketMessageListener(evt) {
 }
 
 function socketCloseListener(evt) {
-    console.log('socket closed');
+    console.log("socket closed");
     websock = new WebSocket(wsUri);
-    websock.addEventListener('message', socketMessageListener);
-    websock.addEventListener('close', socketCloseListener);
-    websock.addEventListener('error', socketErrorListener);
+    websock.addEventListener("message", socketMessageListener);
+    websock.addEventListener("close", socketCloseListener);
+    websock.addEventListener("error", socketErrorListener);
 }
 
 function socketErrorListener(evt) {
-    console.log('socket error');
+    console.log("socket error");
     console.log(evt);
 }
 
+
+
+
+
 function compareDestroy() {
-    if (config.general.hostnm === document.getElementById("compare").value ) { 
-        $("#destroybtn").prop('disabled', false); 
-    }
-    else {  $("#destroybtn").prop('disabled', true);   }
+    if (config.general.hostnm === document.getElementById("compare").value) {
+        $("#destroybtn").prop("disabled", false);
+    } else { $("#destroybtn").prop("disabled", true); }
 }
 
 function destroy() {
@@ -832,91 +818,91 @@ function destroy() {
 }
 
 
-$('#dismiss, .overlay').on('click', function() {
-    $('#sidebar').removeClass('active');
-    $('.overlay').fadeOut();
+$("#dismiss, .overlay").on("click", function() {
+    $("#sidebar").removeClass("active");
+    $(".overlay").fadeOut();
 });
 
-$('#sidebarCollapse').on('click', function() {
-    $('#sidebar').addClass('active');
-    $('.overlay').fadeIn();
-    $('.collapse.in').toggleClass('in');
-    $('a[aria-expanded=true]').attr('aria-expanded', 'false');
+$("#sidebarCollapse").on("click", function() {
+    $("#sidebar").addClass("active");
+    $(".overlay").fadeIn();
+    $(".collapse.in").toggleClass("in");
+    $("a[aria-expanded=true]").attr("aria-expanded", "false");
 });
 
-$('#status').click(function() {
+$("#status").click(function() {
     websock.send("{\"command\":\"status\"}");
     return false;
 });
 
-$('#network').click(function() { getContent("#networkcontent"); return false; });
-$('#hardware').click(function() { getContent("#hardwarecontent"); return false; });
-$('#general').click(function() { getContent("#generalcontent"); return false; });
-$('#mqtt').click(function() { getContent("#mqttcontent"); return false; });
-$('#ntp').click(function() { getContent("#ntpcontent"); return false; });
-$('#users').click(function() { getContent("#userscontent"); return false; });
-$('#latestlog').click(function() { getContent("#logcontent"); return false; });
-$('#backup').click(function() { getContent("#backupcontent"); return false; });
-$('#reset').click(function() { $('#destroy').modal('show'); return false; });
+$("#network").click(function() { getContent("#networkcontent"); return false; });
+$("#hardware").click(function() { getContent("#hardwarecontent"); return false; });
+$("#general").click(function() { getContent("#generalcontent"); return false; });
+$("#mqtt").click(function() { getContent("#mqttcontent"); return false; });
+$("#ntp").click(function() { getContent("#ntpcontent"); return false; });
+$("#users").click(function() { getContent("#userscontent"); return false; });
+$("#latestlog").click(function() { getContent("#logcontent"); return false; });
+$("#backup").click(function() { getContent("#backupcontent"); return false; });
+$("#reset").click(function() { $("#destroy").modal("show"); return false; });
 
-$('.noimp').on('click', function() {
-    $('#noimp').modal('show');
+$(".noimp").on("click", function() {
+    $("#noimp").modal("show");
 });
 
 $(document).ajaxComplete(function() {
-    $('[data-toggle="popover"]').popover({
-        container: 'body'
+    $("[data-toggle=\"popover\"]").popover({
+        container: "body"
     });
 });
 
 FooTable.MyFiltering = FooTable.Filtering.extend({
     construct: function(instance) {
         this._super(instance);
-        this.acctypes = ['1', '99', '0'];
-        this.acctypesstr = ['Active', 'Admin', 'Disabled'];
-        this.def = 'Access Type';
+        this.acctypes = ["1", "99", "0"];
+        this.acctypesstr = ["Active", "Admin", "Disabled"];
+        this.def = "Access Type";
         this.$acctype = null;
     },
     $create: function() {
         this._super();
         var self = this,
-            $form_grp = $('<div/>', {
-                'class': 'form-group'
+            $form_grp = $("<div/>", {
+                "class": "form-group"
             })
-            .append($('<label/>', {
-                'class': 'sr-only',
-                text: 'Status'
+            .append($("<label/>", {
+                "class": "sr-only",
+                text: "Status"
             }))
             .prependTo(self.$form);
 
-        self.$acctype = $('<select/>', {
-                'class': 'form-control'
+        self.$acctype = $("<select/>", {
+                "class": "form-control"
             })
-            .on('change', {
+            .on("change", {
                 self: self
             }, self._onStatusDropdownChanged)
-            .append($('<option/>', {
+            .append($("<option/>", {
                 text: self.def
             }))
             .appendTo($form_grp);
 
         $.each(self.acctypes, function(i, acctype) {
-            self.$acctype.append($('<option/>').text(self.acctypesstr[i]).val(self.acctypes[i]));
+            self.$acctype.append($("<option/>").text(self.acctypesstr[i]).val(self.acctypes[i]));
         });
     },
     _onStatusDropdownChanged: function(e) {
         var self = e.data.self,
             selected = $(this).val();
         if (selected !== self.def) {
-            self.addFilter('acctype', selected, ['acctype']);
+            self.addFilter("acctype", selected, ["acctype"]);
         } else {
-            self.removeFilter('acctype');
+            self.removeFilter("acctype");
         }
         self.filter();
     },
     draw: function() {
         this._super();
-        var acctype = this.find('acctype');
+        var acctype = this.find("acctype");
         if (acctype instanceof FooTable.Filter) {
             this.$acctype.val(acctype.query.val());
         } else {
@@ -925,8 +911,8 @@ FooTable.MyFiltering = FooTable.Filtering.extend({
     }
 });
 
-document.addEventListener('touchstart', handleTouchStart, false);
-document.addEventListener('touchmove', handleTouchMove, false);
+document.addEventListener("touchstart", handleTouchStart, false);
+document.addEventListener("touchmove", handleTouchMove, false);
 
 var xDown = null;
 var yDown = null;
@@ -949,9 +935,9 @@ function handleTouchMove(evt) {
 
     if (Math.abs(xDiff) > Math.abs(yDiff)) { /*most significant*/
         if (xDiff > 0) {
-            $('#dismiss').click();
+            $("#dismiss").click();
         } else {
-            $('#sidebarCollapse').click();
+            $("#sidebarCollapse").click();
             /* right swipe */
         }
     } else {
@@ -975,7 +961,7 @@ function logout() {
             password: "logmeout",
         })
         .done(function() {
-            // If we don't get an error, we actually got an error as we expect an 401!
+            // If we don"t get an error, we actually got an error as we expect an 401!
         })
         .fail(function() {
             // We expect to get an 401 Unauthorized error! In this case we are successfully 
@@ -983,4 +969,20 @@ function logout() {
             window.location = "/login.html";
         });
     return false;
+}
+
+function start() {
+    if (window.location.protocol === "https:") {
+        wsUri = "wss://" + window.location.hostname + "/ws";
+    } else if (window.location.protocol === "file:") {
+        wsUri = "ws://" + "localhost" + "/ws";
+    }
+    websock = new WebSocket(wsUri);
+    websock.addEventListener("message", socketMessageListener);
+    websock.addEventListener("error", socketErrorListener);
+    websock.addEventListener("close", socketCloseListener);
+
+    websock.onopen = function(evt) {
+        websock.send("{\"command\":\"status\"}");
+    };
 }
