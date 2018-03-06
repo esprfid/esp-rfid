@@ -3,9 +3,7 @@ var wsUri = "ws://" + window.location.hostname + "/ws";
 var utcSeconds;
 var timezone;
 var userdata = [];
-var timer = false;
-var t = null;
-var tt = null;
+
 var config = {
     "command": "configfile",
     "network": {
@@ -13,7 +11,7 @@ var config = {
         "ssid": "",
         "wmode": "",
         "pswd": "",
-        "offtime": ""
+        "offtime": "0"
     },
     "hardware": {
         "readerType": "1",
@@ -57,17 +55,17 @@ var backupstarted = false;
 
 
 function browserTime() {
-    var today = new Date();
-    var d = today.toUTCString();
-    document.getElementById("rtc").innerHTML = d;
+    var d = new Date(0);
+    var c = new Date();
+    var timestamp = Math.floor((c.getTime() / 1000) + ((c.getTimezoneOffset() * 60) * -1));
+    d.setUTCSeconds(timestamp);
+    document.getElementById("rtc").innerHTML = d.toUTCString().slice(0, -3);
 }
 
 function deviceTime() {
-    var t = new Date(0); // The 0 there is the key, which sets the date to the epoch
+    var t = new Date(0); // The 0 there is the key, which sets the date to the epoch,
     t.setUTCSeconds(utcSeconds);
-    var d = t.toUTCString();
-    document.getElementById("utc").innerHTML = d;
-    utcSeconds = utcSeconds + 1;
+    document.getElementById("utc").innerHTML = t.toUTCString().slice(0, -3);
 }
 
 function syncBrowserTime() {
@@ -77,8 +75,6 @@ function syncBrowserTime() {
     datatosend.command = "settime";
     datatosend.epoch = timestamp;
     websock.send(JSON.stringify(datatosend));
-    window.clearInterval(t);
-    window.clearInterval(tt);
     $("#ntp").click();
 }
 
@@ -107,18 +103,17 @@ function handleReader() {
 }
 
 function listlog() {
-
     websock.send("{\"command\":\"latestlog\"}");
 }
 
 function listntp() {
+    websock.send("{\"command\":\"gettime\"}");
     $('#dismiss').click();
     document.getElementById("ntpserver").value = config.ntp.server;
     document.getElementById("intervals").value = config.ntp.interval;
-    document.getElementById("DropDownTimezone").value = config.ntp.timezone;
-    t = setInterval(browserTime, 1000);
-    tt = setInterval(deviceTime, 1000);
-    timer = true;
+    document.getElementById("DropDownTimezone").value = config.ntp.timezone
+    browserTime();
+    deviceTime()
 }
 
 function savehardware() {
@@ -320,58 +315,52 @@ function testRelay() {
     websock.send("{\"command\":\"testrelay\"}");
 }
 
+function getContent(contentname) {
+    $("#ajaxcontent").load("esprfid.htm " + contentname, function(responseTxt, statusTxt, xhr) {
+        if (statusTxt == "success") {
+            switch (contentname) {
+                case "#statuscontent":
+                    listStats();
+                    break;
+                case "#backupcontent":
+                    $('#dismiss').click();
+                    break;
+                case "#ntpcontent":
+                    listntp();
+                    break;
+                case "#mqttcontent":
+                    listmqtt();
+                    break;
+                case "#generalcontent":
+                    listgeneral();
+                    break;
+                case "#hardwarecontent":
+                    listhardware();
+                    break;
+                case "#networkcontent":
+                    listnetwork();
+                    break;
+                case "#logcontent":
+                    listlog();
+                    break;
+                case "#userscontent":
+                    page = 1;
+                    userdata = [];
+                    getUsers();
+                    break;
 
-function getUsershtm() {
 
-    page = 1;
-    userdata = [];
-    $("#ajaxcontent").load("users.htm", function(responseTxt, statusTxt, xhr) {
-        if (statusTxt == "success") getUsers();
+
+
+
+                default:
+                    break;
+
+            }
+
+        }
     });
-}
 
-function getloghtm() {
-    $("#ajaxcontent").load("log.htm", function(responseTxt, statusTxt, xhr) {
-        if (statusTxt == "success") listlog();
-    });
-}
-
-function getnetworkhtm() {
-    $("#ajaxcontent").load("network.htm", function(responseTxt, statusTxt, xhr) {
-        if (statusTxt == "success") listnetwork();
-    });
-}
-
-function gethardwarehtm() {
-    $("#ajaxcontent").load("hardware.htm", function(responseTxt, statusTxt, xhr) {
-        if (statusTxt == "success") listhardware();
-    });
-}
-
-
-function getgeneralhtm() {
-    $("#ajaxcontent").load("general.htm", function(responseTxt, statusTxt, xhr) {
-        if (statusTxt == "success") listgeneral();
-    });
-}
-
-function getmqtthtm() {
-    $("#ajaxcontent").load("mqtt.htm", function(responseTxt, statusTxt, xhr) {
-        if (statusTxt == "success") listmqtt();
-    });
-}
-
-function getntphtm() {
-    websock.send("{\"command\":\"gettime\"}");
-    $("#ajaxcontent").load("ntp.htm", function(responseTxt, statusTxt, xhr) {
-        if (statusTxt == "success") listntp();
-    });
-}
-
-function getbackuphtm() {
-    $("#ajaxcontent").load("backup.htm", function(responseTxt, statusTxt, xhr) {
-        if (statusTxt == "success") $('#dismiss').click();
-    });
 }
 
 function backupuser() {
@@ -472,7 +461,7 @@ function restoreUser() {
                     if (x) {
                         recordstorestore = json.list.length;
                         userdata = json.list;
-                        $("#restoremodal").modal();
+                        $("#restoremodal").modal({ backdrop: 'static', keyboard: false });
                         restore1by1(slot, recordstorestore, userdata);
                     }
                 }
@@ -687,6 +676,7 @@ function colorStatusbar(ref) {
 }
 
 function listStats() {
+    $('#dismiss').click();
     document.getElementById("chip").innerHTML = ajaxobj.chipid;
     document.getElementById("cpu").innerHTML = ajaxobj.cpu + " Mhz";
     document.getElementById("uptime").innerHTML = ajaxobj.uptime;
@@ -730,11 +720,8 @@ function socketMessageListener(evt) {
     var obj = JSON.parse(evt.data);
     switch (obj.command) {
         case "status":
-            $('#dismiss').click();
+            getContent("#statuscontent");
             ajaxobj = obj;
-            $("#ajaxcontent").load("status.htm", function(responseTxt, statusTxt, xhr) {
-                if (statusTxt == "success") listStats();
-            });
             break;
         case "userlist":
             haspages = obj.haspages;
@@ -753,6 +740,7 @@ function socketMessageListener(evt) {
         case "gettime":
             utcSeconds = obj.epoch;
             timezone = obj.timezone;
+            deviceTime();
             break;
         case "piccscan":
             listSCAN(obj);
@@ -794,8 +782,6 @@ function socketMessageListener(evt) {
 
                         $(".footable-show").click();
                         $(".fooicon-remove").click();
-
-                        websock.send("{\"command\":\"gettime\"}");
                     } else {
                         file.type = "esp-rfid-userbackup";
                         file.version = "v0.5";
@@ -845,26 +831,26 @@ $('#sidebarCollapse').on('click', function() {
     $('.collapse.in').toggleClass('in');
     $('a[aria-expanded=true]').attr('aria-expanded', 'false');
 });
-$('#status').click(function() { websock.send("{\"command\":\"status\"}"); return false; });
-$('#network').click(function() { getnetworkhtm(); return false; });
-$('#hardware').click(function() { gethardwarehtm(); return false; });
-$('#general').click(function() { getgeneralhtm(); return false; });
-$('#mqtt').click(function() { getmqtthtm(); return false; });
-$('#ntp').click(function() { getntphtm(); return false; });
-$('#users').click(function() { getUsershtm(); return false; });
-$('#latestlog').click(function() { getloghtm(); return false; });
-$('#backup').click(function() { getbackuphtm(); return false; });
+
+$('#status').click(function() {
+    websock.send("{\"command\":\"status\"}");
+    return false;
+});
+
+$('#network').click(function() { getContent("#networkcontent"); return false; });
+$('#hardware').click(function() { getContent("#hardwarecontent"); return false; });
+$('#general').click(function() { getContent("#generalcontent"); return false; });
+$('#mqtt').click(function() { getContent("#mqttcontent"); return false; });
+$('#ntp').click(function() { getContent("#ntpcontent"); return false; });
+$('#users').click(function() { getContent("#userscontent"); return false; });
+$('#latestlog').click(function() { getContent("#logcontent"); return false; });
+$('#backup').click(function() { getContent("#backupcontent"); return false; });
 
 $('.noimp').on('click', function() {
     $('#noimp').modal('show');
 });
 
 $(document).ajaxComplete(function() {
-    if (!timer) {
-        window.clearInterval(t);
-        window.clearInterval(tt);
-    }
-    timer = false;
     $('[data-toggle="popover"]').popover({
         container: 'body'
     });
@@ -925,3 +911,63 @@ FooTable.MyFiltering = FooTable.Filtering.extend({
         }
     }
 });
+
+document.addEventListener('touchstart', handleTouchStart, false);
+document.addEventListener('touchmove', handleTouchMove, false);
+
+var xDown = null;
+var yDown = null;
+
+function handleTouchStart(evt) {
+    xDown = evt.touches[0].clientX;
+    yDown = evt.touches[0].clientY;
+};
+
+function handleTouchMove(evt) {
+    if (!xDown || !yDown) {
+        return;
+    }
+
+    var xUp = evt.touches[0].clientX;
+    var yUp = evt.touches[0].clientY;
+
+    var xDiff = xDown - xUp;
+    var yDiff = yDown - yUp;
+
+    if (Math.abs(xDiff) > Math.abs(yDiff)) { /*most significant*/
+        if (xDiff > 0) {
+            $('#dismiss').click();
+        } else {
+            $('#sidebarCollapse').click();
+            /* right swipe */
+        }
+    } else {
+        if (yDiff > 0) {
+            /* up swipe */
+        } else {
+            /* down swipe */
+        }
+    }
+    /* reset values */
+    xDown = null;
+    yDown = null;
+};
+
+function logout() {
+    jQuery.ajax({
+            type: "GET",
+            url: "/login",
+            async: false,
+            username: "logmeout",
+            password: "logmeout",
+        })
+        .done(function() {
+            // If we don't get an error, we actually got an error as we expect an 401!
+        })
+        .fail(function() {
+            // We expect to get an 401 Unauthorized error! In this case we are successfully 
+            // logged out and we redirect the user.
+            window.location = "/login.html";
+        });
+    return false;
+}

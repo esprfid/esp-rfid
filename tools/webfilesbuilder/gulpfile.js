@@ -28,7 +28,7 @@ gulp.task("esprfidjsgz", ["esprfidjsminify"], function() {
 
 gulp.task('esprfidjsgzh', ["esprfidjsgz"] , function() {
     var source = "../../src/websrc/gzipped/js/" + "esprfid.js.gz";
-    var destination = "../../src/" + "esprfid.js.gz.h";
+    var destination = "../../src/webh/" + "esprfid.js.gz.h";
  
     var wstream = fs.createWriteStream(destination);
     wstream.on('error', function (err) {
@@ -55,7 +55,7 @@ gulp.task('esprfidjsgzh', ["esprfidjsgz"] , function() {
 gulp.task("scripts", ["scripts-concat"], function() {
 
     var source = "../../src/websrc/gzipped/js/" + "required.js.gz";
-    var destination = "../../src/" + "required.js.gz.h";
+    var destination = "../../src/webh/" + "required.js.gz.h";
  
     var wstream = fs.createWriteStream(destination);
     wstream.on('error', function (err) {
@@ -79,7 +79,7 @@ gulp.task("scripts", ["scripts-concat"], function() {
 });
 
 gulp.task('scripts-concat', ["esprfidjsgzh"], function() {
-    return gulp.src(['../../src/websrc/js/jquery-1.12.4.min.js', '../../src/websrc/js/bootstrap-3.3.7.min.js', '../../src/websrc/js/footable-3.1.6.min.js'])
+    return gulp.src(['../../src/websrc/3rdparty/js/jquery-1.12.4.min.js', '../../src/websrc/3rdparty/js/bootstrap-3.3.7.min.js', '../../src/websrc/3rdparty/js/footable-3.1.6.min.js'])
         .pipe(concat({
             path: 'required.js',
             stat: {
@@ -96,7 +96,7 @@ gulp.task('scripts-concat', ["esprfidjsgzh"], function() {
 
 
 gulp.task('styles-concat', function() {
-    return gulp.src(['../../src/websrc/css/bootstrap-3.3.7.min.css', '../../src/websrc/css/footable.bootstrap-3.1.6.min.css', '../../src/websrc/css/sidebar.css'])
+    return gulp.src(['../../src/websrc/3rdparty/css/bootstrap-3.3.7.min.css', '../../src/websrc/3rdparty/css/footable.bootstrap-3.1.6.min.css', '../../src/websrc/3rdparty/css/sidebar.css'])
         .pipe(concat({
             path: 'required.css',
             stat: {
@@ -115,7 +115,7 @@ gulp.task('styles-concat', function() {
 gulp.task("styles", ["styles-concat"], function() {
 
     var source = "../../src/websrc/gzipped/css/" + "required.css.gz";
-    var destination = "../../src/" + "required.css.gz.h";
+    var destination = "../../src/webh/" + "required.css.gz.h";
  
     var wstream = fs.createWriteStream(destination);
     wstream.on('error', function (err) {
@@ -151,7 +151,7 @@ gulp.task("fonts", ["fontgz"], function() {
     return gulp.src("../../src/websrc/gzipped/fonts/*.*")
         .pipe(flatmap(function(stream, file) {
 			var filename = path.basename(file.path);
-            var wstream = fs.createWriteStream("../../src/" + filename + ".h");
+            var wstream = fs.createWriteStream("../../src/webh/" + filename + ".h");
             wstream.on("error", function(err) {
                 gutil.log(err);
             });
@@ -194,7 +194,7 @@ gulp.task("htmls", ["htmlsgz"], function() {
     return gulp.src("../../src/websrc/gzipped/*.gz")
         .pipe(flatmap(function(stream, file) {
             var filename = path.basename(file.path);
-            var wstream = fs.createWriteStream("../../src/" + filename + ".h");
+            var wstream = fs.createWriteStream("../../src/webh/" + filename + ".h");
             wstream.on("error", function(err) {
                 gutil.log(err);
             });
