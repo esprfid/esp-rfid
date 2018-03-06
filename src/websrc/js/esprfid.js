@@ -819,6 +819,18 @@ function socketErrorListener(evt) {
     console.log(evt);
 }
 
+function compareDestroy() {
+    if (config.general.hostnm === document.getElementById("compare").value ) { 
+        $("#destroybtn").prop('disabled', false); 
+    }
+    else {  $("#destroybtn").prop('disabled', true);   }
+}
+
+function destroy() {
+    websock.send("{\"command\":\"destroy\"}");
+    document.location = "about:blank";
+}
+
 
 $('#dismiss, .overlay').on('click', function() {
     $('#sidebar').removeClass('active');
@@ -845,6 +857,7 @@ $('#ntp').click(function() { getContent("#ntpcontent"); return false; });
 $('#users').click(function() { getContent("#userscontent"); return false; });
 $('#latestlog').click(function() { getContent("#logcontent"); return false; });
 $('#backup').click(function() { getContent("#backupcontent"); return false; });
+$('#reset').click(function() { $('#destroy').modal('show'); return false; });
 
 $('.noimp').on('click', function() {
     $('#noimp').modal('show');

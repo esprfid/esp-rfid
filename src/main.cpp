@@ -70,6 +70,7 @@ bool wifiDisabled = true;
 bool doDisableWifi = false;
 bool doEnableWifi = false;
 bool timerequest = false;
+bool formatreq = false;
 int wifiTimeout = -1;
 unsigned long wiFiUptimeMillis = 0;
 char * deviceHostname = NULL;
@@ -491,6 +492,9 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
                         }
                         else if (strcmp(command, "status")  == 0) {
                                 sendStatus();
+                        }
+                        else if (strcmp(command, "destroy")  == 0) {
+                                SPIFFS.format();
                         }
                         else if (strcmp(command, "userfile")  == 0) {
                                 const char* uid = root["uid"];
@@ -1088,6 +1092,13 @@ void setup() {
 
 // Main Loop
 void loop() {
+        if (formatreq) { 
+            Serial.println(F("[ WARN ] Factory reset initiated..."));
+            SPIFFS.end();
+            ws.enable(false);
+            SPIFFS.format();
+            ESP.restart();
+        }
         if (timerequest) { sendTime(); timerequest = false;}
         unsigned long currentMillis = millis();
         unsigned long deltaTime = currentMillis - previousLoopMillis;
