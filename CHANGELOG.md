@@ -8,15 +8,18 @@ All notable changes to this project will be documented in this file.
 - [webui] Logout is now live (this is actually a dirty hack);
 
 #### Fixed
-- [webui] NTP functions causing ESP become unresponsive.
 - [dev tools] - Websocket emulator time was static
+- [firmware] #68 NTP functions cause Exception 9 and ESP crashes
 
 #### Changed
 - [webui] Embarrassing multiple HTM pages now reduced to one.
 - [webui] Better representing of device and browser times on NTP settings.
+- [webui] Prevent closing restore modal until it is finished.
+- [firmware] Refactored NTP.
 
 #### Removed
 - [webui] Removed GPIO-16 options due to it is being used for Factory Reset
+- [firmware] Drop usage of NTPClientLib.
 
 ## [0.5beta] - 2018-03-02
 #### Added

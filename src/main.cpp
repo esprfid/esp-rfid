@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2017 Omer Siar Baysal
+   Copyright (c) 2017 Ömer Şiar Baysal
    Copyright (c) 2018 ESP-RFID Community
 
    Released to Public Domain
@@ -11,23 +11,6 @@
    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
    THE SOFTWARE.
-
-   1. The following table shows the typical pin layout used for MFRC522:
-
- | Signal        | MFRC522       | WeMos D1 mini  | NodeMcu | Generic      |
- |---------------|:-------------:|:--------------:| :------:|:------------:|
- | RST/Reset     | RST           | NC             | NC      | NC           |
- | SPI SS        | SDA [3]       | D8 [2]         | D8 [2]  | GPIO-15 [2]  |
- | SPI MOSI      | MOSI          | D7             | D7      | GPIO-13      |
- | SPI MISO      | MISO          | D6             | D6      | GPIO-12      |
- | SPI SCK       | SCK           | D5             | D5      | GPIO-14      |
-
-    NC. Not Connected
-    2. Configurable via web page
-    3. The SDA pin might be labeled SS on some/older MFRC522 boards.
-
-   2. Wiegand based reader's D0 and D1 pins are configurable via settings web page.
-
  */
 
 #include <Arduino.h>                  // For building out of Arduino IDE
@@ -41,21 +24,23 @@
 #include <FS.h>                       // SPIFFS Library for storing web files to serve to web browsers
 #include <ESPAsyncTCP.h>              // Async TCP Library is mandatory for Async Web Server
 #include <ESPAsyncWebServer.h>        // Async Web Server with built-in WebSocket Plug-in
-#include <NtpClientLib.h>             // To timestamp RFID scans we get Unix Time from NTP Server
+//#include <NtpClientLib.h>             // To timestamp RFID scans we get Unix Time from NTP Server
 #include <TimeLib.h>                  // Library for converting epochtime to a date
-#include <WiFiUdp.h>                  // Library for manipulating UDP packets which is used by NTP Client to get Timestamps
+//#include <WiFiUdp.h>                  // Library for manipulating UDP packets which is used by NTP Client to get Timestamps
 #include <PubSubClient.h>             // Library to connect to mqtt server
 
+#include <Ntp.h>
+
 // these are from vendors
-#include "glyphicons-halflings-regular.woff.gz.h"
-#include "required.css.gz.h"
-#include "required.js.gz.h"
+#include "webh/glyphicons-halflings-regular.woff.gz.h"
+#include "webh/required.css.gz.h"
+#include "webh/required.js.gz.h"
 
 // these are from us which can be updated and changed
-#include "esprfid.js.gz.h"
-#include "esprfid.htm.gz.h"
-#include "login.html.gz.h"
-#include "index.html.gz.h"
+#include "webh/esprfid.js.gz.h"
+#include "webh/esprfid.htm.gz.h"
+#include "webh/login.html.gz.h"
+#include "webh/index.html.gz.h"
 
 
 #ifdef ESP8266
@@ -64,12 +49,12 @@ extern "C" {
 }
 #endif
 
-#define DEBUG true
+#define DEBUG
 #define FRESETPIN 16
 
 // Variables for whole scope
-const char* http_username = "admin";
-char * http_pass = "admin";
+const char * http_username = "admin";
+char *http_pass = NULL;
 unsigned long previousMillis = 0;
 unsigned long previousLoopMillis = 0;
 unsigned long cooldown = 0;
@@ -84,9 +69,12 @@ char last_modified[50];
 bool wifiDisabled = true;
 bool doDisableWifi = false;
 bool doEnableWifi = false;
+bool timerequest = false;
 int wifiTimeout = -1;
 unsigned long wiFiUptimeMillis = 0;
 char * deviceHostname = NULL;
+
+NtpClient NTP;
 
 
 // MQTT
@@ -100,11 +88,13 @@ char *mqttTopic = NULL;
 char *mqttUser = NULL;
 char *mqttPwd = NULL;
 
+
 int readerType;
 int relayPin;
 int relayType;
 int activateTime;
 int timeZone;
+
 
 // Create instance for Wiegand reade
 WIEGAND wg;
@@ -122,7 +112,6 @@ void disableWifi();
 void rfidloop();
 void LogLatest(String uid, String username, int acctype);
 void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len);
-void sendTime();
 void sendUserList(int page, AsyncWebSocketClient * client);
 void sendStatus();
 String printIP(IPAddress adress);
@@ -273,9 +262,11 @@ void rfidloop() {
                         return;
                 }
         }
+        
         if (mqttClient.connected()) {
             mqttClient.publish(mqttTopic, uid.c_str(), false);
         }
+        
 
         // We are going to use filesystem to store known UIDs.
         // If we know the PICC we need to know if its User have an Access
@@ -295,8 +286,8 @@ void rfidloop() {
                 // buffer to be mutable. If you don't use ArduinoJson, you may as well
                 // use configFile.readString instead.
                 f.readBytes(buf.get(), size);
-                DynamicJsonBuffer jsonBuffer;
-                JsonObject& json = jsonBuffer.parseObject(buf.get());
+                DynamicJsonBuffer jsonBuffer613;
+                JsonObject& json = jsonBuffer613.parseObject(buf.get());
                 // Check if we succesfully parse JSON object
                 if (json.success()) {
                         // Get username Access Status
@@ -329,8 +320,8 @@ void rfidloop() {
                         LogLatest(uid, username, AccType);
                         // Also inform Administrator Portal
                         // Encode a JSON Object and send it to All WebSocket Clients
-                        DynamicJsonBuffer jsonBuffer2;
-                        JsonObject& root = jsonBuffer2.createObject();
+                        DynamicJsonBuffer jsonBuffer2222;
+                        JsonObject& root = jsonBuffer2222.createObject();
                         root["command"] = "piccscan";
                         // UID of Scanned RFID Tag
                         root["uid"] = uid;
@@ -357,8 +348,8 @@ void rfidloop() {
                 // If we don't know the UID, inform Administrator Portal so admin can give access or add it to database
                 LogLatest(uid, "Unknown", 3);
                 Serial.println(" = unknown PICC");
-                DynamicJsonBuffer jsonBuffer;
-                JsonObject& root = jsonBuffer.createObject();
+                DynamicJsonBuffer jsonBuffer2344;
+                JsonObject& root = jsonBuffer2344.createObject();
                 root["command"] = "piccscan";
                 // UID of Scanned RFID Tag
                 root["uid"] = uid;
@@ -416,8 +407,8 @@ void LogLatest(String uid, String username, int acctype) {
         if (!logFile) {
                 // Can not open file create it.
                 File logFile = SPIFFS.open("/latestlog.json", "w");
-                DynamicJsonBuffer jsonBuffer3;
-                JsonObject& root = jsonBuffer3.createObject();
+                DynamicJsonBuffer jsonBuffer313;
+                JsonObject& root = jsonBuffer313.createObject();
                 root["command"] = "latestlog";
                 JsonArray& list = root.createNestedArray("list");
                 root.printTo(logFile);
@@ -427,8 +418,8 @@ void LogLatest(String uid, String username, int acctype) {
                 size_t size = logFile.size();
                 std::unique_ptr<char[]> buf (new char[size]);
                 logFile.readBytes(buf.get(), size);
-                DynamicJsonBuffer jsonBuffer4;
-                JsonObject& root = jsonBuffer4.parseObject(buf.get());
+                DynamicJsonBuffer jsonBuffer44567;
+                JsonObject& root = jsonBuffer44567.parseObject(buf.get());
                 JsonArray& list = root["list"];
                 if (!root.success()) {
                         Serial.println("Impossible to read JSON file");
@@ -438,8 +429,8 @@ void LogLatest(String uid, String username, int acctype) {
                                 list.remove(0);
                         }
                         File logFile = SPIFFS.open("/latestlog.json", "w");
-                        DynamicJsonBuffer jsonBuffer5;
-                        JsonObject& item = jsonBuffer5.createObject();
+                        DynamicJsonBuffer jsonBuffer5675;
+                        JsonObject& item = jsonBuffer5675.createObject();
                         item["uid"] = uid;
                         item["username"] = username;
                         item["timestamp"] = now();
@@ -468,8 +459,8 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
                         }
 
                         // We should always get a JSON object (stringfied) from browser, so parse it
-                        DynamicJsonBuffer jsonBuffer;
-                        JsonObject& root = jsonBuffer.parseObject(msg);
+                        DynamicJsonBuffer jsonBuffer413;
+                        JsonObject& root = jsonBuffer413.parseObject(msg);
                         if (!root.success()) {
                                 Serial.println(F("[ WARN ] Couldn't parse WebSocket message"));
                                 return;
@@ -536,12 +527,13 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
                                 WiFi.scanNetworksAsync(printScanResult, true);
                         }
                         else if (strcmp(command, "gettime")  == 0) {
-                                sendTime();
+                            timerequest = true;
+                            
                         }
                         else if (strcmp(command, "settime")  == 0) {
-                                unsigned long t = root["epoch"];
+                                time_t t = root["epoch"];
                                 setTime(t);
-                                sendTime();
+                                timerequest = true;
                         }
                         else if (strcmp(command, "getconf")  == 0) {
                                 File configFile = SPIFFS.open("/config.json", "r");
@@ -559,23 +551,9 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
         }
 }
 
-void sendTime() {
-        DynamicJsonBuffer jsonBuffer;
-        JsonObject& root = jsonBuffer.createObject();
-        root["command"] = "gettime";
-        root["epoch"] = now();
-        root["timezone"] = timeZone;
-        size_t len = root.measureLength();
-        AsyncWebSocketMessageBuffer * buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
-        if (buffer) {
-                root.printTo((char *)buffer->get(), len + 1);
-                ws.textAll(buffer);
-        }
-}
-
 void sendUserList(int page, AsyncWebSocketClient * client) {
-        DynamicJsonBuffer jsonBuffer;
-        JsonObject& root = jsonBuffer.createObject();
+        DynamicJsonBuffer jsonBuffer443;
+        JsonObject& root = jsonBuffer443.createObject();
         root["command"] = "userlist";
         root["page"] = page;
         JsonArray& users = root.createNestedArray("list");
@@ -633,8 +611,8 @@ void sendStatus() {
         if (!SPIFFS.info(fsinfo)) {
                 Serial.print(F("[ WARN ] Error getting info on SPIFFS"));
         }
-        DynamicJsonBuffer jsonBuffer;
-        JsonObject& root = jsonBuffer.createObject();
+        DynamicJsonBuffer jsonBuffer567;
+        JsonObject& root = jsonBuffer567.createObject();
         root["command"] = "status";
 
         root["heap"] = ESP.getFreeHeap();
@@ -643,7 +621,7 @@ void sendStatus() {
         root["availsize"] = ESP.getFreeSketchSpace();
         root["availspiffs"] = fsinfo.totalBytes - fsinfo.usedBytes;
         root["spiffssize"] = fsinfo.totalBytes;
-        root["uptime"] = NTP.getUptimeString();
+        root["uptime"] = NTP.getDeviceUptimeString();
 
         if (inAPMode) {
                 wifi_get_ip_info(SOFTAP_IF, &info);
@@ -700,8 +678,8 @@ for (int i = 0; i < networksFound; i++) {
     }
   }
 
-        DynamicJsonBuffer jsonBuffer;
-        JsonObject& root = jsonBuffer.createObject();
+        DynamicJsonBuffer jsonBuffer78;
+        JsonObject& root = jsonBuffer78.createObject();
         root["command"] = "ssidlist";
         JsonArray& scan = root.createNestedArray("list");
         for (int i = 0; i < 5; ++i) {
@@ -723,11 +701,29 @@ for (int i = 0; i < networksFound; i++) {
         WiFi.scanDelete();
 }
 
+
 void mqttCallback(char* topic, byte* payload, unsigned int length) {
   if (length == 0) {
     return;
   }
 }
+
+void sendTime() {
+
+                                        DynamicJsonBuffer jsonBuffer231;
+        JsonObject& root = jsonBuffer231.createObject();
+        root["command"] = "gettime";
+        root["epoch"] = now();
+        root["timezone"] = timeZone;
+        size_t len = root.measureLength();
+        AsyncWebSocketMessageBuffer * buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
+        if (buffer) {
+                root.printTo((char *)buffer->get(), len + 1);
+                ws.textAll(buffer);
+        }
+                            
+                        }
+
 
 void mqttConnect() {
   if (mqttHost != NULL && mqttPort != 0 && mqttTopic != NULL && !mqttClient.connected() ) {
@@ -750,6 +746,7 @@ void mqttConnect() {
 }
 
 
+
 bool loadConfiguration() {
         File configFile = SPIFFS.open("/config.json", "r");
         if (!configFile) {
@@ -763,8 +760,8 @@ bool loadConfiguration() {
         // buffer to be mutable. If you don't use ArduinoJson, you may as well
         // use configFile.readString instead.
         configFile.readBytes(buf.get(), size);
-        DynamicJsonBuffer jsonBuffer;
-        JsonObject& json = jsonBuffer.parseObject(buf.get());
+        DynamicJsonBuffer jsonBuffer98;
+        JsonObject& json = jsonBuffer98.parseObject(buf.get());
         if (!json.success()) {
                 Serial.println(F("[ WARN ] Failed to parse config file"));
                 return false;
@@ -798,18 +795,14 @@ bool loadConfiguration() {
                 setupMFRC522Reader(rfidss, rfidgain);
         }
 
-        const char * l_hostname = general["hostnm"];
-
         autoRestartIntervalSeconds = general["restart"].as<int>();
         wifiTimeout = network["offtime"].as<int>();
-
-        free(deviceHostname);
-        deviceHostname = strdup(l_hostname);
 
         const char * bssidmac = network["bssid"];
         byte bssid[6];
         parseBytes(bssidmac, ':', bssid, 6, 16);
 
+        deviceHostname = strdup(general["hostnm"]);
         // Set Hostname.
         WiFi.hostname(deviceHostname);
 
@@ -849,8 +842,8 @@ bool loadConfiguration() {
         else if (!connectSTA(ssid, password, bssid)) {
                 return false;
         }
-        NTP.begin(ntpserver, timeZone);
-        NTP.setInterval(ntpinter * 60); // Poll every x minutes
+        NTP.Ntp(ntpserver, timeZone, ntpinter * 60);
+        
         // mqtt
         if (mqttHost != NULL) {
             free((void *)mqttHost);
@@ -872,6 +865,7 @@ bool loadConfiguration() {
         mqttClient.disconnect();
         mqttClient.setServer(mqttHost, mqttPort);
         mqttConnect();
+        
         return true;
 }
 
@@ -1094,9 +1088,10 @@ void setup() {
 
 // Main Loop
 void loop() {
+        if (timerequest) { sendTime(); timerequest = false;}
         unsigned long currentMillis = millis();
         unsigned long deltaTime = currentMillis - previousLoopMillis;
-        unsigned long uptime = NTP.getUptime();
+        unsigned long uptime = NTP.getUptimeSec();
         previousLoopMillis = currentMillis;
 
         if (autoRestartIntervalSeconds > 0 && uptime > autoRestartIntervalSeconds * 1000) {

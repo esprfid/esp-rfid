@@ -461,7 +461,7 @@ function restoreUser() {
                     if (x) {
                         recordstorestore = json.list.length;
                         userdata = json.list;
-                        $("#restoremodal").modal();
+                        $("#restoremodal").modal({ backdrop: 'static', keyboard: false });
                         restore1by1(slot, recordstorestore, userdata);
                     }
                 }
@@ -720,9 +720,8 @@ function socketMessageListener(evt) {
     var obj = JSON.parse(evt.data);
     switch (obj.command) {
         case "status":
-            $('#dismiss').click();
+            getContent("#statuscontent");
             ajaxobj = obj;
-            $('#status').click();
             break;
         case "userlist":
             haspages = obj.haspages;
@@ -833,7 +832,11 @@ $('#sidebarCollapse').on('click', function() {
     $('a[aria-expanded=true]').attr('aria-expanded', 'false');
 });
 
-$('#status').click(function() { getContent("#statuscontent"); return false; });
+$('#status').click(function() {
+    websock.send("{\"command\":\"status\"}");
+    return false;
+});
+
 $('#network').click(function() { getContent("#networkcontent"); return false; });
 $('#hardware').click(function() { getContent("#hardwarecontent"); return false; });
 $('#general').click(function() { getContent("#generalcontent"); return false; });
@@ -957,14 +960,14 @@ function logout() {
             async: false,
             username: "logmeout",
             password: "logmeout",
-    })
-    .done(function(){
-        // If we don't get an error, we actually got an error as we expect an 401!
-    })
-    .fail(function(){
-        // We expect to get an 401 Unauthorized error! In this case we are successfully 
+        })
+        .done(function() {
+            // If we don't get an error, we actually got an error as we expect an 401!
+        })
+        .fail(function() {
+            // We expect to get an 401 Unauthorized error! In this case we are successfully 
             // logged out and we redirect the user.
-        window.location = "/login.html";
-    });
+            window.location = "/login.html";
+        });
     return false;
 }
