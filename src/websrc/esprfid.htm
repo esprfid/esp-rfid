@@ -1,0 +1,576 @@
+<div id="backupcontent">
+    <br>
+    <br>
+    <div class="row">
+        <div class="col-sm-6">
+            <legend>Backup</legend>
+            <h6 class="text-muted">Please make sure that you have made a backup before updating the firmware.</h6>
+            <div>
+                <button class="btn btn-link btn-sm" onclick="backupuser()">Backup User Data</button>
+                <a id="downloadUser" style="display:none"></a>
+                <button class="btn btn-link btn-sm" onclick="backupset()">Backup Settings</button>
+                <a id="downloadSet" style="display:none"></a>
+            </div>
+            <br>
+            <div>
+                <legend>Restore</legend>
+                <h6 class="text-muted">Click on links and choose your backup file to restore.</h6>
+                <label for="restoreUser" class="btn btn-link btn-sm">Restore User Data</label>
+                <input id="restoreUser" type="file" accept="text/json" onchange="restoreUser()" style="display:none;">
+                <label for="restoreSet" class="btn btn-link btn-sm">Restore Settings</label>
+                <input id="restoreSet" type="file" accept="text/json" onchange="restoreSet()" style="display:none;">
+            </div>
+            <br>
+            <div id="restoremodal" class="modal fade" role="dialog">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            <h4 class="modal-title">Please wait while restoring user data...</h4>
+                        </div>
+                        <div class="modal-body">
+                            <div id="pbar" class="progress">
+                                <div id="dynamic" class="progress-bar progress-bar-primary progress-bar-striped active">Restoring...</div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" id="restoreclose" style="display:none;" class="btn btn-default" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br>
+    <br>
+</div>
+<div id="generalcontent">
+    <br>
+    <br>
+    <legend>General Settings</legend>
+    <div class="row form-group">
+        <label class="col-xs-3">Admin Password<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Log On password for the Administrator"></i></label>
+        <span class="col-xs-9 col-md-5">
+              <input class="form-control input-sm" placeholder="Administrator Password" id="adminpwd" type="text">
+              </span>
+        <br>
+    </div>
+    <div class="row form-group">
+        <label class="col-xs-3">Host Name<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Hostname for your ESP, When Bonjour is installed on your computer you can access your ESP via http://hostname.local"></i></label>
+        <span class="col-xs-9 col-md-5">
+              <input class="form-control input-sm" placeholder="Hostname" value="esp-rfid" id="hostname" type="text">
+              </span>
+        <br>
+    </div>
+    <div class="row form-group">
+        <label class="col-xs-3">Auto Restart<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="How often to automatically restart the unit to lessen risk of memory leaks and crashes."></i></label>
+        <span class="col-xs-9 col-md-5">
+                <select class="form-control input-sm" id="autorestart" name="autorestart">
+                  <option value='0'>Never</option>
+                  <option value='86400' selected>Every 24h</option>
+                  <option value='604800'>Every 7 days</option>
+                  <option value='18144000'>Every 30 days</option>
+                </select>
+              </span>
+        <br>
+        <br>
+        <div class="col-xs-9 col-md-8">
+            <button onclick="savegeneral()" class="btn btn-primary btn-sm pull-right">Save</button>
+        </div>
+    </div>
+</div>
+<br>
+<br>
+</div>
+<div id="hardwarecontent">
+    <br>
+    <br>
+    <legend>Hardware Settings</legend>
+    <h6 class="text-muted">Please refer the <a href="https://github.com/omersiar/esp-rfid#pin-layout">documentation</a> for pin configuration.</h6>
+    <div class="row form-group">
+        <label class="col-xs-3">Reader type<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Choose RFID reader type."></i></label>
+        <div class="col-xs-9">
+            <select class="form-control input-sm" id="readerType" onchange="handleReader();">
+                <option selected="selected" value="0">MFRC522</option>
+                <option value="1">Wiegand</option>
+                <option value="2" disabled="">PN532</option>
+            </select>
+        </div>
+    </div>
+    <div class="" id="wiegandForm" style="display:none">
+        <div class="row form-group">
+            <label class="col-xs-3">Pin D0<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Choose Wiegand D0 pin."></i></label>
+            <span class="col-xs-9 col-md-5">
+                  <select class="form-control input-sm" id="wg0pin">
+                    <option value="0">GPIO-0</option>
+                    <option value="1">GPIO-1</option>
+                    <option value="2">GPIO-2</option>
+                    <option selected="selected" value="4">GPIO-4</option>
+                    <option value="5">GPIO-5</option>
+                    <option value="12">GPIO-12</option>
+                    <option value="13">GPIO-13</option>
+                    <option value="14">GPIO-14</option>
+                    <option value="15">GPIO-15</option>
+                  </select>
+                </span>
+        </div>
+        <div class="row form-group">
+            <label class="col-xs-3">Pin D1<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Choose Wiegand D1 pin."></i></label>
+            <span class="col-xs-9 col-md-5">
+                  <select class="form-control input-sm" id="wg1pin">
+                    <option value="0">GPIO-0</option>
+                    <option value="1">GPIO-1</option>
+                    <option value="2">GPIO-2</option>
+                    <option value="4">GPIO-4</option>
+                    <option selected="selected" value="5">GPIO-5</option>
+                    <option value="12">GPIO-12</option>
+                    <option value="13">GPIO-13</option>
+                    <option value="14">GPIO-14</option>
+                    <option value="15">GPIO-15</option>
+                  </select>
+                </span>
+        </div>
+    </div>
+    <div class="" id="mfrc522Form" style="display:none">
+        <div class="row form-group">
+            <label class="col-xs-3">SPI SS<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Choose which ESP port is connected to RFID Hardware SDA pin"></i></label>
+            <span class="col-xs-9 col-md-5">
+                  <select class="form-control input-sm" id="gpioss">
+                    <option value="0">GPIO-0</option>
+                    <option value="2">GPIO-2</option>
+                    <option value="4">GPIO-4</option>
+                    <option value="5">GPIO-5</option>
+                    <option selected="selected" value="15">GPIO-15</option>
+                  </select>
+                </span>
+        </div>
+        <div class="row form-group">
+            <label class="col-xs-3">Antenna Gain<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Higher value means further the RFID reader's reading distance"></i></label>
+            <span class="col-xs-9 col-md-5">
+                  <select class="form-control input-sm" id="gain">
+                    <option value="112">Max (48 db)</option>
+                    <option value="96">43 db</option>
+                    <option value="48">38 db</option>
+                    <option selected="selected" value="32">Avg (33 db)</option>
+                    <option value="16">23 db</option>
+                    <option value="0">Min (18 db)</option>
+                  </select>
+                </span>
+        </div>
+    </div>
+    <br>
+    <div class="row form-group">
+        <label class="col-xs-3">Relay Type<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Depending on your electrical setup, you can choose the relay type"></i></label>
+        <span class="col-xs-9 col-md-5">
+            <select class="form-control input-sm" id="typerly">
+              <option selected="selected" value="1">Active High</option>
+              <option value="0">Active Low</option>
+            </select>
+            </span>
+    </div>
+    <div class="row form-group">
+        <label class="col-xs-3">Relay Pin<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Choose which ESP port is connected to your relay"></i></label>
+        <span class="col-xs-6 col-md-5">
+                <select class="form-control input-sm" id="gpiorly">
+                  <option value="0">GPIO-0</option>
+                  <option value="2">GPIO-2</option>
+                  <option value="4">GPIO-4</option>
+                  <option selected="selected" value="5">GPIO-5</option>
+                  <option value="15">GPIO-15</option>
+                </select>
+              </span>
+        <span class="col-xs-3">
+                <button id="testb" type="button" class="btn btn-primary btn-xs" onclick="testRelay()">Test</button><i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="left" data-content="Test previous relay setting. Keep in mind that this is actually triggers the relay."></i>
+              </span>
+    </div>
+    <div class="row form-group">
+        <label class="col-xs-3">Activate Time<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Relay Toggle time in Microseconds, usually 300ms is enough for the most electric door locks"></i></label>
+        <span class="col-xs-9 col-md-5">
+              <input class="form-control input-sm" value="300" placeholder="in Microsecond" id="delay" type="text" name="hightime">
+    </span>
+        <br>
+        <br>
+        <div class="col-xs-9 col-md-8">
+            <button onclick="savehardware()" class="btn btn-primary btn-sm pull-right">Save</button>
+        </div>
+    </div>
+    <br>
+    <br>
+</div>
+<div id="logcontent">
+    <br>
+    <br>
+    <div class="text-center" id="loading-img">
+        <h5>Please wait while fetching data...</h5>
+        <br>
+    </div>
+    <div>
+        <legend>Latest Access Log</legend>
+        <div class="panel panel-default">
+            <div>
+                <table id="latestlogtable" class="table" data-paging="false" data-filtering="true" data-sorting="true" data-editing="false" data-state="true"></table>
+            </div>
+        </div>
+    </div>
+    <br>
+    <br>
+</div>
+<div id="mqttcontent">
+    <br>
+    <br>
+    <legend>MQTT Settings</legend>
+    <div class="row form-group">
+        <label class="col-xs-3">IP<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="MQTT server IP Address or url"></i></label>
+        <span class="col-xs-9">
+    <input class="form-control input-sm" placeholder="MQTT Host" style="display:inline;max-width:185px" id="mqtthost" type="text">
+  </span>
+        <br>
+    </div>
+    <div class="row form-group">
+        <label class="col-xs-3">Port<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="MQTT server port"></i></label>
+        <span class="col-xs-9">
+    <input class="form-control input-sm" placeholder="MQTT Port" value="" style="display:inline;max-width:185px" id="mqttport" type="text">
+  </span>
+        <br>
+    </div>
+    <div class="row form-group">
+        <label class="col-xs-3">User<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="MQTT user"></i></label>
+        <span class="col-xs-9">
+    <input class="form-control input-sm" placeholder="" value="" style="display:inline;max-width:185px" id="mqttuser" type="text">
+  </span>
+        <br>
+    </div>
+    <div class="row form-group">
+        <label class="col-xs-3">Password<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="MQTT server password if any"></i></label>
+        <span class="col-xs-9">
+    <input class="form-control input-sm" placeholder="" value="" style="display:inline;max-width:185px" id="mqttpwd" type="text">
+  </span>
+        <br>
+    </div>
+    <div class="row form-group">
+        <label class="col-xs-3">Topic<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="MQTT topic"></i></label>
+        <span class="col-xs-9">
+    <input class="form-control input-sm" placeholder="MQTT topic" value="" style="display:inline;max-width:185px" id="mqtttopic" type="text">
+  </span>
+        <br>
+        <br>
+        <div class="col-xs-9 col-md-8">
+            <button onclick="savemqtt()" class="btn btn-primary btn-sm pull-right">Save</button>
+        </div>
+    </div>
+    <br>
+    <br>
+</div>
+<div id="networkcontent">
+    <br>
+    <br>
+    <legend>Wi-Fi Settings</legend>
+    <h6 class="text-muted">Type your Wi-Fi Network's SSID or Scan for nerby Wireless Networks to join.</h6>
+    <br>
+    <div class="row form-group">
+        <label class="col-xs-3">Wi-Fi Mode<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="You can run your ESP in AP Mode or Client Mode. In client mode you will need to connect to an existing Wi-Fi network, in AP Mode ESP creates a Wi-Fi network itself."></i></label>
+        <div class="col-xs-9">
+            <form>
+                <label class="radio-inline">
+                    <input type="radio" value="1" name="wmode" id="wmodeap" onclick="handleAP();" checked>Access Point </label>
+                <label class="radio-inline">
+                    <input type="radio" value="0" name="wmode" id="wmodesta" onclick="handleSTA();">Client</label>
+            </form>
+        </div>
+    </div>
+    <div class="row form-group">
+        <label class="col-xs-3">SSID<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Wi-Fi Network's Name"></i></label>
+        <span class="col-xs-6 col-md-5">
+                <input class="form-control input-sm" id="inputtohide" type="text" name="ap_ssid">
+                <select class="form-control input-sm" style="display:none;" id="ssid" onchange="listBSSID();"></select>
+              </span>
+        <span class="col-xs-3">
+                <button id="scanb" type="button" class="btn btn-primary btn-xs" style="display:none;" onclick="scanWifi()">Scan</button>
+              </span>
+    </div>
+    <div class="row form-group" style="display:none" id="hideBSSID">
+        <label class="col-xs-3">BSSID<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="If you have two Wi-Fi networks with the same SSID you may want to choose the specific one by BSSID"></i></label>
+        <span class="col-xs-9 col-md-5">
+              <input id="wifibssid" class="form-control input-sm" type="text" name="ap_bssid">
+              </span>
+    </div>
+    <div class="row form-group">
+        <label class="col-xs-3">Password<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Wi-Fi Password"></i></label>
+        <span class="col-xs-9 col-md-5">
+              <input id="wifipass" class="form-control input-sm" type="text" name="ap_passwd">
+              </span>
+    </div>
+    <br>
+    <div class="row form-group">
+        <label class="col-xs-3">Auto Disable Wifi<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Disable WiFi after a time interval, to conserve power in battery powered units. WiFi is re-enabled when an admin card is scanned, or device is rebooted. Remember that you need to have enough time to upload your configuration, so don't set it too low."></i></label>
+        <span class="col-xs-9 col-md-5">
+                <select class="form-control input-sm" id="disable_wifi_after_seconds" name="auto_restart_interval_seconds">
+                  <option value='0'>Always on</option>
+                  <option value='180'>3 min</option>
+                  <option value='240'>4 min</option>
+                  <option value='300'>5 min</option>
+                  <option value='600'>10 min</option>
+                  <option value='900'>15 min</option>
+                  <option value='1800'>30 min</option>
+                </select>
+              </span>
+        <br>
+        <br>
+        <div class="col-xs-9 col-md-8">
+            <button onclick="savenetwork()" class="btn btn-primary btn-sm pull-right">Save</button>
+        </div>
+    </div>
+    <br>
+    <br>
+</div>
+<div id="ntpcontent">
+    <br>
+    <br>
+    <legend>Time Settings</legend>
+    <h6 class="text-muted">Small differences between device time and local time can be ignored. Please see <a href="https://github.com/omersiar/esp-rfid#time">documentation</a> for additional information.</h6>
+    <div class="row form-group">
+        <label class="col-xs-3">Device Time</label>
+        <span id="utc" class="col-xs-9 col-md-5">
+              </span>
+    </div>
+    <div class="row form-group">
+        <label class="col-xs-3">Browser Time</label>
+        <span id="rtc" class="col-xs-9 col-md-5">
+              </span>
+    </div>
+    <div class="row form-group">
+        <div class="col-xs-3">
+            <button onclick="syncBrowserTime()" class="btn btn-link btn-sm">Sync Browser Time to Device</button><i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Send your PC/Phone time to ESP, useful when the ESP does not have Internet connection."></i>
+        </div>
+    </div>
+    <div class="row form-group">
+        <label class="col-xs-3">NTP Server<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="The server for the time sync. Choose nearest server for better accuracy, see ntp.org for servers nearby."></i></label>
+        <span class="col-xs-9 col-md-5">
+              <input class="form-control input-sm" placeholder="eg. pool.ntp.org" value="pool.ntp.org" id="ntpserver" type="text">
+              </span>
+        <br>
+    </div>
+    <div class="row form-group">
+        <label class="col-xs-3">Intervals<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Intervals between Time Sync in Minutes"></i></label>
+        <span class="col-xs-9 col-md-5">
+              <input class="form-control input-sm" placeholder="in Minutes" value="30" id="intervals" type="text">
+              </span>
+        <br>
+    </div>
+    <div class="row form-group">
+        <label class="col-xs-3">Time Zone</label>
+        <span class="col-xs-9 col-md-5">
+                <select class="form-control input-sm" name="DropDownTimezone" id="DropDownTimezone">
+                  <option value="-12">(GMT -12:00) Eniwetok, Kwajalein</option>
+                  <option value="-11">(GMT -11:00) Midway Island, Samoa</option>
+                  <option value="-10">(GMT -10:00) Hawaii</option>
+                  <option value="-9">(GMT -9:00) Alaska</option>
+                  <option value="-8">(GMT -8:00) Pacific Time (US &amp; Canada)</option>
+                  <option value="-7">(GMT -7:00) Mountain Time (US &amp; Canada)</option>
+                  <option value="-6">(GMT -6:00) Central Time (US &amp; Canada), Mexico City</option>
+                  <option value="-5">(GMT -5:00) Eastern Time (US &amp; Canada), Bogota, Lima</option>
+                  <option value="-4">(GMT -4:00) Atlantic Time (Canada), Caracas, La Paz</option>
+                  <option value="-3.5">(GMT -3:30) Newfoundland</option>
+                  <option value="-3">(GMT -3:00) Brazil, Buenos Aires, Georgetown</option>
+                  <option value="-2">(GMT -2:00) Mid-Atlantic</option>
+                  <option value="-1">(GMT -1:00 hour) Azores, Cape Verde Islands</option>
+                  <option selected="selected" value="0">(GMT) Western Europe Time, London, Lisbon, Casablanca</option>
+                  <option value="1">(GMT +1:00 hour) Brussels, Copenhagen, Madrid, Paris</option>
+                  <option value="2">(GMT +2:00) Kaliningrad, South Africa</option>
+                  <option value="3">(GMT +3:00) Baghdad, Riyadh, Moscow, St. Petersburg</option>
+                  <option value="3.5">(GMT +3:30) Tehran</option>
+                  <option value="4">(GMT +4:00) Abu Dhabi, Muscat, Baku, Tbilisi</option>
+                  <option value="4.5">(GMT +4:30) Kabul</option>
+                  <option value="5">(GMT +5:00) Ekaterinburg, Islamabad, Karachi, Tashkent</option>
+                  <option value="5.5">(GMT +5:30) Bombay, Calcutta, Madras, New Delhi</option>
+                  <option value="5.75">(GMT +5:45) Kathmandu</option>
+                  <option value="6">(GMT +6:00) Almaty, Dhaka, Colombo</option>
+                  <option value="7">(GMT +7:00) Bangkok, Hanoi, Jakarta</option>
+                  <option value="8">(GMT +8:00) Beijing, Perth, Singapore, Hong Kong</option>
+                  <option value="9">(GMT +9:00) Tokyo, Seoul, Osaka, Sapporo, Yakutsk</option>
+                  <option value="9.5">(GMT +9:30) Adelaide, Darwin</option>
+                  <option value="10">(GMT +10:00) Eastern Australia, Guam, Vladivostok</option>
+                  <option value="11">(GMT +11:00) Magadan, Solomon Islands, New Caledonia</option>
+                  <option value="12">(GMT +12:00) Auckland, Wellington, Fiji, Kamchatka</option>
+                </select>
+              </span>
+        <br>
+        <br>
+        <div class="col-xs-9 col-md-8">
+            <button onclick="saventp()" class="btn btn-primary btn-sm pull-right">Save</button>
+        </div>
+        <br>
+        <br>
+        <br>
+    </div>
+    <br>
+    <br>
+</div>
+<div id="statuscontent">
+    <br>
+    <br>
+    <div class="row text-center">
+        <div class="col-md-4 col-md-offset-4">
+            <h1>Welcome</h1>
+            <p>Here you can find some information about your device status.</p>
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <span>esp-rfid Access Control</span>&nbsp; <small><strong>v<span>0.5 New Fields</span></strong></small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 col-md-offset-4">
+            <div class="panel panel-default table-responsive">
+                <table class="table table-hover table-striped table-condensed">
+                    <caption>Device</caption>
+                    <tr>
+                        <th>Chip ID</th>
+                        <td id="chip"></td>
+                    </tr>
+                    <tr>
+                        <th>CPU Clock</th>
+                        <td id="cpu"></td>
+                    </tr>
+                    <tr>
+                        <th>Uptime</th>
+                        <td id="uptime"></td>
+                    </tr>
+                    <tr>
+                        <th>Free Heap</th>
+                        <td>
+                            <div class="progress" style="margin-bottom: 0 !important;">
+                                <div id="heap" class="progress-bar progress-bar-primary" role="progressbar">
+                                    Progress
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Free Flash</th>
+                        <td>
+                            <div class='progress' style="margin-bottom: 0 !important;">
+                                <div id="flash" class="progress-bar progress-bar-primary" role="progressbar">
+                                    Progress
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Free SPIFFS</th>
+                        <td>
+                            <div class='progress' style="margin-bottom: 0 !important;">
+                                <div id="spiffs" class="progress-bar progress-bar-primary" role="progressbar">
+                                    Progress
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="panel panel-default table-responsive">
+                <table class="table table-hover table-striped table-condensed">
+                    <caption>Network</caption>
+                    <tr>
+                        <th>SSID</th>
+                        <td id="ssidstat"></td>
+                    </tr>
+                    <tr>
+                        <th>IP</th>
+                        <td id="ip"></td>
+                    </tr>
+                    <tr>
+                        <th>Gateway</th>
+                        <td id="gate"></td>
+                    </tr>
+                    <tr>
+                        <th>Mask</th>
+                        <td id="mask"></td>
+                    </tr>
+                    <tr>
+                        <th>DNS</th>
+                        <td id="dns"></td>
+                    </tr>
+                    <tr>
+                        <th>MAC</th>
+                        <td id="mac"></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <br>
+        <br>
+    </div>
+</div>
+<div id="userscontent">
+    <div id="loading-img" class="text-center">
+        <h5>Please wait while fetching data... <span id="loadpages"></span></h5>
+    </div>
+    <br>
+    <div class="text-center">
+        <h5>You can add new users by either scanning a RFID Tag or by clicking on "New User" button.</h5>
+    </div>
+    <br>
+    <div class="panel panel-default">
+        <table id="usertable" class="table" data-paging="true" data-filtering="true" data-sorting="true" data-editing="true" data-state="true"></table>
+    </div>
+    <div class="modal fade" id="editor-modal" tabindex="-1" role="dialog" aria-labelledby="editor-title">
+        <style scoped>
+        .form-group.required .control-label:after {
+            content: "*";
+            color: red;
+            margin-left: 4px;
+        }
+        </style>
+        <div class="modal-dialog" role="document">
+            <form class="modal-content form-horizontal" id="editor">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                    <h4 class="modal-title" id="editor-title">Add User</h4>
+                </div>
+                <div class="modal-body">
+                    <input type="number" id="id" name="id" class="hidden" />
+                    <div class="form-group">
+                        <label for="picctype" class="col-sm-3 control-label">PICC Type</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="picctype" name="picctype" placeholder="PICC Type" disabled>
+                        </div>
+                    </div>
+                    <div class="form-group required">
+                        <label for="uid" class="col-sm-3 control-label">UID</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="uid" name="uid" placeholder="UID" required>
+                        </div>
+                    </div>
+                    <div class="form-group required">
+                        <label for="username" class="col-sm-3 control-label">User Name or Label</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="username" name="username" placeholder="User Name or Label" required>
+                        </div>
+                    </div>
+                    <div class="form-group required">
+                        <label for="acctype" class="col-sm-3 control-label">Access Type</label>
+                        <div class="col-sm-9">
+                            <select class="form-control" id="acctype" required>
+                                <option selected="selected" value="1">Active</option>
+                                <option value="99">Admin</option>
+                                <option value="0">Disabled</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group required">
+                        <label for="validuntil" class="col-sm-3 control-label">Valid Until</label>
+                        <div class="col-sm-9">
+                            <input type="date" class="form-control" id="validuntil" name="validuntil" value="2038-01-01" placeholder="Valid Until" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <br>
+    <br>
+</div>
