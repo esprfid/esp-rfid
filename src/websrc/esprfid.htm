@@ -215,6 +215,29 @@
     <br>
     <br>
 </div>
+<div id="eventcontent">
+    <br>
+    <br>
+    <div class="text-center" id="loading-img">
+        <h5>Please wait while fetching data...<span id="loadpages"></span></h5>
+        <br>
+    </div>
+    <div>
+        <legend>Event Log</legend>
+        <div class="panel panel-default">
+            <div>
+                <table id="eventtable" class="table" data-paging="true" data-filtering="true" data-sorting="true" data-editing="false" data-state="true"></table>
+            </div>
+        </div>
+        <div class="col-xs-9 col-md-8">
+            <button onclick="clearevent()" class="btn btn-primary btn-sm pull-right">Clear Log</button>
+            <div style="clear:both;">
+                <br>
+                <br>
+            </div>
+        </div>
+    </div>
+</div>
 <div id="mqttcontent">
     <br>
     <br>

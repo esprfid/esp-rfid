@@ -2,7 +2,7 @@ var websock = null;
 var wsUri = "ws://" + window.location.hostname + "/ws";
 var utcSeconds;
 var timezone;
-var userdata = [];
+var data = [];
 var ajaxobj;
 
 var config = {
@@ -79,6 +79,15 @@ function syncBrowserTime() {
     $("#ntp").click();
 }
 
+function handleReader() {
+    if (document.getElementById("readerType").value === "0") {
+        document.getElementById("wiegandForm").style.display = "none";
+        document.getElementById("mfrc522Form").style.display = "block";
+    } else if (document.getElementById("readerType").value === "1") {
+        document.getElementById("wiegandForm").style.display = "block";
+        document.getElementById("mfrc522Form").style.display = "none";
+    }
+}
 
 function listhardware() {
     $("#dismiss").click();
@@ -93,15 +102,7 @@ function listhardware() {
     handleReader();
 }
 
-function handleReader() {
-    if (document.getElementById("readerType").value === "0") {
-        document.getElementById("wiegandForm").style.display = "none";
-        document.getElementById("mfrc522Form").style.display = "block";
-    } else if (document.getElementById("readerType").value === "1") {
-        document.getElementById("wiegandForm").style.display = "block";
-        document.getElementById("mfrc522Form").style.display = "none";
-    }
-}
+
 
 function listlog() {
     websock.send("{\"command\":\"latestlog\"}");
@@ -114,7 +115,7 @@ function listntp() {
     document.getElementById("intervals").value = config.ntp.interval;
     document.getElementById("DropDownTimezone").value = config.ntp.timezone
     browserTime();
-    deviceTime()
+    deviceTime();
 }
 
 function savehardware() {
@@ -279,6 +280,10 @@ function getUsers() {
     websock.send("{\"command\":\"userlist\", \"page\":" + page + "}");
 }
 
+function getEvents() {
+    websock.send("{\"command\":\"geteventlog\", \"page\":" + page + "}");
+}
+
 function listSCAN(obj) {
     if (obj.known === 1) {
         $(".fooicon-remove").click();
@@ -293,7 +298,7 @@ function listSCAN(obj) {
     }
 }
 
-function getnextpage() {
+function getnextpage(mode) {
     if (!backupstarted) {
         document.getElementById("loadpages").innerHTML = "Loading " + page + "/" + haspages;
     }
@@ -301,14 +306,14 @@ function getnextpage() {
     if (page < haspages) {
         page = page + 1;
         var commandtosend = {};
-        commandtosend.command = "userlist";
+        commandtosend.command = mode;
         commandtosend.page = page;
         websock.send(JSON.stringify(commandtosend));
     }
 }
 
-function builduserdata(obj) {
-    userdata = userdata.concat(obj.list);
+function builddata(obj) {
+    data = data.concat(obj.list);
 }
 
 
@@ -318,7 +323,7 @@ function testRelay() {
 
 function getContent(contentname) {
     $("#ajaxcontent").load("esprfid.htm " + contentname, function(responseTxt, statusTxt, xhr) {
-        if (statusTxt == "success") {
+        if (statusTxt === "success") {
             switch (contentname) {
                 case "#statuscontent":
                     listStats();
@@ -346,10 +351,14 @@ function getContent(contentname) {
                     break;
                 case "#userscontent":
                     page = 1;
-                    userdata = [];
+                    data = [];
                     getUsers();
                     break;
-
+                case "#eventcontent":
+                    page = 1;
+                    data = [];
+                    getEvents();
+                    break;
 
 
 
@@ -461,15 +470,66 @@ function restoreUser() {
                     var x = confirm("File seems to be valid, do you wish to continue?");
                     if (x) {
                         recordstorestore = json.list.length;
-                        userdata = json.list;
+                        data = json.list;
                         $("#restoremodal").modal({ backdrop: "static", keyboard: false });
-                        restore1by1(slot, recordstorestore, userdata);
+                        restore1by1(slot, recordstorestore, data);
                     }
                 }
             };
             reader.readAsText(input.files[0]);
         }
     }
+}
+
+function initEventTable() {
+    var newlist = [];
+    for (var i = 0; i < data.length; i++) {
+        var dup = JSON.parse(data[i]);
+        newlist[i] = dup;
+    }
+    $("#dismiss").click();
+    jQuery(function($) {
+        FooTable.init("#eventtable", {
+            columns: [
+                {
+                    "name": "type",
+                    "title": "Event Type",
+                    "type": "text"
+                },
+                {
+                    "name": "src",
+                    "title": "Source"
+                },
+                {
+                    "name": "desc",
+                    "title": "Description",
+                    "breakpoints": "xs sm"
+                },
+                {
+                    "name": "data",
+                    "title": "Additional Data",
+                    "breakpoints": "xs sm"
+                },
+                {
+                    "name": "time",
+                    "title": "Date",
+                    "parser": function(value) {
+                        var vuepoch = new Date(value * 1000);
+                        var formatted = vuepoch.getUTCFullYear() +
+                            "-" + twoDigits(vuepoch.getUTCMonth() + 1) +
+                            "-" + twoDigits(vuepoch.getUTCDate()) +
+                            "-" + twoDigits(vuepoch.getUTCHours()) +
+                            ":" + twoDigits(vuepoch.getUTCMinutes()) +
+                            ":" + twoDigits(vuepoch.getUTCSeconds());
+                        return formatted;
+                    },
+                    "sorted": true,
+                    "direction": "DESC"
+                }
+            ],
+            rows: newlist
+        });
+    });
 }
 
 function initLogTable() {
@@ -523,6 +583,13 @@ function initLogTable() {
     });
 }
 
+function twoDigits(value) {
+    if (value < 10) {
+        return "0" + value;
+    }
+    return value;
+}
+
 function initUserTable() {
     $("#dismiss").click();
     jQuery(function($) {
@@ -566,7 +633,7 @@ function initUserTable() {
                         },
                     }
                 ],
-                rows: userdata,
+                rows: data,
                 editing: {
                     showText: "<span class=\"fooicon fooicon-pencil\" aria-hidden=\"true\"></span> Edit Users",
                     addText: "New User",
@@ -652,28 +719,21 @@ function acctypefinder() {
 
 function acctypeparser() {
     var $editor = $("#editor");
-    if ($editor.find("#acctype option:selected").val() == 1) {
+    if ($editor.find("#acctype option:selected").val() === 1) {
         return "Active";
-    } else if ($editor.find("#acctype option:selected").val() == 99) {
+    } else if ($editor.find("#acctype option:selected").val() === 99) {
         return "Admin";
     } else {
         return "Disabled";
     }
 }
 
-function twoDigits(value) {
-    if (value < 10) {
-        return "0" + value;
-    }
-    return value;
-}
+
 
 
 function colorStatusbar(ref) {
     var percentage = ref.style.width.slice(0, -1);
-    if (percentage > 50) { ref.className = "progress-bar progress-bar-success"; } 
-    else if (percentage > 25) { ref.className = "progress-bar progress-bar-warning"; } 
-    else { ref.class = "progress-bar progress-bar-danger"; }
+    if (percentage > 50) { ref.className = "progress-bar progress-bar-success"; } else if (percentage > 25) { ref.className = "progress-bar progress-bar-warning"; } else { ref.class = "progress-bar progress-bar-danger"; }
 }
 
 function listStats() {
@@ -699,49 +759,70 @@ function listStats() {
     websock.send("{\"command\":\"getconf\"}");
 }
 
+var nextIsNotJson = false;
+
 function socketMessageListener(evt) {
     var obj = JSON.parse(evt.data);
-    switch (obj.command) {
-        case "status":
-            getContent("#statuscontent");
-            ajaxobj = obj;
-            break;
-        case "userlist":
-            haspages = obj.haspages;
-            if (haspages === 0) {
-                if (!backupstarted) {
-                    document.getElementById("loading-img").style.display = "none";
-                    initUserTable();
-                    $(".footable-show").click();
-                    $(".fooicon-remove").click();
-
-                }
+    /*
+        } catch (obj) {
+            var textify = "";
+            textify = evt.data;
+            textify = "[" + textify + "]";
+            obj = JSON.parse(textify);
+            console.log(obj);
+        }
+        */
+    if (obj.hasOwnProperty("command")) {
+        switch (obj.command) {
+            case "status":
+                getContent("#statuscontent");
+                ajaxobj = obj;
                 break;
-            }
-            builduserdata(obj);
-            break;
-        case "gettime":
-            utcSeconds = obj.epoch;
-            timezone = obj.timezone;
-            deviceTime();
-            break;
-        case "piccscan":
-            listSCAN(obj);
-            break;
-        case "latestlog":
-            logdata = obj.list;
-            initLogTable();
-            document.getElementById("loading-img").style.display = "none";
-            break;
-        case "ssidlist":
-            listSSID(obj);
-            break;
-        case "configfile":
-            config = obj;
-            break;
-        default:
-            console.log("[ WARN ] Unknown command " + JSON.stringify(obj));
-            break;
+            case "userlist":
+                haspages = obj.haspages;
+                if (haspages === 0) {
+                    if (!backupstarted) {
+                        document.getElementById("loading-img").style.display = "none";
+                        initUserTable();
+                        $(".footable-show").click();
+                        $(".fooicon-remove").click();
+                    }
+                    break;
+                }
+                builddata(obj);
+                break;
+            case "eventlist":
+                haspages = obj.haspages;
+                if (haspages === 0) {
+                    document.getElementById("loading-img").style.display = "none";
+                    initEventTable();
+                    break;
+                }
+                builddata(obj);
+                break;
+            case "gettime":
+                utcSeconds = obj.epoch;
+                timezone = obj.timezone;
+                deviceTime();
+                break;
+            case "piccscan":
+                listSCAN(obj);
+                break;
+            case "latestlog":
+                logdata = obj.list;
+                initLogTable();
+                document.getElementById("loading-img").style.display = "none";
+                break;
+            case "ssidlist":
+                listSSID(obj);
+                break;
+            case "configfile":
+                config = obj;
+                break;
+            default:
+                console.log("[ WARN ] Unknown command " + JSON.stringify(obj));
+                break;
+        }
     }
     if (obj.hasOwnProperty("resultof")) {
 
@@ -757,7 +838,7 @@ function socketMessageListener(evt) {
                 break;
             case "userlist":
                 if (page < haspages && obj.result === true) {
-                    getnextpage();
+                    getnextpage("userlist");
                 } else if (page === haspages) {
                     if (!backupstarted) {
                         initUserTable();
@@ -768,15 +849,23 @@ function socketMessageListener(evt) {
                     } else {
                         file.type = "esp-rfid-userbackup";
                         file.version = "v0.5";
-                        file.list = userdata;
+                        file.list = data;
                         piccBackup(file);
                     }
                     break;
                 }
                 break;
+            case "eventlist":
+                if (page < haspages && obj.result === true) {
+                    getnextpage("geteventlog");
+                } else if (page === haspages) {
+                    initEventTable();
+                    document.getElementById("loading-img").style.display = "none";
+                }
+                break;
             case "userfile":
                 if (!completed && obj.result === true) {
-                    restore1by1(slot, recordstorestore, userdata);
+                    restore1by1(slot, recordstorestore, data);
                 }
                 break;
 
@@ -800,6 +889,11 @@ function socketCloseListener(evt) {
 function socketErrorListener(evt) {
     console.log("socket error");
     console.log(evt);
+}
+
+function clearevent() {
+    websock.send("{\"command\":\"clearevent\"}");
+    $("#eventlog").click();
 }
 
 
@@ -844,6 +938,7 @@ $("#users").click(function() { getContent("#userscontent"); return false; });
 $("#latestlog").click(function() { getContent("#logcontent"); return false; });
 $("#backup").click(function() { getContent("#backupcontent"); return false; });
 $("#reset").click(function() { $("#destroy").modal("show"); return false; });
+$("#eventlog").click(function() { getContent("#eventcontent"); return false; });
 
 $(".noimp").on("click", function() {
     $("#noimp").modal("show");

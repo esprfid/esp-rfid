@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 #### Added
 - [webui] Factory reset within Web UI.
+- [webui] + [firmware] Event logging is now live.
+
+#### Fixed
+- [firmware] Can not with default password login on fresh setup.
 
 #### Changed
 - [webui] Changes suggested from Codacy.
