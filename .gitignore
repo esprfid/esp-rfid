@@ -8,7 +8,7 @@
 # esp-rfid
 src/websrc/css/required.css
 src/websrc/js/required.js
-src/websrc/fonts/*
+src/websrc/fonts
 src/websrc/gzipped
 
 # node js
