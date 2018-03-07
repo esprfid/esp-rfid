@@ -3,7 +3,18 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 #### Added
-- **!!!! Breaking Change !!!!** [firmware] Factory reset on boot if GPIO-16 is LOW or SPIFFS is corrupted. Make changes accordingly.
+- [webui] Factory reset within Web UI.
+- [webui] + [firmware] Event logging is now live.
+
+#### Fixed
+- [firmware] Can not with default password login on fresh setup.
+
+#### Changed
+- [webui] Changes suggested from Codacy.
+
+## [0.5hotfix1] - 2018-03-06
+#### Added
+- [firmware] **!!!! Breaking Change !!!!** Factory reset on boot if GPIO-16 is LOW or SPIFFS is corrupted. Make changes accordingly.
 - [webui] Touch detect on touch enabled devices in order to open/close sidebar on swipe.
 - [webui] Logout is now live (this is actually a dirty hack);
 

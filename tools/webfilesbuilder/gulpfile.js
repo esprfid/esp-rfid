@@ -140,7 +140,8 @@ gulp.task("styles", ["styles-concat"], function() {
 
 
 gulp.task("fontgz", function() {
-	return gulp.src("../../src/websrc/fonts/*.*")
+	return gulp.src("../../src/websrc/3rdparty/fonts/*.*")
+	.pipe(gulp.dest("../../src/websrc/fonts/"))
         .pipe(gzip({
             append: true
         }))
