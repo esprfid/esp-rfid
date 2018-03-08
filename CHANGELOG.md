@@ -1,9 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [0.5.3] - 2018-03-08
 #### Added
-- [webui] Update checker
+- [webui] Firmware Update is now live with latest version check on GitHub.
 
 ## [0.5hotfix2] - 2018-03-07
 #### Added
