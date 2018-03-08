@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 #### Added
+- [webui] Update checker
+
+## [0.5hotfix2] - 2018-03-07
+#### Added
 - [webui] Factory reset within Web UI.
 - [webui] + [firmware] Event logging is now live.
 
