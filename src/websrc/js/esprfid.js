@@ -27,7 +27,8 @@ var config = {
     "general": {
         "hostnm": "esp-rfid",
         "restart": "0",
-        "pswd": "admin"
+        "pswd": "admin",
+        "version": "v0.5.3"
     },
     "mqtt": {
         "enabled": "0",
@@ -490,8 +491,7 @@ function initEventTable() {
     $("#dismiss").click();
     jQuery(function($) {
         FooTable.init("#eventtable", {
-            columns: [
-                {
+            columns: [{
                     "name": "type",
                     "title": "Event Type",
                     "type": "text"
@@ -908,7 +908,7 @@ function compareDestroy() {
 
 function destroy() {
     websock.send("{\"command\":\"destroy\"}");
-    document.location = "about:blank";
+    inProgress();
 }
 
 
@@ -944,11 +944,7 @@ $(".noimp").on("click", function() {
     $("#noimp").modal("show");
 });
 
-$(document).ajaxComplete(function() {
-    $("[data-toggle=\"popover\"]").popover({
-        container: "body"
-    });
-});
+
 
 FooTable.MyFiltering = FooTable.Filtering.extend({
     construct: function(instance) {
@@ -1065,6 +1061,88 @@ function logout() {
         });
     return false;
 }
+
+$("#update").on("shown.bs.modal", function(e) {
+    GetLatestReleaseInfo();
+})
+
+function inProgress() {
+    $("body").load("esprfid.htm #progresscontent", function(responseTxt, statusTxt, xhr) {
+        if (statusTxt === "success") {
+            $(".progress").css("height", "40");
+            $(".progress").css("font-size", "xx-large");
+            var i = 0;
+            var prg = setInterval(function() {
+                $(".progress-bar").css("width", i + "%").attr("aria-valuenow", i).html(i + "%");
+                i++;
+                if (i === 101) {
+                    clearInterval(prg);
+                    document.getElementById("updateprog").className = "progress-bar progress-bar-success";
+                    document.getElementById("updateprog").innerHTML = "Completed";
+                }
+
+            }, 500);
+
+
+
+        }
+
+    });
+}
+
+function upload() {
+    var formData = new FormData();
+    formData.append("bin", $("#binform")[0].files[0]);
+    $.ajax({
+        url: "/update",
+        type: "POST",
+        data: formData,
+        processData: false,
+        contentType: false
+    });
+    inProgress();
+}
+
+
+
+function GetLatestReleaseInfo() {
+
+    $.getJSON("https://api.github.com/repos/omersiar/esp-rfid/releases/latest").done(function(release) {
+        var asset = release.assets[0];
+        onlinebin = asset.browser_download_url;
+        var downloadCount = 0;
+        for (var i = 0; i < release.assets.length; i++) {
+            downloadCount += release.assets[i].download_count;
+        }
+        var oneHour = 60 * 60 * 1000;
+        var oneDay = 24 * oneHour;
+        var dateDiff = new Date() - new Date(release.published_at);
+        var timeAgo;
+        if (dateDiff < oneDay) {
+            timeAgo = (dateDiff / oneHour).toFixed(1) + " hours ago";
+        } else {
+            timeAgo = (dateDiff / oneDay).toFixed(1) + " days ago";
+        }
+
+        var releaseInfo = release.name + " was updated " + timeAgo + " and downloaded " + downloadCount.toLocaleString() + " times.";
+        $("#downloadupdate").attr("href", asset.browser_download_url);
+        $("#releasehead").text(releaseInfo);
+        $("#releasebody").text(release.body);
+        $("#releaseinfo").fadeIn("slow");
+        $("#versionhead").text(config.general.version);
+    }).error(function() { $("#onlineupdate").html("<h5>Couldn't get release info. Are you connected to Internet?</h5>"); });
+}
+
+$(document).ajaxComplete(function(e, xhr, settings) {
+    $("[data-toggle=\"popover\"]").popover({
+        container: "body"
+    });
+});
+
+function allowUpload() {
+    $("#upbtn").prop("disabled", false);
+}
+
 
 function start() {
     if (window.location.protocol === "https:") {
