@@ -71,7 +71,7 @@
                         <a href="#" id="reset"><i class="glyphicon glyphicon-repeat"></i>Factory Reset</a>
                     </li>
                     <li>
-                        <a href="#" class="noimp"><i class="glyphicon glyphicon-open"></i>Update</a>
+                        <a data-toggle="modal" href="#update"><i class="glyphicon glyphicon-open"></i>Update</a>
                     </li>
             </ul>
             <ul class="list-unstyled CTAs">
@@ -146,13 +146,33 @@
                                 This action <strong>cannot</strong> be undone. This will permanently delete <strong>all the user data and settings.</strong> Please make sure you made a backup first.
                             </p>
                             <p>Please type in the hostname of the device to confirm.</p>
-
                             <p>
                                 <input type="text" class="form-control input-block" id="compare" oninput="compareDestroy()">
                             </p>
                         </div>
                         <div class="modal-footer">
                             <button id="destroybtn" type="button" disabled="" onclick="destroy();" class="btn btn-block btn-danger">I understand the consequences.</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="update" class="modal fade" role="dialog">
+                <div class="modal-dialog">
+                    <!-- Modal content-->
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            <h4 class="modal-title">Update Firmware</h4>
+                        </div>
+                        <div class="alert alert-warning">
+                            <strong>Warning!</strong> Please make sure you made a backup first
+                        </div>
+                        <div class="modal-body">
+                            <pre id="releaseinfo">Getting update information from GitHub...</pre>
+
+                        </div>
+                        <div class="modal-footer">
+                            <a id="downloadupdate"><button type="button" class="btn btn-success">Download</button></a>
                         </div>
                     </div>
                 </div>

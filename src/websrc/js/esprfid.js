@@ -27,7 +27,8 @@ var config = {
     "general": {
         "hostnm": "esp-rfid",
         "restart": "0",
-        "pswd": "admin"
+        "pswd": "admin",
+        "version": "v0.5.3"
     },
     "mqtt": {
         "enabled": "0",
@@ -1064,6 +1065,37 @@ function logout() {
             window.location = "/login.html";
         });
     return false;
+}
+
+$("#update").on("shown.bs.modal", function (e) {
+  GetLatestReleaseInfo();
+})
+
+function GetLatestReleaseInfo() {
+  $.getJSON("https://api.github.com/repos/omersiar/esp-rfid/releases/latest").done(function(release) {
+    var asset = release.assets[0];
+    var downloadCount = 0;
+    /*
+    console.log(asset);
+    for (var i = 0; i < release.assets.length; i++) {
+      downloadCount += release.assets[i].download_count;
+    }
+    */
+    var oneHour = 60 * 60 * 1000;
+    var oneDay = 24 * oneHour;
+    var dateDiff = new Date() - new Date(release.published_at);
+    var timeAgo;
+    if (dateDiff < oneDay) {
+      timeAgo = (dateDiff / oneHour).toFixed(1) + " hours ago";
+    } else {
+      timeAgo = (dateDiff / oneDay).toFixed(1) + " days ago";
+    }
+
+    var releaseInfo = release.name + " was updated " + timeAgo + " and downloaded " + downloadCount.toLocaleString() + " times." + release.body;
+    $("#downloadupdate").attr("href", release.url);
+    $("#releaseinfo").text(releaseInfo);
+    $("#releaseinfo").fadeIn("slow");
+  });
 }
 
 function start() {
