@@ -950,11 +950,13 @@ void setupWebServer() {
 
     // Simple Firmware Update Handler
     server.on("/update", HTTP_POST, [](AsyncWebServerRequest * request) {
-        shouldReboot = !Update.hasError();
         AsyncWebServerResponse * response = request->beginResponse(200, "text/plain", shouldReboot ? "OK" : "FAIL");
         response->addHeader("Connection", "close");
         request->send(response);
     }, [](AsyncWebServerRequest * request, String filename, size_t index, uint8_t * data, size_t len, bool final) {
+        if (!request->authenticate(http_username, http_pass)) {
+            return;
+        }
         if (!index) {
             Serial.printf("[ UPDT ] Firmware update started: %s\n", filename.c_str());
             Update.runAsync(true);
@@ -970,6 +972,7 @@ void setupWebServer() {
         if (final) {
             if (Update.end(true)) {
                 Serial.printf("[ UPDT ] Firmware update finished: %uB\n", index + len);
+                shouldReboot = !Update.hasError();
             } else {
                 Update.printError(Serial);
             }

@@ -4,6 +4,8 @@
 
 Access Control demonstration using a cheap MFRC522 RFID Hardware or Wiegand RFID readers and Espressif's ESP8266 Microcontroller. This is a community driven project.
 
+![Showcase Gif](https://raw.githubusercontent.com/omersiar/esp-rfid/stable/demo/showcase.gif)
+
 ## Features
 ### For Users
 * Minimal effort for setting up your Access Control system, just flash and everything can be configured via Web UI
@@ -25,7 +27,7 @@ This project still in its development phase. New features (and also bugs) are in
 * Get the latest release from [here.](https://github.com/omersiar/esp-rfid/releases)
 * See [Known Issues](https://github.com/omersiar/esp-rfid#known-issues) before starting right away.
 * See [Security](https://github.com/omersiar/esp-rfid#security) for your safety.
-* See [ChangeLog](https://github.com/omersiar/esp-rfid/blob/development/CHANGELOG.md)
+* See [ChangeLog](https://github.com/omersiar/esp-rfid/blob/dev/CHANGELOG.md)
 
 ### What You Will Need
 ### Hardware
@@ -80,10 +82,8 @@ For Wiegand based readers, you can configure D0 and D1 pins via settings page. B
 
 ### Steps
 * First, flash firmware (you can use /bin/flash.bat on Windows) to your ESP either using Arduino IDE or with your favourite flash tool
-* Flash webfiles data to SPIFFS (ignore this step if you used flash.bat for flashing) either using ESP8266FS Uploader tool or with your favourite flash tool
 * (optional) Fire up your serial monitor to get informed
-* Power on your ESP
-* Search for Wireless Network "esp-rfid" and connect to it (It should be an open network and does not reqiure password)
+* Search for Wireless Network "esp-rfid-xxxxxx" and connect to it (It should be an open network and does not reqiure password)
 * Open your browser and type either "http://192.168.4.1" or "http://esp-rfid.local" (.local needs Bonjour installed on your computer) on address bar.
 * Log on to ESP, default password is "admin"
 * Go to "Settings" page
@@ -156,7 +156,7 @@ Thanks to the community, ESP-RFID come to alive with their great effort:
 - @nardev
 - @romanzava
 
-See [ChangeLog](https://github.com/omersiar/esp-rfid/blob/development/CHANGELOG.md)
+See [ChangeLog](https://github.com/omersiar/esp-rfid/blob/dev/CHANGELOG.md)
 
 ## Donations
 If this project helps you in a way, you can buy us a beer. You can make a donation to the ESP-RFID community with [Bountysource](https://salt.bountysource.com/teams/esp-rfid)

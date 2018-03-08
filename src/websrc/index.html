@@ -94,24 +94,6 @@
             </button>
             <div id="ajaxcontent">
             </div>
-            <!-- Modal -->
-            <div id="noimp" class="modal fade" role="dialog">
-                <div class="modal-dialog">
-                    <!-- Modal content-->
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <button type="button" class="close" data-dismiss="modal">&times;</button>
-                            <h4 class="modal-title">Sorry :(</h4>
-                        </div>
-                        <div class="modal-body">
-                            <p>This is not implemented yet</p>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
             <div id="revcommit" class="modal fade" role="dialog">
                 <div class="modal-dialog">
                     <!-- Modal content-->
@@ -139,13 +121,19 @@
                             <h4 class="modal-title">Are you absolutely sure?</h4>
                         </div>
                         <div class="alert alert-warning">
-                            <strong>Warning!</strong> Unexpected bad things will happen if you don’t read this!
+                            <h4><strong>Warning!</strong> Unexpected bad things will happen if you don’t read this!</h4>
                         </div>
                         <div class="modal-body">
-                            <p>
-                                This action <strong>cannot</strong> be undone. This will permanently delete <strong>all the user data and settings.</strong> Please make sure you made a backup first.
-                            </p>
-                            <p>Please type in the hostname of the device to confirm.</p>
+                            <h5>
+                                This action <strong>cannot</strong> be undone. This will permanently delete <strong>all the user data, settings and logs.</strong> Please make sure you made a backup first.
+                            </h5>
+                            <div style="clear:both;">
+                                <br>
+                            </div>
+                            <h5>Please type in the hostname of the device to confirm.</h5>
+                            <div style="clear:both;">
+                                <br>
+                            </div>
                             <p>
                                 <input type="text" class="form-control input-block" id="compare" oninput="compareDestroy()">
                             </p>
@@ -168,11 +156,39 @@
                             <strong>Warning!</strong> Please make sure you made a backup first
                         </div>
                         <div class="modal-body">
-                            <pre id="releaseinfo">Getting update information from GitHub...</pre>
-
+                            <div>
+                                <h4>Latest Version Online</h4>
+                                <div id="onlineupdate">
+                                    <h5 id=releasehead></h5>
+                                    <div style="clear:both;">
+                                        <br>
+                                    </div>
+                                    <pre id="releasebody">Getting update information from GitHub...</pre>
+                                    <div class="pull-right">
+                                        <a class="pull-right" id="downloadupdate">
+                                            <button type="button" class="btn btn-primary">Download</button>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="clear:both;">
+                                <br>
+                            </div>
+                            <div>
+                                <h4>Current Version:</h4>
+                                <h5 id="versionhead"></h5>
+                                <div class="form-group">
+                                    <input id="binform" onchange="allowUpload();" type="file" name="update">
+                                </div>
+                                <div class="pull-right">
+                                    <button onclick="upload();" class="btn btn-primary" id="upbtn" disabled="">Update</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="clear:both;">
+                            <br>
                         </div>
                         <div class="modal-footer">
-                            <a id="downloadupdate"><button type="button" class="btn btn-success">Download</button></a>
                         </div>
                     </div>
                 </div>
