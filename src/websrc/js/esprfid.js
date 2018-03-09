@@ -28,7 +28,7 @@ var config = {
         "hostnm": "esp-rfid",
         "restart": "0",
         "pswd": "admin",
-        "version": "v0.5.3"
+        "version": "v0.5.4"
     },
     "mqtt": {
         "enabled": "0",
@@ -53,6 +53,7 @@ var slot = 0;
 var completed = false;
 var file = {};
 var backupstarted = false;
+var restorestarted = false;
 
 
 
@@ -187,7 +188,7 @@ function revcommit() {
 
 function commit() {
     websock.send(JSON.stringify(config));
-    location.reload();
+    inProgress();
 }
 
 function uncommited() {
@@ -447,6 +448,7 @@ function restore1by1(i, len, data) {
         document.getElementById("dynamic").className = "progress-bar progress-bar-success";
         document.getElementById("dynamic").innerHTML = "Completed";
         document.getElementById("dynamic").style.width = "100%";
+        restorestarted = false;
         completed = true;
         document.getElementById("restoreclose").style.display = "block";
     }
@@ -472,6 +474,7 @@ function restoreUser() {
                     if (x) {
                         recordstorestore = json.list.length;
                         data = json.list;
+                        restorestarted = true;
                         $("#restoremodal").modal({ backdrop: "static", keyboard: false });
                         restore1by1(slot, recordstorestore, data);
                     }
@@ -486,7 +489,25 @@ function initEventTable() {
     var newlist = [];
     for (var i = 0; i < data.length; i++) {
         var dup = JSON.parse(data[i]);
-        newlist[i] = dup;
+        newlist[i] = {};
+        newlist[i].options = {};
+        newlist[i].value = {};
+        newlist[i].value = dup;
+        var c = dup.type;
+        switch (c) {
+            case "WARN":
+                newlist[i].options.classes = "warning";
+                break;
+            case "INFO":
+                newlist[i].options.classes = "info";
+                break;
+            case "ERRO":
+                newlist[i].options.classes = "danger";
+                break;
+            default:
+                break;
+        }
+
     }
     $("#dismiss").click();
     jQuery(function($) {
@@ -502,8 +523,7 @@ function initEventTable() {
                 },
                 {
                     "name": "desc",
-                    "title": "Description",
-                    "breakpoints": "xs sm"
+                    "title": "Description"
                 },
                 {
                     "name": "data",
@@ -524,7 +544,8 @@ function initEventTable() {
                         return formatted;
                     },
                     "sorted": true,
-                    "direction": "DESC"
+                    "direction": "DESC",
+                    "breakpoints": "xs sm"
                 }
             ],
             rows: newlist
@@ -566,11 +587,11 @@ function initLogTable() {
                     "title": "Access",
                     "breakpoints": "xs sm",
                     "parser": function(value) {
-                        if (value == 1) {
+                        if (value === 1) {
                             return "Granted";
-                        } else if (value == 99) {
-                            return "GrantedAdmin";
-                        } else if (value == 0) {
+                        } else if (value === 99) {
+                            return "Admin";
+                        } else if (value === 0) {
                             return "Disabled";
                         } else {
                             return "Unknown";
@@ -615,9 +636,10 @@ function initUserTable() {
                                 return "Active";
                             } else if (value === 99) {
                                 return "Admin";
-                            } else {
+                            } else if (value === 0) {
                                 return "Disabled";
                             }
+                            return value;
                         },
                     },
                     {
@@ -682,11 +704,13 @@ function initUserTable() {
                 values = {
                     uid: $editor.find("#uid").val(),
                     username: $editor.find("#username").val(),
-                    acctype: acctypeparser(),
-                    validuntil: $editor.find("#validuntil").val()
+                    acctype: parseInt($editor.find("#acctype").val()),
+                    validuntil: (new Date($editor.find("#validuntil").val()).getTime() / 1000)
                 };
             if (row instanceof FooTable.Row) {
-                row.val(values);
+                row.delete();
+                values.id = uid++;
+                ft.rows.add(values);
             } else {
                 values.id = uid++;
                 ft.rows.add(values);
@@ -695,9 +719,9 @@ function initUserTable() {
             datatosend.command = "userfile";
             datatosend.uid = $editor.find("#uid").val();
             datatosend.user = $editor.find("#username").val();
-            datatosend.acctype = $editor.find("#acctype").val();
+            datatosend.acctype = parseInt($editor.find("#acctype").val());
             var validuntil = $editor.find("#validuntil").val();
-            var vuepoch = (new Date(validuntil).getTime() / 1000) + (timezone * 60 * 60);
+            var vuepoch = (new Date(validuntil).getTime() / 1000);
             datatosend.validuntil = vuepoch;
             websock.send(JSON.stringify(datatosend));
             $modal.modal("hide");
@@ -714,17 +738,6 @@ function acctypefinder() {
         return 99;
     } else {
         return 0;
-    }
-}
-
-function acctypeparser() {
-    var $editor = $("#editor");
-    if ($editor.find("#acctype option:selected").val() === 1) {
-        return "Active";
-    } else if ($editor.find("#acctype option:selected").val() === 99) {
-        return "Admin";
-    } else {
-        return "Disabled";
     }
 }
 
@@ -820,7 +833,6 @@ function socketMessageListener(evt) {
                 config = obj;
                 break;
             default:
-                console.log("[ WARN ] Unknown command " + JSON.stringify(obj));
                 break;
         }
     }
@@ -864,14 +876,15 @@ function socketMessageListener(evt) {
                 }
                 break;
             case "userfile":
-                if (!completed && obj.result === true) {
-                    restore1by1(slot, recordstorestore, data);
+                if (restorestarted) {
+                    if (!completed && obj.result === true) {
+                        restore1by1(slot, recordstorestore, data);
+                    }
                 }
                 break;
 
 
             default:
-                console.log("[ WARN ] Unknown type " + JSON.stringify(obj));
                 break;
         }
     }
