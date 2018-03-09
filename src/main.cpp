@@ -748,7 +748,7 @@ void printScanResult(int networksFound) {
     JsonObject& root = jsonBuffer78.createObject();
     root["command"] = "ssidlist";
     JsonArray& scan = root.createNestedArray("list");
-    for (int i = 0; i < 5; ++i) {
+    for (int i = 0; i < 5 && i < networksFound ; ++i) {
         JsonObject& item = scan.createNestedObject();
         // Print SSID for each network found
         item["ssid"] = WiFi.SSID(indices[i]);
@@ -1116,12 +1116,11 @@ void setupWebServer() {
 void setup() {
     // Populate the last modification date based on build datetime
     sprintf(last_modified, "%s %s GMT", __DATE__, __TIME__);
+    pinMode(FRESETPIN, INPUT_PULLUP);
     delay(2000);
     Serial.begin(115200);
     Serial.println();
     Serial.println(F("[ INFO ] ESP RFID v0.5"));
-
-    pinMode(FRESETPIN, INPUT_PULLUP);
     // Start SPIFFS filesystem
     if (!SPIFFS.begin() || digitalRead(FRESETPIN) == LOW) {
 #ifdef DEBUG
