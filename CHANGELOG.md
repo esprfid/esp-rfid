@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+#### Fixed
+- [firmware] #75 Scan of wifi returns more columns of the same wifi.
+- [webui] #74 New user with incorrect validity.
+- [webui] New user with incorrect date.
 
 ## [0.5.3] - 2018-03-08
 #### Added

@@ -566,11 +566,11 @@ function initLogTable() {
                     "title": "Access",
                     "breakpoints": "xs sm",
                     "parser": function(value) {
-                        if (value == 1) {
+                        if (value === 1) {
                             return "Granted";
-                        } else if (value == 99) {
-                            return "GrantedAdmin";
-                        } else if (value == 0) {
+                        } else if (value === 99) {
+                            return "Admin";
+                        } else if (value === 0) {
                             return "Disabled";
                         } else {
                             return "Unknown";
@@ -613,11 +613,13 @@ function initUserTable() {
                         "parser": function(value) {
                             if (value === 1) {
                                 return "Active";
-                            } else if (value === 99) {
+                            } 
+                            else if (value === 99) {
                                 return "Admin";
-                            } else {
+                            } else if (value === 0) {
                                 return "Disabled";
                             }
+                            return value;
                         },
                     },
                     {
@@ -682,8 +684,8 @@ function initUserTable() {
                 values = {
                     uid: $editor.find("#uid").val(),
                     username: $editor.find("#username").val(),
-                    acctype: acctypeparser(),
-                    validuntil: $editor.find("#validuntil").val()
+                    acctype: parseInt($editor.find("#acctype").val()),
+                    validuntil: (new Date($editor.find("#validuntil").val()).getTime() / 1000)
                 };
             if (row instanceof FooTable.Row) {
                 row.val(values);
@@ -695,9 +697,9 @@ function initUserTable() {
             datatosend.command = "userfile";
             datatosend.uid = $editor.find("#uid").val();
             datatosend.user = $editor.find("#username").val();
-            datatosend.acctype = $editor.find("#acctype").val();
+            datatosend.acctype = parseInt($editor.find("#acctype").val());
             var validuntil = $editor.find("#validuntil").val();
-            var vuepoch = (new Date(validuntil).getTime() / 1000) + (timezone * 60 * 60);
+            var vuepoch = (new Date(validuntil).getTime() / 1000);
             datatosend.validuntil = vuepoch;
             websock.send(JSON.stringify(datatosend));
             $modal.modal("hide");
@@ -714,17 +716,6 @@ function acctypefinder() {
         return 99;
     } else {
         return 0;
-    }
-}
-
-function acctypeparser() {
-    var $editor = $("#editor");
-    if ($editor.find("#acctype option:selected").val() === 1) {
-        return "Active";
-    } else if ($editor.find("#acctype option:selected").val() === 99) {
-        return "Admin";
-    } else {
-        return "Disabled";
     }
 }
 
@@ -820,7 +811,6 @@ function socketMessageListener(evt) {
                 config = obj;
                 break;
             default:
-                console.log("[ WARN ] Unknown command " + JSON.stringify(obj));
                 break;
         }
     }
@@ -871,7 +861,6 @@ function socketMessageListener(evt) {
 
 
             default:
-                console.log("[ WARN ] Unknown type " + JSON.stringify(obj));
                 break;
         }
     }
