@@ -486,12 +486,32 @@ function initEventTable() {
     var newlist = [];
     for (var i = 0; i < data.length; i++) {
         var dup = JSON.parse(data[i]);
-        newlist[i] = dup;
+        newlist[i] = {};
+        newlist[i].options = {};
+        newlist[i].value = {};
+        newlist[i].value = dup;
+        var c = dup.type;
+        switch(c) {
+            case "WARN":
+            newlist[i].options.classes = "warning";
+            break;
+            case "INFO":
+            newlist[i].options.classes = "info";
+            break;
+            case "ERRO":
+            newlist[i].options.classes = "danger";
+            break;
+            default:
+            break;
+        }       
+        
     }
+    console.log(newlist);
     $("#dismiss").click();
     jQuery(function($) {
         FooTable.init("#eventtable", {
-            columns: [{
+            columns: [
+                {
                     "name": "type",
                     "title": "Event Type",
                     "type": "text"
