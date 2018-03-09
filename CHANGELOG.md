@@ -2,14 +2,21 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+
+## [0.5.4] - 2018-03-09
 #### Added
 - [webui] colorize event logs based on severity.
+- [webui] progress bar on saving settings.
 - [dev tools] event log for websocket emulator
 
 #### Fixed
 - [firmware] Fix #75 Scan of wifi returns more columns of the same wifi.
 - [webui] Fix #74 #33 completely New user with incorrect validity.
 - [webui] New user with incorrect date.
+- [webui] Editing user results non parsed values.
+
+#### Changed
+- [webui] event table breakpoints.
 
 ## [0.5.3] - 2018-03-08
 #### Added

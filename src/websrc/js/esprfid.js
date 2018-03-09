@@ -28,7 +28,7 @@ var config = {
         "hostnm": "esp-rfid",
         "restart": "0",
         "pswd": "admin",
-        "version": "v0.5.3"
+        "version": "v0.5.4"
     },
     "mqtt": {
         "enabled": "0",
@@ -53,6 +53,7 @@ var slot = 0;
 var completed = false;
 var file = {};
 var backupstarted = false;
+var restorestarted = false;
 
 
 
@@ -187,7 +188,7 @@ function revcommit() {
 
 function commit() {
     websock.send(JSON.stringify(config));
-    location.reload();
+    inProgress();
 }
 
 function uncommited() {
@@ -447,6 +448,7 @@ function restore1by1(i, len, data) {
         document.getElementById("dynamic").className = "progress-bar progress-bar-success";
         document.getElementById("dynamic").innerHTML = "Completed";
         document.getElementById("dynamic").style.width = "100%";
+        restorestarted = false;
         completed = true;
         document.getElementById("restoreclose").style.display = "block";
     }
@@ -472,6 +474,7 @@ function restoreUser() {
                     if (x) {
                         recordstorestore = json.list.length;
                         data = json.list;
+                        restorestarted = true;
                         $("#restoremodal").modal({ backdrop: "static", keyboard: false });
                         restore1by1(slot, recordstorestore, data);
                     }
@@ -491,27 +494,25 @@ function initEventTable() {
         newlist[i].value = {};
         newlist[i].value = dup;
         var c = dup.type;
-        switch(c) {
+        switch (c) {
             case "WARN":
-            newlist[i].options.classes = "warning";
-            break;
+                newlist[i].options.classes = "warning";
+                break;
             case "INFO":
-            newlist[i].options.classes = "info";
-            break;
+                newlist[i].options.classes = "info";
+                break;
             case "ERRO":
-            newlist[i].options.classes = "danger";
-            break;
+                newlist[i].options.classes = "danger";
+                break;
             default:
-            break;
-        }       
-        
+                break;
+        }
+
     }
-    console.log(newlist);
     $("#dismiss").click();
     jQuery(function($) {
         FooTable.init("#eventtable", {
-            columns: [
-                {
+            columns: [{
                     "name": "type",
                     "title": "Event Type",
                     "type": "text"
@@ -522,8 +523,7 @@ function initEventTable() {
                 },
                 {
                     "name": "desc",
-                    "title": "Description",
-                    "breakpoints": "xs sm"
+                    "title": "Description"
                 },
                 {
                     "name": "data",
@@ -544,7 +544,8 @@ function initEventTable() {
                         return formatted;
                     },
                     "sorted": true,
-                    "direction": "DESC"
+                    "direction": "DESC",
+                    "breakpoints": "xs sm"
                 }
             ],
             rows: newlist
@@ -633,8 +634,7 @@ function initUserTable() {
                         "parser": function(value) {
                             if (value === 1) {
                                 return "Active";
-                            } 
-                            else if (value === 99) {
+                            } else if (value === 99) {
                                 return "Admin";
                             } else if (value === 0) {
                                 return "Disabled";
@@ -708,7 +708,9 @@ function initUserTable() {
                     validuntil: (new Date($editor.find("#validuntil").val()).getTime() / 1000)
                 };
             if (row instanceof FooTable.Row) {
-                row.val(values);
+                row.delete();
+                values.id = uid++;
+                ft.rows.add(values);
             } else {
                 values.id = uid++;
                 ft.rows.add(values);
@@ -874,8 +876,10 @@ function socketMessageListener(evt) {
                 }
                 break;
             case "userfile":
-                if (!completed && obj.result === true) {
-                    restore1by1(slot, recordstorestore, data);
+                if (restorestarted) {
+                    if (!completed && obj.result === true) {
+                        restore1by1(slot, recordstorestore, data);
+                    }
                 }
                 break;
 
