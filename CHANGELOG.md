@@ -1,7 +1,23 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [0.6]
+#### Added
+- [firmware] Restart ESP if softAP fails.
+- [webui] Colorize access log based on result.
+
+#### Fixed
+- [webui] progress bar for factory reset, update, save settings does not initiated correctly.
+- [webui] BSSID is missing when first scan.
+- [webui] Now firmware internally holds only unix time, made changes on webui to cover that.
+
+#### Changed
+- [webui] Completely refactored html loading, we are getting all files at first login, then no request is made to web server which greatly simplifies some functions.
+- [webui] + [firmware] Completely refactored Latest Access Log, it's now unlimited Access Log which holds every picc scan. This should fix #60 (at least there is clear log button :) ).
+- [webui] Event log table now displays firmware time for early events.
+- [webui] before fetching data wait sidebar to dismiss for smooth animation.
+- [webui] fade in web content.
+- [firmware] Log login remote IP address.
 
 ## [0.5.4] - 2018-03-09
 #### Added

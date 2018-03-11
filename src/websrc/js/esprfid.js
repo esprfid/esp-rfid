@@ -27,8 +27,7 @@ var config = {
     "general": {
         "hostnm": "esp-rfid",
         "restart": "0",
-        "pswd": "admin",
-        "version": "v0.5.4"
+        "pswd": "admin"
     },
     "mqtt": {
         "enabled": "0",
@@ -55,6 +54,8 @@ var file = {};
 var backupstarted = false;
 var restorestarted = false;
 
+var esprfidcontent;
+
 
 
 function browserTime() {
@@ -67,13 +68,14 @@ function browserTime() {
 
 function deviceTime() {
     var t = new Date(0); // The 0 there is the key, which sets the date to the epoch,
+    utcSeconds = Math.floor(utcSeconds + ((t.getTimezoneOffset() * 60) * -1));
     t.setUTCSeconds(utcSeconds);
     document.getElementById("utc").innerHTML = t.toUTCString().slice(0, -3);
 }
 
 function syncBrowserTime() {
     var d = new Date();
-    var timestamp = Math.floor((d.getTime() / 1000) + ((d.getTimezoneOffset() * 60) * -1));
+    var timestamp = Math.floor((d.getTime() / 1000));
     var datatosend = {};
     datatosend.command = "settime";
     datatosend.epoch = timestamp;
@@ -92,7 +94,7 @@ function handleReader() {
 }
 
 function listhardware() {
-    $("#dismiss").click();
+
     document.getElementById("readerType").value = config.hardware.readerType;
     document.getElementById("wg0pin").value = config.hardware.wgd0pin;
     document.getElementById("wg1pin").value = config.hardware.wgd1pin;
@@ -107,12 +109,12 @@ function listhardware() {
 
 
 function listlog() {
-    websock.send("{\"command\":\"latestlog\"}");
+    websock.send("{\"command\":\"getlatestlog\", \"page\":" + page + "}");
 }
 
 function listntp() {
     websock.send("{\"command\":\"gettime\"}");
-    $("#dismiss").click();
+
     document.getElementById("ntpserver").value = config.ntp.server;
     document.getElementById("intervals").value = config.ntp.interval;
     document.getElementById("DropDownTimezone").value = config.ntp.timezone
@@ -187,8 +189,8 @@ function revcommit() {
 }
 
 function commit() {
-    websock.send(JSON.stringify(config));
-    inProgress();
+    config.general.version = "v0.6";
+    inProgress("commit");
 }
 
 function uncommited() {
@@ -203,7 +205,7 @@ function uncommited() {
 }
 
 function listnetwork() {
-    $("#dismiss").click();
+
     document.getElementById("inputtohide").value = config.network.ssid;
     document.getElementById("wifipass").value = config.network.pswd;
     if (config.network.wmode === "1") {
@@ -219,14 +221,14 @@ function listnetwork() {
 }
 
 function listgeneral() {
-    $("#dismiss").click();
+
     document.getElementById("adminpwd").value = config.general.pswd;
     document.getElementById("hostname").value = config.general.hostnm;
     document.getElementById("autorestart").value = config.general.restart;
 }
 
 function listmqtt() {
-    $("#dismiss").click();
+
     document.getElementById("mqtthost").value = config.mqtt.host;
     document.getElementById("mqttport").value = config.mqtt.port;
     document.getElementById("mqtttopic").value = config.mqtt.topic;
@@ -260,6 +262,7 @@ function listSSID(obj) {
         select.appendChild(opt);
     }
     document.getElementById("scanb").innerHTML = "Re-Scan";
+    listBSSID();
 }
 
 function listBSSID() {
@@ -324,14 +327,15 @@ function testRelay() {
 }
 
 function getContent(contentname) {
-    $("#ajaxcontent").load("esprfid.htm " + contentname, function(responseTxt, statusTxt, xhr) {
-        if (statusTxt === "success") {
+    $("#dismiss").click();
+    $(".overlay").fadeOut().promise().done(function() {
+        var content = $(contentname).html();
+        $("#ajaxcontent").html(content).promise().done(function() {
             switch (contentname) {
                 case "#statuscontent":
                     listStats();
                     break;
                 case "#backupcontent":
-                    $("#dismiss").click();
                     break;
                 case "#ntpcontent":
                     listntp();
@@ -349,6 +353,8 @@ function getContent(contentname) {
                     listnetwork();
                     break;
                 case "#logcontent":
+                    page = 1;
+                    data = [];
                     listlog();
                     break;
                 case "#userscontent":
@@ -361,18 +367,15 @@ function getContent(contentname) {
                     data = [];
                     getEvents();
                     break;
-
-
-
-
                 default:
                     break;
-
             }
-
-        }
+                        $("[data-toggle=\"popover\"]").popover({
+                container: "body"
+            });
+            $(this).hide().fadeIn();
+        });
     });
-
 }
 
 function backupuser() {
@@ -509,7 +512,6 @@ function initEventTable() {
         }
 
     }
-    $("#dismiss").click();
     jQuery(function($) {
         FooTable.init("#eventtable", {
             columns: [{
@@ -534,14 +536,20 @@ function initEventTable() {
                     "name": "time",
                     "title": "Date",
                     "parser": function(value) {
-                        var vuepoch = new Date(value * 1000);
-                        var formatted = vuepoch.getUTCFullYear() +
-                            "-" + twoDigits(vuepoch.getUTCMonth() + 1) +
-                            "-" + twoDigits(vuepoch.getUTCDate()) +
-                            "-" + twoDigits(vuepoch.getUTCHours()) +
-                            ":" + twoDigits(vuepoch.getUTCMinutes()) +
-                            ":" + twoDigits(vuepoch.getUTCSeconds());
-                        return formatted;
+                        if (value < 1520665101) {
+                            return value;
+                        } else {
+                            var comp = new Date();
+                            value = Math.floor(value + ((comp.getTimezoneOffset() * 60) * -1));
+                            var vuepoch = new Date(value * 1000);
+                            var formatted = vuepoch.getUTCFullYear() +
+                                "-" + twoDigits(vuepoch.getUTCMonth() + 1) +
+                                "-" + twoDigits(vuepoch.getUTCDate()) +
+                                "-" + twoDigits(vuepoch.getUTCHours()) +
+                                ":" + twoDigits(vuepoch.getUTCMinutes()) +
+                                ":" + twoDigits(vuepoch.getUTCSeconds());
+                            return formatted;
+                        }
                     },
                     "sorted": true,
                     "direction": "DESC",
@@ -553,14 +561,41 @@ function initEventTable() {
     });
 }
 
-function initLogTable() {
-    $("#dismiss").click();
+function initLatestLogTable() {
+    var newlist = [];
+    for (var i = 0; i < data.length; i++) {
+        var dup = JSON.parse(data[i]);
+        newlist[i] = {};
+        newlist[i].options = {};
+        newlist[i].value = {};
+        newlist[i].value = dup;
+        var c = dup.acctype;
+        switch (c) {
+            case 1:
+                newlist[i].options.classes = "success";
+                break;
+            case 99:
+                newlist[i].options.classes = "info";
+                break;
+            case 0:
+                newlist[i].options.classes = "warning";
+                break;
+            case 98:
+                newlist[i].options.classes = "danger";
+                break;
+            default:
+                break;
+        }
+
+    }
     jQuery(function($) {
         FooTable.init("#latestlogtable", {
             columns: [{
                     "name": "timestamp",
                     "title": "Date",
                     "parser": function(value) {
+                        var comp = new Date();
+                        value = Math.floor(value + ((comp.getTimezoneOffset() * 60) * -1));
                         var vuepoch = new Date(value * 1000);
                         var formatted = vuepoch.getUTCFullYear() +
                             "-" + twoDigits(vuepoch.getUTCMonth() + 1) +
@@ -593,13 +628,13 @@ function initLogTable() {
                             return "Admin";
                         } else if (value === 0) {
                             return "Disabled";
-                        } else {
+                        } else if (value === 98) {
                             return "Unknown";
                         }
                     }
                 }
             ],
-            rows: logdata
+            rows: newlist
         });
     });
 }
@@ -612,7 +647,6 @@ function twoDigits(value) {
 }
 
 function initUserTable() {
-    $("#dismiss").click();
     jQuery(function($) {
         var $modal = $("#editor-modal"),
             $editor = $("#editor"),
@@ -647,6 +681,8 @@ function initUserTable() {
                         "title": "Valid Until",
                         "breakpoints": "xs sm",
                         "parser": function(value) {
+                            var comp = new Date();
+                            value = Math.floor(value + ((comp.getTimezoneOffset() * 60) * -1));
                             var vuepoch = new Date(value * 1000);
                             var formatted = vuepoch.getFullYear() +
                                 "-" + twoDigits(vuepoch.getMonth() + 1) +
@@ -750,7 +786,6 @@ function colorStatusbar(ref) {
 }
 
 function listStats() {
-    $("#dismiss").click();
     document.getElementById("chip").innerHTML = ajaxobj.chipid;
     document.getElementById("cpu").innerHTML = ajaxobj.cpu + " Mhz";
     document.getElementById("uptime").innerHTML = ajaxobj.uptime;
@@ -776,20 +811,11 @@ var nextIsNotJson = false;
 
 function socketMessageListener(evt) {
     var obj = JSON.parse(evt.data);
-    /*
-        } catch (obj) {
-            var textify = "";
-            textify = evt.data;
-            textify = "[" + textify + "]";
-            obj = JSON.parse(textify);
-            console.log(obj);
-        }
-        */
     if (obj.hasOwnProperty("command")) {
         switch (obj.command) {
             case "status":
-                getContent("#statuscontent");
                 ajaxobj = obj;
+                getContent("#statuscontent");
                 break;
             case "userlist":
                 haspages = obj.haspages;
@@ -813,6 +839,15 @@ function socketMessageListener(evt) {
                 }
                 builddata(obj);
                 break;
+            case "latestlist":
+                haspages = obj.haspages;
+                if (haspages === 0) {
+                    document.getElementById("loading-img").style.display = "none";
+                    initLatestLogTable();
+                    break;
+                }
+                builddata(obj);
+                break;
             case "gettime":
                 utcSeconds = obj.epoch;
                 timezone = obj.timezone;
@@ -820,11 +855,6 @@ function socketMessageListener(evt) {
                 break;
             case "piccscan":
                 listSCAN(obj);
-                break;
-            case "latestlog":
-                logdata = obj.list;
-                initLogTable();
-                document.getElementById("loading-img").style.display = "none";
                 break;
             case "ssidlist":
                 listSSID(obj);
@@ -842,7 +872,6 @@ function socketMessageListener(evt) {
         switch (obj.resultof) {
             case "latestlog":
                 if (obj.result === false) {
-                    $("#dismiss").click();
                     logdata = [];
                     initLogTable();
                     document.getElementById("loading-img").style.display = "none";
@@ -860,7 +889,7 @@ function socketMessageListener(evt) {
                         $(".fooicon-remove").click();
                     } else {
                         file.type = "esp-rfid-userbackup";
-                        file.version = "v0.5";
+                        file.version = "v0.6";
                         file.list = data;
                         piccBackup(file);
                     }
@@ -872,6 +901,14 @@ function socketMessageListener(evt) {
                     getnextpage("geteventlog");
                 } else if (page === haspages) {
                     initEventTable();
+                    document.getElementById("loading-img").style.display = "none";
+                }
+                break;
+            case "latestlist":
+                if (page < haspages && obj.result === true) {
+                    getnextpage("getlatestlog");
+                } else if (page === haspages) {
+                    initLatestLogTable();
                     document.getElementById("loading-img").style.display = "none";
                 }
                 break;
@@ -909,6 +946,11 @@ function clearevent() {
     $("#eventlog").click();
 }
 
+function clearlatest() {
+    websock.send("{\"command\":\"clearlatest\"}");
+    $("#latestlog").click();
+}
+
 
 
 
@@ -920,8 +962,7 @@ function compareDestroy() {
 }
 
 function destroy() {
-    websock.send("{\"command\":\"destroy\"}");
-    inProgress();
+    inProgress("destroy");
 }
 
 
@@ -942,12 +983,12 @@ $("#status").click(function() {
     return false;
 });
 
-$("#network").click(function() { getContent("#networkcontent"); return false; });
+$("#network").on("click", (function() { getContent("#networkcontent"); return false; }));
 $("#hardware").click(function() { getContent("#hardwarecontent"); return false; });
 $("#general").click(function() { getContent("#generalcontent"); return false; });
 $("#mqtt").click(function() { getContent("#mqttcontent"); return false; });
 $("#ntp").click(function() { getContent("#ntpcontent"); return false; });
-$("#users").click(function() { getContent("#userscontent"); return false; });
+$("#users").click(function() { getContent("#userscontent"); });
 $("#latestlog").click(function() { getContent("#logcontent"); return false; });
 $("#backup").click(function() { getContent("#backupcontent"); return false; });
 $("#reset").click(function() { $("#destroy").modal("show"); return false; });
@@ -1079,7 +1120,7 @@ $("#update").on("shown.bs.modal", function(e) {
     GetLatestReleaseInfo();
 })
 
-function inProgress() {
+function inProgress(callback) {
     $("body").load("esprfid.htm #progresscontent", function(responseTxt, statusTxt, xhr) {
         if (statusTxt === "success") {
             $(".progress").css("height", "40");
@@ -1093,28 +1134,39 @@ function inProgress() {
                     document.getElementById("updateprog").className = "progress-bar progress-bar-success";
                     document.getElementById("updateprog").innerHTML = "Completed";
                 }
-
             }, 500);
+            switch (callback) {
+                case "upload":
+                    $.ajax({
+                        url: "/update",
+                        type: "POST",
+                        data: formData,
+                        processData: false,
+                        contentType: false
+                    });
+                    break;
+                case "commit":
+                    websock.send(JSON.stringify(config));
+                    break;
+                case "destroy":
+                    websock.send("{\"command\":\"destroy\"}");
+                    break;
+                default:
+                    break;
 
-
-
+            }
         }
-
-    });
+    }).hide().fadeIn();
 }
+
+var formData = new FormData();
+
 
 function upload() {
-    var formData = new FormData();
     formData.append("bin", $("#binform")[0].files[0]);
-    $.ajax({
-        url: "/update",
-        type: "POST",
-        data: formData,
-        processData: false,
-        contentType: false
-    });
-    inProgress();
+    inProgress("upload");
 }
+
 
 
 
@@ -1146,29 +1198,32 @@ function GetLatestReleaseInfo() {
     }).error(function() { $("#onlineupdate").html("<h5>Couldn't get release info. Are you connected to Internet?</h5>"); });
 }
 
-$(document).ajaxComplete(function(e, xhr, settings) {
-    $("[data-toggle=\"popover\"]").popover({
-        container: "body"
-    });
-});
-
 function allowUpload() {
     $("#upbtn").prop("disabled", false);
 }
 
 
 function start() {
-    if (window.location.protocol === "https:") {
-        wsUri = "wss://" + window.location.hostname + "/ws";
-    } else if (window.location.protocol === "file:") {
-        wsUri = "ws://" + "localhost" + "/ws";
-    }
-    websock = new WebSocket(wsUri);
-    websock.addEventListener("message", socketMessageListener);
-    websock.addEventListener("error", socketErrorListener);
-    websock.addEventListener("close", socketCloseListener);
+    esprfidcontent = document.createElement("div");
+    esprfidcontent.id = "mastercontent";
+    esprfidcontent.style.display = "none";
+    document.body.appendChild(esprfidcontent);
+    $("#mastercontent").load("esprfid.htm", function(responseTxt, statusTxt, xhr) {
+        if (statusTxt === "success") {
+            if (window.location.protocol === "https:") {
+                wsUri = "wss://" + window.location.hostname + "/ws";
+            } else if (window.location.protocol === "file:") {
+                wsUri = "ws://" + "localhost" + "/ws";
+            }
+            websock = new WebSocket(wsUri);
+            websock.addEventListener("message", socketMessageListener);
+            websock.addEventListener("error", socketErrorListener);
+            websock.addEventListener("close", socketCloseListener);
 
-    websock.onopen = function(evt) {
-        websock.send("{\"command\":\"status\"}");
-    };
+            websock.onopen = function(evt) {
+                websock.send("{\"command\":\"status\"}");
+            };
+        }
+    });
+
 }
