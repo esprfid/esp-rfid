@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+#### Fixed
+- [webui] wrong version is shown
+
 ## [0.6.1] - 2018-03-14
 #### Added
 - [firmware] ICACHE_FLASH_ATTR and ICACHE_RAM_ATTR decorators (did not feel any difference in terms of speed, keeping it anyway).

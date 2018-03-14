@@ -45,8 +45,6 @@ var config = {
     }
 };
 
-config.general.version = "v0.6.1";
-
 var page = 1;
 var haspages;
 var logdata;
@@ -863,6 +861,7 @@ function socketMessageListener(evt) {
                 break;
             case "configfile":
                 config = obj;
+                config.general.version = "v0.6.1";
                 break;
             default:
                 break;
