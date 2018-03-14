@@ -1,7 +1,20 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [0.6]
+## [0.6.1] - 2018-03-14
+#### Added
+- [firmware] ICACHE_FLASH_ATTR and ICACHE_RAM_ATTR decorators (did not feel any difference in terms of speed, keeping it anyway).
+- [dev tools] Web UI Demo https://bitadvise.com/esp-rfid/
+- [dev tools] Websocket emulator access log
+
+#### Changed
+- [webui] Always show sidebar on big screens
+- [webui] Better versioning.
+
+#### Fixed
+- [build] Platformio bug
+
+## [0.6] - 2018-03-11
 #### Added
 - [firmware] Restart ESP if softAP fails.
 - [webui] Colorize access log based on result.

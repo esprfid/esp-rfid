@@ -102,11 +102,11 @@ AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
 
 /* ------------------ TRIVIAL Functions ------------------- */
-String printIP(IPAddress adress) {
+String ICACHE_FLASH_ATTR printIP(IPAddress adress) {
     return (String)adress[0] + "." + (String)adress[1] + "." + (String)adress[2] + "." + (String)adress[3];
 }
 
-void writeEvent(String type, String src, String desc, String data) {
+void ICACHE_RAM_ATTR writeEvent(String type, String src, String desc, String data) {
     DynamicJsonBuffer jsonBuffer44333;
     JsonObject& root = jsonBuffer44333.createObject();
     root["type"] = type;
@@ -120,7 +120,7 @@ void writeEvent(String type, String src, String desc, String data) {
     eventlog.close();
 }
 
-void writeLatest(String uid, String username, int acctype) {
+void ICACHE_RAM_ATTR writeLatest(String uid, String username, int acctype) {
     DynamicJsonBuffer jsonBuffer;
     JsonObject& root = jsonBuffer.createObject();
     root["uid"] = uid;
@@ -133,7 +133,7 @@ void writeLatest(String uid, String username, int acctype) {
     latestlog.close();
 }
 
-void sendEventLog(int page) {
+void ICACHE_FLASH_ATTR sendEventLog(int page) {
     DynamicJsonBuffer jsonBuffer44332;
     JsonObject& root = jsonBuffer44332.createObject();
     root["command"] = "eventlist";
@@ -163,7 +163,7 @@ void sendEventLog(int page) {
     }
 }
 
-void sendLatestLog(int page) {
+void ICACHE_FLASH_ATTR sendLatestLog(int page) {
     DynamicJsonBuffer jsonBuffer44332;
     JsonObject& root = jsonBuffer44332.createObject();
     root["command"] = "latestlist";
@@ -193,7 +193,7 @@ void sendLatestLog(int page) {
     }
 }
 
-void sendUserList(int page, AsyncWebSocketClient * client) {
+void ICACHE_FLASH_ATTR sendUserList(int page, AsyncWebSocketClient * client) {
     DynamicJsonBuffer jsonBuffer443;
     JsonObject& root = jsonBuffer443.createObject();
     root["command"] = "userlist";
@@ -247,7 +247,7 @@ void sendUserList(int page, AsyncWebSocketClient * client) {
 
 /* ------------------ Other Functions ------------------- */
 // Send system status on a WS request
-void sendStatus() {
+void ICACHE_FLASH_ATTR sendStatus() {
     struct ip_info info;
     FSInfo fsinfo;
     if (!SPIFFS.info(fsinfo)) {
@@ -298,7 +298,7 @@ void sendStatus() {
 }
 
 // Send Scanned SSIDs to websocket clients as JSON object
-void printScanResult(int networksFound) {
+void ICACHE_FLASH_ATTR printScanResult(int networksFound) {
     // sort by RSSI
     int n = networksFound;
     int indices[n];
@@ -342,13 +342,13 @@ void printScanResult(int networksFound) {
 }
 
 
-void mqttCallback(char* topic, byte* payload, unsigned int length) {
+void ICACHE_FLASH_ATTR mqttCallback(char* topic, byte* payload, unsigned int length) {
     if (length == 0) {
         return;
     }
 }
 
-void sendTime() {
+void ICACHE_FLASH_ATTR sendTime() {
     DynamicJsonBuffer jsonBuffer231;
     JsonObject& root = jsonBuffer231.createObject();
     root["command"] = "gettime";
@@ -363,7 +363,7 @@ void sendTime() {
 
 }
 
-void mqttConnect() {
+void ICACHE_FLASH_ATTR mqttConnect() {
     if (mqttHost != NULL && mqttPort != 0 && mqttTopic != NULL && !mqttClient.connected() ) {
         Serial.print(F("[ INFO ] Trying to connect to MQTT server : "));
         //setCallback();
@@ -386,7 +386,7 @@ void mqttConnect() {
 
 
 
-void parseBytes(const char* str, char sep, byte* bytes, int maxBytes, int base) {
+void ICACHE_FLASH_ATTR parseBytes(const char* str, char sep, byte* bytes, int maxBytes, int base) {
     for (int i = 0; i < maxBytes; i++) {
         bytes[i] = strtoul(str, NULL, base); // Convert byte
         str = strchr(str, sep);   // Find next separator
@@ -397,13 +397,13 @@ void parseBytes(const char* str, char sep, byte* bytes, int maxBytes, int base) 
     }
 }
 
-void disableWifi() {
+void ICACHE_FLASH_ATTR disableWifi() {
     isWifiConnected = false;
     WiFi.disconnect(true);
     Serial.println("Turn wifi off.");
 }
 
-bool startAP(const char * ssid, const char * password = NULL) {
+bool ICACHE_FLASH_ATTR startAP(const char * ssid, const char * password = NULL) {
     inAPMode = true;
     WiFi.mode(WIFI_AP);
     Serial.print(F("[ INFO ] Configuring access point... "));
@@ -420,7 +420,7 @@ bool startAP(const char * ssid, const char * password = NULL) {
 }
 
 // Fallback to AP Mode, so we can connect to ESP if there is no Internet connection
-void fallbacktoAPMode() {
+void ICACHE_FLASH_ATTR fallbacktoAPMode() {
     Serial.println(F("[ INFO ] ESP-RFID is running in Fallback AP Mode"));
     uint8_t macAddr[6];
     WiFi.softAPmacAddress(macAddr);
@@ -430,7 +430,7 @@ void fallbacktoAPMode() {
 }
 
 // Try to connect Wi-Fi
-bool connectSTA(const char* ssid, const char* password, byte bssid[6]) {
+bool ICACHE_FLASH_ATTR connectSTA(const char* ssid, const char* password, byte bssid[6]) {
     WiFi.disconnect(true);
     WiFi.mode(WIFI_STA);
     // First connect to a wi-fi network
@@ -470,7 +470,7 @@ bool connectSTA(const char* ssid, const char* password, byte bssid[6]) {
 
 /* ------------------ RFID Functions ------------------- */
 // RFID Specific Loop
-void rfidloop() {
+void ICACHE_RAM_ATTR rfidloop() {
 
     String uid = "";
     String type = "";
@@ -622,7 +622,7 @@ void rfidloop() {
     // So far got we got UID of Scanned RFID Tag, checked it if it's on the database and access status, informed Administrator Portal
 }
 
-void ShowMFRC522ReaderDetails() {
+void ICACHE_FLASH_ATTR ShowMFRC522ReaderDetails() {
     // Get the MFRC522 software version
     byte v = mfrc522.PCD_ReadRegister(mfrc522.VersionReg);
     Serial.print(F("[ INFO ] MFRC522 Version: 0x"));
@@ -643,7 +643,7 @@ void ShowMFRC522ReaderDetails() {
 }
 
 // Configure RFID Hardware
-void setupMFRC522Reader(int rfidss, int rfidgain) {
+void ICACHE_FLASH_ATTR setupMFRC522Reader(int rfidss, int rfidgain) {
     SPI.begin();     // MFRC522 Hardware uses SPI protocol
     mfrc522.PCD_Init(rfidss, UINT8_MAX); // Initialize MFRC522 Hardware
     // Set RFID Hardware Antenna Gain
@@ -654,7 +654,7 @@ void setupMFRC522Reader(int rfidss, int rfidgain) {
     ShowMFRC522ReaderDetails(); // Show details of PCD - MFRC522 Card Reader details
 }
 
-void setupWiegandReader(int d0, int d1) {
+void ICACHE_FLASH_ATTR setupWiegandReader(int d0, int d1) {
     wg.begin(d0, d0, d1, d1);
 }
 
@@ -663,7 +663,7 @@ void setupWiegandReader(int d0, int d1) {
 
 
 // Handles WebSocket Events
-void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len) {
+void ICACHE_RAM_ATTR onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len) {
     if (type == WS_EVT_ERROR) {
         Serial.printf("[ WARN ] WebSocket[%s][%u] error(%u): %s\r\n", server->url(), client->id(), *((uint16_t*)arg), (char*)data);
     }
@@ -776,7 +776,7 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
 }
 
 
-bool loadConfiguration() {
+bool ICACHE_FLASH_ATTR loadConfiguration() {
     File configFile = SPIFFS.open("/config.json", "r");
     if (!configFile) {
         Serial.println(F("[ WARN ] Failed to open config file"));
@@ -894,14 +894,14 @@ bool loadConfiguration() {
     return true;
 }
 
-void enableWifi() {
+void ICACHE_FLASH_ATTR enableWifi() {
     Serial.println("Turn wifi on.");
     if (!loadConfiguration())
         fallbacktoAPMode();
 }
 
 /* ------------------ BASIC SYSTEM Functions ------------------- */
-void setupWebServer() {
+void ICACHE_FLASH_ATTR setupWebServer() {
     // Start WebSocket Plug-in and handle incoming message on "onWsEvent" function
     server.addHandler(&ws);
     ws.onEvent(onWsEvent);
@@ -1076,7 +1076,7 @@ void setupWebServer() {
 }
 
 // Set things up
-void setup() {
+void ICACHE_FLASH_ATTR setup() {
     // Populate the last modification date based on build datetime
     sprintf(last_modified, "%s %s GMT", __DATE__, __TIME__);
     pinMode(FRESETPIN, INPUT_PULLUP);
@@ -1121,7 +1121,7 @@ void setup() {
 }
 
 // Main Loop
-void loop() {
+void ICACHE_RAM_ATTR loop() {
     if (formatreq) {
         Serial.println(F("[ WARN ] Factory reset initiated..."));
         SPIFFS.end();

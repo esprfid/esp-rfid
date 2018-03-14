@@ -114,8 +114,8 @@
     <legend>Hardware Settings</legend>
     <h6 class="text-muted">Please refer the <a href="https://github.com/omersiar/esp-rfid#pin-layout">documentation</a> for pin configuration.</h6>
     <div class="row form-group">
-        <label class="col-xs-3">Reader type<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Choose RFID reader type."></i></label>
-        <div class="col-xs-9">
+        <label class="col-xs-3">Reader Type<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Choose RFID reader type."></i></label>
+        <div class="col-xs-9 col-md-5">
             <select class="form-control input-sm" id="readerType" onchange="handleReader();">
                 <option selected="selected" value="0">MFRC522</option>
                 <option value="1">Wiegand</option>
@@ -237,7 +237,7 @@
                 <table id="latestlogtable" class="table" data-paging="true" data-filtering="true" data-sorting="true" data-editing="false" data-state="true"></table>
             </div>
         </div>
-        <button onclick="clearlatest()" class="btn btn-primary btn-sm pull-right">Clear Log</button>
+        <button onclick="clearlatest()" class="btn btn-primary btn-sm">Clear Log</button>
         <div style="clear:both;">
             <br>
             <br>
@@ -260,12 +260,10 @@
                 <table id="eventtable" class="table" data-paging="true" data-filtering="true" data-sorting="true" data-editing="false" data-state="true"></table>
             </div>
         </div>
-        <div class="col-xs-9 col-md-8">
-            <button onclick="clearevent()" class="btn btn-primary btn-sm pull-right">Clear Log</button>
-            <div style="clear:both;">
-                <br>
-                <br>
-            </div>
+        <button onclick="clearevent()" class="btn btn-primary btn-sm">Clear Log</button>
+        <div style="clear:both;">
+            <br>
+            <br>
         </div>
     </div>
 </div>
@@ -464,16 +462,16 @@
     <br>
     <br>
     <div class="row text-center">
-        <div class="col-md-4 col-md-offset-4">
+        <div class="col-md-8 col-md-offset-2">
             <h1>Welcome</h1>
             <p>Here you can find some information about your device status.</p>
             <div class="panel panel-default">
                 <div class="panel-body">
-                    <span>esp-rfid Access Control</span>&nbsp; <small><strong>v<span>0.6</span></strong></small>
+                    <span>esp-rfid Access Control</span>&nbsp; <small><strong><span id="sver"></span></strong></small>
                 </div>
             </div>
         </div>
-        <div class="col-md-4 col-md-offset-4">
+        <div class="col-md-8 col-md-offset-2">
             <div class="panel panel-default table-responsive">
                 <table class="table table-hover table-striped table-condensed">
                     <caption>Device</caption>
