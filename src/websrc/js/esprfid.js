@@ -27,7 +27,8 @@ var config = {
     "general": {
         "hostnm": "esp-rfid",
         "restart": "0",
-        "pswd": "admin"
+        "pswd": "admin",
+        "version": ""
     },
     "mqtt": {
         "enabled": "0",
@@ -43,6 +44,8 @@ var config = {
         "timezone": "0"
     }
 };
+
+config.general.version = "v0.6.1";
 
 var page = 1;
 var haspages;
@@ -189,7 +192,6 @@ function revcommit() {
 }
 
 function commit() {
-    config.general.version = "v0.6";
     inProgress("commit");
 }
 
@@ -804,7 +806,7 @@ function listStats() {
     document.getElementById("mask").innerHTML = ajaxobj.netmask;
     document.getElementById("dns").innerHTML = ajaxobj.dns;
     document.getElementById("mac").innerHTML = ajaxobj.mac;
-    websock.send("{\"command\":\"getconf\"}");
+    document.getElementById("sver").innerText = config.general.version;
 }
 
 var nextIsNotJson = false;
@@ -1221,6 +1223,7 @@ function start() {
             websock.addEventListener("close", socketCloseListener);
 
             websock.onopen = function(evt) {
+                websock.send("{\"command\":\"getconf\"}");
                 websock.send("{\"command\":\"status\"}");
             };
         }
