@@ -712,6 +712,9 @@ void ICACHE_RAM_ATTR onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * c
             else if (strcmp(command, "status")  == 0) {
                 sendStatus();
             }
+            else if (strcmp(command, "restart")  == 0) {
+                ESP.restart();
+            }
             else if (strcmp(command, "destroy")  == 0) {
                 formatreq = true;
             }

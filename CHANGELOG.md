@@ -2,8 +2,13 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+#### Added
+- [webui] Try to connect button upon inprogress complete.
+- [webui] Restart without saving changes.
+
 #### Fixed
-- [webui] wrong version is shown
+- [webui] wrong version is shown #80 .
+- [webui] whole html was shifted previous css change.
 
 ## [0.6.1] - 2018-03-14
 #### Added

@@ -4,11 +4,11 @@
     <div class="row">
         <div class="col-sm-6">
             <legend>Backup</legend>
-            <h6 class="text-muted">Please make sure that you have made a backup before updating the firmware.</h6>
+            <h6 class="text-muted">Please make sure that you have made a backup on regular basis.</h6>
             <div>
-                <button class="btn btn-link btn-sm" onclick="backupuser()">Backup User Data</button>
+                <button class="btn btn-link btn-sm" onclick="backupuser();">Backup User Data</button>
                 <a id="downloadUser" style="display:none"></a>
-                <button class="btn btn-link btn-sm" onclick="backupset()">Backup Settings</button>
+                <button class="btn btn-link btn-sm" onclick="backupset();">Backup Settings</button>
                 <a id="downloadSet" style="display:none"></a>
             </div>
             <br>
@@ -16,9 +16,16 @@
                 <legend>Restore</legend>
                 <h6 class="text-muted">Click on links and choose your backup file to restore.</h6>
                 <label for="restoreUser" class="btn btn-link btn-sm">Restore User Data</label>
-                <input id="restoreUser" type="file" accept="text/json" onchange="restoreUser()" style="display:none;">
+                <input id="restoreUser" type="file" accept="text/json" onchange="restoreUser();" style="display:none;">
                 <label for="restoreSet" class="btn btn-link btn-sm">Restore Settings</label>
-                <input id="restoreSet" type="file" accept="text/json" onchange="restoreSet()" style="display:none;">
+                <input id="restoreSet" type="file" accept="text/json" onchange="restoreSet();" style="display:none;">
+            </div>
+            <br>
+                        <div>
+                <legend>Restart</legend>
+                <h6 class="text-muted">Click to restart your device without saving changes.</h6>
+                <label for="restart" class="btn btn-link btn-sm">Restart Device</label>
+                <button id="restart" class="btn btn-link btn-sm" onclick="restartESP();" style="display:none;"></button>
             </div>
             <br>
             <div id="restoremodal" class="modal fade" role="dialog">
@@ -50,7 +57,7 @@
     <div class="container">
         <div class="row">
             <br>
-            <div class="col-md-4 col-md-offset-4">
+            <div class="col-md-8 col-md-offset-2">
                 <div class="panel panel-default">
                     <div class="panel-heading">
                         <h3 class="panel-title">Please wait while your ESP restarts...</h3>
@@ -61,6 +68,7 @@
                             </div>
                         </div>
                     </div>
+                    <div class="panel-footer text-center" id="reconnect" style="display:none;"></div>
                 </div>
             </div>
         </div>

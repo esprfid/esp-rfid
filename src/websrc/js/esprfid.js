@@ -777,8 +777,9 @@ function acctypefinder() {
     }
 }
 
-
-
+function restartESP() {
+    inProgress("restart");
+}
 
 function colorStatusbar(ref) {
     var percentage = ref.style.width.slice(0, -1);
@@ -805,6 +806,7 @@ function listStats() {
     document.getElementById("dns").innerHTML = ajaxobj.dns;
     document.getElementById("mac").innerHTML = ajaxobj.mac;
     document.getElementById("sver").innerText = config.general.version;
+    $("#mainver").text(config.general.version);
 }
 
 var nextIsNotJson = false;
@@ -861,7 +863,7 @@ function socketMessageListener(evt) {
                 break;
             case "configfile":
                 config = obj;
-                config.general.version = "v0.6.1";
+                config.general.version = "v0.6.2";
                 break;
             default:
                 break;
@@ -1132,6 +1134,11 @@ function inProgress(callback) {
                 i++;
                 if (i === 101) {
                     clearInterval(prg);
+                    var a = document.createElement("a");
+                    a.href = "http://" + config.general.hostnm + ".local";
+                    a.innerText = "Try to reconnect ESP";
+                    document.getElementById("reconnect").appendChild(a);
+                    document.getElementById("reconnect").style.display = "block";
                     document.getElementById("updateprog").className = "progress-bar progress-bar-success";
                     document.getElementById("updateprog").innerHTML = "Completed";
                 }
@@ -1151,6 +1158,9 @@ function inProgress(callback) {
                     break;
                 case "destroy":
                     websock.send("{\"command\":\"destroy\"}");
+                    break;
+                case "restart":
+                    websock.send("{\"command\":\"restart\"}");
                     break;
                 default:
                     break;
