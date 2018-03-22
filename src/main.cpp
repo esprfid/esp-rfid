@@ -36,7 +36,6 @@
 // these are from us which can be updated and changed
 #include "webh/esprfid.js.gz.h"
 #include "webh/esprfid.htm.gz.h"
-#include "webh/login.html.gz.h"
 #include "webh/index.html.gz.h"
 
 
@@ -1153,24 +1152,10 @@ void ICACHE_FLASH_ATTR setupWebServer() {
         }
     });
 
-    server.on("/login.html", HTTP_GET, [](AsyncWebServerRequest * request) {
-        // Check if the client already has the same version and respond with a 304 (Not modified)
-        if (request->header("If-Modified-Since").equals(last_modified)) {
-            request->send(304);
-
-        } else {
-            // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
-            AsyncWebServerResponse * response = request->beginResponse_P(200, "text/html", login_html_gz, login_html_gz_len);
-            // Tell the browswer the contemnt is Gzipped
-            response->addHeader("Content-Encoding", "gzip");
-            // And set the last-modified datetime so we can check if we need to send it again next time or not
-            response->addHeader("Last-Modified", last_modified);
-            request->send(response);
-        }
-    });
     if (http_pass == NULL) {
         http_pass = strdup("admin");
     }
+    
     // HTTP basic authentication
     server.on("/login", HTTP_GET, [](AsyncWebServerRequest * request) {
         String remoteIP = printIP(request->client()->remoteIP());
@@ -1182,7 +1167,7 @@ void ICACHE_FLASH_ATTR setupWebServer() {
         writeEvent("INFO", "websrv", "Login success!", remoteIP);
     });
 
-    server.rewrite("/", "/login.html");
+    server.rewrite("/", "/index.html");
 
     // Start Web Server
     server.begin();

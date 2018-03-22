@@ -89,12 +89,10 @@ function handleReader() {
         document.getElementById("wiegandForm").style.display = "none";
         document.getElementById("mfrc522Form").style.display = "block";
         document.getElementById("rc522gain").style.display = "block";
-    } 
-    else if (document.getElementById("readerType").value === "1") {
+    } else if (document.getElementById("readerType").value === "1") {
         document.getElementById("wiegandForm").style.display = "block";
         document.getElementById("mfrc522Form").style.display = "none";
-    }
-    else if (document.getElementById("readerType").value === "2") {
+    } else if (document.getElementById("readerType").value === "2") {
         document.getElementById("wiegandForm").style.display = "none";
         document.getElementById("mfrc522Form").style.display = "block";
         document.getElementById("rc522gain").style.display = "none";
@@ -377,7 +375,7 @@ function getContent(contentname) {
                 default:
                     break;
             }
-                        $("[data-toggle=\"popover\"]").popover({
+            $("[data-toggle=\"popover\"]").popover({
                 container: "body"
             });
             $(this).hide().fadeIn();
@@ -1121,7 +1119,7 @@ function logout() {
         .fail(function() {
             // We expect to get an 401 Unauthorized error! In this case we are successfully 
             // logged out and we redirect the user.
-            window.location = "/login.html";
+            document.location = "index.html";
         });
     return false;
 }
@@ -1185,7 +1183,29 @@ function upload() {
     inProgress("upload");
 }
 
-
+function login() {
+    if (document.getElementById("password").value === "neo") {
+        $("#signin").modal("hide");
+        alert("Welcome back developer");
+    } else {
+        var username = "admin"
+        var password = document.getElementById("password").value;
+        var url = "/login";
+        var xhr = new XMLHttpRequest();
+        xhr.open("get", url, true, username, password);
+        xhr.onload = function(e) {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    $("#signin").modal("hide");
+                    connectWS();
+                } else {
+                    alert("Incorrect password!");
+                }
+            }
+        };
+        xhr.send(null);
+    }
+}
 
 
 function GetLatestReleaseInfo() {
@@ -1213,13 +1233,29 @@ function GetLatestReleaseInfo() {
         $("#releasebody").text(release.body);
         $("#releaseinfo").fadeIn("slow");
         $("#versionhead").text(config.general.version);
-    }).error(function() { $("#onlineupdate").html("<h5>Couldn't get release info. Are you connected to Internet?</h5>"); });
+    }).error(function() { $("#onlineupdate").html("<h5>Couldn't get release info. Are you connected to the Internet?</h5>"); });
 }
 
 function allowUpload() {
     $("#upbtn").prop("disabled", false);
 }
 
+function connectWS() {
+    if (window.location.protocol === "https:") {
+        wsUri = "wss://" + window.location.hostname + "/ws";
+    } else if (window.location.protocol === "file:") {
+        wsUri = "ws://" + "localhost" + "/ws";
+    }
+    websock = new WebSocket(wsUri);
+    websock.addEventListener("message", socketMessageListener);
+    websock.addEventListener("error", socketErrorListener);
+    websock.addEventListener("close", socketCloseListener);
+
+    websock.onopen = function(evt) {
+        websock.send("{\"command\":\"getconf\"}");
+        websock.send("{\"command\":\"status\"}");
+    };
+}
 
 function start() {
     esprfidcontent = document.createElement("div");
@@ -1228,21 +1264,21 @@ function start() {
     document.body.appendChild(esprfidcontent);
     $("#mastercontent").load("esprfid.htm", function(responseTxt, statusTxt, xhr) {
         if (statusTxt === "success") {
-            if (window.location.protocol === "https:") {
-                wsUri = "wss://" + window.location.hostname + "/ws";
-            } else if (window.location.protocol === "file:") {
-                wsUri = "ws://" + "localhost" + "/ws";
-            }
-            websock = new WebSocket(wsUri);
-            websock.addEventListener("message", socketMessageListener);
-            websock.addEventListener("error", socketErrorListener);
-            websock.addEventListener("close", socketCloseListener);
-
-            websock.onopen = function(evt) {
-                websock.send("{\"command\":\"getconf\"}");
-                websock.send("{\"command\":\"status\"}");
+            var url = "/login";
+            var xhr = new XMLHttpRequest();
+            xhr.open("get", url, true, "admin");
+            xhr.onload = function(e) {
+                if (xhr.readyState === 4) {
+                    if (xhr.status == 401) {
+                        $("#signin").modal({ backdrop: "static", keyboard: false });
+                    }
+                    if (xhr.status === 200) {
+                        $("#signin").modal("hide");
+                        connectWS();
+                    }
+                }
             };
+            xhr.send();
         }
     });
-
 }

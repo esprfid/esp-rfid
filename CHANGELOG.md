@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 - [firmware] Staging framework for platformio
 
 #### Changed
+- [webui] Sign in panel now integrated into index.html
 - [firmware] Reduced serial outputs.
 
 #### Fixed
