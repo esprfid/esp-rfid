@@ -88,9 +88,16 @@ function handleReader() {
     if (document.getElementById("readerType").value === "0") {
         document.getElementById("wiegandForm").style.display = "none";
         document.getElementById("mfrc522Form").style.display = "block";
-    } else if (document.getElementById("readerType").value === "1") {
+        document.getElementById("rc522gain").style.display = "block";
+    } 
+    else if (document.getElementById("readerType").value === "1") {
         document.getElementById("wiegandForm").style.display = "block";
         document.getElementById("mfrc522Form").style.display = "none";
+    }
+    else if (document.getElementById("readerType").value === "2") {
+        document.getElementById("wiegandForm").style.display = "none";
+        document.getElementById("mfrc522Form").style.display = "block";
+        document.getElementById("rc522gain").style.display = "none";
     }
 }
 
@@ -791,10 +798,10 @@ function listStats() {
     document.getElementById("cpu").innerHTML = ajaxobj.cpu + " Mhz";
     document.getElementById("uptime").innerHTML = ajaxobj.uptime;
     document.getElementById("heap").innerHTML = ajaxobj.heap + " Bytes";
-    document.getElementById("heap").style.width = (ajaxobj.heap * 100) / 81920 + "%";
+    document.getElementById("heap").style.width = (ajaxobj.heap * 100) / 40960 + "%";
     colorStatusbar(document.getElementById("heap"));
     document.getElementById("flash").innerHTML = ajaxobj.availsize + " Bytes";
-    document.getElementById("flash").style.width = (ajaxobj.availsize * 100) / 1044464 + "%";
+    document.getElementById("flash").style.width = (ajaxobj.availsize * 100) / 2092032 + "%";
     colorStatusbar(document.getElementById("flash"));
     document.getElementById("spiffs").innerHTML = ajaxobj.availspiffs + " Bytes";
     document.getElementById("spiffs").style.width = (ajaxobj.availspiffs * 100) / ajaxobj.spiffssize + "%";
@@ -863,7 +870,7 @@ function socketMessageListener(evt) {
                 break;
             case "configfile":
                 config = obj;
-                config.general.version = "v0.6.2";
+                config.general.version = "v0.7";
                 break;
             default:
                 break;

@@ -3,12 +3,22 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 #### Added
+- [firmware] !!! BREAKING CHANGE !!! 2 MB Flash 2 MB SPIFFS size for future proof firmware updates plase make sure you made a backup before updating to this version. You need to format SPIFFS.
+- [firmware] Experimental PN532 RFID Reader Support
 - [webui] Try to connect button upon inprogress complete.
 - [webui] Restart without saving changes.
+- [firmware] Staging framework for platformio
+
+#### Changed
+- [firmware] Reduced serial outputs.
 
 #### Fixed
-- [webui] wrong version is shown #80 .
-- [webui] whole html was shifted previous css change.
+- [webui] wrong version is shown #80.
+- [webui] whole html was shifted with previous css change.
+
+#### Removed
+- [firmware] MQTT Specific code, will switch to asyc mqtt
+- [firmware] Factory reset via pin
 
 ## [0.6.1] - 2018-03-14
 #### Added

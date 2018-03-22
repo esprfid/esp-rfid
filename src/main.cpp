@@ -25,8 +25,8 @@
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 #include <TimeLib.h>
-#include <PubSubClient.h>
 #include <Ntp.h>
+#include <PN532.h>
 
 // these are from vendors
 #include "webh/glyphicons-halflings-regular.woff.gz.h"
@@ -46,8 +46,23 @@ extern "C" {
 }
 #endif
 
-#define DEBUG
-#define FRESETPIN 16
+// #define DEBUG
+
+// Create instance for Wiegand reade
+WIEGAND wg;
+// Create MFRC522 RFID instance
+MFRC522 mfrc522 = MFRC522();
+
+PN532 pn532;
+
+NtpClient NTP;
+
+// Create AsyncWebServer instance on port "80"
+AsyncWebServer server(80);
+// Create WebSocket instance on URL "/ws"
+AsyncWebSocket ws("/ws");
+
+
 
 // Variables for whole scope
 const char * http_username = "admin";
@@ -72,10 +87,8 @@ int wifiTimeout = -1;
 unsigned long wiFiUptimeMillis = 0;
 char * deviceHostname = NULL;
 
-NtpClient NTP;
 
-
-// MQTT
+/*
 WiFiClient wifiClient;
 IPAddress MQTTserver();
 PubSubClient mqttClient(wifiClient);
@@ -85,28 +98,23 @@ bool mqttConnected = false;
 char *mqttTopic = NULL;
 char *mqttUser = NULL;
 char *mqttPwd = NULL;
+*/
 
+int rfidss;
 int readerType;
 int relayPin;
 int relayType;
 int activateTime;
 int timeZone;
 
-// Create instance for Wiegand reade
-WIEGAND wg;
-// Create MFRC522 RFID instance
-MFRC522 mfrc522 = MFRC522();
-// Create AsyncWebServer instance on port "80"
-AsyncWebServer server(80);
-// Create WebSocket instance on URL "/ws"
-AsyncWebSocket ws("/ws");
+
 
 /* ------------------ TRIVIAL Functions ------------------- */
 String ICACHE_FLASH_ATTR printIP(IPAddress adress) {
     return (String)adress[0] + "." + (String)adress[1] + "." + (String)adress[2] + "." + (String)adress[3];
 }
 
-void ICACHE_RAM_ATTR writeEvent(String type, String src, String desc, String data) {
+void ICACHE_FLASH_ATTR writeEvent(String type, String src, String desc, String data) {
     DynamicJsonBuffer jsonBuffer44333;
     JsonObject& root = jsonBuffer44333.createObject();
     root["type"] = type;
@@ -120,7 +128,7 @@ void ICACHE_RAM_ATTR writeEvent(String type, String src, String desc, String dat
     eventlog.close();
 }
 
-void ICACHE_RAM_ATTR writeLatest(String uid, String username, int acctype) {
+void ICACHE_FLASH_ATTR writeLatest(String uid, String username, int acctype) {
     DynamicJsonBuffer jsonBuffer;
     JsonObject& root = jsonBuffer.createObject();
     root["uid"] = uid;
@@ -146,7 +154,7 @@ void ICACHE_FLASH_ATTR sendEventLog(int page) {
     while (eventlog.available()) {
         String item = String();
         item = eventlog.readStringUntil('\n');
-        if (i >= first && i < last) {            
+        if (i >= first && i < last) {
             items.add(item);
         }
         i++;
@@ -176,7 +184,7 @@ void ICACHE_FLASH_ATTR sendLatestLog(int page) {
     while (latestlog.available()) {
         String item = String();
         item = latestlog.readStringUntil('\n');
-        if (i >= first && i < last) {            
+        if (i >= first && i < last) {
             items.add(item);
         }
         i++;
@@ -251,7 +259,9 @@ void ICACHE_FLASH_ATTR sendStatus() {
     struct ip_info info;
     FSInfo fsinfo;
     if (!SPIFFS.info(fsinfo)) {
+#ifdef DEBUG
         Serial.print(F("[ WARN ] Error getting info on SPIFFS"));
+#endif
     }
     DynamicJsonBuffer jsonBuffer567;
     JsonObject& root = jsonBuffer567.createObject();
@@ -341,12 +351,13 @@ void ICACHE_FLASH_ATTR printScanResult(int networksFound) {
     WiFi.scanDelete();
 }
 
-
+/*
 void ICACHE_FLASH_ATTR mqttCallback(char* topic, byte* payload, unsigned int length) {
     if (length == 0) {
         return;
     }
 }
+*/
 
 void ICACHE_FLASH_ATTR sendTime() {
     DynamicJsonBuffer jsonBuffer231;
@@ -363,9 +374,12 @@ void ICACHE_FLASH_ATTR sendTime() {
 
 }
 
+/*
 void ICACHE_FLASH_ATTR mqttConnect() {
     if (mqttHost != NULL && mqttPort != 0 && mqttTopic != NULL && !mqttClient.connected() ) {
+        #ifdef DEBUG
         Serial.print(F("[ INFO ] Trying to connect to MQTT server : "));
+        #endif
         //setCallback();
         unsigned char retries = 0;
         mqttConnected = false;
@@ -382,6 +396,7 @@ void ICACHE_FLASH_ATTR mqttConnect() {
         }
     }
 }
+*/
 
 
 
@@ -400,7 +415,9 @@ void ICACHE_FLASH_ATTR parseBytes(const char* str, char sep, byte* bytes, int ma
 void ICACHE_FLASH_ATTR disableWifi() {
     isWifiConnected = false;
     WiFi.disconnect(true);
+#ifdef DEBUG
     Serial.println("Turn wifi off.");
+#endif
 }
 
 bool ICACHE_FLASH_ATTR startAP(const char * ssid, const char * password = NULL) {
@@ -511,14 +528,36 @@ void ICACHE_RAM_ATTR rfidloop() {
             Serial.println(wg.getCode());
             uid = String(wg.getCode(), HEX);
             type = String(wg.getWiegandType(), HEX);
+            cooldown = millis() + 2000;
         } else {
             return;
         }
-    }
+    } else if (readerType == 2) {
+        bool found = false;
+        byte pnuid[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+        eCardType e_CardType;
 
-    if (mqttClient.connected()) {
-        mqttClient.publish(mqttTopic, uid.c_str(), false);
+        byte     u8_UidLength = 0x00;   // UID = 4 or 7 bytes
+
+        found = pn532.ReadPassiveTargetID(pnuid, &u8_UidLength, &e_CardType);
+
+        if (found && u8_UidLength >= 4) {
+            Serial.print(F("[ INFO ] PICC's UID: "));
+            for (uint8_t i = 0; i < u8_UidLength; i++) {
+                uid += String(pnuid[i], HEX);
+            }
+            Serial.print(uid);
+            cooldown = millis() + 2000;
+        } else {
+            delay(50);
+            return;
+        }
     }
+    /*
+        if (mqttClient.connected()) {
+            mqttClient.publish(mqttTopic, uid.c_str(), false);
+        }
+        */
 
     // We are going to use filesystem to store known UIDs.
     // If we know the PICC we need to know if its User have an Access
@@ -545,6 +584,7 @@ void ICACHE_RAM_ATTR rfidloop() {
             // Get username Access Status
             String username = json["user"];
             AccType = json["acctype"];
+#ifdef DEBUG
             Serial.println(" = known PICC");
             Serial.print("[ INFO ] User Name: ");
 
@@ -552,22 +592,29 @@ void ICACHE_RAM_ATTR rfidloop() {
                 Serial.print(uid);
             else
                 Serial.print(username);
+#endif
 
             // Check if user have an access
             if (AccType == 1) {
                 activateRelay = true; // Give user Access to Door, Safe, Box whatever you like
                 previousMillis = millis();
+#ifdef DEBUG
                 Serial.println(" have access");
+#endif
             }
             else if (AccType == 99)
             {
                 previousMillis = millis();
                 doEnableWifi = true;
                 activateRelay = true; // Give user Access to Door, Safe, Box whatever you like
+#ifdef DEBUG
                 Serial.println(" have admin access, enable wifi");
+#endif
             }
             else {
+#ifdef DEBUG
                 Serial.println(" does not have access");
+#endif
             }
             writeLatest(uid, username, AccType);
             // Also inform Administrator Portal
@@ -600,10 +647,12 @@ void ICACHE_RAM_ATTR rfidloop() {
     else {
         // If we don't know the UID, inform Administrator Portal so admin can give access or add it to database
         String data = String(uid);
-        data += " " +String(type);
+        data += " " + String(type);
         writeEvent("WARN", "rfid", "Unknown rfid tag is scanned", data);
         writeLatest(uid, "Unknown", 98);
+#ifdef DEBUG
         Serial.println(" = unknown PICC");
+#endif
         DynamicJsonBuffer jsonBuffer2344;
         JsonObject& root = jsonBuffer2344.createObject();
         root["command"] = "piccscan";
@@ -622,9 +671,11 @@ void ICACHE_RAM_ATTR rfidloop() {
     // So far got we got UID of Scanned RFID Tag, checked it if it's on the database and access status, informed Administrator Portal
 }
 
+#ifdef DEBUG
 void ICACHE_FLASH_ATTR ShowMFRC522ReaderDetails() {
     // Get the MFRC522 software version
     byte v = mfrc522.PCD_ReadRegister(mfrc522.VersionReg);
+
     Serial.print(F("[ INFO ] MFRC522 Version: 0x"));
     Serial.print(v, HEX);
     if (v == 0x91)
@@ -641,6 +692,11 @@ void ICACHE_FLASH_ATTR ShowMFRC522ReaderDetails() {
         Serial.println(F("[ WARN ] Communication failure, check if MFRC522 properly connected"));
     }
 }
+#endif
+
+void ICACHE_FLASH_ATTR setupWiegandReader(int d0, int d1) {
+    wg.begin(d0, d1);
+}
 
 // Configure RFID Hardware
 void ICACHE_FLASH_ATTR setupMFRC522Reader(int rfidss, int rfidgain) {
@@ -649,13 +705,48 @@ void ICACHE_FLASH_ATTR setupMFRC522Reader(int rfidss, int rfidgain) {
     // Set RFID Hardware Antenna Gain
     // This may not work with some boards
     mfrc522.PCD_SetAntennaGain(rfidgain);
+#ifdef DEBUG
     Serial.printf("[ INFO ] RFID SS_PIN: %u and Gain Factor: %u", rfidss, rfidgain);
     Serial.println("");
+#endif
+#ifdef DEBUG
     ShowMFRC522ReaderDetails(); // Show details of PCD - MFRC522 Card Reader details
+#endif
 }
 
-void ICACHE_FLASH_ATTR setupWiegandReader(int d0, int d1) {
-    wg.begin(d0, d0, d1, d1);
+
+void ICACHE_FLASH_ATTR setupPN532Reader(int rfidss) {
+    // init controller
+    pn532.InitSoftwareSPI(14, 12, 13, rfidss, 0);
+    do // pseudo loop (just used for aborting with break;)
+    {
+        // Reset the PN532
+        pn532.begin(); // delay > 400 ms
+
+        byte IC, VersionHi, VersionLo, Flags;
+        if (!pn532.GetFirmwareVersion(&IC, &VersionHi, &VersionLo, &Flags))
+            break;
+#ifdef DEBUG
+        char Buf[80];
+        sprintf(Buf, "Chip: PN5%02X, Firmware version: %d.%d\r\n", IC, VersionHi, VersionLo);
+        Utils::Print(Buf);
+        sprintf(Buf, "Supports ISO 14443A:%s, ISO 14443B:%s, ISO 18092:%s\r\n", (Flags & 1) ? "Yes" : "No",
+                (Flags & 2) ? "Yes" : "No",
+                (Flags & 4) ? "Yes" : "No");
+        Utils::Print(Buf);
+#endif
+        // Set the max number of retry attempts to read from a card.
+        // This prevents us from waiting forever for a card, which is the default behaviour of the PN532.
+        if (!pn532.SetPassiveActivationRetries())
+            break;
+
+        // configure the PN532 to read RFID tags
+        if (!pn532.SamConfig())
+            break;
+
+
+    }
+    while (false);
 }
 
 
@@ -663,9 +754,11 @@ void ICACHE_FLASH_ATTR setupWiegandReader(int d0, int d1) {
 
 
 // Handles WebSocket Events
-void ICACHE_RAM_ATTR onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len) {
+void ICACHE_FLASH_ATTR onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len) {
     if (type == WS_EVT_ERROR) {
+#ifdef DEBUG
         Serial.printf("[ WARN ] WebSocket[%s][%u] error(%u): %s\r\n", server->url(), client->id(), *((uint16_t*)arg), (char*)data);
+#endif
     }
     else if (type == WS_EVT_DATA) {
 
@@ -682,8 +775,11 @@ void ICACHE_RAM_ATTR onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * c
             DynamicJsonBuffer jsonBuffer413;
             JsonObject& root = jsonBuffer413.parseObject(msg);
             if (!root.success()) {
+#ifdef DEBUG
                 Serial.println(F("[ WARN ] Couldn't parse WebSocket message"));
+#endif
                 return;
+
             }
 
             // Web Browser sends some commands, check which command is given
@@ -713,7 +809,7 @@ void ICACHE_RAM_ATTR onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * c
                 sendStatus();
             }
             else if (strcmp(command, "restart")  == 0) {
-                ESP.restart();
+                shouldReboot = true;
             }
             else if (strcmp(command, "destroy")  == 0) {
                 formatreq = true;
@@ -806,25 +902,27 @@ bool ICACHE_FLASH_ATTR loadConfiguration() {
     JsonObject& network = json["network"];
     JsonObject& hardware = json["hardware"];
     JsonObject& general = json["general"];
-    JsonObject& mqtt = json["mqtt"];
+    // JsonObject& mqtt = json["mqtt"];
     JsonObject& ntp = json["ntp"];
-
+#ifdef DEBUG
     Serial.print(F("[ INFO ] Trying to setup RFID Hardware :"));
+#endif
     readerType = hardware["readerType"];
 
     if ( readerType == 1 ) {
         int wgd0pin = hardware["wgd0pin"];
         int wgd1pin = hardware["wgd1pin"];
-        Serial.println(F("Wiegand"));
         setupWiegandReader(wgd0pin, wgd1pin); // also some other settings like weather to use keypad or not, LED pin, BUZZER pin, Wiegand 26/34 version
     } else if ( readerType == 0 ) {
-        int rfidss = 15;
+        rfidss = 15;
         if (hardware.containsKey("sspin")) {
             rfidss = hardware["sspin"];
         }
         int rfidgain = hardware["rfidgain"];
-        Serial.println(F("MFRC522"));
         setupMFRC522Reader(rfidss, rfidgain);
+    } else if ( readerType == 2) {
+        rfidss = hardware["sspin"];
+        setupPN532Reader(rfidss);
     }
 
     autoRestartIntervalSeconds = general["restart"].as<int>();
@@ -840,7 +938,9 @@ bool ICACHE_FLASH_ATTR loadConfiguration() {
 
     // Start mDNS service so we can connect to http://esp-rfid.local (if Bonjour installed on Windows or Avahi on Linux)
     if (!MDNS.begin(deviceHostname)) {
+#ifdef DEBUG
         Serial.println("Error setting up MDNS responder!");
+#endif
     }
     // Add Web Server service to mDNS
     MDNS.addService("http", "tcp", 80);
@@ -871,37 +971,43 @@ bool ICACHE_FLASH_ATTR loadConfiguration() {
         return false;
     }
     NTP.Ntp(ntpserver, timeZone, ntpinter * 60);
-
-    // mqtt
-    if (mqttHost != NULL) {
-        free((void *)mqttHost);
-    }
-    mqttHost = strdup(mqtt["host"]);
-    mqttPort = mqtt["port"];
-    if (mqttTopic != NULL) {
-        free((void *)mqttTopic);
-    }
-    mqttTopic = strdup(mqtt["topic"]);
-    if (mqttUser != NULL) {
-        free((void *)mqttUser);
-    }
-    mqttUser = strdup(mqtt["user"]);
-    if (mqttPwd != NULL) {
-        free((void *)mqttPwd);
-    }
-    mqttPwd = strdup(mqtt["pswd"]);
-    mqttClient.disconnect();
-    mqttClient.setServer(mqttHost, mqttPort);
-    mqttConnect();
+    Serial.println(F("[ INFO ] Configuration done."));
+    /*
+        // mqtt
+        if (mqttHost != NULL) {
+            free((void *)mqttHost);
+        }
+        mqttHost = strdup(mqtt["host"]);
+        mqttPort = mqtt["port"];
+        if (mqttTopic != NULL) {
+            free((void *)mqttTopic);
+        }
+        mqttTopic = strdup(mqtt["topic"]);
+        if (mqttUser != NULL) {
+            free((void *)mqttUser);
+        }
+        mqttUser = strdup(mqtt["user"]);
+        if (mqttPwd != NULL) {
+            free((void *)mqttPwd);
+        }
+        mqttPwd = strdup(mqtt["pswd"]);
+        mqttClient.disconnect();
+        mqttClient.setServer(mqttHost, mqttPort);
+        mqttConnect();
+        */
 
     return true;
 }
 
 void ICACHE_FLASH_ATTR enableWifi() {
+#ifdef DEBUG
     Serial.println("Turn wifi on.");
+#endif
     if (!loadConfiguration())
         fallbacktoAPMode();
 }
+
+
 
 /* ------------------ BASIC SYSTEM Functions ------------------- */
 void ICACHE_FLASH_ATTR setupWebServer() {
@@ -924,7 +1030,9 @@ void ICACHE_FLASH_ATTR setupWebServer() {
             return;
         }
         if (!index) {
+#ifdef DEBUG
             Serial.printf("[ UPDT ] Firmware update started: %s\n", filename.c_str());
+#endif
             Update.runAsync(true);
             if (!Update.begin((ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000)) {
                 Update.printError(Serial);
@@ -937,7 +1045,9 @@ void ICACHE_FLASH_ATTR setupWebServer() {
         }
         if (final) {
             if (Update.end(true)) {
+#ifdef DEBUG
                 Serial.printf("[ UPDT ] Firmware update finished: %uB\n", index + len);
+#endif
                 shouldReboot = !Update.hasError();
             } else {
                 Update.printError(Serial);
@@ -1082,13 +1192,12 @@ void ICACHE_FLASH_ATTR setupWebServer() {
 void ICACHE_FLASH_ATTR setup() {
     // Populate the last modification date based on build datetime
     sprintf(last_modified, "%s %s GMT", __DATE__, __TIME__);
-    pinMode(FRESETPIN, INPUT_PULLUP);
     delay(2000);
     Serial.begin(115200);
     Serial.println();
-    Serial.println(F("[ INFO ] ESP RFID v0.6"));
+    Serial.println(F("[ INFO ] ESP RFID v0.7"));
     // Start SPIFFS filesystem
-    if (!SPIFFS.begin() || digitalRead(FRESETPIN) == LOW) {
+    if (!SPIFFS.begin()) {
 #ifdef DEBUG
         Serial.print(F("[ WARN ] Formatting filesystem..."));
 #endif
@@ -1106,6 +1215,7 @@ void ICACHE_FLASH_ATTR setup() {
 #endif
         }
     }
+
 
     /* Remove Users Helper
        Dir dir = SPIFFS.openDir("/P/");
@@ -1126,7 +1236,9 @@ void ICACHE_FLASH_ATTR setup() {
 // Main Loop
 void ICACHE_RAM_ATTR loop() {
     if (formatreq) {
+#ifdef DEBUG
         Serial.println(F("[ WARN ] Factory reset initiated..."));
+#endif
         SPIFFS.end();
         ws.enable(false);
         SPIFFS.format();
@@ -1140,13 +1252,17 @@ void ICACHE_RAM_ATTR loop() {
 
     if (autoRestartIntervalSeconds > 0 && uptime > autoRestartIntervalSeconds * 1000) {
         writeEvent("INFO", "sys", "System is going to reboot", "");
+#ifdef DEBUG
         Serial.println(F("[ WARN ] Auto restarting..."));
+#endif
         shouldReboot = true;
     }
 
     // check for a new update and restart
     if (shouldReboot) {
+#ifdef DEBUG
         Serial.println(F("[ UPDT ] Rebooting..."));
+#endif
         delay(100);
         ESP.restart();
     }

@@ -127,7 +127,7 @@
             <select class="form-control input-sm" id="readerType" onchange="handleReader();">
                 <option selected="selected" value="0">MFRC522</option>
                 <option value="1">Wiegand</option>
-                <option value="2" disabled="">PN532</option>
+                <option value="2">PN532</option>
             </select>
         </div>
     </div>
@@ -178,7 +178,7 @@
                   </select>
                 </span>
         </div>
-        <div class="row form-group">
+        <div class="row form-group" id="rc522gain" >
             <label class="col-xs-3">Antenna Gain<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Higher value means further the RFID reader's reading distance"></i></label>
             <span class="col-xs-9 col-md-5">
                   <select class="form-control input-sm" id="gain">
@@ -496,7 +496,7 @@
                         <td id="uptime"></td>
                     </tr>
                     <tr>
-                        <th>Free Heap</th>
+                        <th>Heap Used</th>
                         <td>
                             <div class="progress" style="margin-bottom: 0 !important;">
                                 <div id="heap" class="progress-bar progress-bar-primary" role="progressbar">
