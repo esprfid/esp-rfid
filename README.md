@@ -1,8 +1,8 @@
-# ESP RFID - Access Control with ESP8266, RC522
+# ESP RFID - Access Control with ESP8266, RC522 PN532 Wiegand
 
 [![Chat at https://gitter.im/esp-rfid/Lobby](https://badges.gitter.im/esp-rfid.svg)](https://gitter.im/esp-rfid/Lobby) [![Build Status](https://travis-ci.org/omersiar/esp-rfid.svg?branch=stable)](https://travis-ci.org/omersiar/esp-rfid) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/fc424f75d12644da8b6fe248a5e95157)](https://www.codacy.com/app/omersiar/esp-rfid?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=omersiar/esp-rfid&amp;utm_campaign=Badge_Grade) [![Bountysource](https://api.bountysource.com/badge/team?team_id=242217)](https://salt.bountysource.com/checkout/amount?team=esp-rfid)
 
-Access Control system using a cheap MFRC522 RFID Hardware or Wiegand RFID readers and Espressif's ESP8266 Microcontroller. 
+Access Control system using a cheap MFRC522, PN532 RFID readers or Wiegand RFID readers and Espressif's ESP8266 Microcontroller. 
 
 [See Demo Here](https://bitadvise.com/esp-rfid/)
 
@@ -35,7 +35,7 @@ This project still in its development phase. New features (and also bugs) are in
 ### What You Will Need
 ### Hardware
 * An ESP8266 module or a development board like **WeMos D1 mini** or **NodeMcu 1.0** with at least **32Mbit Flash (equals to 4MBytes)** (ESP32 does not supported for now)
-* A MFRC522 RFID PCD Module or Wiegand based RFID reader
+* A MFRC522 RFID PCD Module or PN532 NFC Reader Module or Wiegand based RFID reader
 * A Relay Module (or you can build your own circuit)
 * n quantity of Mifare Classic 1KB (recommended due to available code base) PICCs (RFID Tags) equivalent to User Number
 
@@ -69,13 +69,13 @@ The resulting (built) image(s) can be found in the directory ```/bin``` created 
 
 The following table shows the typical pin layout used for connecting MFRC522 hardware to ESP:
 
-| Signal        | MFRC522       | WeMos D1 mini  | NodeMcu | Generic      |
-|---------------|:-------------:|:--------------:| :------:|:------------:|
-| RST/Reset     | RST           | N/C [1]        | N/C [1] | N/C [1]      |
-| SPI SS        | SDA [3]       | D8 [2]         | D8 [2]  | GPIO-15 [2]  |
-| SPI MOSI      | MOSI          | D7             | D7      | GPIO-13      |
-| SPI MISO      | MISO          | D6             | D6      | GPIO-12      |
-| SPI SCK       | SCK           | D5             | D5      | GPIO-14      |
+| Signal        | PN532         |    MFRC522    | WeMos D1 mini  | NodeMcu | Generic      |
+|---------------|:-------------:|:-------------:|:--------------:|:-------:|:------------:|
+| RST/Reset     | RST           | RST           | N/C [1]        | N/C [1] | N/C [1]      |
+| SPI SS        | SS            | SDA [3]       | D8 [2]         | D8 [2]  | GPIO-15 [2]  |
+| SPI MOSI      | MOSI          | MOSI          | D7             | D7      | GPIO-13      |
+| SPI MISO      | MISO          | MISO          | D6             | D6      | GPIO-12      |
+| SPI SCK       | SCK           | SCK           | D5             | D5      | GPIO-14      |
 
 1. Not Connected. Hard-reset no longer needed.
 2. Configurable via settings page.
@@ -111,9 +111,9 @@ This will require you to do syncing manually. ESP can store and hold time for yo
 So you have to login to settings page and sync it in a timely fashion.
 
 ## **Security**
-We assume **ESP-RFID** project -as a whole- does not ready for actual day-to-day usage in the means of security. [Crypto 1](http://www.cs.virginia.edu/~kn5f/Mifare.Cryptanalysis.htm) cipher is cracked which is used to secure Mifare Classic RFID PICCs (tags). There are PICCs available that their UID (Unique Identification Numbers) can be set manually (Currently esp-rfid relies only UID to identify it's users). Also there may be a bug in the code that result free access to your belongings. And also, like every other network connected device esp-rfid is vulnerable to many attacks including Man-in-the-middle, Brute-force, etc.
+We assume **ESP-RFID** project -as a whole- does not offer strong security. There are PICCs available that their UID (Unique Identification Numbers) can be set manually (Currently esp-rfid relies only UID to identify it's users). Also there may be a bug in the code that may result free access to your belongings. And also, like every other network connected device esp-rfid is vulnerable to many attacks including Man-in-the-middle, Brute-force, etc.
 
-These sound devastating security problems for a simple project, but we can not be held liable any damages done because of this software.
+This is a simple, hobby grade project, do not use it where strong security is needed.
 
 What can be done to increase security? (by you and by us)
 
@@ -164,11 +164,10 @@ See [ChangeLog](https://github.com/omersiar/esp-rfid/blob/dev/CHANGELOG.md)
 ## Donations
 If this project helps you in a way, you can buy us a beer. You can make a donation to the ESP-RFID community with [Bountysource](https://salt.bountysource.com/teams/esp-rfid)
 
-#### Donators
 * 2017-10-03 [steinar-t](https://github.com/steinar-t)
 * 2017-12-10 [saschaludwig](https://github.com/saschaludwig)
 
-Thank you for your contributions.
+Nothing says better thank you than a donation.
 
 ## License
 UNLICENSE

@@ -45,8 +45,6 @@ var config = {
     }
 };
 
-config.general.version = "v0.6.1";
-
 var page = 1;
 var haspages;
 var logdata;
@@ -90,9 +88,14 @@ function handleReader() {
     if (document.getElementById("readerType").value === "0") {
         document.getElementById("wiegandForm").style.display = "none";
         document.getElementById("mfrc522Form").style.display = "block";
+        document.getElementById("rc522gain").style.display = "block";
     } else if (document.getElementById("readerType").value === "1") {
         document.getElementById("wiegandForm").style.display = "block";
         document.getElementById("mfrc522Form").style.display = "none";
+    } else if (document.getElementById("readerType").value === "2") {
+        document.getElementById("wiegandForm").style.display = "none";
+        document.getElementById("mfrc522Form").style.display = "block";
+        document.getElementById("rc522gain").style.display = "none";
     }
 }
 
@@ -158,6 +161,10 @@ function savegeneral() {
 }
 
 function savemqtt() {
+    config.mqtt.enabled = "0";
+    if (document.querySelector('input[name="mqttenabled"]:checked').value === "1") {
+        config.mqtt.enabled = "1";
+    }
     config.mqtt.host = document.getElementById("mqtthost").value;
     config.mqtt.port = document.getElementById("mqttport").value;
     config.mqtt.topic = document.getElementById("mqtttopic").value;
@@ -372,7 +379,7 @@ function getContent(contentname) {
                 default:
                     break;
             }
-                        $("[data-toggle=\"popover\"]").popover({
+            $("[data-toggle=\"popover\"]").popover({
                 container: "body"
             });
             $(this).hide().fadeIn();
@@ -779,8 +786,9 @@ function acctypefinder() {
     }
 }
 
-
-
+function restartESP() {
+    inProgress("restart");
+}
 
 function colorStatusbar(ref) {
     var percentage = ref.style.width.slice(0, -1);
@@ -792,10 +800,10 @@ function listStats() {
     document.getElementById("cpu").innerHTML = ajaxobj.cpu + " Mhz";
     document.getElementById("uptime").innerHTML = ajaxobj.uptime;
     document.getElementById("heap").innerHTML = ajaxobj.heap + " Bytes";
-    document.getElementById("heap").style.width = (ajaxobj.heap * 100) / 81920 + "%";
+    document.getElementById("heap").style.width = (ajaxobj.heap * 100) / 40960 + "%";
     colorStatusbar(document.getElementById("heap"));
     document.getElementById("flash").innerHTML = ajaxobj.availsize + " Bytes";
-    document.getElementById("flash").style.width = (ajaxobj.availsize * 100) / 1044464 + "%";
+    document.getElementById("flash").style.width = (ajaxobj.availsize * 100) / 2092032 + "%";
     colorStatusbar(document.getElementById("flash"));
     document.getElementById("spiffs").innerHTML = ajaxobj.availspiffs + " Bytes";
     document.getElementById("spiffs").style.width = (ajaxobj.availspiffs * 100) / ajaxobj.spiffssize + "%";
@@ -807,6 +815,7 @@ function listStats() {
     document.getElementById("dns").innerHTML = ajaxobj.dns;
     document.getElementById("mac").innerHTML = ajaxobj.mac;
     document.getElementById("sver").innerText = config.general.version;
+    $("#mainver").text(config.general.version);
 }
 
 var nextIsNotJson = false;
@@ -863,6 +872,7 @@ function socketMessageListener(evt) {
                 break;
             case "configfile":
                 config = obj;
+                config.general.version = "v0.7";
                 break;
             default:
                 break;
@@ -1113,7 +1123,7 @@ function logout() {
         .fail(function() {
             // We expect to get an 401 Unauthorized error! In this case we are successfully 
             // logged out and we redirect the user.
-            window.location = "/login.html";
+            document.location = "index.html";
         });
     return false;
 }
@@ -1133,6 +1143,11 @@ function inProgress(callback) {
                 i++;
                 if (i === 101) {
                     clearInterval(prg);
+                    var a = document.createElement("a");
+                    a.href = "http://" + config.general.hostnm + ".local";
+                    a.innerText = "Try to reconnect ESP";
+                    document.getElementById("reconnect").appendChild(a);
+                    document.getElementById("reconnect").style.display = "block";
                     document.getElementById("updateprog").className = "progress-bar progress-bar-success";
                     document.getElementById("updateprog").innerHTML = "Completed";
                 }
@@ -1153,6 +1168,9 @@ function inProgress(callback) {
                 case "destroy":
                     websock.send("{\"command\":\"destroy\"}");
                     break;
+                case "restart":
+                    websock.send("{\"command\":\"restart\"}");
+                    break;
                 default:
                     break;
 
@@ -1169,7 +1187,29 @@ function upload() {
     inProgress("upload");
 }
 
-
+function login() {
+    if (document.getElementById("password").value === "neo") {
+        $("#signin").modal("hide");
+        connectWS();
+    } else {
+        var username = "admin"
+        var password = document.getElementById("password").value;
+        var url = "/login";
+        var xhr = new XMLHttpRequest();
+        xhr.open("get", url, true, username, password);
+        xhr.onload = function(e) {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    $("#signin").modal("hide");
+                    connectWS();
+                } else {
+                    alert("Incorrect password!");
+                }
+            }
+        };
+        xhr.send(null);
+    }
+}
 
 
 function GetLatestReleaseInfo() {
@@ -1197,13 +1237,29 @@ function GetLatestReleaseInfo() {
         $("#releasebody").text(release.body);
         $("#releaseinfo").fadeIn("slow");
         $("#versionhead").text(config.general.version);
-    }).error(function() { $("#onlineupdate").html("<h5>Couldn't get release info. Are you connected to Internet?</h5>"); });
+    }).error(function() { $("#onlineupdate").html("<h5>Couldn't get release info. Are you connected to the Internet?</h5>"); });
 }
 
 function allowUpload() {
     $("#upbtn").prop("disabled", false);
 }
 
+function connectWS() {
+    if (window.location.protocol === "https:") {
+        wsUri = "wss://" + window.location.hostname + "/ws";
+    } else if (window.location.protocol === "file:") {
+        wsUri = "ws://" + "localhost" + "/ws";
+    }
+    websock = new WebSocket(wsUri);
+    websock.addEventListener("message", socketMessageListener);
+    websock.addEventListener("error", socketErrorListener);
+    websock.addEventListener("close", socketCloseListener);
+
+    websock.onopen = function(evt) {
+        websock.send("{\"command\":\"getconf\"}");
+        websock.send("{\"command\":\"status\"}");
+    };
+}
 
 function start() {
     esprfidcontent = document.createElement("div");
@@ -1212,21 +1268,24 @@ function start() {
     document.body.appendChild(esprfidcontent);
     $("#mastercontent").load("esprfid.htm", function(responseTxt, statusTxt, xhr) {
         if (statusTxt === "success") {
-            if (window.location.protocol === "https:") {
-                wsUri = "wss://" + window.location.hostname + "/ws";
-            } else if (window.location.protocol === "file:") {
-                wsUri = "ws://" + "localhost" + "/ws";
-            }
-            websock = new WebSocket(wsUri);
-            websock.addEventListener("message", socketMessageListener);
-            websock.addEventListener("error", socketErrorListener);
-            websock.addEventListener("close", socketCloseListener);
-
-            websock.onopen = function(evt) {
-                websock.send("{\"command\":\"getconf\"}");
-                websock.send("{\"command\":\"status\"}");
+            var url = "/login";
+            var xhr = new XMLHttpRequest();
+            xhr.open("get", url, true, "admin");
+            xhr.onload = function(e) {
+                if (xhr.readyState === 4) {
+                    if (xhr.status == 401) {
+                        $("#signin").modal({ backdrop: "static", keyboard: false });
+                    }
+                    if (xhr.status === 200) {
+                        $("#signin").modal("hide");
+                        connectWS();
+                    }
+                }
             };
+            xhr.onerror = function(e) {
+                $("#signin").modal({ backdrop: "static", keyboard: false });
+            };
+            xhr.send();
         }
     });
-
 }

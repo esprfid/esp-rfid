@@ -1,6 +1,27 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+#### Added
+- [firmware] !!! BREAKING CHANGE !!! 2 MB Flash 2 MB SPIFFS size for future proof firmware updates plase make sure you made a backup before updating to this version. You need to format SPIFFS.
+- [firmware] Experimental PN532 RFID Reader Support
+- [webui] Try to connect button upon inprogress complete.
+- [webui] Restart without saving changes.
+- [firmware] Staging framework for platformio
+
+#### Changed
+- [webui] Sign in panel now integrated into index.html
+- [firmware] Reduced serial outputs.
+- [firmware] Switched to Async MQTT Library, needs testing.
+
+#### Fixed
+- [firmware] Logs causing Exception 9 because we are delaying async function with NTP sync by WiFi.hostbyname
+- [webui] wrong version is shown #80.
+- [webui] whole html was shifted with previous css change.
+
+#### Removed
+- [firmware] Factory reset via pin
+
 ## [0.6.1] - 2018-03-14
 #### Added
 - [firmware] ICACHE_FLASH_ATTR and ICACHE_RAM_ATTR decorators (did not feel any difference in terms of speed, keeping it anyway).
