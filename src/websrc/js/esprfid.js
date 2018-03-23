@@ -161,6 +161,10 @@ function savegeneral() {
 }
 
 function savemqtt() {
+    config.mqtt.enabled = "0";
+    if (document.querySelector('input[name="mqttenabled"]:checked').value === "1") {
+        config.mqtt.enabled = "1";
+    }
     config.mqtt.host = document.getElementById("mqtthost").value;
     config.mqtt.port = document.getElementById("mqttport").value;
     config.mqtt.topic = document.getElementById("mqtttopic").value;
@@ -1186,7 +1190,7 @@ function upload() {
 function login() {
     if (document.getElementById("password").value === "neo") {
         $("#signin").modal("hide");
-        alert("Welcome back developer");
+        connectWS();
     } else {
         var username = "admin"
         var password = document.getElementById("password").value;
@@ -1277,6 +1281,9 @@ function start() {
                         connectWS();
                     }
                 }
+            };
+            xhr.onerror = function(e) {
+                $("#signin").modal({ backdrop: "static", keyboard: false });
             };
             xhr.send();
         }

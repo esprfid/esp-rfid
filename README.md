@@ -35,7 +35,7 @@ This project still in its development phase. New features (and also bugs) are in
 ### What You Will Need
 ### Hardware
 * An ESP8266 module or a development board like **WeMos D1 mini** or **NodeMcu 1.0** with at least **32Mbit Flash (equals to 4MBytes)** (ESP32 does not supported for now)
-* A MFRC522 RFID PCD Module or Wiegand based RFID reader
+* A MFRC522 RFID PCD Module or PN532 NFC Reader Module or Wiegand based RFID reader
 * A Relay Module (or you can build your own circuit)
 * n quantity of Mifare Classic 1KB (recommended due to available code base) PICCs (RFID Tags) equivalent to User Number
 
@@ -164,11 +164,10 @@ See [ChangeLog](https://github.com/omersiar/esp-rfid/blob/dev/CHANGELOG.md)
 ## Donations
 If this project helps you in a way, you can buy us a beer. You can make a donation to the ESP-RFID community with [Bountysource](https://salt.bountysource.com/teams/esp-rfid)
 
-#### Donators
 * 2017-10-03 [steinar-t](https://github.com/steinar-t)
 * 2017-12-10 [saschaludwig](https://github.com/saschaludwig)
 
-Thank you for your contributions.
+Nothing says better thank you than a donation.
 
 ## License
 UNLICENSE

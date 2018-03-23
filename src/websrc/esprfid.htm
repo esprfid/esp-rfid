@@ -21,7 +21,7 @@
                 <input id="restoreSet" type="file" accept="text/json" onchange="restoreSet();" style="display:none;">
             </div>
             <br>
-                        <div>
+            <div>
                 <legend>Restart</legend>
                 <h6 class="text-muted">Click to restart your device without saving changes.</h6>
                 <label for="restart" class="btn btn-link btn-sm">Restart Device</label>
@@ -145,6 +145,7 @@
                     <option value="13">GPIO-13</option>
                     <option value="14">GPIO-14</option>
                     <option value="15">GPIO-15</option>
+                    <option value="16">GPIO-16</option>
                   </select>
                 </span>
         </div>
@@ -161,6 +162,7 @@
                     <option value="13">GPIO-13</option>
                     <option value="14">GPIO-14</option>
                     <option value="15">GPIO-15</option>
+                    <option value="16">GPIO-16</option>
                   </select>
                 </span>
         </div>
@@ -175,10 +177,11 @@
                     <option value="4">GPIO-4</option>
                     <option value="5">GPIO-5</option>
                     <option selected="selected" value="15">GPIO-15</option>
+                    <option value="16">GPIO-16</option>
                   </select>
                 </span>
         </div>
-        <div class="row form-group" id="rc522gain" >
+        <div class="row form-group" id="rc522gain">
             <label class="col-xs-3">Antenna Gain<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Higher value means further the RFID reader's reading distance"></i></label>
             <span class="col-xs-9 col-md-5">
                   <select class="form-control input-sm" id="gain">
@@ -206,11 +209,16 @@
         <label class="col-xs-3">Relay Pin<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Choose which ESP port is connected to your relay"></i></label>
         <span class="col-xs-6 col-md-5">
                 <select class="form-control input-sm" id="gpiorly">
-                  <option value="0">GPIO-0</option>
-                  <option value="2">GPIO-2</option>
-                  <option value="4">GPIO-4</option>
-                  <option selected="selected" value="5">GPIO-5</option>
-                  <option value="15">GPIO-15</option>
+                    <option value="0">GPIO-0</option>
+                    <option value="1">GPIO-1</option>
+                    <option value="2">GPIO-2</option>
+                    <option selected="selected" value="4">GPIO-4</option>
+                    <option value="5">GPIO-5</option>
+                    <option value="12">GPIO-12</option>
+                    <option value="13">GPIO-13</option>
+                    <option value="14">GPIO-14</option>
+                    <option value="15">GPIO-15</option>
+                    <option value="16">GPIO-16</option>
                 </select>
               </span>
         <span class="col-xs-3">
@@ -279,6 +287,17 @@
     <br>
     <br>
     <legend>MQTT Settings</legend>
+    <div class="row form-group">
+        <label class="col-xs-3">MQTT<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Please choose if you want to enable MQTT"></i></label>
+        <div class="col-xs-9">
+            <form>
+                <label class="radio-inline">
+                    <input type="radio" value="1" name="mqttenabled">Enabled</label>
+                <label class="radio-inline">
+                    <input type="radio" value="0" name="mqttenabled" checked>Disabled</label>
+            </form>
+        </div>
+    </div>
     <div class="row form-group">
         <label class="col-xs-3">IP<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="MQTT server IP Address or url"></i></label>
         <span class="col-xs-9">
@@ -496,7 +515,7 @@
                         <td id="uptime"></td>
                     </tr>
                     <tr>
-                        <th>Heap Used</th>
+                        <th>Free Heap</th>
                         <td>
                             <div class="progress" style="margin-bottom: 0 !important;">
                                 <div id="heap" class="progress-bar progress-bar-primary" role="progressbar">

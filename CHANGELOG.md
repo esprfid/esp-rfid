@@ -12,8 +12,10 @@ All notable changes to this project will be documented in this file.
 #### Changed
 - [webui] Sign in panel now integrated into index.html
 - [firmware] Reduced serial outputs.
+- [firmware] Switched to Async MQTT Library, needs testing.
 
 #### Fixed
+- [firmware] Logs causing Exception 9 because we are delaying async function with NTP sync by WiFi.hostbyname
 - [webui] wrong version is shown #80.
 - [webui] whole html was shifted with previous css change.
 

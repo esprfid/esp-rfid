@@ -25,8 +25,11 @@
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 #include <TimeLib.h>
+#include <Ticker.h>
+
 #include <Ntp.h>
 #include <PN532.h>
+#include <AsyncMqttClient.h>
 
 // these are from vendors
 #include "webh/glyphicons-halflings-regular.woff.gz.h"
@@ -55,6 +58,12 @@ MFRC522 mfrc522 = MFRC522();
 PN532 pn532;
 
 NtpClient NTP;
+
+AsyncMqttClient mqttClient;
+
+Ticker mqttReconnectTimer;
+
+WiFiEventHandler wifiDisconnectHandler;
 
 // Create AsyncWebServer instance on port "80"
 AsyncWebServer server(80);
@@ -86,18 +95,8 @@ int wifiTimeout = -1;
 unsigned long wiFiUptimeMillis = 0;
 char * deviceHostname = NULL;
 
-
-/*
-WiFiClient wifiClient;
-IPAddress MQTTserver();
-PubSubClient mqttClient(wifiClient);
-char *mqttHost = NULL;
-uint16_t mqttPort = 0;
-bool mqttConnected = false;
+int mqttenabled = false;
 char *mqttTopic = NULL;
-char *mqttUser = NULL;
-char *mqttPwd = NULL;
-*/
 
 int rfidss;
 int readerType;
@@ -112,6 +111,17 @@ int timeZone;
 String ICACHE_FLASH_ATTR printIP(IPAddress adress) {
     return (String)adress[0] + "." + (String)adress[1] + "." + (String)adress[2] + "." + (String)adress[3];
 }
+
+/*
+time_t ICACHE_FLASH_ATTR checkTimeSync() {
+    if (nextSyncTime <= sysTime) {
+        timerequest = true;
+        return millis();
+    }
+    else {
+        return now();
+    }
+}*/
 
 void ICACHE_FLASH_ATTR writeEvent(String type, String src, String desc, String data) {
     DynamicJsonBuffer jsonBuffer44333;
@@ -350,13 +360,9 @@ void ICACHE_FLASH_ATTR printScanResult(int networksFound) {
     WiFi.scanDelete();
 }
 
-/*
-void ICACHE_FLASH_ATTR mqttCallback(char* topic, byte* payload, unsigned int length) {
-    if (length == 0) {
-        return;
-    }
+void connectToMqtt() {
+    mqttClient.connect();
 }
-*/
 
 void ICACHE_FLASH_ATTR sendTime() {
     DynamicJsonBuffer jsonBuffer231;
@@ -370,35 +376,7 @@ void ICACHE_FLASH_ATTR sendTime() {
         root.printTo((char *)buffer->get(), len + 1);
         ws.textAll(buffer);
     }
-
 }
-
-/*
-void ICACHE_FLASH_ATTR mqttConnect() {
-    if (mqttHost != NULL && mqttPort != 0 && mqttTopic != NULL && !mqttClient.connected() ) {
-        #ifdef DEBUG
-        Serial.print(F("[ INFO ] Trying to connect to MQTT server : "));
-        #endif
-        //setCallback();
-        unsigned char retries = 0;
-        mqttConnected = false;
-        while (mqttConnected == false && retries < 20) {
-            mqttConnected = mqttClient.connect("ESP-RFID", mqttUser, mqttPwd);
-            retries++;
-            delay(1000);
-            Serial.print(".");
-        }
-        if (mqttConnected == true) {
-            Serial.println(F(" connected to mqttServer"));
-        } else {
-            Serial.println(F(" MQTT connection error"));
-        }
-    }
-}
-*/
-
-
-
 
 void ICACHE_FLASH_ATTR parseBytes(const char* str, char sep, byte* bytes, int maxBytes, int base) {
     for (int i = 0; i < maxBytes; i++) {
@@ -486,7 +464,7 @@ bool ICACHE_FLASH_ATTR connectSTA(const char* ssid, const char* password, byte b
 
 /* ------------------ RFID Functions ------------------- */
 // RFID Specific Loop
-void ICACHE_RAM_ATTR rfidloop() {
+void ICACHE_FLASH_ATTR rfidloop() {
 
     String uid = "";
     String type = "";
@@ -552,11 +530,10 @@ void ICACHE_RAM_ATTR rfidloop() {
             return;
         }
     }
-    /*
-        if (mqttClient.connected()) {
-            mqttClient.publish(mqttTopic, uid.c_str(), false);
-        }
-        */
+    if (mqttenabled == 1) {
+        const char * topic = mqttTopic;
+        mqttClient.publish(topic, 0, true, uid.c_str());
+    }
 
     // We are going to use filesystem to store known UIDs.
     // If we know the PICC we need to know if its User have an Access
@@ -873,6 +850,13 @@ void ICACHE_FLASH_ATTR onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient *
     }
 }
 
+void onMqttDisconnect(AsyncMqttClientDisconnectReason reason) {
+    if (WiFi.isConnected()) {
+        mqttReconnectTimer.once(2, connectToMqtt);
+    }
+}
+
+
 
 bool ICACHE_FLASH_ATTR loadConfiguration() {
     File configFile = SPIFFS.open("/config.json", "r");
@@ -901,7 +885,7 @@ bool ICACHE_FLASH_ATTR loadConfiguration() {
     JsonObject& network = json["network"];
     JsonObject& hardware = json["hardware"];
     JsonObject& general = json["general"];
-    // JsonObject& mqtt = json["mqtt"];
+    JsonObject& mqtt = json["mqtt"];
     JsonObject& ntp = json["ntp"];
 #ifdef DEBUG
     Serial.print(F("[ INFO ] Trying to setup RFID Hardware :"));
@@ -970,31 +954,24 @@ bool ICACHE_FLASH_ATTR loadConfiguration() {
         return false;
     }
     NTP.Ntp(ntpserver, timeZone, ntpinter * 60);
-    Serial.println(F("[ INFO ] Configuration done."));
-    /*
-        // mqtt
-        if (mqttHost != NULL) {
-            free((void *)mqttHost);
-        }
-        mqttHost = strdup(mqtt["host"]);
-        mqttPort = mqtt["port"];
-        if (mqttTopic != NULL) {
-            free((void *)mqttTopic);
-        }
-        mqttTopic = strdup(mqtt["topic"]);
-        if (mqttUser != NULL) {
-            free((void *)mqttUser);
-        }
-        mqttUser = strdup(mqtt["user"]);
-        if (mqttPwd != NULL) {
-            free((void *)mqttPwd);
-        }
-        mqttPwd = strdup(mqtt["pswd"]);
-        mqttClient.disconnect();
-        mqttClient.setServer(mqttHost, mqttPort);
-        mqttConnect();
-        */
 
+    const char * mhs = mqtt["host"];
+    int mport = mqtt["port"];
+    const char * muser = mqtt["user"];
+    const char * mpas = mqtt["pswd"];
+
+    mqttenabled = mqtt["enabled"];
+    if (mqttenabled == 1) {
+        mqttTopic = strdup(mqtt["topic"]);
+        mqttClient.setServer(mhs, mport);
+        mqttClient.setCredentials(muser, mpas);
+        mqttClient.onDisconnect(onMqttDisconnect);
+        connectToMqtt();
+    }
+
+
+
+    Serial.println(F("[ INFO ] Configuration done."));
     return true;
 }
 
@@ -1155,7 +1132,7 @@ void ICACHE_FLASH_ATTR setupWebServer() {
     if (http_pass == NULL) {
         http_pass = strdup("admin");
     }
-    
+
     // HTTP basic authentication
     server.on("/login", HTTP_GET, [](AsyncWebServerRequest * request) {
         String remoteIP = printIP(request->client()->remoteIP());
@@ -1173,12 +1150,21 @@ void ICACHE_FLASH_ATTR setupWebServer() {
     server.begin();
 }
 
+void onWifiDisconnect(const WiFiEventStationModeDisconnected& event) {
+    mqttReconnectTimer.detach(); // ensure we don't reconnect to MQTT while reconnecting to Wi-Fi
+}
+
+
+
+
 // Set things up
 void ICACHE_FLASH_ATTR setup() {
     // Populate the last modification date based on build datetime
     sprintf(last_modified, "%s %s GMT", __DATE__, __TIME__);
     delay(2000);
     Serial.begin(115200);
+    wifiDisconnectHandler = WiFi.onStationModeDisconnected(onWifiDisconnect);
+
     Serial.println();
     Serial.println(F("[ INFO ] ESP RFID v0.7"));
     // Start SPIFFS filesystem
