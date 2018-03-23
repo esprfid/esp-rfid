@@ -20,7 +20,6 @@ All notable changes to this project will be documented in this file.
 - [webui] whole html was shifted with previous css change.
 
 #### Removed
-- [firmware] MQTT Specific code, will switch to asyc mqtt
 - [firmware] Factory reset via pin
 
 ## [0.6.1] - 2018-03-14

@@ -7,7 +7,7 @@
 
 #include "Ntp.h"
 #include <ESPAsyncUDP.h>
-#include <Dns.h>
+
 
 char * NtpClient::TimeServerName;
 int8_t NtpClient::timezone;
@@ -18,12 +18,11 @@ AsyncUDP NtpClient::udpListener;
 
 byte NtpClient::NTPpacket[NTP_PACKET_SIZE];
 
-DNSClient dns;
-
 void ICACHE_FLASH_ATTR NtpClient::Ntp(const char * server, int8_t tz, time_t syncSecs) {
 	TimeServerName = strdup(server);
 	timezone = tz;
 	syncInterval = syncSecs;
+	WiFi.hostByName(TimeServerName, timeServer);
 	setSyncProvider(getNtpTime);
 	setSyncInterval(syncInterval);
 }
@@ -35,7 +34,6 @@ ICACHE_FLASH_ATTR NtpClient::~NtpClient() {
 
 // send an NTP request to the time server at the given address
 time_t ICACHE_FLASH_ATTR NtpClient::getNtpTime() {
-	dns.getHostByName(TimeServerName,timeServer);
 	memset(NTPpacket, 0, sizeof(NTPpacket));
 	NTPpacket[0] = 0b11100011;
 	NTPpacket[1] = 0;

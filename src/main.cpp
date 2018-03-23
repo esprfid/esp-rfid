@@ -95,7 +95,7 @@ int wifiTimeout = -1;
 unsigned long wiFiUptimeMillis = 0;
 char * deviceHostname = NULL;
 
-int mqttenabled = false;
+int mqttenabled = 0;
 char *mqttTopic = NULL;
 
 int rfidss;
