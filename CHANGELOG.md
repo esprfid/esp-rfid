@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+#### Fixed
+- [webui] We were checking if the browser has previously had authentication over /login.
+
+
+## [0.7.0] - 2018-03-23
 #### Added
 - [firmware] !!! BREAKING CHANGE !!! 2 MB Flash 2 MB SPIFFS size for future proof firmware updates plase make sure you made a backup before updating to this version. You need to format SPIFFS.
 - [firmware] Experimental PN532 RFID Reader Support

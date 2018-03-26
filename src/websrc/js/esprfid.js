@@ -1268,24 +1268,7 @@ function start() {
     document.body.appendChild(esprfidcontent);
     $("#mastercontent").load("esprfid.htm", function(responseTxt, statusTxt, xhr) {
         if (statusTxt === "success") {
-            var url = "/login";
-            var xhr = new XMLHttpRequest();
-            xhr.open("get", url, true, "admin");
-            xhr.onload = function(e) {
-                if (xhr.readyState === 4) {
-                    if (xhr.status == 401) {
-                        $("#signin").modal({ backdrop: "static", keyboard: false });
-                    }
-                    if (xhr.status === 200) {
-                        $("#signin").modal("hide");
-                        connectWS();
-                    }
-                }
-            };
-            xhr.onerror = function(e) {
-                $("#signin").modal({ backdrop: "static", keyboard: false });
-            };
-            xhr.send();
+            $("#signin").modal({ backdrop: "static", keyboard: false });
         }
     });
 }
