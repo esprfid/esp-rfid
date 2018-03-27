@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 #### Fixed
 - [webui] We were checking if the browser has previously had authentication over /login.
 
+#### Added
+- [firmware] + [webui] Option to use static IP address
+- [firmware] + [webui] Option to hide SSID on AP Mode
+
+#### Fixed
+- [webui] MQTT listed disabled even if it is enabled
+
 
 ## [0.7.0] - 2018-03-23
 #### Added

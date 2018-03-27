@@ -397,11 +397,20 @@ void ICACHE_FLASH_ATTR disableWifi() {
 #endif
 }
 
-bool ICACHE_FLASH_ATTR startAP(const char * ssid, const char * password = NULL) {
+bool ICACHE_FLASH_ATTR startAP(const char * ssid, const char * password = NULL, int hid = NULL) {
     inAPMode = true;
     WiFi.mode(WIFI_AP);
     Serial.print(F("[ INFO ] Configuring access point... "));
-    bool success = WiFi.softAP(ssid, password);
+    bool success;
+    Serial.println(hid);
+    if (hid == 1) {
+        success = WiFi.softAP(ssid, password, 3, true);
+        Serial.println("hid");
+    }
+    else {
+        success = WiFi.softAP(ssid, password);
+        Serial.println("not hid");
+    }
     Serial.println(success ? "Ready" : "Failed!");
     if (!success) {ESP.restart();}
     // Access Point IP
@@ -426,7 +435,6 @@ void ICACHE_FLASH_ATTR fallbacktoAPMode() {
 // Try to connect Wi-Fi
 bool ICACHE_FLASH_ATTR connectSTA(const char* ssid, const char* password, byte bssid[6]) {
     WiFi.disconnect(true);
-    WiFi.mode(WIFI_STA);
     // First connect to a wi-fi network
     WiFi.begin(ssid, password, 0, bssid);
     // Inform user we are trying to connect
@@ -947,12 +955,42 @@ bool ICACHE_FLASH_ATTR loadConfiguration() {
     ws.setAuthentication("admin", http_pass);
 
     if (wmode == 1) {
+        int hid = network["hide"].as<int>();
         Serial.println(F("[ INFO ] ESP-RFID is running in AP Mode "));
-        return startAP(ssid, password);
+        return startAP(ssid, password, hid);
     }
-    else if (!connectSTA(ssid, password, bssid)) {
-        return false;
+    else {
+        if (network["dhcp"] == "0") {
+            WiFi.mode(WIFI_STA);
+
+            const char * clientipch = network["ip"];
+            const char * subnetch = network["subnet"];
+            const char * gatewaych = network["gateway"];
+            const char * dnsch = network["dns"];
+
+            IPAddress clientip;
+            IPAddress subnet;
+            IPAddress gateway;
+            IPAddress dns;
+
+            clientip.fromString(clientipch);
+            subnet.fromString(subnetch);
+            gateway.fromString(gatewaych);
+            dns.fromString(dnsch);
+
+            WiFi.config(clientip, gateway, subnet, dns);
+        }
+        if (!connectSTA(ssid, password, bssid)){
+            return false;
+        }
     }
+
+
+
+
+
+
+
     NTP.Ntp(ntpserver, timeZone, ntpinter * 60);
 
     const char * mhs = mqtt["host"];
