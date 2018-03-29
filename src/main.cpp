@@ -856,8 +856,22 @@ void ICACHE_FLASH_ATTR onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient *
 }
 
 void onMqttDisconnect(AsyncMqttClientDisconnectReason reason) {
+    char * rch;
+    sprintf(rch, "Reason : %d", reason);
+    writeEvent("WARN", "mqtt", "Disconnected from MQTT server", rch);
     if (WiFi.isConnected()) {
         mqttReconnectTimer.once(2, connectToMqtt);
+    }
+}
+
+void onMqttPublish(uint16_t packetId) {
+
+    writeEvent("INFO", "mqtt", "MQTT publish acknowledged", String(packetId));
+}
+
+void onMqttConnect(bool sessionPresent) {
+    if (sessionPresent == true) {
+        writeEvent("INFO", "mqtt", "Connected to MQTT Server", "Session Present");
     }
 }
 
@@ -977,7 +991,7 @@ bool ICACHE_FLASH_ATTR loadConfiguration() {
 
             WiFi.config(clientip, gateway, subnet, dns);
         }
-        if (!connectSTA(ssid, password, bssid)){
+        if (!connectSTA(ssid, password, bssid)) {
             return false;
         }
     }
@@ -986,8 +1000,10 @@ bool ICACHE_FLASH_ATTR loadConfiguration() {
 
 
 
-
-
+    IPAddress timeserverip;
+    WiFi.hostByName(ntpserver, timeserverip);
+    String ip = printIP(timeserverip);
+    writeEvent("INFO", "ntp", "Connecting NTP Server", ip);
     NTP.Ntp(ntpserver, timeZone, ntpinter * 60);
 
     const char * mhs = mqtt["host"];
@@ -995,12 +1011,14 @@ bool ICACHE_FLASH_ATTR loadConfiguration() {
     const char * muser = mqtt["user"];
     const char * mpas = mqtt["pswd"];
 
-    mqttenabled = mqtt["enabled"];
+    mqttenabled = mqtt["enabled"].as<int>();
     if (mqttenabled == 1) {
         mqttTopic = strdup(mqtt["topic"]);
         mqttClient.setServer(mhs, mport);
         mqttClient.setCredentials(muser, mpas);
         mqttClient.onDisconnect(onMqttDisconnect);
+        mqttClient.onPublish(onMqttPublish);
+        mqttClient.onConnect(onMqttConnect);
         connectToMqtt();
     }
 

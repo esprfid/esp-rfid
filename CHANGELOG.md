@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 - [firmware] + [webui] Option to use static IP address #89 @nbaglietto
 - [firmware] + [webui] Option to hide SSID on AP Mode #89 @nbaglietto
 - [webui] Auto focus on login password #94 @pidiet
+- [firmware] event log for MQTT
 
 ## [0.7.0] - 2018-03-23
 #### Added
