@@ -1,6 +1,6 @@
 /*
-   Copyright (c) 2017 Ömer Şiar Baysal
-   Copyright (c) 2018 ESP-RFID Community
+    Authors :   Ömer Şiar Baysal
+                ESP-RFID Community
 
    Released to Public Domain
 
@@ -402,14 +402,11 @@ bool ICACHE_FLASH_ATTR startAP(const char * ssid, const char * password = NULL, 
     WiFi.mode(WIFI_AP);
     Serial.print(F("[ INFO ] Configuring access point... "));
     bool success;
-    Serial.println(hid);
     if (hid == 1) {
         success = WiFi.softAP(ssid, password, 3, true);
-        Serial.println("hid");
     }
     else {
         success = WiFi.softAP(ssid, password);
-        Serial.println("not hid");
     }
     Serial.println(success ? "Ready" : "Failed!");
     if (!success) {ESP.restart();}
