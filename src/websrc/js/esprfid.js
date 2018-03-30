@@ -11,8 +11,14 @@ var config = {
         "bssid": "",
         "ssid": "",
         "wmode": "",
+        "hide": "0",
         "pswd": "",
-        "offtime": "0"
+        "offtime": "0",
+        "dhcp": "1",
+        "ip": "",
+        "subnet": "",
+        "gateway": "",
+        "dns": ""
     },
     "hardware": {
         "readerType": "1",
@@ -31,7 +37,7 @@ var config = {
         "version": ""
     },
     "mqtt": {
-        "enabled": "0",
+        "enabled": "",
         "host": "",
         "port": "",
         "topic": "",
@@ -99,6 +105,16 @@ function handleReader() {
     }
 }
 
+function handleDHCP() {
+    if (document.querySelector('input[name="dhcpenabled"]:checked').value === "1") {
+        $("#staticip").slideUp();
+        $("#staticip").show();
+    } else {
+        $("#staticip").slideDown();
+        $("#staticip").show();
+    }
+}
+
 function listhardware() {
 
     document.getElementById("readerType").value = config.hardware.readerType;
@@ -162,7 +178,7 @@ function savegeneral() {
 
 function savemqtt() {
     config.mqtt.enabled = "0";
-    if (document.querySelector('input[name="mqttenabled"]:checked').value === "1") {
+    if ($("input[name=mqttenabled]:checked").val() === "1") {
         config.mqtt.enabled = "1";
     }
     config.mqtt.host = document.getElementById("mqtthost").value;
@@ -171,6 +187,19 @@ function savemqtt() {
     config.mqtt.user = document.getElementById("mqttuser").value;
     config.mqtt.pswd = document.getElementById("mqttpwd").value;
     uncommited();
+}
+
+function checkOctects(input) {
+    var ipformat = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+    var call = document.getElementById(input);
+    if (call.value.match(ipformat)) {
+        return true;
+    } else {
+        alert("You have entered an invalid address on " + input);
+        call.focus();
+        return false;
+    }
+
 }
 
 function savenetwork() {
@@ -184,11 +213,41 @@ function savenetwork() {
     if (document.getElementById("wmodeap").checked) {
         wmode = "1";
         config.network.bssid = document.getElementById("wifibssid").value = 0;
+        if (document.querySelector('input[name="hideapenable"]:checked').value === "1") {
+            config.network.hide = "1";
+        } else { config.network.hide = "0"; }
+
     } else {
         config.network.bssid = document.getElementById("wifibssid").value;
+        if (document.querySelector('input[name="dhcpenabled"]:checked').value === "1") {
+            config.network.dhcp = "1";
+        } else {
+
+            config.network.dhcp = "0";
+
+            if (!checkOctects("ipaddress")) {
+                return;
+            }
+            if (!checkOctects("subnet")) {
+                return;
+            }
+            if (!checkOctects("dnsadd")) {
+                return;
+            }
+            if (!checkOctects("gateway")) {
+                return;
+            }
+
+            config.network.ip = document.getElementById("ipaddress").value;
+            config.network.dns = document.getElementById("dnsadd").value;
+            config.network.subnet = document.getElementById("subnet").value;
+            config.network.gateway = document.getElementById("gateway").value;
+        }
     }
     config.network.wmode = wmode;
     config.network.pswd = document.getElementById("wifipass").value;
+
+
     config.network.offtime = document.getElementById("disable_wifi_after_seconds").value;
     uncommited();
 }
@@ -218,13 +277,30 @@ function listnetwork() {
     document.getElementById("inputtohide").value = config.network.ssid;
     document.getElementById("wifipass").value = config.network.pswd;
     if (config.network.wmode === "1") {
-
+        document.getElementById("wmodeap").checked = true;
+        if (config.network.hide === "1") {
+            var value = "1";
+            $("input[name=hideapenable][value=" + value + "]").prop('checked', true);
+            //$("input[name=hideapenable][value=\"1\"]").attr('checked', 'checked');
+        }
         handleAP();
     } else {
         document.getElementById("wmodesta").checked = true;
         document.getElementById("wifibssid").value = config.network.bssid;
+        if (config.network.dhcp === "0") {
+                        var value = "0";
+            $("input[name=dhcpenabled][value=" + value + "]").prop('checked', true);
+            //$("input[name=dhcpenabled][value=\"0\"]").attr('checked', 'checked');
+            handleDHCP();
+        }
+        document.getElementById("ipaddress").value = config.network.ip;
+        document.getElementById("subnet").value = config.network.subnet;
+        document.getElementById("dnsadd").value = config.network.dns;
+        document.getElementById("gateway").value = config.network.gateway;
         handleSTA();
+
     }
+
     document.getElementById("disable_wifi_after_seconds").value = config.network.offtime;
 
 }
@@ -237,7 +313,11 @@ function listgeneral() {
 }
 
 function listmqtt() {
-
+    if (config.mqtt.enabled === "1") {
+        var value = "1";
+        $("input[name=mqttenabled][value=" + value + "]").prop('checked', true);
+        //$("input[name=mqttenabled][value=\"1\"]").attr('checked', 'checked');
+    }
     document.getElementById("mqtthost").value = config.mqtt.host;
     document.getElementById("mqttport").value = config.mqtt.port;
     document.getElementById("mqtttopic").value = config.mqtt.topic;
@@ -246,17 +326,22 @@ function listmqtt() {
 }
 
 function handleAP() {
+    document.getElementById("hideap").style.display = "block";
     document.getElementById("hideBSSID").style.display = "none";
     document.getElementById("scanb").style.display = "none";
     document.getElementById("ssid").style.display = "none";
+    document.getElementById("dhcp").style.display = "none";
+    document.getElementById("staticip").style.display = "none";
     document.getElementById("inputtohide").style.display = "block";
 
 
 }
 
 function handleSTA() {
+    document.getElementById("hideap").style.display = "none";
     document.getElementById("hideBSSID").style.display = "block";
     document.getElementById("scanb").style.display = "block";
+    document.getElementById("dhcp").style.display = "block";
 }
 
 function listSSID(obj) {
@@ -1266,26 +1351,16 @@ function start() {
     esprfidcontent.id = "mastercontent";
     esprfidcontent.style.display = "none";
     document.body.appendChild(esprfidcontent);
+    $('#signin').on('shown.bs.modal', function() {
+        $('#password').focus().select();
+    });
     $("#mastercontent").load("esprfid.htm", function(responseTxt, statusTxt, xhr) {
         if (statusTxt === "success") {
-            var url = "/login";
-            var xhr = new XMLHttpRequest();
-            xhr.open("get", url, true, "admin");
-            xhr.onload = function(e) {
-                if (xhr.readyState === 4) {
-                    if (xhr.status == 401) {
-                        $("#signin").modal({ backdrop: "static", keyboard: false });
-                    }
-                    if (xhr.status === 200) {
-                        $("#signin").modal("hide");
-                        connectWS();
-                    }
-                }
-            };
-            xhr.onerror = function(e) {
-                $("#signin").modal({ backdrop: "static", keyboard: false });
-            };
-            xhr.send();
+            $("#signin").modal({ backdrop: "static", keyboard: false });
+            $("[data-toggle=\"popover\"]").popover({
+                container: "body"
+            });
+
         }
     });
 }

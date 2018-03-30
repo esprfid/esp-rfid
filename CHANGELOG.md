@@ -2,6 +2,17 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+#### Fixed
+- [webui] We were checking wrongly if the browser has previously had authentication over /login.
+- [webui] MQTT listed disabled even if it is enabled #92 @pidiet
+
+#### Added
+- [firmware] + [webui] Option to use static IP address #89 @nbaglietto
+- [firmware] + [webui] Option to hide SSID on AP Mode #89 @nbaglietto
+- [webui] Auto focus on login password #94 @pidiet
+- [firmware] event log for MQTT
+
+## [0.7.0] - 2018-03-23
 #### Added
 - [firmware] !!! BREAKING CHANGE !!! 2 MB Flash 2 MB SPIFFS size for future proof firmware updates plase make sure you made a backup before updating to this version. You need to format SPIFFS.
 - [firmware] Experimental PN532 RFID Reader Support

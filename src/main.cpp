@@ -1,6 +1,6 @@
 /*
-   Copyright (c) 2017 Ömer Şiar Baysal
-   Copyright (c) 2018 ESP-RFID Community
+    Authors :   Ömer Şiar Baysal
+                ESP-RFID Community
 
    Released to Public Domain
 
@@ -397,11 +397,17 @@ void ICACHE_FLASH_ATTR disableWifi() {
 #endif
 }
 
-bool ICACHE_FLASH_ATTR startAP(const char * ssid, const char * password = NULL) {
+bool ICACHE_FLASH_ATTR startAP(const char * ssid, const char * password = NULL, int hid = NULL) {
     inAPMode = true;
     WiFi.mode(WIFI_AP);
     Serial.print(F("[ INFO ] Configuring access point... "));
-    bool success = WiFi.softAP(ssid, password);
+    bool success;
+    if (hid == 1) {
+        success = WiFi.softAP(ssid, password, 3, true);
+    }
+    else {
+        success = WiFi.softAP(ssid, password);
+    }
     Serial.println(success ? "Ready" : "Failed!");
     if (!success) {ESP.restart();}
     // Access Point IP
@@ -426,7 +432,6 @@ void ICACHE_FLASH_ATTR fallbacktoAPMode() {
 // Try to connect Wi-Fi
 bool ICACHE_FLASH_ATTR connectSTA(const char* ssid, const char* password, byte bssid[6]) {
     WiFi.disconnect(true);
-    WiFi.mode(WIFI_STA);
     // First connect to a wi-fi network
     WiFi.begin(ssid, password, 0, bssid);
     // Inform user we are trying to connect
@@ -851,8 +856,46 @@ void ICACHE_FLASH_ATTR onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient *
 }
 
 void onMqttDisconnect(AsyncMqttClientDisconnectReason reason) {
+    String reasonstr = "";
+    switch (reason) {
+        case (AsyncMqttClientDisconnectReason::TCP_DISCONNECTED):
+            reasonstr = "TCP_DISCONNECTED";
+            break;
+        case (AsyncMqttClientDisconnectReason::MQTT_UNACCEPTABLE_PROTOCOL_VERSION):
+            reasonstr = "MQTT_UNACCEPTABLE_PROTOCOL_VERSION";
+            break;
+        case (AsyncMqttClientDisconnectReason::MQTT_IDENTIFIER_REJECTED):
+            reasonstr = "MQTT_IDENTIFIER_REJECTED";
+            break;
+        case (AsyncMqttClientDisconnectReason::MQTT_SERVER_UNAVAILABLE):
+            reasonstr = "MQTT_SERVER_UNAVAILABLE";
+            break;
+        case (AsyncMqttClientDisconnectReason::MQTT_MALFORMED_CREDENTIALS):
+            reasonstr = "MQTT_MALFORMED_CREDENTIALS";
+            break;
+        case (AsyncMqttClientDisconnectReason::MQTT_NOT_AUTHORIZED):
+            reasonstr = "MQTT_NOT_AUTHORIZED";
+            break;
+        case (AsyncMqttClientDisconnectReason::ESP8266_NOT_ENOUGH_SPACE):
+            reasonstr = "ESP8266_NOT_ENOUGH_SPACE";
+            break;
+        default:
+            reasonstr = "Unknown";
+            break;
+    }
+    writeEvent("WARN", "mqtt", "Disconnected from MQTT server", reasonstr);
     if (WiFi.isConnected()) {
         mqttReconnectTimer.once(2, connectToMqtt);
+    }
+}
+
+void onMqttPublish(uint16_t packetId) {
+    writeEvent("INFO", "mqtt", "MQTT publish acknowledged", String(packetId));
+}
+
+void onMqttConnect(bool sessionPresent) {
+    if (sessionPresent == true) {
+        writeEvent("INFO", "mqtt", "Connected to MQTT Server", "Session Present");
     }
 }
 
@@ -947,12 +990,44 @@ bool ICACHE_FLASH_ATTR loadConfiguration() {
     ws.setAuthentication("admin", http_pass);
 
     if (wmode == 1) {
+        int hid = network["hide"].as<int>();
         Serial.println(F("[ INFO ] ESP-RFID is running in AP Mode "));
-        return startAP(ssid, password);
+        return startAP(ssid, password, hid);
     }
-    else if (!connectSTA(ssid, password, bssid)) {
-        return false;
+    else {
+        if (network["dhcp"] == "0") {
+            WiFi.mode(WIFI_STA);
+
+            const char * clientipch = network["ip"];
+            const char * subnetch = network["subnet"];
+            const char * gatewaych = network["gateway"];
+            const char * dnsch = network["dns"];
+
+            IPAddress clientip;
+            IPAddress subnet;
+            IPAddress gateway;
+            IPAddress dns;
+
+            clientip.fromString(clientipch);
+            subnet.fromString(subnetch);
+            gateway.fromString(gatewaych);
+            dns.fromString(dnsch);
+
+            WiFi.config(clientip, gateway, subnet, dns);
+        }
+        if (!connectSTA(ssid, password, bssid)) {
+            return false;
+        }
     }
+
+
+
+
+
+    IPAddress timeserverip;
+    WiFi.hostByName(ntpserver, timeserverip);
+    String ip = printIP(timeserverip);
+    writeEvent("INFO", "ntp", "Connecting NTP Server", ip);
     NTP.Ntp(ntpserver, timeZone, ntpinter * 60);
 
     const char * mhs = mqtt["host"];
@@ -960,12 +1035,14 @@ bool ICACHE_FLASH_ATTR loadConfiguration() {
     const char * muser = mqtt["user"];
     const char * mpas = mqtt["pswd"];
 
-    mqttenabled = mqtt["enabled"];
+    mqttenabled = mqtt["enabled"].as<int>();
     if (mqttenabled == 1) {
         mqttTopic = strdup(mqtt["topic"]);
         mqttClient.setServer(mhs, mport);
         mqttClient.setCredentials(muser, mpas);
         mqttClient.onDisconnect(onMqttDisconnect);
+        mqttClient.onPublish(onMqttPublish);
+        mqttClient.onConnect(onMqttConnect);
         connectToMqtt();
     }
 
