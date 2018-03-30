@@ -37,7 +37,7 @@ var config = {
         "version": ""
     },
     "mqtt": {
-        "enabled": "0",
+        "enabled": "",
         "host": "",
         "port": "",
         "topic": "",
@@ -178,7 +178,7 @@ function savegeneral() {
 
 function savemqtt() {
     config.mqtt.enabled = "0";
-    if (document.querySelector('input[name="mqttenabled"]:checked').value === "1") {
+    if ($("input[name=mqttenabled]:checked").val() === "1") {
         config.mqtt.enabled = "1";
     }
     config.mqtt.host = document.getElementById("mqtthost").value;
@@ -279,14 +279,18 @@ function listnetwork() {
     if (config.network.wmode === "1") {
         document.getElementById("wmodeap").checked = true;
         if (config.network.hide === "1") {
-            $("input[name=hideapenable][value=\"1\"]").attr('checked', 'checked');
+            var value = "1";
+            $("input[name=hideapenable][value=" + value + "]").prop('checked', true);
+            //$("input[name=hideapenable][value=\"1\"]").attr('checked', 'checked');
         }
         handleAP();
     } else {
         document.getElementById("wmodesta").checked = true;
         document.getElementById("wifibssid").value = config.network.bssid;
         if (config.network.dhcp === "0") {
-            $("input[name=dhcpenabled][value=\"0\"]").attr('checked', 'checked');
+                        var value = "0";
+            $("input[name=dhcpenabled][value=" + value + "]").prop('checked', true);
+            //$("input[name=dhcpenabled][value=\"0\"]").attr('checked', 'checked');
             handleDHCP();
         }
         document.getElementById("ipaddress").value = config.network.ip;
@@ -310,7 +314,9 @@ function listgeneral() {
 
 function listmqtt() {
     if (config.mqtt.enabled === "1") {
-        $("input[name=mqttenabled][value=\"1\"]").attr('checked', 'checked');
+        var value = "1";
+        $("input[name=mqttenabled][value=" + value + "]").prop('checked', true);
+        //$("input[name=mqttenabled][value=\"1\"]").attr('checked', 'checked');
     }
     document.getElementById("mqtthost").value = config.mqtt.host;
     document.getElementById("mqttport").value = config.mqtt.port;

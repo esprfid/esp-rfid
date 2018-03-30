@@ -856,16 +856,40 @@ void ICACHE_FLASH_ATTR onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient *
 }
 
 void onMqttDisconnect(AsyncMqttClientDisconnectReason reason) {
-    char * rch;
-    sprintf(rch, "Reason : %d", reason);
-    writeEvent("WARN", "mqtt", "Disconnected from MQTT server", rch);
+    String reasonstr = "";
+    switch (reason) {
+        case (AsyncMqttClientDisconnectReason::TCP_DISCONNECTED):
+            reasonstr = "TCP_DISCONNECTED";
+            break;
+        case (AsyncMqttClientDisconnectReason::MQTT_UNACCEPTABLE_PROTOCOL_VERSION):
+            reasonstr = "MQTT_UNACCEPTABLE_PROTOCOL_VERSION";
+            break;
+        case (AsyncMqttClientDisconnectReason::MQTT_IDENTIFIER_REJECTED):
+            reasonstr = "MQTT_IDENTIFIER_REJECTED";
+            break;
+        case (AsyncMqttClientDisconnectReason::MQTT_SERVER_UNAVAILABLE):
+            reasonstr = "MQTT_SERVER_UNAVAILABLE";
+            break;
+        case (AsyncMqttClientDisconnectReason::MQTT_MALFORMED_CREDENTIALS):
+            reasonstr = "MQTT_MALFORMED_CREDENTIALS";
+            break;
+        case (AsyncMqttClientDisconnectReason::MQTT_NOT_AUTHORIZED):
+            reasonstr = "MQTT_NOT_AUTHORIZED";
+            break;
+        case (AsyncMqttClientDisconnectReason::ESP8266_NOT_ENOUGH_SPACE):
+            reasonstr = "ESP8266_NOT_ENOUGH_SPACE";
+            break;
+        default:
+            reasonstr = "Unknown";
+            break;
+    }
+    writeEvent("WARN", "mqtt", "Disconnected from MQTT server", reasonstr);
     if (WiFi.isConnected()) {
         mqttReconnectTimer.once(2, connectToMqtt);
     }
 }
 
 void onMqttPublish(uint16_t packetId) {
-
     writeEvent("INFO", "mqtt", "MQTT publish acknowledged", String(packetId));
 }
 
