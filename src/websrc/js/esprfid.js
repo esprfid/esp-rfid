@@ -351,8 +351,7 @@ function listnetwork() {
     if (config.network.wmode === "1") {
         document.getElementById("wmodeap").checked = true;
         if (config.network.hide === "1") {
-            var value = "1";
-            $("input[name=\"hideapenable\"][value=" + value + "]").prop("checked", true);
+            $("input[name=\"hideapenable\"][value=\"1\"]").prop("checked", true);
             //$("input[name=hideapenable][value=\"1\"]").attr("checked", "checked");
         }
         handleAP();
@@ -360,8 +359,7 @@ function listnetwork() {
         document.getElementById("wmodesta").checked = true;
         document.getElementById("wifibssid").value = config.network.bssid;
         if (config.network.dhcp === "0") {
-                        var value = "0";
-            $("input[name=\"dhcpenabled\"][value=" + value + "]").prop("checked", true);
+            $("input[name=\"dhcpenabled\"][value=\"0\"]").prop("checked", true);
             //$("input[name=dhcpenabled][value=\"0\"]").attr("checked", "checked");
             handleDHCP();
         }
@@ -386,8 +384,7 @@ function listgeneral() {
 
 function listmqtt() {
     if (config.mqtt.enabled === "1") {
-        var value = "1";
-        $("input[name=\"mqttenabled\"][value=" + value + "]").prop("checked", true);
+        $("input[name=\"mqttenabled\"][value=\"1\"]").prop("checked", true);
         //$("input[name=mqttenabled][value=\"1\"]").attr("checked", "checked");
     }
     document.getElementById("mqtthost").value = config.mqtt.host;
@@ -1140,7 +1137,7 @@ $(".noimp").on("click", function() {
 
 
 
-window.FooTable.MyFiltering = FooTable.Filtering.extend({
+window.FooTable.MyFiltering = window.FooTable.Filtering.extend({
     construct: function(instance) {
         this._super(instance);
         this.acctypes = ["1", "99", "0"];
@@ -1203,7 +1200,7 @@ var yDown = null;
 function handleTouchStart(evt) {
     xDown = evt.touches[0].clientX;
     yDown = evt.touches[0].clientY;
-};
+}
 
 function handleTouchMove(evt) {
     if (!xDown || !yDown) {
@@ -1254,13 +1251,24 @@ function logout() {
     return false;
 }
 
-$("#update").on("shown.bs.modal", function(e) {
-    GetLatestReleaseInfo();
-})
 
 
 
 
+function connectWS() {
+    if (window.location.protocol === "https:") {
+        wsUri = "wss://" + window.location.hostname + "/ws";
+    } else if (window.location.protocol === "file:") {
+        wsUri = "ws://" + "localhost" + "/ws";
+    }
+    websock = new WebSocket(wsUri);
+    websock.addEventListener("message", socketMessageListener);
+
+    websock.onopen = function(evt) {
+        websock.send("{\"command\":\"getconf\"}");
+        websock.send("{\"command\":\"status\"}");
+    };
+}
 
 
 function upload() {
@@ -1273,7 +1281,7 @@ function login() {
         $("#signin").modal("hide");
         connectWS();
     } else {
-        var username = "admin"
+        var username = "admin";
         var password = document.getElementById("password").value;
         var url = "/login";
         var xhr = new XMLHttpRequest();
@@ -1293,11 +1301,10 @@ function login() {
 }
 
 
-function GetLatestReleaseInfo() {
+function getLatestReleaseInfo() {
 
     $.getJSON("https://api.github.com/repos/omersiar/esp-rfid/releases/latest").done(function(release) {
         var asset = release.assets[0];
-        onlinebin = asset.browser_download_url;
         var downloadCount = 0;
         for (var i = 0; i < release.assets.length; i++) {
             downloadCount += release.assets[i].download_count;
@@ -1321,24 +1328,16 @@ function GetLatestReleaseInfo() {
     }).error(function() { $("#onlineupdate").html("<h5>Couldn't get release info. Are you connected to the Internet?</h5>"); });
 }
 
+
+$("#update").on("shown.bs.modal", function(e) {
+    getLatestReleaseInfo();
+});
+
 function allowUpload() {
     $("#upbtn").prop("disabled", false);
 }
 
-function connectWS() {
-    if (window.location.protocol === "https:") {
-        wsUri = "wss://" + window.location.hostname + "/ws";
-    } else if (window.location.protocol === "file:") {
-        wsUri = "ws://" + "localhost" + "/ws";
-    }
-    websock = new WebSocket(wsUri);
-    websock.addEventListener("message", socketMessageListener);
 
-    websock.onopen = function(evt) {
-        websock.send("{\"command\":\"getconf\"}");
-        websock.send("{\"command\":\"status\"}");
-    };
-}
 
 function start() {
     esprfidcontent = document.createElement("div");
