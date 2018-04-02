@@ -1,16 +1,20 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [0.7.2] - 2018-04-02
 #### Fixed
-- [webui] We were checking wrongly if the browser has previously had authentication over /login.
-- [webui] MQTT listed disabled even if it is enabled #92 @pidiet
+- [webui] MQTT is enabled by default.
 
+## [0.7.1] - 2018-03-30
 #### Added
 - [firmware] + [webui] Option to use static IP address #89 @nbaglietto
 - [firmware] + [webui] Option to hide SSID on AP Mode #89 @nbaglietto
 - [webui] Auto focus on login password #94 @pidiet
 - [firmware] event log for MQTT
+
+#### Fixed
+- [webui] We were checking wrongly if the browser has previously had authentication over /login.
+- [webui] MQTT listed disabled even if it is enabled #92 @pidiet
 
 ## [0.7.0] - 2018-03-23
 #### Added
