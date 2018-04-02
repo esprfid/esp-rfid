@@ -101,7 +101,8 @@ For Wiegand based readers, you can configure D0 and D1 pins via settings page. B
 * Congratulations, everything went well, if you encounter any issue feel free to ask help on GitHub.
 
 ### Known Issues
-* MQTT does not publish the UID anymore when disconnected from MQTT server.
+* MQTT functionality is not stable for now.
+* See [#99](https://github.com/omersiar/esp-rfid/issues/99).
 * Please also check [GitHub issues](https://github.com/omersiar/esp-rfid/issues).
 
 
@@ -111,7 +112,7 @@ This will require you to do syncing manually. ESP can store and hold time for yo
 So you have to login to settings page and sync it in a timely fashion.
 
 ## **Security**
-We assume **ESP-RFID** project -as a whole- does not offer strong security. There are PICCs available that their UID (Unique Identification Numbers) can be set manually (Currently esp-rfid relies only UID to identify it's users). Also there may be a bug in the code that may result free access to your belongings. And also, like every other network connected device esp-rfid is vulnerable to many attacks including Man-in-the-middle, Brute-force, etc.
+We assume **ESP-RFID** project -as a whole- does not offer strong security. There are PICCs available that their UID (Unique Identification Numbers) can be set manually (Currently esp-rfid relies only UID to identify its users). Also there may be a bug in the code that may result free access to your belongings. And also, like every other network connected device esp-rfid is vulnerable to many attacks including Man-in-the-middle, Brute-force, etc.
 
 This is a simple, hobby grade project, do not use it where strong security is needed.
 

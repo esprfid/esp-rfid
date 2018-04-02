@@ -203,20 +203,21 @@ function checkOctects(input) {
 }
 
 function savenetwork() {
+    var wmode = "0";
+    config.network.dhcp = "0";
+    config.network.hide = "0";
     if (document.getElementById("inputtohide").style.display === "none") {
         var b = document.getElementById("ssid");
         config.network.ssid = b.options[b.selectedIndex].value;
     } else {
         config.network.ssid = document.getElementById("inputtohide").value;
     }
-    var wmode = "0";
     if (document.getElementById("wmodeap").checked) {
         wmode = "1";
         config.network.bssid = document.getElementById("wifibssid").value = 0;
         if (document.querySelector('input[name="hideapenable"]:checked').value === "1") {
             config.network.hide = "1";
         } else { config.network.hide = "0"; }
-
     } else {
         config.network.bssid = document.getElementById("wifibssid").value;
         if (document.querySelector('input[name="dhcpenabled"]:checked').value === "1") {
@@ -957,7 +958,7 @@ function socketMessageListener(evt) {
                 break;
             case "configfile":
                 config = obj;
-                config.general.version = "v0.7";
+                config.general.version = "v0.7.2";
                 break;
             default:
                 break;
