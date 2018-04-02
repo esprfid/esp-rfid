@@ -535,6 +535,10 @@ void ICACHE_FLASH_ATTR rfidloop() {
             return;
         }
     }
+    else {
+        delay(50);
+        return;
+    }
     if (mqttenabled == 1) {
         const char * topic = mqttTopic;
         mqttClient.publish(topic, 0, true, uid.c_str());

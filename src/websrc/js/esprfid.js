@@ -139,9 +139,20 @@ function listntp() {
 
     document.getElementById("ntpserver").value = config.ntp.server;
     document.getElementById("intervals").value = config.ntp.interval;
-    document.getElementById("DropDownTimezone").value = config.ntp.timezone
+    document.getElementById("DropDownTimezone").value = config.ntp.timezone;
     browserTime();
     deviceTime();
+}
+
+function uncommited() {
+    $("#commit").fadeOut(200, function() {
+        $(this).css("background", "gold").fadeIn(1000);
+    });
+    document.getElementById("commit").innerHTML = "<h6>You have uncommited changes, please click here to commit and reboot (you will a have chance to review changes).</h6>";
+    $("#commit").click(function() {
+        revcommit();
+        return false;
+    });
 }
 
 function savehardware() {
@@ -258,19 +269,76 @@ function revcommit() {
     $("#revcommit").modal("show");
 }
 
+function inProgress(callback) {
+    $("body").load("esprfid.htm #progresscontent", function(responseTxt, statusTxt, xhr) {
+        if (statusTxt === "success") {
+            $(".progress").css("height", "40");
+            $(".progress").css("font-size", "xx-large");
+            var i = 0;
+            var prg = setInterval(function() {
+                $(".progress-bar").css("width", i + "%").attr("aria-valuenow", i).html(i + "%");
+                i++;
+                if (i === 101) {
+                    clearInterval(prg);
+                    var a = document.createElement("a");
+                    a.href = "http://" + config.general.hostnm + ".local";
+                    a.innerText = "Try to reconnect ESP";
+                    document.getElementById("reconnect").appendChild(a);
+                    document.getElementById("reconnect").style.display = "block";
+                    document.getElementById("updateprog").className = "progress-bar progress-bar-success";
+                    document.getElementById("updateprog").innerHTML = "Completed";
+                }
+            }, 500);
+            switch (callback) {
+                case "upload":
+                    $.ajax({
+                        url: "/update",
+                        type: "POST",
+                        data: formData,
+                        processData: false,
+                        contentType: false
+                    });
+                    break;
+                case "commit":
+                    websock.send(JSON.stringify(config));
+                    break;
+                case "destroy":
+                    websock.send("{\"command\":\"destroy\"}");
+                    break;
+                case "restart":
+                    websock.send("{\"command\":\"restart\"}");
+                    break;
+                default:
+                    break;
+
+            }
+        }
+    }).hide().fadeIn();
+}
+
 function commit() {
     inProgress("commit");
 }
 
-function uncommited() {
-    $("#commit").fadeOut(200, function() {
-        $(this).css("background", "gold").fadeIn(1000);
-    });
-    document.getElementById("commit").innerHTML = "<h6>You have uncommited changes, please click here to commit and reboot (you will a have chance to review changes).</h6>";
-    $("#commit").click(function() {
-        revcommit();
-        return false;
-    });
+
+
+function handleAP() {
+    document.getElementById("hideap").style.display = "block";
+    document.getElementById("hideBSSID").style.display = "none";
+    document.getElementById("scanb").style.display = "none";
+    document.getElementById("ssid").style.display = "none";
+    document.getElementById("dhcp").style.display = "none";
+    document.getElementById("staticip").style.display = "none";
+    document.getElementById("inputtohide").style.display = "block";
+
+
+}
+
+function handleSTA() {
+    document.getElementById("hideap").style.display = "none";
+    document.getElementById("hideBSSID").style.display = "block";
+    document.getElementById("scanb").style.display = "block";
+    document.getElementById("dhcp").style.display = "block";
 }
 
 function listnetwork() {
@@ -326,24 +394,13 @@ function listmqtt() {
     document.getElementById("mqttpwd").value = config.mqtt.pswd;
 }
 
-function handleAP() {
-    document.getElementById("hideap").style.display = "block";
-    document.getElementById("hideBSSID").style.display = "none";
-    document.getElementById("scanb").style.display = "none";
-    document.getElementById("ssid").style.display = "none";
-    document.getElementById("dhcp").style.display = "none";
-    document.getElementById("staticip").style.display = "none";
-    document.getElementById("inputtohide").style.display = "block";
 
 
+function listBSSID() {
+    var select = document.getElementById("ssid");
+    document.getElementById("wifibssid").value = select.options[select.selectedIndex].bssidvalue;
 }
 
-function handleSTA() {
-    document.getElementById("hideap").style.display = "none";
-    document.getElementById("hideBSSID").style.display = "block";
-    document.getElementById("scanb").style.display = "block";
-    document.getElementById("dhcp").style.display = "block";
-}
 
 function listSSID(obj) {
     var select = document.getElementById("ssid");
@@ -360,10 +417,6 @@ function listSSID(obj) {
     listBSSID();
 }
 
-function listBSSID() {
-    var select = document.getElementById("ssid");
-    document.getElementById("wifibssid").value = select.options[select.selectedIndex].bssidvalue;
-}
 
 function scanWifi() {
     websock.send("{\"command\":\"scan\"}");
@@ -419,6 +472,30 @@ function builddata(obj) {
 
 function testRelay() {
     websock.send("{\"command\":\"testrelay\"}");
+}
+
+
+function listStats() {
+    document.getElementById("chip").innerHTML = ajaxobj.chipid;
+    document.getElementById("cpu").innerHTML = ajaxobj.cpu + " Mhz";
+    document.getElementById("uptime").innerHTML = ajaxobj.uptime;
+    document.getElementById("heap").innerHTML = ajaxobj.heap + " Bytes";
+    document.getElementById("heap").style.width = (ajaxobj.heap * 100) / 40960 + "%";
+    colorStatusbar(document.getElementById("heap"));
+    document.getElementById("flash").innerHTML = ajaxobj.availsize + " Bytes";
+    document.getElementById("flash").style.width = (ajaxobj.availsize * 100) / 2092032 + "%";
+    colorStatusbar(document.getElementById("flash"));
+    document.getElementById("spiffs").innerHTML = ajaxobj.availspiffs + " Bytes";
+    document.getElementById("spiffs").style.width = (ajaxobj.availspiffs * 100) / ajaxobj.spiffssize + "%";
+    colorStatusbar(document.getElementById("spiffs"));
+    document.getElementById("ssidstat").innerHTML = ajaxobj.ssid;
+    document.getElementById("ip").innerHTML = ajaxobj.ip;
+    document.getElementById("gate").innerHTML = ajaxobj.gateway;
+    document.getElementById("mask").innerHTML = ajaxobj.netmask;
+    document.getElementById("dns").innerHTML = ajaxobj.dns;
+    document.getElementById("mac").innerHTML = ajaxobj.mac;
+    document.getElementById("sver").innerText = config.general.version;
+    $("#mainver").text(config.general.version);
 }
 
 function getContent(contentname) {
@@ -583,6 +660,13 @@ function restoreUser() {
     }
 }
 
+function twoDigits(value) {
+    if (value < 10) {
+        return "0" + value;
+    }
+    return value;
+}
+
 function initEventTable() {
     var newlist = [];
     for (var i = 0; i < data.length; i++) {
@@ -608,7 +692,7 @@ function initEventTable() {
 
     }
     jQuery(function($) {
-        FooTable.init("#eventtable", {
+        window.FooTable.init("#eventtable", {
             columns: [{
                     "name": "type",
                     "title": "Event Type",
@@ -684,7 +768,7 @@ function initLatestLogTable() {
 
     }
     jQuery(function($) {
-        FooTable.init("#latestlogtable", {
+        window.FooTable.init("#latestlogtable", {
             columns: [{
                     "name": "timestamp",
                     "title": "Date",
@@ -734,19 +818,14 @@ function initLatestLogTable() {
     });
 }
 
-function twoDigits(value) {
-    if (value < 10) {
-        return "0" + value;
-    }
-    return value;
-}
+
 
 function initUserTable() {
     jQuery(function($) {
         var $modal = $("#editor-modal"),
             $editor = $("#editor"),
             $editorTitle = $("#editor-title"),
-            ft = FooTable.init("#usertable", {
+            ft = window.FooTable.init("#usertable", {
                 columns: [{
                         "name": "uid",
                         "title": "UID",
@@ -824,12 +903,14 @@ function initUserTable() {
                     }
                 },
                 components: {
-                    filtering: FooTable.MyFiltering
+                    filtering: window.FooTable.MyFiltering
                 }
             }),
             uid = 10001;
         $editor.on("submit", function(e) {
-            if (this.checkValidity && !this.checkValidity()) return;
+            if (this.checkValidity && !this.checkValidity()) {
+                return
+            } ;
             e.preventDefault();
             var row = $modal.data("row"),
                 values = {
@@ -838,7 +919,7 @@ function initUserTable() {
                     acctype: parseInt($editor.find("#acctype").val()),
                     validuntil: (new Date($editor.find("#validuntil").val()).getTime() / 1000)
                 };
-            if (row instanceof FooTable.Row) {
+            if (row instanceof window.FooTable.Row) {
                 row.delete();
                 values.id = uid++;
                 ft.rows.add(values);
@@ -861,17 +942,6 @@ function initUserTable() {
 }
 
 
-
-function acctypefinder() {
-    if (values.acctype === "Active") {
-        return 1;
-    } else if (values.acctype === "Admin") {
-        return 99;
-    } else {
-        return 0;
-    }
-}
-
 function restartESP() {
     inProgress("restart");
 }
@@ -881,28 +951,6 @@ function colorStatusbar(ref) {
     if (percentage > 50) { ref.className = "progress-bar progress-bar-success"; } else if (percentage > 25) { ref.className = "progress-bar progress-bar-warning"; } else { ref.class = "progress-bar progress-bar-danger"; }
 }
 
-function listStats() {
-    document.getElementById("chip").innerHTML = ajaxobj.chipid;
-    document.getElementById("cpu").innerHTML = ajaxobj.cpu + " Mhz";
-    document.getElementById("uptime").innerHTML = ajaxobj.uptime;
-    document.getElementById("heap").innerHTML = ajaxobj.heap + " Bytes";
-    document.getElementById("heap").style.width = (ajaxobj.heap * 100) / 40960 + "%";
-    colorStatusbar(document.getElementById("heap"));
-    document.getElementById("flash").innerHTML = ajaxobj.availsize + " Bytes";
-    document.getElementById("flash").style.width = (ajaxobj.availsize * 100) / 2092032 + "%";
-    colorStatusbar(document.getElementById("flash"));
-    document.getElementById("spiffs").innerHTML = ajaxobj.availspiffs + " Bytes";
-    document.getElementById("spiffs").style.width = (ajaxobj.availspiffs * 100) / ajaxobj.spiffssize + "%";
-    colorStatusbar(document.getElementById("spiffs"));
-    document.getElementById("ssidstat").innerHTML = ajaxobj.ssid;
-    document.getElementById("ip").innerHTML = ajaxobj.ip;
-    document.getElementById("gate").innerHTML = ajaxobj.gateway;
-    document.getElementById("mask").innerHTML = ajaxobj.netmask;
-    document.getElementById("dns").innerHTML = ajaxobj.dns;
-    document.getElementById("mac").innerHTML = ajaxobj.mac;
-    document.getElementById("sver").innerText = config.general.version;
-    $("#mainver").text(config.general.version);
-}
 
 var nextIsNotJson = false;
 
@@ -1026,18 +1074,7 @@ function socketMessageListener(evt) {
 
 }
 
-function socketCloseListener(evt) {
-    console.log("socket closed");
-    websock = new WebSocket(wsUri);
-    websock.addEventListener("message", socketMessageListener);
-    websock.addEventListener("close", socketCloseListener);
-    websock.addEventListener("error", socketErrorListener);
-}
 
-function socketErrorListener(evt) {
-    console.log("socket error");
-    console.log(evt);
-}
 
 function clearevent() {
     websock.send("{\"command\":\"clearevent\"}");
@@ -1098,7 +1135,7 @@ $(".noimp").on("click", function() {
 
 
 
-FooTable.MyFiltering = FooTable.Filtering.extend({
+window.FooTable.MyFiltering = FooTable.Filtering.extend({
     construct: function(instance) {
         this._super(instance);
         this.acctypes = ["1", "99", "0"];
@@ -1109,7 +1146,7 @@ FooTable.MyFiltering = FooTable.Filtering.extend({
     $create: function() {
         this._super();
         var self = this,
-            $form_grp = $("<div/>", {
+            $formgrp = $("<div/>", {
                 "class": "form-group"
             })
             .append($("<label/>", {
@@ -1127,7 +1164,7 @@ FooTable.MyFiltering = FooTable.Filtering.extend({
             .append($("<option/>", {
                 text: self.def
             }))
-            .appendTo($form_grp);
+            .appendTo($formgrp);
 
         $.each(self.acctypes, function(i, acctype) {
             self.$acctype.append($("<option/>").text(self.acctypesstr[i]).val(self.acctypes[i]));
@@ -1146,7 +1183,7 @@ FooTable.MyFiltering = FooTable.Filtering.extend({
     draw: function() {
         this._super();
         var acctype = this.find("acctype");
-        if (acctype instanceof FooTable.Filter) {
+        if (acctype instanceof window.FooTable.Filter) {
             this.$acctype.val(acctype.query.val());
         } else {
             this.$acctype.val(this.def);
@@ -1154,8 +1191,6 @@ FooTable.MyFiltering = FooTable.Filtering.extend({
     }
 });
 
-document.addEventListener("touchstart", handleTouchStart, false);
-document.addEventListener("touchmove", handleTouchMove, false);
 
 var xDown = null;
 var yDown = null;
@@ -1218,52 +1253,7 @@ $("#update").on("shown.bs.modal", function(e) {
     GetLatestReleaseInfo();
 })
 
-function inProgress(callback) {
-    $("body").load("esprfid.htm #progresscontent", function(responseTxt, statusTxt, xhr) {
-        if (statusTxt === "success") {
-            $(".progress").css("height", "40");
-            $(".progress").css("font-size", "xx-large");
-            var i = 0;
-            var prg = setInterval(function() {
-                $(".progress-bar").css("width", i + "%").attr("aria-valuenow", i).html(i + "%");
-                i++;
-                if (i === 101) {
-                    clearInterval(prg);
-                    var a = document.createElement("a");
-                    a.href = "http://" + config.general.hostnm + ".local";
-                    a.innerText = "Try to reconnect ESP";
-                    document.getElementById("reconnect").appendChild(a);
-                    document.getElementById("reconnect").style.display = "block";
-                    document.getElementById("updateprog").className = "progress-bar progress-bar-success";
-                    document.getElementById("updateprog").innerHTML = "Completed";
-                }
-            }, 500);
-            switch (callback) {
-                case "upload":
-                    $.ajax({
-                        url: "/update",
-                        type: "POST",
-                        data: formData,
-                        processData: false,
-                        contentType: false
-                    });
-                    break;
-                case "commit":
-                    websock.send(JSON.stringify(config));
-                    break;
-                case "destroy":
-                    websock.send("{\"command\":\"destroy\"}");
-                    break;
-                case "restart":
-                    websock.send("{\"command\":\"restart\"}");
-                    break;
-                default:
-                    break;
 
-            }
-        }
-    }).hide().fadeIn();
-}
 
 var formData = new FormData();
 
@@ -1338,8 +1328,6 @@ function connectWS() {
     }
     websock = new WebSocket(wsUri);
     websock.addEventListener("message", socketMessageListener);
-    websock.addEventListener("error", socketErrorListener);
-    websock.addEventListener("close", socketCloseListener);
 
     websock.onopen = function(evt) {
         websock.send("{\"command\":\"getconf\"}");
@@ -1365,3 +1353,6 @@ function start() {
         }
     });
 }
+
+document.addEventListener("touchstart", handleTouchStart, false);
+document.addEventListener("touchmove", handleTouchMove, false);

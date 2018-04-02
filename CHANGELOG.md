@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+#### Fixed
+- [webui] minor fixes suggested by Codacy
+
 ## [0.7.2] - 2018-04-02
 #### Fixed
 - [webui] MQTT is enabled by default.
