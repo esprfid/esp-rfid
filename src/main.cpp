@@ -885,7 +885,7 @@ void onMqttDisconnect(AsyncMqttClientDisconnectReason reason) {
     }
     writeEvent("WARN", "mqtt", "Disconnected from MQTT server", reasonstr);
     if (WiFi.isConnected()) {
-        mqttReconnectTimer.once(2, connectToMqtt);
+        mqttReconnectTimer.once(60, connectToMqtt);
     }
 }
 
@@ -894,7 +894,10 @@ void onMqttPublish(uint16_t packetId) {
 }
 
 void onMqttConnect(bool sessionPresent) {
+    Serial.println("MQTT Connected session");
+    uint16_t packetIdPub1 = mqttClient.publish("test/lol", 1, true, "test 2");
     if (sessionPresent == true) {
+        Serial.println("MQTT Connected session");
         writeEvent("INFO", "mqtt", "Connected to MQTT Server", "Session Present");
     }
 }

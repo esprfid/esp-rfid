@@ -37,7 +37,7 @@ var config = {
         "version": ""
     },
     "mqtt": {
-        "enabled": "",
+        "enabled": "0",
         "host": "",
         "port": "",
         "topic": "",
