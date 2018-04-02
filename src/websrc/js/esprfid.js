@@ -106,7 +106,7 @@ function handleReader() {
 }
 
 function handleDHCP() {
-    if (document.querySelector('input[name="dhcpenabled"]:checked').value === "1") {
+    if (document.querySelector("input[name=\"dhcpenabled\"]:checked").value === "1") {
         $("#staticip").slideUp();
         $("#staticip").show();
     } else {
@@ -142,6 +142,11 @@ function listntp() {
     document.getElementById("DropDownTimezone").value = config.ntp.timezone;
     browserTime();
     deviceTime();
+}
+
+function revcommit() {
+    document.getElementById("jsonholder").innerText = JSON.stringify(config, null, 2);
+    $("#revcommit").modal("show");
 }
 
 function uncommited() {
@@ -189,7 +194,7 @@ function savegeneral() {
 
 function savemqtt() {
     config.mqtt.enabled = "0";
-    if ($("input[name=mqttenabled]:checked").val() === "1") {
+    if ($("input[name=\"mqttenabled\"]:checked").val() === "1") {
         config.mqtt.enabled = "1";
     }
     config.mqtt.host = document.getElementById("mqtthost").value;
@@ -226,12 +231,12 @@ function savenetwork() {
     if (document.getElementById("wmodeap").checked) {
         wmode = "1";
         config.network.bssid = document.getElementById("wifibssid").value = 0;
-        if (document.querySelector('input[name="hideapenable"]:checked').value === "1") {
+        if (document.querySelector("input[name=\"hideapenable\"]:checked").value === "1") {
             config.network.hide = "1";
         } else { config.network.hide = "0"; }
     } else {
         config.network.bssid = document.getElementById("wifibssid").value;
-        if (document.querySelector('input[name="dhcpenabled"]:checked').value === "1") {
+        if (document.querySelector("input[name=\"dhcpenabled\"]:checked").value === "1") {
             config.network.dhcp = "1";
         } else {
 
@@ -264,10 +269,8 @@ function savenetwork() {
     uncommited();
 }
 
-function revcommit() {
-    document.getElementById("jsonholder").innerText = JSON.stringify(config, null, 2);
-    $("#revcommit").modal("show");
-}
+var formData = new FormData();
+
 
 function inProgress(callback) {
     $("body").load("esprfid.htm #progresscontent", function(responseTxt, statusTxt, xhr) {
@@ -349,8 +352,8 @@ function listnetwork() {
         document.getElementById("wmodeap").checked = true;
         if (config.network.hide === "1") {
             var value = "1";
-            $("input[name=hideapenable][value=" + value + "]").prop('checked', true);
-            //$("input[name=hideapenable][value=\"1\"]").attr('checked', 'checked');
+            $("input[name=\"hideapenable\"][value=" + value + "]").prop("checked", true);
+            //$("input[name=hideapenable][value=\"1\"]").attr("checked", "checked");
         }
         handleAP();
     } else {
@@ -358,8 +361,8 @@ function listnetwork() {
         document.getElementById("wifibssid").value = config.network.bssid;
         if (config.network.dhcp === "0") {
                         var value = "0";
-            $("input[name=dhcpenabled][value=" + value + "]").prop('checked', true);
-            //$("input[name=dhcpenabled][value=\"0\"]").attr('checked', 'checked');
+            $("input[name=\"dhcpenabled\"][value=" + value + "]").prop("checked", true);
+            //$("input[name=dhcpenabled][value=\"0\"]").attr("checked", "checked");
             handleDHCP();
         }
         document.getElementById("ipaddress").value = config.network.ip;
@@ -384,8 +387,8 @@ function listgeneral() {
 function listmqtt() {
     if (config.mqtt.enabled === "1") {
         var value = "1";
-        $("input[name=mqttenabled][value=" + value + "]").prop('checked', true);
-        //$("input[name=mqttenabled][value=\"1\"]").attr('checked', 'checked');
+        $("input[name=\"mqttenabled\"][value=" + value + "]").prop("checked", true);
+        //$("input[name=mqttenabled][value=\"1\"]").attr("checked", "checked");
     }
     document.getElementById("mqtthost").value = config.mqtt.host;
     document.getElementById("mqttport").value = config.mqtt.port;
@@ -472,6 +475,12 @@ function builddata(obj) {
 
 function testRelay() {
     websock.send("{\"command\":\"testrelay\"}");
+}
+
+
+function colorStatusbar(ref) {
+    var percentage = ref.style.width.slice(0, -1);
+    if (percentage > 50) { ref.className = "progress-bar progress-bar-success"; } else if (percentage > 25) { ref.className = "progress-bar progress-bar-warning"; } else { ref.class = "progress-bar progress-bar-danger"; }
 }
 
 
@@ -909,8 +918,8 @@ function initUserTable() {
             uid = 10001;
         $editor.on("submit", function(e) {
             if (this.checkValidity && !this.checkValidity()) {
-                return
-            } ;
+                return;
+            }
             e.preventDefault();
             var row = $modal.data("row"),
                 values = {
@@ -946,10 +955,6 @@ function restartESP() {
     inProgress("restart");
 }
 
-function colorStatusbar(ref) {
-    var percentage = ref.style.width.slice(0, -1);
-    if (percentage > 50) { ref.className = "progress-bar progress-bar-success"; } else if (percentage > 25) { ref.className = "progress-bar progress-bar-warning"; } else { ref.class = "progress-bar progress-bar-danger"; }
-}
 
 
 var nextIsNotJson = false;
@@ -1255,7 +1260,7 @@ $("#update").on("shown.bs.modal", function(e) {
 
 
 
-var formData = new FormData();
+
 
 
 function upload() {
@@ -1340,8 +1345,8 @@ function start() {
     esprfidcontent.id = "mastercontent";
     esprfidcontent.style.display = "none";
     document.body.appendChild(esprfidcontent);
-    $('#signin').on('shown.bs.modal', function() {
-        $('#password').focus().select();
+    $("#signin").on("shown.bs.modal", function() {
+        $("#password").focus().select();
     });
     $("#mastercontent").load("esprfid.htm", function(responseTxt, statusTxt, xhr) {
         if (statusTxt === "success") {
