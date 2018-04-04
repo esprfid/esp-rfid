@@ -112,17 +112,6 @@ String ICACHE_FLASH_ATTR printIP(IPAddress adress) {
     return (String)adress[0] + "." + (String)adress[1] + "." + (String)adress[2] + "." + (String)adress[3];
 }
 
-/*
-time_t ICACHE_FLASH_ATTR checkTimeSync() {
-    if (nextSyncTime <= sysTime) {
-        timerequest = true;
-        return millis();
-    }
-    else {
-        return now();
-    }
-}*/
-
 void ICACHE_FLASH_ATTR writeEvent(String type, String src, String desc, String data) {
     DynamicJsonBuffer jsonBuffer44333;
     JsonObject& root = jsonBuffer44333.createObject();
@@ -862,30 +851,30 @@ void ICACHE_FLASH_ATTR onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient *
 void onMqttDisconnect(AsyncMqttClientDisconnectReason reason) {
     String reasonstr = "";
     switch (reason) {
-        case (AsyncMqttClientDisconnectReason::TCP_DISCONNECTED):
-            reasonstr = "TCP_DISCONNECTED";
-            break;
-        case (AsyncMqttClientDisconnectReason::MQTT_UNACCEPTABLE_PROTOCOL_VERSION):
-            reasonstr = "MQTT_UNACCEPTABLE_PROTOCOL_VERSION";
-            break;
-        case (AsyncMqttClientDisconnectReason::MQTT_IDENTIFIER_REJECTED):
-            reasonstr = "MQTT_IDENTIFIER_REJECTED";
-            break;
-        case (AsyncMqttClientDisconnectReason::MQTT_SERVER_UNAVAILABLE):
-            reasonstr = "MQTT_SERVER_UNAVAILABLE";
-            break;
-        case (AsyncMqttClientDisconnectReason::MQTT_MALFORMED_CREDENTIALS):
-            reasonstr = "MQTT_MALFORMED_CREDENTIALS";
-            break;
-        case (AsyncMqttClientDisconnectReason::MQTT_NOT_AUTHORIZED):
-            reasonstr = "MQTT_NOT_AUTHORIZED";
-            break;
-        case (AsyncMqttClientDisconnectReason::ESP8266_NOT_ENOUGH_SPACE):
-            reasonstr = "ESP8266_NOT_ENOUGH_SPACE";
-            break;
-        default:
-            reasonstr = "Unknown";
-            break;
+    case (AsyncMqttClientDisconnectReason::TCP_DISCONNECTED):
+        reasonstr = "TCP_DISCONNECTED";
+        break;
+    case (AsyncMqttClientDisconnectReason::MQTT_UNACCEPTABLE_PROTOCOL_VERSION):
+        reasonstr = "MQTT_UNACCEPTABLE_PROTOCOL_VERSION";
+        break;
+    case (AsyncMqttClientDisconnectReason::MQTT_IDENTIFIER_REJECTED):
+        reasonstr = "MQTT_IDENTIFIER_REJECTED";
+        break;
+    case (AsyncMqttClientDisconnectReason::MQTT_SERVER_UNAVAILABLE):
+        reasonstr = "MQTT_SERVER_UNAVAILABLE";
+        break;
+    case (AsyncMqttClientDisconnectReason::MQTT_MALFORMED_CREDENTIALS):
+        reasonstr = "MQTT_MALFORMED_CREDENTIALS";
+        break;
+    case (AsyncMqttClientDisconnectReason::MQTT_NOT_AUTHORIZED):
+        reasonstr = "MQTT_NOT_AUTHORIZED";
+        break;
+    case (AsyncMqttClientDisconnectReason::ESP8266_NOT_ENOUGH_SPACE):
+        reasonstr = "ESP8266_NOT_ENOUGH_SPACE";
+        break;
+    default:
+        reasonstr = "Unknown";
+        break;
     }
     writeEvent("WARN", "mqtt", "Disconnected from MQTT server", reasonstr);
     if (WiFi.isConnected()) {
@@ -958,8 +947,8 @@ bool ICACHE_FLASH_ATTR loadConfiguration() {
         setupPN532Reader(rfidss);
     }
 
-    autoRestartIntervalSeconds = general["restart"].as<int>();
-    wifiTimeout = network["offtime"].as<int>();
+    autoRestartIntervalSeconds = general["restart"];
+    wifiTimeout = network["offtime"];
 
     const char * bssidmac = network["bssid"];
     byte bssid[6];
@@ -997,7 +986,7 @@ bool ICACHE_FLASH_ATTR loadConfiguration() {
     ws.setAuthentication("admin", http_pass);
 
     if (wmode == 1) {
-        int hid = network["hide"].as<int>();
+        int hid = network["hide"];
         Serial.println(F("[ INFO ] ESP-RFID is running in AP Mode "));
         return startAP(ssid, password, hid);
     }
@@ -1028,8 +1017,9 @@ bool ICACHE_FLASH_ATTR loadConfiguration() {
     }
 
 
-
-
+#ifdef DEBUG
+    Serial.println("Trying to setup NTP Server");
+#endif
 
     IPAddress timeserverip;
     WiFi.hostByName(ntpserver, timeserverip);
@@ -1042,8 +1032,13 @@ bool ICACHE_FLASH_ATTR loadConfiguration() {
     const char * muser = mqtt["user"];
     const char * mpas = mqtt["pswd"];
 
-    mqttenabled = mqtt["enabled"].as<int>();
+    mqttenabled = mqtt["enabled"];
+
+
     if (mqttenabled == 1) {
+#ifdef DEBUG
+        Serial.println("Trying to setup MQTT");
+#endif
         mqttTopic = strdup(mqtt["topic"]);
         mqttClient.setServer(mhs, mport);
         mqttClient.setCredentials(muser, mpas);
@@ -1251,6 +1246,24 @@ void ICACHE_FLASH_ATTR setup() {
 
     Serial.println();
     Serial.println(F("[ INFO ] ESP RFID v0.7"));
+    #ifdef DEBUG
+        uint32_t realSize = ESP.getFlashChipRealSize();
+    uint32_t ideSize = ESP.getFlashChipSize();
+    FlashMode_t ideMode = ESP.getFlashChipMode();
+
+    Serial.printf("Flash real id:   %08X\n", ESP.getFlashChipId());
+    Serial.printf("Flash real size: %u\n\n", realSize);
+
+    Serial.printf("Flash ide  size: %u\n", ideSize);
+    Serial.printf("Flash ide speed: %u\n", ESP.getFlashChipSpeed());
+    Serial.printf("Flash ide mode:  %s\n", (ideMode == FM_QIO ? "QIO" : ideMode == FM_QOUT ? "QOUT" : ideMode == FM_DIO ? "DIO" : ideMode == FM_DOUT ? "DOUT" : "UNKNOWN"));
+
+    if(ideSize != realSize) {
+        Serial.println("Flash Chip configuration wrong!\n");
+    } else {
+        Serial.println("Flash Chip configuration ok.\n");
+    }
+    #endif
     // Start SPIFFS filesystem
     if (!SPIFFS.begin()) {
 #ifdef DEBUG

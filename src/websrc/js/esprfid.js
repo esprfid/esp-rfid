@@ -10,44 +10,44 @@ var config = {
     "network": {
         "bssid": "",
         "ssid": "",
-        "wmode": "",
-        "hide": "0",
+        "wmode": 0,
+        "hide": 0,
         "pswd": "",
-        "offtime": "0",
-        "dhcp": "1",
+        "offtime": 0,
+        "dhcp": 1,
         "ip": "",
         "subnet": "",
         "gateway": "",
         "dns": ""
     },
     "hardware": {
-        "readerType": "1",
-        "wgd0pin": "4",
-        "wgd1pin": "5",
-        "sspin": "",
-        "rfidgain": "",
-        "rtype": "",
-        "rpin": "",
-        "rtime": ""
+        "readerType": 1,
+        "wgd0pin": 4,
+        "wgd1pin": 5,
+        "sspin": 0,
+        "rfidgain": 32,
+        "rtype": 1,
+        "rpin": 4,
+        "rtime": 400
     },
     "general": {
         "hostnm": "esp-rfid",
-        "restart": "0",
+        "restart": 0,
         "pswd": "admin",
-        "version": ""
+        "version": "0.7.3"
     },
     "mqtt": {
-        "enabled": "0",
+        "enabled": 0,
         "host": "",
-        "port": "",
+        "port": 1883,
         "topic": "",
         "user": "",
         "pswd": ""
     },
     "ntp": {
         "server": "pool.ntp.org",
-        "interval": "30",
-        "timezone": "0"
+        "interval": 30,
+        "timezone": 0
     }
 };
 
@@ -91,14 +91,14 @@ function syncBrowserTime() {
 }
 
 function handleReader() {
-    if (document.getElementById("readerType").value === "0") {
+    if (parseInt(document.getElementById("readerType").value) === 0) {
         document.getElementById("wiegandForm").style.display = "none";
         document.getElementById("mfrc522Form").style.display = "block";
         document.getElementById("rc522gain").style.display = "block";
-    } else if (document.getElementById("readerType").value === "1") {
+    } else if (parseInt(document.getElementById("readerType").value) === 1) {
         document.getElementById("wiegandForm").style.display = "block";
         document.getElementById("mfrc522Form").style.display = "none";
-    } else if (document.getElementById("readerType").value === "2") {
+    } else if (parseInt(document.getElementById("readerType").value) === 2) {
         document.getElementById("wiegandForm").style.display = "none";
         document.getElementById("mfrc522Form").style.display = "block";
         document.getElementById("rc522gain").style.display = "none";
@@ -108,7 +108,6 @@ function handleReader() {
 function handleDHCP() {
     if (document.querySelector("input[name=\"dhcpenabled\"]:checked").value === "1") {
         $("#staticip").slideUp();
-        $("#staticip").show();
     } else {
         $("#staticip").slideDown();
         $("#staticip").show();
@@ -161,21 +160,21 @@ function uncommited() {
 }
 
 function savehardware() {
-    config.hardware.readerType = document.getElementById("readerType").value;
-    config.hardware.wgd0pin = document.getElementById("wg0pin").value;
-    config.hardware.wgd1pin = document.getElementById("wg1pin").value;
-    config.hardware.sspin = document.getElementById("gpioss").value;
-    config.hardware.rfidgain = document.getElementById("gain").value;
-    config.hardware.rtype = document.getElementById("typerly").value;
-    config.hardware.rpin = document.getElementById("gpiorly").value;
-    config.hardware.rtime = document.getElementById("delay").value;
+    config.hardware.readerType = parseInt(document.getElementById("readerType").value);
+    config.hardware.wgd0pin = parseInt(document.getElementById("wg0pin").value);
+    config.hardware.wgd1pin = parseInt(document.getElementById("wg1pin").value);
+    config.hardware.sspin = parseInt(document.getElementById("gpioss").value);
+    config.hardware.rfidgain = parseInt(document.getElementById("gain").value);
+    config.hardware.rtype = parseInt(document.getElementById("typerly").value);
+    config.hardware.rpin = parseInt(document.getElementById("gpiorly").value);
+    config.hardware.rtime = parseInt(document.getElementById("delay").value);
     uncommited();
 }
 
 function saventp() {
     config.ntp.server = document.getElementById("ntpserver").value;
-    config.ntp.interval = document.getElementById("intervals").value;
-    config.ntp.timezone = document.getElementById("DropDownTimezone").value;
+    config.ntp.interval = parseInt(document.getElementById("intervals").value);
+    config.ntp.timezone = parseInt(document.getElementById("DropDownTimezone").value);
 
     uncommited();
 }
@@ -188,17 +187,17 @@ function savegeneral() {
     }
     config.general.pswd = a;
     config.general.hostnm = document.getElementById("hostname").value;
-    config.general.restart = document.getElementById("autorestart").value;
+    config.general.restart = parseInt(document.getElementById("autorestart").value);
     uncommited();
 }
 
 function savemqtt() {
-    config.mqtt.enabled = "0";
-    if ($("input[name=\"mqttenabled\"]:checked").val() === "1") {
-        config.mqtt.enabled = "1";
+    config.mqtt.enabled = 0;
+    if (parseInt($("input[name=\"mqttenabled\"]:checked").val()) === 1) {
+        config.mqtt.enabled = 1;
     }
     config.mqtt.host = document.getElementById("mqtthost").value;
-    config.mqtt.port = document.getElementById("mqttport").value;
+    config.mqtt.port = parseInt(document.getElementById("mqttport").value);
     config.mqtt.topic = document.getElementById("mqtttopic").value;
     config.mqtt.user = document.getElementById("mqttuser").value;
     config.mqtt.pswd = document.getElementById("mqttpwd").value;
@@ -219,9 +218,9 @@ function checkOctects(input) {
 }
 
 function savenetwork() {
-    var wmode = "0";
-    config.network.dhcp = "0";
-    config.network.hide = "0";
+    var wmode = 0;
+    config.network.dhcp = 0;
+    config.network.hide = 0;
     if (document.getElementById("inputtohide").style.display === "none") {
         var b = document.getElementById("ssid");
         config.network.ssid = b.options[b.selectedIndex].value;
@@ -229,18 +228,20 @@ function savenetwork() {
         config.network.ssid = document.getElementById("inputtohide").value;
     }
     if (document.getElementById("wmodeap").checked) {
-        wmode = "1";
-        config.network.bssid = document.getElementById("wifibssid").value = 0;
-        if (document.querySelector("input[name=\"hideapenable\"]:checked").value === "1") {
-            config.network.hide = "1";
-        } else { config.network.hide = "0"; }
+        wmode = 1;
+        config.network.bssid = 0;
+        if (parseInt(document.querySelector("input[name=\"hideapenable\"]:checked").value) === 1) {
+            config.network.hide = 1;
+        } else {
+            config.network.hide = 0;
+        }
     } else {
         config.network.bssid = document.getElementById("wifibssid").value;
-        if (document.querySelector("input[name=\"dhcpenabled\"]:checked").value === "1") {
-            config.network.dhcp = "1";
+        if (parseInt(document.querySelector("input[name=\"dhcpenabled\"]:checked").value) === 1) {
+            config.network.dhcp = 1;
         } else {
 
-            config.network.dhcp = "0";
+            config.network.dhcp = 0;
 
             if (!checkOctects("ipaddress")) {
                 return;
@@ -265,7 +266,7 @@ function savenetwork() {
     config.network.pswd = document.getElementById("wifipass").value;
 
 
-    config.network.offtime = document.getElementById("disable_wifi_after_seconds").value;
+    config.network.offtime = parseInt(document.getElementById("disable_wifi_after_seconds").value);
     uncommited();
 }
 
@@ -348,9 +349,9 @@ function listnetwork() {
 
     document.getElementById("inputtohide").value = config.network.ssid;
     document.getElementById("wifipass").value = config.network.pswd;
-    if (config.network.wmode === "1") {
+    if (config.network.wmode === 1) {
         document.getElementById("wmodeap").checked = true;
-        if (config.network.hide === "1") {
+        if (config.network.hide === 1) {
             $("input[name=\"hideapenable\"][value=\"1\"]").prop("checked", true);
             //$("input[name=hideapenable][value=\"1\"]").attr("checked", "checked");
         }
@@ -358,7 +359,7 @@ function listnetwork() {
     } else {
         document.getElementById("wmodesta").checked = true;
         document.getElementById("wifibssid").value = config.network.bssid;
-        if (config.network.dhcp === "0") {
+        if (config.network.dhcp === 0) {
             $("input[name=\"dhcpenabled\"][value=\"0\"]").prop("checked", true);
             //$("input[name=dhcpenabled][value=\"0\"]").attr("checked", "checked");
             handleDHCP();
@@ -383,7 +384,7 @@ function listgeneral() {
 }
 
 function listmqtt() {
-    if (config.mqtt.enabled === "1") {
+    if (config.mqtt.enabled === 1) {
         $("input[name=\"mqttenabled\"][value=\"1\"]").prop("checked", true);
         //$("input[name=mqttenabled][value=\"1\"]").attr("checked", "checked");
     }
@@ -1008,7 +1009,7 @@ function socketMessageListener(evt) {
                 break;
             case "configfile":
                 config = obj;
-                config.general.version = "v0.7.2";
+                config.general.version = "v0.7.3";
                 break;
             default:
                 break;
@@ -1021,7 +1022,7 @@ function socketMessageListener(evt) {
             case "latestlog":
                 if (obj.result === false) {
                     logdata = [];
-                    initLogTable();
+                    initLatestLogTable();
                     document.getElementById("loading-img").style.display = "none";
                 }
                 break;
@@ -1230,7 +1231,7 @@ function handleTouchMove(evt) {
     /* reset values */
     xDown = null;
     yDown = null;
-};
+}
 
 function logout() {
     jQuery.ajax({
