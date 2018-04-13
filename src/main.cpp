@@ -1,6 +1,6 @@
 /*
-   Copyright (c) 2017 Ömer Şiar Baysal
-   Copyright (c) 2018 ESP-RFID Community
+    Authors :   Ömer Şiar Baysal
+                ESP-RFID Community
 
    Released to Public Domain
 
@@ -25,8 +25,11 @@
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 #include <TimeLib.h>
-#include <PubSubClient.h>
+#include <Ticker.h>
+
 #include <Ntp.h>
+#include <PN532.h>
+#include <AsyncMqttClient.h>
 
 // these are from vendors
 #include "webh/glyphicons-halflings-regular.woff.gz.h"
@@ -36,7 +39,6 @@
 // these are from us which can be updated and changed
 #include "webh/esprfid.js.gz.h"
 #include "webh/esprfid.htm.gz.h"
-#include "webh/login.html.gz.h"
 #include "webh/index.html.gz.h"
 
 
@@ -46,8 +48,29 @@ extern "C" {
 }
 #endif
 
-#define DEBUG
-#define FRESETPIN 16
+// #define DEBUG
+
+// Create instance for Wiegand reade
+WIEGAND wg;
+// Create MFRC522 RFID instance
+MFRC522 mfrc522 = MFRC522();
+
+PN532 pn532;
+
+NtpClient NTP;
+
+AsyncMqttClient mqttClient;
+
+Ticker mqttReconnectTimer;
+
+WiFiEventHandler wifiDisconnectHandler;
+
+// Create AsyncWebServer instance on port "80"
+AsyncWebServer server(80);
+// Create WebSocket instance on URL "/ws"
+AsyncWebSocket ws("/ws");
+
+
 
 // Variables for whole scope
 const char * http_username = "admin";
@@ -72,41 +95,35 @@ int wifiTimeout = -1;
 unsigned long wiFiUptimeMillis = 0;
 char * deviceHostname = NULL;
 
-NtpClient NTP;
-
-
-// MQTT
-WiFiClient wifiClient;
-IPAddress MQTTserver();
-PubSubClient mqttClient(wifiClient);
-char *mqttHost = NULL;
-uint16_t mqttPort = 0;
-bool mqttConnected = false;
+int mqttenabled = 0;
 char *mqttTopic = NULL;
-char *mqttUser = NULL;
-char *mqttPwd = NULL;
 
+int rfidss;
 int readerType;
 int relayPin;
 int relayType;
 int activateTime;
 int timeZone;
 
-// Create instance for Wiegand reade
-WIEGAND wg;
-// Create MFRC522 RFID instance
-MFRC522 mfrc522 = MFRC522();
-// Create AsyncWebServer instance on port "80"
-AsyncWebServer server(80);
-// Create WebSocket instance on URL "/ws"
-AsyncWebSocket ws("/ws");
+
 
 /* ------------------ TRIVIAL Functions ------------------- */
-String printIP(IPAddress adress) {
+String ICACHE_FLASH_ATTR printIP(IPAddress adress) {
     return (String)adress[0] + "." + (String)adress[1] + "." + (String)adress[2] + "." + (String)adress[3];
 }
 
-void writeEvent(String type, String src, String desc, String data) {
+/*
+time_t ICACHE_FLASH_ATTR checkTimeSync() {
+    if (nextSyncTime <= sysTime) {
+        timerequest = true;
+        return millis();
+    }
+    else {
+        return now();
+    }
+}*/
+
+void ICACHE_FLASH_ATTR writeEvent(String type, String src, String desc, String data) {
     DynamicJsonBuffer jsonBuffer44333;
     JsonObject& root = jsonBuffer44333.createObject();
     root["type"] = type;
@@ -120,7 +137,7 @@ void writeEvent(String type, String src, String desc, String data) {
     eventlog.close();
 }
 
-void writeLatest(String uid, String username, int acctype) {
+void ICACHE_FLASH_ATTR writeLatest(String uid, String username, int acctype) {
     DynamicJsonBuffer jsonBuffer;
     JsonObject& root = jsonBuffer.createObject();
     root["uid"] = uid;
@@ -133,7 +150,7 @@ void writeLatest(String uid, String username, int acctype) {
     latestlog.close();
 }
 
-void sendEventLog(int page) {
+void ICACHE_FLASH_ATTR sendEventLog(int page) {
     DynamicJsonBuffer jsonBuffer44332;
     JsonObject& root = jsonBuffer44332.createObject();
     root["command"] = "eventlist";
@@ -146,7 +163,7 @@ void sendEventLog(int page) {
     while (eventlog.available()) {
         String item = String();
         item = eventlog.readStringUntil('\n');
-        if (i >= first && i < last) {            
+        if (i >= first && i < last) {
             items.add(item);
         }
         i++;
@@ -163,7 +180,7 @@ void sendEventLog(int page) {
     }
 }
 
-void sendLatestLog(int page) {
+void ICACHE_FLASH_ATTR sendLatestLog(int page) {
     DynamicJsonBuffer jsonBuffer44332;
     JsonObject& root = jsonBuffer44332.createObject();
     root["command"] = "latestlist";
@@ -176,7 +193,7 @@ void sendLatestLog(int page) {
     while (latestlog.available()) {
         String item = String();
         item = latestlog.readStringUntil('\n');
-        if (i >= first && i < last) {            
+        if (i >= first && i < last) {
             items.add(item);
         }
         i++;
@@ -193,7 +210,7 @@ void sendLatestLog(int page) {
     }
 }
 
-void sendUserList(int page, AsyncWebSocketClient * client) {
+void ICACHE_FLASH_ATTR sendUserList(int page, AsyncWebSocketClient * client) {
     DynamicJsonBuffer jsonBuffer443;
     JsonObject& root = jsonBuffer443.createObject();
     root["command"] = "userlist";
@@ -247,11 +264,13 @@ void sendUserList(int page, AsyncWebSocketClient * client) {
 
 /* ------------------ Other Functions ------------------- */
 // Send system status on a WS request
-void sendStatus() {
+void ICACHE_FLASH_ATTR sendStatus() {
     struct ip_info info;
     FSInfo fsinfo;
     if (!SPIFFS.info(fsinfo)) {
+#ifdef DEBUG
         Serial.print(F("[ WARN ] Error getting info on SPIFFS"));
+#endif
     }
     DynamicJsonBuffer jsonBuffer567;
     JsonObject& root = jsonBuffer567.createObject();
@@ -298,7 +317,7 @@ void sendStatus() {
 }
 
 // Send Scanned SSIDs to websocket clients as JSON object
-void printScanResult(int networksFound) {
+void ICACHE_FLASH_ATTR printScanResult(int networksFound) {
     // sort by RSSI
     int n = networksFound;
     int indices[n];
@@ -341,14 +360,11 @@ void printScanResult(int networksFound) {
     WiFi.scanDelete();
 }
 
-
-void mqttCallback(char* topic, byte* payload, unsigned int length) {
-    if (length == 0) {
-        return;
-    }
+void connectToMqtt() {
+    mqttClient.connect();
 }
 
-void sendTime() {
+void ICACHE_FLASH_ATTR sendTime() {
     DynamicJsonBuffer jsonBuffer231;
     JsonObject& root = jsonBuffer231.createObject();
     root["command"] = "gettime";
@@ -360,33 +376,9 @@ void sendTime() {
         root.printTo((char *)buffer->get(), len + 1);
         ws.textAll(buffer);
     }
-
 }
 
-void mqttConnect() {
-    if (mqttHost != NULL && mqttPort != 0 && mqttTopic != NULL && !mqttClient.connected() ) {
-        Serial.print(F("[ INFO ] Trying to connect to MQTT server : "));
-        //setCallback();
-        unsigned char retries = 0;
-        mqttConnected = false;
-        while (mqttConnected == false && retries < 20) {
-            mqttConnected = mqttClient.connect("ESP-RFID", mqttUser, mqttPwd);
-            retries++;
-            delay(1000);
-            Serial.print(".");
-        }
-        if (mqttConnected == true) {
-            Serial.println(F(" connected to mqttServer"));
-        } else {
-            Serial.println(F(" MQTT connection error"));
-        }
-    }
-}
-
-
-
-
-void parseBytes(const char* str, char sep, byte* bytes, int maxBytes, int base) {
+void ICACHE_FLASH_ATTR parseBytes(const char* str, char sep, byte* bytes, int maxBytes, int base) {
     for (int i = 0; i < maxBytes; i++) {
         bytes[i] = strtoul(str, NULL, base); // Convert byte
         str = strchr(str, sep);   // Find next separator
@@ -397,17 +389,25 @@ void parseBytes(const char* str, char sep, byte* bytes, int maxBytes, int base) 
     }
 }
 
-void disableWifi() {
+void ICACHE_FLASH_ATTR disableWifi() {
     isWifiConnected = false;
     WiFi.disconnect(true);
+#ifdef DEBUG
     Serial.println("Turn wifi off.");
+#endif
 }
 
-bool startAP(const char * ssid, const char * password = NULL) {
+bool ICACHE_FLASH_ATTR startAP(const char * ssid, const char * password = NULL, int hid = NULL) {
     inAPMode = true;
     WiFi.mode(WIFI_AP);
     Serial.print(F("[ INFO ] Configuring access point... "));
-    bool success = WiFi.softAP(ssid, password);
+    bool success;
+    if (hid == 1) {
+        success = WiFi.softAP(ssid, password, 3, true);
+    }
+    else {
+        success = WiFi.softAP(ssid, password);
+    }
     Serial.println(success ? "Ready" : "Failed!");
     if (!success) {ESP.restart();}
     // Access Point IP
@@ -420,7 +420,7 @@ bool startAP(const char * ssid, const char * password = NULL) {
 }
 
 // Fallback to AP Mode, so we can connect to ESP if there is no Internet connection
-void fallbacktoAPMode() {
+void ICACHE_FLASH_ATTR fallbacktoAPMode() {
     Serial.println(F("[ INFO ] ESP-RFID is running in Fallback AP Mode"));
     uint8_t macAddr[6];
     WiFi.softAPmacAddress(macAddr);
@@ -430,9 +430,8 @@ void fallbacktoAPMode() {
 }
 
 // Try to connect Wi-Fi
-bool connectSTA(const char* ssid, const char* password, byte bssid[6]) {
+bool ICACHE_FLASH_ATTR connectSTA(const char* ssid, const char* password, byte bssid[6]) {
     WiFi.disconnect(true);
-    WiFi.mode(WIFI_STA);
     // First connect to a wi-fi network
     WiFi.begin(ssid, password, 0, bssid);
     // Inform user we are trying to connect
@@ -470,7 +469,7 @@ bool connectSTA(const char* ssid, const char* password, byte bssid[6]) {
 
 /* ------------------ RFID Functions ------------------- */
 // RFID Specific Loop
-void rfidloop() {
+void ICACHE_FLASH_ATTR rfidloop() {
 
     String uid = "";
     String type = "";
@@ -511,13 +510,34 @@ void rfidloop() {
             Serial.println(wg.getCode());
             uid = String(wg.getCode(), HEX);
             type = String(wg.getWiegandType(), HEX);
+            cooldown = millis() + 2000;
         } else {
             return;
         }
-    }
+    } else if (readerType == 2) {
+        bool found = false;
+        byte pnuid[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+        eCardType e_CardType;
 
-    if (mqttClient.connected()) {
-        mqttClient.publish(mqttTopic, uid.c_str(), false);
+        byte     u8_UidLength = 0x00;   // UID = 4 or 7 bytes
+
+        found = pn532.ReadPassiveTargetID(pnuid, &u8_UidLength, &e_CardType);
+
+        if (found && u8_UidLength >= 4) {
+            Serial.print(F("[ INFO ] PICC's UID: "));
+            for (uint8_t i = 0; i < u8_UidLength; i++) {
+                uid += String(pnuid[i], HEX);
+            }
+            Serial.print(uid);
+            cooldown = millis() + 2000;
+        } else {
+            delay(50);
+            return;
+        }
+    }
+    if (mqttenabled == 1) {
+        const char * topic = mqttTopic;
+        mqttClient.publish(topic, 0, true, uid.c_str());
     }
 
     // We are going to use filesystem to store known UIDs.
@@ -545,6 +565,7 @@ void rfidloop() {
             // Get username Access Status
             String username = json["user"];
             AccType = json["acctype"];
+#ifdef DEBUG
             Serial.println(" = known PICC");
             Serial.print("[ INFO ] User Name: ");
 
@@ -552,22 +573,29 @@ void rfidloop() {
                 Serial.print(uid);
             else
                 Serial.print(username);
+#endif
 
             // Check if user have an access
             if (AccType == 1) {
                 activateRelay = true; // Give user Access to Door, Safe, Box whatever you like
                 previousMillis = millis();
+#ifdef DEBUG
                 Serial.println(" have access");
+#endif
             }
             else if (AccType == 99)
             {
                 previousMillis = millis();
                 doEnableWifi = true;
                 activateRelay = true; // Give user Access to Door, Safe, Box whatever you like
+#ifdef DEBUG
                 Serial.println(" have admin access, enable wifi");
+#endif
             }
             else {
+#ifdef DEBUG
                 Serial.println(" does not have access");
+#endif
             }
             writeLatest(uid, username, AccType);
             // Also inform Administrator Portal
@@ -600,10 +628,12 @@ void rfidloop() {
     else {
         // If we don't know the UID, inform Administrator Portal so admin can give access or add it to database
         String data = String(uid);
-        data += " " +String(type);
+        data += " " + String(type);
         writeEvent("WARN", "rfid", "Unknown rfid tag is scanned", data);
         writeLatest(uid, "Unknown", 98);
+#ifdef DEBUG
         Serial.println(" = unknown PICC");
+#endif
         DynamicJsonBuffer jsonBuffer2344;
         JsonObject& root = jsonBuffer2344.createObject();
         root["command"] = "piccscan";
@@ -622,9 +652,11 @@ void rfidloop() {
     // So far got we got UID of Scanned RFID Tag, checked it if it's on the database and access status, informed Administrator Portal
 }
 
-void ShowMFRC522ReaderDetails() {
+#ifdef DEBUG
+void ICACHE_FLASH_ATTR ShowMFRC522ReaderDetails() {
     // Get the MFRC522 software version
     byte v = mfrc522.PCD_ReadRegister(mfrc522.VersionReg);
+
     Serial.print(F("[ INFO ] MFRC522 Version: 0x"));
     Serial.print(v, HEX);
     if (v == 0x91)
@@ -641,21 +673,61 @@ void ShowMFRC522ReaderDetails() {
         Serial.println(F("[ WARN ] Communication failure, check if MFRC522 properly connected"));
     }
 }
+#endif
+
+void ICACHE_FLASH_ATTR setupWiegandReader(int d0, int d1) {
+    wg.begin(d0, d1);
+}
 
 // Configure RFID Hardware
-void setupMFRC522Reader(int rfidss, int rfidgain) {
+void ICACHE_FLASH_ATTR setupMFRC522Reader(int rfidss, int rfidgain) {
     SPI.begin();     // MFRC522 Hardware uses SPI protocol
     mfrc522.PCD_Init(rfidss, UINT8_MAX); // Initialize MFRC522 Hardware
     // Set RFID Hardware Antenna Gain
     // This may not work with some boards
     mfrc522.PCD_SetAntennaGain(rfidgain);
+#ifdef DEBUG
     Serial.printf("[ INFO ] RFID SS_PIN: %u and Gain Factor: %u", rfidss, rfidgain);
     Serial.println("");
+#endif
+#ifdef DEBUG
     ShowMFRC522ReaderDetails(); // Show details of PCD - MFRC522 Card Reader details
+#endif
 }
 
-void setupWiegandReader(int d0, int d1) {
-    wg.begin(d0, d0, d1, d1);
+
+void ICACHE_FLASH_ATTR setupPN532Reader(int rfidss) {
+    // init controller
+    pn532.InitSoftwareSPI(14, 12, 13, rfidss, 0);
+    do // pseudo loop (just used for aborting with break;)
+    {
+        // Reset the PN532
+        pn532.begin(); // delay > 400 ms
+
+        byte IC, VersionHi, VersionLo, Flags;
+        if (!pn532.GetFirmwareVersion(&IC, &VersionHi, &VersionLo, &Flags))
+            break;
+#ifdef DEBUG
+        char Buf[80];
+        sprintf(Buf, "Chip: PN5%02X, Firmware version: %d.%d\r\n", IC, VersionHi, VersionLo);
+        Utils::Print(Buf);
+        sprintf(Buf, "Supports ISO 14443A:%s, ISO 14443B:%s, ISO 18092:%s\r\n", (Flags & 1) ? "Yes" : "No",
+                (Flags & 2) ? "Yes" : "No",
+                (Flags & 4) ? "Yes" : "No");
+        Utils::Print(Buf);
+#endif
+        // Set the max number of retry attempts to read from a card.
+        // This prevents us from waiting forever for a card, which is the default behaviour of the PN532.
+        if (!pn532.SetPassiveActivationRetries())
+            break;
+
+        // configure the PN532 to read RFID tags
+        if (!pn532.SamConfig())
+            break;
+
+
+    }
+    while (false);
 }
 
 
@@ -663,9 +735,11 @@ void setupWiegandReader(int d0, int d1) {
 
 
 // Handles WebSocket Events
-void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len) {
+void ICACHE_FLASH_ATTR onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len) {
     if (type == WS_EVT_ERROR) {
+#ifdef DEBUG
         Serial.printf("[ WARN ] WebSocket[%s][%u] error(%u): %s\r\n", server->url(), client->id(), *((uint16_t*)arg), (char*)data);
+#endif
     }
     else if (type == WS_EVT_DATA) {
 
@@ -682,8 +756,11 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
             DynamicJsonBuffer jsonBuffer413;
             JsonObject& root = jsonBuffer413.parseObject(msg);
             if (!root.success()) {
+#ifdef DEBUG
                 Serial.println(F("[ WARN ] Couldn't parse WebSocket message"));
+#endif
                 return;
+
             }
 
             // Web Browser sends some commands, check which command is given
@@ -711,6 +788,9 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
             }
             else if (strcmp(command, "status")  == 0) {
                 sendStatus();
+            }
+            else if (strcmp(command, "restart")  == 0) {
+                shouldReboot = true;
             }
             else if (strcmp(command, "destroy")  == 0) {
                 formatreq = true;
@@ -775,8 +855,56 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
     }
 }
 
+void onMqttDisconnect(AsyncMqttClientDisconnectReason reason) {
+    String reasonstr = "";
+    switch (reason) {
+        case (AsyncMqttClientDisconnectReason::TCP_DISCONNECTED):
+            reasonstr = "TCP_DISCONNECTED";
+            break;
+        case (AsyncMqttClientDisconnectReason::MQTT_UNACCEPTABLE_PROTOCOL_VERSION):
+            reasonstr = "MQTT_UNACCEPTABLE_PROTOCOL_VERSION";
+            break;
+        case (AsyncMqttClientDisconnectReason::MQTT_IDENTIFIER_REJECTED):
+            reasonstr = "MQTT_IDENTIFIER_REJECTED";
+            break;
+        case (AsyncMqttClientDisconnectReason::MQTT_SERVER_UNAVAILABLE):
+            reasonstr = "MQTT_SERVER_UNAVAILABLE";
+            break;
+        case (AsyncMqttClientDisconnectReason::MQTT_MALFORMED_CREDENTIALS):
+            reasonstr = "MQTT_MALFORMED_CREDENTIALS";
+            break;
+        case (AsyncMqttClientDisconnectReason::MQTT_NOT_AUTHORIZED):
+            reasonstr = "MQTT_NOT_AUTHORIZED";
+            break;
+        case (AsyncMqttClientDisconnectReason::ESP8266_NOT_ENOUGH_SPACE):
+            reasonstr = "ESP8266_NOT_ENOUGH_SPACE";
+            break;
+        default:
+            reasonstr = "Unknown";
+            break;
+    }
+    writeEvent("WARN", "mqtt", "Disconnected from MQTT server", reasonstr);
+    if (WiFi.isConnected()) {
+        mqttReconnectTimer.once(60, connectToMqtt);
+    }
+}
 
-bool loadConfiguration() {
+void onMqttPublish(uint16_t packetId) {
+    writeEvent("INFO", "mqtt", "MQTT publish acknowledged", String(packetId));
+}
+
+void onMqttConnect(bool sessionPresent) {
+    Serial.println("MQTT Connected session");
+    uint16_t packetIdPub1 = mqttClient.publish("test/lol", 1, true, "test 2");
+    if (sessionPresent == true) {
+        Serial.println("MQTT Connected session");
+        writeEvent("INFO", "mqtt", "Connected to MQTT Server", "Session Present");
+    }
+}
+
+
+
+bool ICACHE_FLASH_ATTR loadConfiguration() {
     File configFile = SPIFFS.open("/config.json", "r");
     if (!configFile) {
         Serial.println(F("[ WARN ] Failed to open config file"));
@@ -805,23 +933,25 @@ bool loadConfiguration() {
     JsonObject& general = json["general"];
     JsonObject& mqtt = json["mqtt"];
     JsonObject& ntp = json["ntp"];
-
+#ifdef DEBUG
     Serial.print(F("[ INFO ] Trying to setup RFID Hardware :"));
+#endif
     readerType = hardware["readerType"];
 
     if ( readerType == 1 ) {
         int wgd0pin = hardware["wgd0pin"];
         int wgd1pin = hardware["wgd1pin"];
-        Serial.println(F("Wiegand"));
         setupWiegandReader(wgd0pin, wgd1pin); // also some other settings like weather to use keypad or not, LED pin, BUZZER pin, Wiegand 26/34 version
     } else if ( readerType == 0 ) {
-        int rfidss = 15;
+        rfidss = 15;
         if (hardware.containsKey("sspin")) {
             rfidss = hardware["sspin"];
         }
         int rfidgain = hardware["rfidgain"];
-        Serial.println(F("MFRC522"));
         setupMFRC522Reader(rfidss, rfidgain);
+    } else if ( readerType == 2) {
+        rfidss = hardware["sspin"];
+        setupPN532Reader(rfidss);
     }
 
     autoRestartIntervalSeconds = general["restart"].as<int>();
@@ -837,7 +967,9 @@ bool loadConfiguration() {
 
     // Start mDNS service so we can connect to http://esp-rfid.local (if Bonjour installed on Windows or Avahi on Linux)
     if (!MDNS.begin(deviceHostname)) {
+#ifdef DEBUG
         Serial.println("Error setting up MDNS responder!");
+#endif
     }
     // Add Web Server service to mDNS
     MDNS.addService("http", "tcp", 80);
@@ -861,47 +993,80 @@ bool loadConfiguration() {
     ws.setAuthentication("admin", http_pass);
 
     if (wmode == 1) {
+        int hid = network["hide"].as<int>();
         Serial.println(F("[ INFO ] ESP-RFID is running in AP Mode "));
-        return startAP(ssid, password);
+        return startAP(ssid, password, hid);
     }
-    else if (!connectSTA(ssid, password, bssid)) {
-        return false;
+    else {
+        if (network["dhcp"] == "0") {
+            WiFi.mode(WIFI_STA);
+
+            const char * clientipch = network["ip"];
+            const char * subnetch = network["subnet"];
+            const char * gatewaych = network["gateway"];
+            const char * dnsch = network["dns"];
+
+            IPAddress clientip;
+            IPAddress subnet;
+            IPAddress gateway;
+            IPAddress dns;
+
+            clientip.fromString(clientipch);
+            subnet.fromString(subnetch);
+            gateway.fromString(gatewaych);
+            dns.fromString(dnsch);
+
+            WiFi.config(clientip, gateway, subnet, dns);
+        }
+        if (!connectSTA(ssid, password, bssid)) {
+            return false;
+        }
     }
+
+
+
+
+
+    IPAddress timeserverip;
+    WiFi.hostByName(ntpserver, timeserverip);
+    String ip = printIP(timeserverip);
+    writeEvent("INFO", "ntp", "Connecting NTP Server", ip);
     NTP.Ntp(ntpserver, timeZone, ntpinter * 60);
 
-    // mqtt
-    if (mqttHost != NULL) {
-        free((void *)mqttHost);
-    }
-    mqttHost = strdup(mqtt["host"]);
-    mqttPort = mqtt["port"];
-    if (mqttTopic != NULL) {
-        free((void *)mqttTopic);
-    }
-    mqttTopic = strdup(mqtt["topic"]);
-    if (mqttUser != NULL) {
-        free((void *)mqttUser);
-    }
-    mqttUser = strdup(mqtt["user"]);
-    if (mqttPwd != NULL) {
-        free((void *)mqttPwd);
-    }
-    mqttPwd = strdup(mqtt["pswd"]);
-    mqttClient.disconnect();
-    mqttClient.setServer(mqttHost, mqttPort);
-    mqttConnect();
+    const char * mhs = mqtt["host"];
+    int mport = mqtt["port"];
+    const char * muser = mqtt["user"];
+    const char * mpas = mqtt["pswd"];
 
+    mqttenabled = mqtt["enabled"].as<int>();
+    if (mqttenabled == 1) {
+        mqttTopic = strdup(mqtt["topic"]);
+        mqttClient.setServer(mhs, mport);
+        mqttClient.setCredentials(muser, mpas);
+        mqttClient.onDisconnect(onMqttDisconnect);
+        mqttClient.onPublish(onMqttPublish);
+        mqttClient.onConnect(onMqttConnect);
+        connectToMqtt();
+    }
+
+
+
+    Serial.println(F("[ INFO ] Configuration done."));
     return true;
 }
 
-void enableWifi() {
+void ICACHE_FLASH_ATTR enableWifi() {
+#ifdef DEBUG
     Serial.println("Turn wifi on.");
+#endif
     if (!loadConfiguration())
         fallbacktoAPMode();
 }
 
+
+
 /* ------------------ BASIC SYSTEM Functions ------------------- */
-void setupWebServer() {
+void ICACHE_FLASH_ATTR setupWebServer() {
     // Start WebSocket Plug-in and handle incoming message on "onWsEvent" function
     server.addHandler(&ws);
     ws.onEvent(onWsEvent);
@@ -921,7 +1086,9 @@ void setupWebServer() {
             return;
         }
         if (!index) {
+#ifdef DEBUG
             Serial.printf("[ UPDT ] Firmware update started: %s\n", filename.c_str());
+#endif
             Update.runAsync(true);
             if (!Update.begin((ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000)) {
                 Update.printError(Serial);
@@ -934,7 +1101,9 @@ void setupWebServer() {
         }
         if (final) {
             if (Update.end(true)) {
+#ifdef DEBUG
                 Serial.printf("[ UPDT ] Firmware update finished: %uB\n", index + len);
+#endif
                 shouldReboot = !Update.hasError();
             } else {
                 Update.printError(Serial);
@@ -1040,24 +1209,10 @@ void setupWebServer() {
         }
     });
 
-    server.on("/login.html", HTTP_GET, [](AsyncWebServerRequest * request) {
-        // Check if the client already has the same version and respond with a 304 (Not modified)
-        if (request->header("If-Modified-Since").equals(last_modified)) {
-            request->send(304);
-
-        } else {
-            // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
-            AsyncWebServerResponse * response = request->beginResponse_P(200, "text/html", login_html_gz, login_html_gz_len);
-            // Tell the browswer the contemnt is Gzipped
-            response->addHeader("Content-Encoding", "gzip");
-            // And set the last-modified datetime so we can check if we need to send it again next time or not
-            response->addHeader("Last-Modified", last_modified);
-            request->send(response);
-        }
-    });
     if (http_pass == NULL) {
         http_pass = strdup("admin");
     }
+
     // HTTP basic authentication
     server.on("/login", HTTP_GET, [](AsyncWebServerRequest * request) {
         String remoteIP = printIP(request->client()->remoteIP());
@@ -1069,23 +1224,31 @@ void setupWebServer() {
         writeEvent("INFO", "websrv", "Login success!", remoteIP);
     });
 
-    server.rewrite("/", "/login.html");
+    server.rewrite("/", "/index.html");
 
     // Start Web Server
     server.begin();
 }
 
+void onWifiDisconnect(const WiFiEventStationModeDisconnected& event) {
+    mqttReconnectTimer.detach(); // ensure we don't reconnect to MQTT while reconnecting to Wi-Fi
+}
+
+
+
+
 // Set things up
-void setup() {
+void ICACHE_FLASH_ATTR setup() {
     // Populate the last modification date based on build datetime
     sprintf(last_modified, "%s %s GMT", __DATE__, __TIME__);
-    pinMode(FRESETPIN, INPUT_PULLUP);
     delay(2000);
     Serial.begin(115200);
+    wifiDisconnectHandler = WiFi.onStationModeDisconnected(onWifiDisconnect);
+
     Serial.println();
-    Serial.println(F("[ INFO ] ESP RFID v0.6"));
+    Serial.println(F("[ INFO ] ESP RFID v0.7"));
     // Start SPIFFS filesystem
-    if (!SPIFFS.begin() || digitalRead(FRESETPIN) == LOW) {
+    if (!SPIFFS.begin()) {
 #ifdef DEBUG
         Serial.print(F("[ WARN ] Formatting filesystem..."));
 #endif
@@ -1104,6 +1267,7 @@ void setup() {
         }
     }
 
+
     /* Remove Users Helper
        Dir dir = SPIFFS.openDir("/P/");
        while (dir.next()){
@@ -1121,9 +1285,11 @@ void setup() {
 }
 
 // Main Loop
-void loop() {
+void ICACHE_RAM_ATTR loop() {
     if (formatreq) {
+#ifdef DEBUG
         Serial.println(F("[ WARN ] Factory reset initiated..."));
+#endif
         SPIFFS.end();
         ws.enable(false);
         SPIFFS.format();
@@ -1137,13 +1303,17 @@ void loop() {
 
     if (autoRestartIntervalSeconds > 0 && uptime > autoRestartIntervalSeconds * 1000) {
         writeEvent("INFO", "sys", "System is going to reboot", "");
+#ifdef DEBUG
         Serial.println(F("[ WARN ] Auto restarting..."));
+#endif
         shouldReboot = true;
     }
 
     // check for a new update and restart
     if (shouldReboot) {
+#ifdef DEBUG
         Serial.println(F("[ UPDT ] Rebooting..."));
+#endif
         delay(100);
         ESP.restart();
     }

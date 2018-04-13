@@ -47,67 +47,20 @@ var networks = {
 }
 
 var latestlog = {
-    "command": "latestlog",
-    "list": [{
-            "timestamp": 1518198383,
-            "uid": "8ab424c10",
-            "username": "Moody Bond",
-            "acctype": 1
-        },
-        {
-            "timestamp": 1514952461,
-            "uid": "4de212c96",
-            "username": "Unknown",
-            "acctype": 0
-        },
-        {
-            "timestamp": 1516598710,
-            "uid": "8de284c27",
-            "username": "Marta Cooley",
-            "acctype": 99
-        },
-        {
-            "timestamp": 1516649998,
-            "uid": "4db504c86",
-            "username": "Simmons Sosa",
-            "acctype": 1
-        },
-        {
-            "timestamp": 1517133201,
-            "uid": "9db178a36",
-            "username": "Jimmie Sheppard",
-            "acctype": 1
-        },
-        {
-            "timestamp": 1516257556,
-            "uid": "4cf690a75",
-            "username": "Rutledge Murray",
-            "acctype": 1
-        },
-        {
-            "timestamp": 1515661586,
-            "uid": "4ab792d39",
-            "username": "Unknown",
-            "acctype": 0
-        },
-        {
-            "timestamp": 1515524537,
-            "uid": "9cf869a85",
-            "username": "Rollins Villarreal",
-            "acctype": 1
-        },
-        {
-            "timestamp": 1515823122,
-            "uid": "9db221c40",
-            "username": "Hayden Baird",
-            "acctype": 1
-        },
-        {
-            "timestamp": 1515066066,
-            "uid": "8cb891d34",
-            "username": "Tucker Boyer",
-            "acctype": 1
-        }
+    "command": "latestlist",
+    "page": 1,
+    "haspages": 1,
+    "list": [
+        "{\"timestamp\":1518198383,\"uid\":\"8ab424c10\",\"username\":\"Moody Bond\",\"acctype\":1}",
+        "{\"timestamp\":1514952461,\"uid\":\"4de212c96\",\"username\":\"Unknown\",\"acctype\":0}",
+        "{\"timestamp\":1516598710,\"uid\":\"8de284c27\",\"username\":\"Marta Cooley\",\"acctype\":99}",
+        "{\"timestamp\":1516649998,\"uid\":\"4db504c86\",\"username\":\"Simmons Sosa\",\"acctype\":1}",
+        "{\"timestamp\":1517133201,\"uid\":\"9db178a36\",\"username\":\"Jimmie Sheppard\",\"acctype\":1}",
+        "{\"timestamp\":1516257556,\"uid\":\"4cf690a75\",\"username\":\"Rutledge Murray\",\"acctype\":1}",
+        "{\"timestamp\":1515661586,\"uid\":\"4ab792d39\",\"username\":\"Unknown\",\"acctype\":0}",
+        "{\"timestamp\":1515524537,\"uid\":\"9cf869a85\",\"username\":\"Rollins Villarreal\",\"acctype\":1}",
+        "{\"timestamp\": 1515823122,\"uid\":\"9db221c40\",\"username\": \"Hayden Baird\",\"acctype\": 1}",
+        "{\"timestamp\": 1515066066,\"uid\": \"8cb891d34\",\"username\": \"Tucker Boyer\",\"acctype\": 1}"
     ]
 }
 
@@ -447,9 +400,15 @@ wss.on('connection', function connection(ws) {
                 console.log("[ INFO ] Test relay button");
                 process.stderr.write("\007");
                 break;
-            case "latestlog":
+            case "getlatestlog":
                 console.log("[ INFO ] Sending latest log file");
                 wss.broadcast(latestlog);
+                var res = {
+                    "command": "result",
+                    "resultof": "latestlist",
+                    "result": true
+                };
+                wss.broadcast(res);
                 break;
             case "scan":
                 console.log("[ INFO ] Sending Fake Wireless Networks");

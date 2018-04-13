@@ -11,8 +11,14 @@ var config = {
         "bssid": "",
         "ssid": "",
         "wmode": "",
+        "hide": "0",
         "pswd": "",
-        "offtime": "0"
+        "offtime": "0",
+        "dhcp": "1",
+        "ip": "",
+        "subnet": "",
+        "gateway": "",
+        "dns": ""
     },
     "hardware": {
         "readerType": "1",
@@ -27,7 +33,8 @@ var config = {
     "general": {
         "hostnm": "esp-rfid",
         "restart": "0",
-        "pswd": "admin"
+        "pswd": "admin",
+        "version": ""
     },
     "mqtt": {
         "enabled": "0",
@@ -87,9 +94,24 @@ function handleReader() {
     if (document.getElementById("readerType").value === "0") {
         document.getElementById("wiegandForm").style.display = "none";
         document.getElementById("mfrc522Form").style.display = "block";
+        document.getElementById("rc522gain").style.display = "block";
     } else if (document.getElementById("readerType").value === "1") {
         document.getElementById("wiegandForm").style.display = "block";
         document.getElementById("mfrc522Form").style.display = "none";
+    } else if (document.getElementById("readerType").value === "2") {
+        document.getElementById("wiegandForm").style.display = "none";
+        document.getElementById("mfrc522Form").style.display = "block";
+        document.getElementById("rc522gain").style.display = "none";
+    }
+}
+
+function handleDHCP() {
+    if (document.querySelector('input[name="dhcpenabled"]:checked').value === "1") {
+        $("#staticip").slideUp();
+        $("#staticip").show();
+    } else {
+        $("#staticip").slideDown();
+        $("#staticip").show();
     }
 }
 
@@ -155,6 +177,10 @@ function savegeneral() {
 }
 
 function savemqtt() {
+    config.mqtt.enabled = "0";
+    if ($("input[name=mqttenabled]:checked").val() === "1") {
+        config.mqtt.enabled = "1";
+    }
     config.mqtt.host = document.getElementById("mqtthost").value;
     config.mqtt.port = document.getElementById("mqttport").value;
     config.mqtt.topic = document.getElementById("mqtttopic").value;
@@ -163,22 +189,66 @@ function savemqtt() {
     uncommited();
 }
 
+function checkOctects(input) {
+    var ipformat = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+    var call = document.getElementById(input);
+    if (call.value.match(ipformat)) {
+        return true;
+    } else {
+        alert("You have entered an invalid address on " + input);
+        call.focus();
+        return false;
+    }
+
+}
+
 function savenetwork() {
+    var wmode = "0";
+    config.network.dhcp = "0";
+    config.network.hide = "0";
     if (document.getElementById("inputtohide").style.display === "none") {
         var b = document.getElementById("ssid");
         config.network.ssid = b.options[b.selectedIndex].value;
     } else {
         config.network.ssid = document.getElementById("inputtohide").value;
     }
-    var wmode = "0";
     if (document.getElementById("wmodeap").checked) {
         wmode = "1";
         config.network.bssid = document.getElementById("wifibssid").value = 0;
+        if (document.querySelector('input[name="hideapenable"]:checked').value === "1") {
+            config.network.hide = "1";
+        } else { config.network.hide = "0"; }
     } else {
         config.network.bssid = document.getElementById("wifibssid").value;
+        if (document.querySelector('input[name="dhcpenabled"]:checked').value === "1") {
+            config.network.dhcp = "1";
+        } else {
+
+            config.network.dhcp = "0";
+
+            if (!checkOctects("ipaddress")) {
+                return;
+            }
+            if (!checkOctects("subnet")) {
+                return;
+            }
+            if (!checkOctects("dnsadd")) {
+                return;
+            }
+            if (!checkOctects("gateway")) {
+                return;
+            }
+
+            config.network.ip = document.getElementById("ipaddress").value;
+            config.network.dns = document.getElementById("dnsadd").value;
+            config.network.subnet = document.getElementById("subnet").value;
+            config.network.gateway = document.getElementById("gateway").value;
+        }
     }
     config.network.wmode = wmode;
     config.network.pswd = document.getElementById("wifipass").value;
+
+
     config.network.offtime = document.getElementById("disable_wifi_after_seconds").value;
     uncommited();
 }
@@ -189,7 +259,6 @@ function revcommit() {
 }
 
 function commit() {
-    config.general.version = "v0.6";
     inProgress("commit");
 }
 
@@ -209,13 +278,30 @@ function listnetwork() {
     document.getElementById("inputtohide").value = config.network.ssid;
     document.getElementById("wifipass").value = config.network.pswd;
     if (config.network.wmode === "1") {
-
+        document.getElementById("wmodeap").checked = true;
+        if (config.network.hide === "1") {
+            var value = "1";
+            $("input[name=hideapenable][value=" + value + "]").prop('checked', true);
+            //$("input[name=hideapenable][value=\"1\"]").attr('checked', 'checked');
+        }
         handleAP();
     } else {
         document.getElementById("wmodesta").checked = true;
         document.getElementById("wifibssid").value = config.network.bssid;
+        if (config.network.dhcp === "0") {
+                        var value = "0";
+            $("input[name=dhcpenabled][value=" + value + "]").prop('checked', true);
+            //$("input[name=dhcpenabled][value=\"0\"]").attr('checked', 'checked');
+            handleDHCP();
+        }
+        document.getElementById("ipaddress").value = config.network.ip;
+        document.getElementById("subnet").value = config.network.subnet;
+        document.getElementById("dnsadd").value = config.network.dns;
+        document.getElementById("gateway").value = config.network.gateway;
         handleSTA();
+
     }
+
     document.getElementById("disable_wifi_after_seconds").value = config.network.offtime;
 
 }
@@ -228,7 +314,11 @@ function listgeneral() {
 }
 
 function listmqtt() {
-
+    if (config.mqtt.enabled === "1") {
+        var value = "1";
+        $("input[name=mqttenabled][value=" + value + "]").prop('checked', true);
+        //$("input[name=mqttenabled][value=\"1\"]").attr('checked', 'checked');
+    }
     document.getElementById("mqtthost").value = config.mqtt.host;
     document.getElementById("mqttport").value = config.mqtt.port;
     document.getElementById("mqtttopic").value = config.mqtt.topic;
@@ -237,17 +327,22 @@ function listmqtt() {
 }
 
 function handleAP() {
+    document.getElementById("hideap").style.display = "block";
     document.getElementById("hideBSSID").style.display = "none";
     document.getElementById("scanb").style.display = "none";
     document.getElementById("ssid").style.display = "none";
+    document.getElementById("dhcp").style.display = "none";
+    document.getElementById("staticip").style.display = "none";
     document.getElementById("inputtohide").style.display = "block";
 
 
 }
 
 function handleSTA() {
+    document.getElementById("hideap").style.display = "none";
     document.getElementById("hideBSSID").style.display = "block";
     document.getElementById("scanb").style.display = "block";
+    document.getElementById("dhcp").style.display = "block";
 }
 
 function listSSID(obj) {
@@ -370,7 +465,7 @@ function getContent(contentname) {
                 default:
                     break;
             }
-                        $("[data-toggle=\"popover\"]").popover({
+            $("[data-toggle=\"popover\"]").popover({
                 container: "body"
             });
             $(this).hide().fadeIn();
@@ -777,8 +872,9 @@ function acctypefinder() {
     }
 }
 
-
-
+function restartESP() {
+    inProgress("restart");
+}
 
 function colorStatusbar(ref) {
     var percentage = ref.style.width.slice(0, -1);
@@ -790,10 +886,10 @@ function listStats() {
     document.getElementById("cpu").innerHTML = ajaxobj.cpu + " Mhz";
     document.getElementById("uptime").innerHTML = ajaxobj.uptime;
     document.getElementById("heap").innerHTML = ajaxobj.heap + " Bytes";
-    document.getElementById("heap").style.width = (ajaxobj.heap * 100) / 81920 + "%";
+    document.getElementById("heap").style.width = (ajaxobj.heap * 100) / 40960 + "%";
     colorStatusbar(document.getElementById("heap"));
     document.getElementById("flash").innerHTML = ajaxobj.availsize + " Bytes";
-    document.getElementById("flash").style.width = (ajaxobj.availsize * 100) / 1044464 + "%";
+    document.getElementById("flash").style.width = (ajaxobj.availsize * 100) / 2092032 + "%";
     colorStatusbar(document.getElementById("flash"));
     document.getElementById("spiffs").innerHTML = ajaxobj.availspiffs + " Bytes";
     document.getElementById("spiffs").style.width = (ajaxobj.availspiffs * 100) / ajaxobj.spiffssize + "%";
@@ -804,7 +900,8 @@ function listStats() {
     document.getElementById("mask").innerHTML = ajaxobj.netmask;
     document.getElementById("dns").innerHTML = ajaxobj.dns;
     document.getElementById("mac").innerHTML = ajaxobj.mac;
-    websock.send("{\"command\":\"getconf\"}");
+    document.getElementById("sver").innerText = config.general.version;
+    $("#mainver").text(config.general.version);
 }
 
 var nextIsNotJson = false;
@@ -861,6 +958,7 @@ function socketMessageListener(evt) {
                 break;
             case "configfile":
                 config = obj;
+                config.general.version = "v0.7.2";
                 break;
             default:
                 break;
@@ -1111,7 +1209,7 @@ function logout() {
         .fail(function() {
             // We expect to get an 401 Unauthorized error! In this case we are successfully 
             // logged out and we redirect the user.
-            window.location = "/login.html";
+            document.location = "index.html";
         });
     return false;
 }
@@ -1131,6 +1229,11 @@ function inProgress(callback) {
                 i++;
                 if (i === 101) {
                     clearInterval(prg);
+                    var a = document.createElement("a");
+                    a.href = "http://" + config.general.hostnm + ".local";
+                    a.innerText = "Try to reconnect ESP";
+                    document.getElementById("reconnect").appendChild(a);
+                    document.getElementById("reconnect").style.display = "block";
                     document.getElementById("updateprog").className = "progress-bar progress-bar-success";
                     document.getElementById("updateprog").innerHTML = "Completed";
                 }
@@ -1151,6 +1254,9 @@ function inProgress(callback) {
                 case "destroy":
                     websock.send("{\"command\":\"destroy\"}");
                     break;
+                case "restart":
+                    websock.send("{\"command\":\"restart\"}");
+                    break;
                 default:
                     break;
 
@@ -1167,7 +1273,29 @@ function upload() {
     inProgress("upload");
 }
 
-
+function login() {
+    if (document.getElementById("password").value === "neo") {
+        $("#signin").modal("hide");
+        connectWS();
+    } else {
+        var username = "admin"
+        var password = document.getElementById("password").value;
+        var url = "/login";
+        var xhr = new XMLHttpRequest();
+        xhr.open("get", url, true, username, password);
+        xhr.onload = function(e) {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    $("#signin").modal("hide");
+                    connectWS();
+                } else {
+                    alert("Incorrect password!");
+                }
+            }
+        };
+        xhr.send(null);
+    }
+}
 
 
 function GetLatestReleaseInfo() {
@@ -1195,35 +1323,45 @@ function GetLatestReleaseInfo() {
         $("#releasebody").text(release.body);
         $("#releaseinfo").fadeIn("slow");
         $("#versionhead").text(config.general.version);
-    }).error(function() { $("#onlineupdate").html("<h5>Couldn't get release info. Are you connected to Internet?</h5>"); });
+    }).error(function() { $("#onlineupdate").html("<h5>Couldn't get release info. Are you connected to the Internet?</h5>"); });
 }
 
 function allowUpload() {
     $("#upbtn").prop("disabled", false);
 }
 
+function connectWS() {
+    if (window.location.protocol === "https:") {
+        wsUri = "wss://" + window.location.hostname + "/ws";
+    } else if (window.location.protocol === "file:") {
+        wsUri = "ws://" + "localhost" + "/ws";
+    }
+    websock = new WebSocket(wsUri);
+    websock.addEventListener("message", socketMessageListener);
+    websock.addEventListener("error", socketErrorListener);
+    websock.addEventListener("close", socketCloseListener);
+
+    websock.onopen = function(evt) {
+        websock.send("{\"command\":\"getconf\"}");
+        websock.send("{\"command\":\"status\"}");
+    };
+}
 
 function start() {
     esprfidcontent = document.createElement("div");
     esprfidcontent.id = "mastercontent";
     esprfidcontent.style.display = "none";
     document.body.appendChild(esprfidcontent);
+    $('#signin').on('shown.bs.modal', function() {
+        $('#password').focus().select();
+    });
     $("#mastercontent").load("esprfid.htm", function(responseTxt, statusTxt, xhr) {
         if (statusTxt === "success") {
-            if (window.location.protocol === "https:") {
-                wsUri = "wss://" + window.location.hostname + "/ws";
-            } else if (window.location.protocol === "file:") {
-                wsUri = "ws://" + "localhost" + "/ws";
-            }
-            websock = new WebSocket(wsUri);
-            websock.addEventListener("message", socketMessageListener);
-            websock.addEventListener("error", socketErrorListener);
-            websock.addEventListener("close", socketCloseListener);
+            $("#signin").modal({ backdrop: "static", keyboard: false });
+            $("[data-toggle=\"popover\"]").popover({
+                container: "body"
+            });
 
-            websock.onopen = function(evt) {
-                websock.send("{\"command\":\"status\"}");
-            };
         }
     });
-
 }
