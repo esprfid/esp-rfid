@@ -10,44 +10,44 @@ var config = {
     "network": {
         "bssid": "",
         "ssid": "",
-        "wmode": "",
-        "hide": "0",
+        "wmode": 0,
+        "hide": 0,
         "pswd": "",
-        "offtime": "0",
-        "dhcp": "1",
+        "offtime": 0,
+        "dhcp": 1,
         "ip": "",
         "subnet": "",
         "gateway": "",
         "dns": ""
     },
     "hardware": {
-        "readerType": "1",
-        "wgd0pin": "4",
-        "wgd1pin": "5",
-        "sspin": "",
-        "rfidgain": "",
-        "rtype": "",
-        "rpin": "",
-        "rtime": ""
+        "readerType": 1,
+        "wgd0pin": 4,
+        "wgd1pin": 5,
+        "sspin": 0,
+        "rfidgain": 32,
+        "rtype": 1,
+        "rpin": 4,
+        "rtime": 400
     },
     "general": {
         "hostnm": "esp-rfid",
-        "restart": "0",
+        "restart": 0,
         "pswd": "admin",
-        "version": ""
+        "version": "0.7.3"
     },
     "mqtt": {
-        "enabled": "0",
+        "enabled": 0,
         "host": "",
-        "port": "",
+        "port": 1883,
         "topic": "",
         "user": "",
         "pswd": ""
     },
     "ntp": {
         "server": "pool.ntp.org",
-        "interval": "30",
-        "timezone": "0"
+        "interval": 30,
+        "timezone": 0
     }
 };
 
@@ -91,14 +91,14 @@ function syncBrowserTime() {
 }
 
 function handleReader() {
-    if (document.getElementById("readerType").value === "0") {
+    if (parseInt(document.getElementById("readerType").value) === 0) {
         document.getElementById("wiegandForm").style.display = "none";
         document.getElementById("mfrc522Form").style.display = "block";
         document.getElementById("rc522gain").style.display = "block";
-    } else if (document.getElementById("readerType").value === "1") {
+    } else if (parseInt(document.getElementById("readerType").value) === 1) {
         document.getElementById("wiegandForm").style.display = "block";
         document.getElementById("mfrc522Form").style.display = "none";
-    } else if (document.getElementById("readerType").value === "2") {
+    } else if (parseInt(document.getElementById("readerType").value) === 2) {
         document.getElementById("wiegandForm").style.display = "none";
         document.getElementById("mfrc522Form").style.display = "block";
         document.getElementById("rc522gain").style.display = "none";
@@ -106,9 +106,8 @@ function handleReader() {
 }
 
 function handleDHCP() {
-    if (document.querySelector('input[name="dhcpenabled"]:checked').value === "1") {
+    if (document.querySelector("input[name=\"dhcpenabled\"]:checked").value === "1") {
         $("#staticip").slideUp();
-        $("#staticip").show();
     } else {
         $("#staticip").slideDown();
         $("#staticip").show();
@@ -139,27 +138,43 @@ function listntp() {
 
     document.getElementById("ntpserver").value = config.ntp.server;
     document.getElementById("intervals").value = config.ntp.interval;
-    document.getElementById("DropDownTimezone").value = config.ntp.timezone
+    document.getElementById("DropDownTimezone").value = config.ntp.timezone;
     browserTime();
     deviceTime();
 }
 
+function revcommit() {
+    document.getElementById("jsonholder").innerText = JSON.stringify(config, null, 2);
+    $("#revcommit").modal("show");
+}
+
+function uncommited() {
+    $("#commit").fadeOut(200, function() {
+        $(this).css("background", "gold").fadeIn(1000);
+    });
+    document.getElementById("commit").innerHTML = "<h6>You have uncommited changes, please click here to commit and reboot (you will a have chance to review changes).</h6>";
+    $("#commit").click(function() {
+        revcommit();
+        return false;
+    });
+}
+
 function savehardware() {
-    config.hardware.readerType = document.getElementById("readerType").value;
-    config.hardware.wgd0pin = document.getElementById("wg0pin").value;
-    config.hardware.wgd1pin = document.getElementById("wg1pin").value;
-    config.hardware.sspin = document.getElementById("gpioss").value;
-    config.hardware.rfidgain = document.getElementById("gain").value;
-    config.hardware.rtype = document.getElementById("typerly").value;
-    config.hardware.rpin = document.getElementById("gpiorly").value;
-    config.hardware.rtime = document.getElementById("delay").value;
+    config.hardware.readerType = parseInt(document.getElementById("readerType").value);
+    config.hardware.wgd0pin = parseInt(document.getElementById("wg0pin").value);
+    config.hardware.wgd1pin = parseInt(document.getElementById("wg1pin").value);
+    config.hardware.sspin = parseInt(document.getElementById("gpioss").value);
+    config.hardware.rfidgain = parseInt(document.getElementById("gain").value);
+    config.hardware.rtype = parseInt(document.getElementById("typerly").value);
+    config.hardware.rpin = parseInt(document.getElementById("gpiorly").value);
+    config.hardware.rtime = parseInt(document.getElementById("delay").value);
     uncommited();
 }
 
 function saventp() {
     config.ntp.server = document.getElementById("ntpserver").value;
-    config.ntp.interval = document.getElementById("intervals").value;
-    config.ntp.timezone = document.getElementById("DropDownTimezone").value;
+    config.ntp.interval = parseInt(document.getElementById("intervals").value);
+    config.ntp.timezone = parseInt(document.getElementById("DropDownTimezone").value);
 
     uncommited();
 }
@@ -172,17 +187,17 @@ function savegeneral() {
     }
     config.general.pswd = a;
     config.general.hostnm = document.getElementById("hostname").value;
-    config.general.restart = document.getElementById("autorestart").value;
+    config.general.restart = parseInt(document.getElementById("autorestart").value);
     uncommited();
 }
 
 function savemqtt() {
-    config.mqtt.enabled = "0";
-    if ($("input[name=mqttenabled]:checked").val() === "1") {
-        config.mqtt.enabled = "1";
+    config.mqtt.enabled = 0;
+    if (parseInt($("input[name=\"mqttenabled\"]:checked").val()) === 1) {
+        config.mqtt.enabled = 1;
     }
     config.mqtt.host = document.getElementById("mqtthost").value;
-    config.mqtt.port = document.getElementById("mqttport").value;
+    config.mqtt.port = parseInt(document.getElementById("mqttport").value);
     config.mqtt.topic = document.getElementById("mqtttopic").value;
     config.mqtt.user = document.getElementById("mqttuser").value;
     config.mqtt.pswd = document.getElementById("mqttpwd").value;
@@ -203,9 +218,9 @@ function checkOctects(input) {
 }
 
 function savenetwork() {
-    var wmode = "0";
-    config.network.dhcp = "0";
-    config.network.hide = "0";
+    var wmode = 0;
+    config.network.dhcp = 0;
+    config.network.hide = 0;
     if (document.getElementById("inputtohide").style.display === "none") {
         var b = document.getElementById("ssid");
         config.network.ssid = b.options[b.selectedIndex].value;
@@ -213,18 +228,20 @@ function savenetwork() {
         config.network.ssid = document.getElementById("inputtohide").value;
     }
     if (document.getElementById("wmodeap").checked) {
-        wmode = "1";
-        config.network.bssid = document.getElementById("wifibssid").value = 0;
-        if (document.querySelector('input[name="hideapenable"]:checked').value === "1") {
-            config.network.hide = "1";
-        } else { config.network.hide = "0"; }
+        wmode = 1;
+        config.network.bssid = 0;
+        if (parseInt(document.querySelector("input[name=\"hideapenable\"]:checked").value) === 1) {
+            config.network.hide = 1;
+        } else {
+            config.network.hide = 0;
+        }
     } else {
         config.network.bssid = document.getElementById("wifibssid").value;
-        if (document.querySelector('input[name="dhcpenabled"]:checked').value === "1") {
-            config.network.dhcp = "1";
+        if (parseInt(document.querySelector("input[name=\"dhcpenabled\"]:checked").value) === 1) {
+            config.network.dhcp = 1;
         } else {
 
-            config.network.dhcp = "0";
+            config.network.dhcp = 0;
 
             if (!checkOctects("ipaddress")) {
                 return;
@@ -249,49 +266,102 @@ function savenetwork() {
     config.network.pswd = document.getElementById("wifipass").value;
 
 
-    config.network.offtime = document.getElementById("disable_wifi_after_seconds").value;
+    config.network.offtime = parseInt(document.getElementById("disable_wifi_after_seconds").value);
     uncommited();
 }
 
-function revcommit() {
-    document.getElementById("jsonholder").innerText = JSON.stringify(config, null, 2);
-    $("#revcommit").modal("show");
+var formData = new FormData();
+
+
+function inProgress(callback) {
+    $("body").load("esprfid.htm #progresscontent", function(responseTxt, statusTxt, xhr) {
+        if (statusTxt === "success") {
+            $(".progress").css("height", "40");
+            $(".progress").css("font-size", "xx-large");
+            var i = 0;
+            var prg = setInterval(function() {
+                $(".progress-bar").css("width", i + "%").attr("aria-valuenow", i).html(i + "%");
+                i++;
+                if (i === 101) {
+                    clearInterval(prg);
+                    var a = document.createElement("a");
+                    a.href = "http://" + config.general.hostnm + ".local";
+                    a.innerText = "Try to reconnect ESP";
+                    document.getElementById("reconnect").appendChild(a);
+                    document.getElementById("reconnect").style.display = "block";
+                    document.getElementById("updateprog").className = "progress-bar progress-bar-success";
+                    document.getElementById("updateprog").innerHTML = "Completed";
+                }
+            }, 500);
+            switch (callback) {
+                case "upload":
+                    $.ajax({
+                        url: "/update",
+                        type: "POST",
+                        data: formData,
+                        processData: false,
+                        contentType: false
+                    });
+                    break;
+                case "commit":
+                    websock.send(JSON.stringify(config));
+                    break;
+                case "destroy":
+                    websock.send("{\"command\":\"destroy\"}");
+                    break;
+                case "restart":
+                    websock.send("{\"command\":\"restart\"}");
+                    break;
+                default:
+                    break;
+
+            }
+        }
+    }).hide().fadeIn();
 }
 
 function commit() {
     inProgress("commit");
 }
 
-function uncommited() {
-    $("#commit").fadeOut(200, function() {
-        $(this).css("background", "gold").fadeIn(1000);
-    });
-    document.getElementById("commit").innerHTML = "<h6>You have uncommited changes, please click here to commit and reboot (you will a have chance to review changes).</h6>";
-    $("#commit").click(function() {
-        revcommit();
-        return false;
-    });
+
+
+function handleAP() {
+    document.getElementById("hideap").style.display = "block";
+    document.getElementById("hideBSSID").style.display = "none";
+    document.getElementById("scanb").style.display = "none";
+    document.getElementById("ssid").style.display = "none";
+    document.getElementById("dhcp").style.display = "none";
+    document.getElementById("staticip").style.display = "none";
+    document.getElementById("inputtohide").style.display = "block";
+
+
+}
+
+function handleSTA() {
+    document.getElementById("hideap").style.display = "none";
+    document.getElementById("hideBSSID").style.display = "block";
+    document.getElementById("scanb").style.display = "block";
+    document.getElementById("dhcp").style.display = "block";
 }
 
 function listnetwork() {
 
     document.getElementById("inputtohide").value = config.network.ssid;
     document.getElementById("wifipass").value = config.network.pswd;
-    if (config.network.wmode === "1") {
+    if (config.network.wmode === 1) {
         document.getElementById("wmodeap").checked = true;
-        if (config.network.hide === "1") {
-            var value = "1";
-            $("input[name=hideapenable][value=" + value + "]").prop('checked', true);
-            //$("input[name=hideapenable][value=\"1\"]").attr('checked', 'checked');
+        if (config.network.hide === 1) {
+            $("input[name=\"hideapenable\"][value=\"1\"]").prop("checked", true);
+            //$("input[name=hideapenable][value=\"1\"]").attr("checked", "checked");
         }
         handleAP();
     } else {
         document.getElementById("wmodesta").checked = true;
         document.getElementById("wifibssid").value = config.network.bssid;
-        if (config.network.dhcp === "0") {
-                        var value = "0";
-            $("input[name=dhcpenabled][value=" + value + "]").prop('checked', true);
-            //$("input[name=dhcpenabled][value=\"0\"]").attr('checked', 'checked');
+        if (config.network.dhcp === 0) {
+            $("input[name=\"dhcpenabled\"][value=\"0\"]").prop("checked", true);
+            //$("input[name=dhcpenabled][value=\"0\"]").attr("checked", "checked");
             handleDHCP();
         }
         document.getElementById("ipaddress").value = config.network.ip;
@@ -314,10 +384,9 @@ function listgeneral() {
 }
 
 function listmqtt() {
-    if (config.mqtt.enabled === "1") {
-        var value = "1";
-        $("input[name=mqttenabled][value=" + value + "]").prop('checked', true);
-        //$("input[name=mqttenabled][value=\"1\"]").attr('checked', 'checked');
+    if (config.mqtt.enabled === 1) {
+        $("input[name=\"mqttenabled\"][value=\"1\"]").prop("checked", true);
+        //$("input[name=mqttenabled][value=\"1\"]").attr("checked", "checked");
     }
     document.getElementById("mqtthost").value = config.mqtt.host;
     document.getElementById("mqttport").value = config.mqtt.port;
@@ -326,24 +395,13 @@ function listmqtt() {
     document.getElementById("mqttpwd").value = config.mqtt.pswd;
 }
 
-function handleAP() {
-    document.getElementById("hideap").style.display = "block";
-    document.getElementById("hideBSSID").style.display = "none";
-    document.getElementById("scanb").style.display = "none";
-    document.getElementById("ssid").style.display = "none";
-    document.getElementById("dhcp").style.display = "none";
-    document.getElementById("staticip").style.display = "none";
-    document.getElementById("inputtohide").style.display = "block";
 
 
+function listBSSID() {
+    var select = document.getElementById("ssid");
+    document.getElementById("wifibssid").value = select.options[select.selectedIndex].bssidvalue;
 }
 
-function handleSTA() {
-    document.getElementById("hideap").style.display = "none";
-    document.getElementById("hideBSSID").style.display = "block";
-    document.getElementById("scanb").style.display = "block";
-    document.getElementById("dhcp").style.display = "block";
-}
 
 function listSSID(obj) {
     var select = document.getElementById("ssid");
@@ -360,10 +418,6 @@ function listSSID(obj) {
     listBSSID();
 }
 
-function listBSSID() {
-    var select = document.getElementById("ssid");
-    document.getElementById("wifibssid").value = select.options[select.selectedIndex].bssidvalue;
-}
 
 function scanWifi() {
     websock.send("{\"command\":\"scan\"}");
@@ -419,6 +473,36 @@ function builddata(obj) {
 
 function testRelay() {
     websock.send("{\"command\":\"testrelay\"}");
+}
+
+
+function colorStatusbar(ref) {
+    var percentage = ref.style.width.slice(0, -1);
+    if (percentage > 50) { ref.className = "progress-bar progress-bar-success"; } else if (percentage > 25) { ref.className = "progress-bar progress-bar-warning"; } else { ref.class = "progress-bar progress-bar-danger"; }
+}
+
+
+function listStats() {
+    document.getElementById("chip").innerHTML = ajaxobj.chipid;
+    document.getElementById("cpu").innerHTML = ajaxobj.cpu + " Mhz";
+    document.getElementById("uptime").innerHTML = ajaxobj.uptime;
+    document.getElementById("heap").innerHTML = ajaxobj.heap + " Bytes";
+    document.getElementById("heap").style.width = (ajaxobj.heap * 100) / 40960 + "%";
+    colorStatusbar(document.getElementById("heap"));
+    document.getElementById("flash").innerHTML = ajaxobj.availsize + " Bytes";
+    document.getElementById("flash").style.width = (ajaxobj.availsize * 100) / 2092032 + "%";
+    colorStatusbar(document.getElementById("flash"));
+    document.getElementById("spiffs").innerHTML = ajaxobj.availspiffs + " Bytes";
+    document.getElementById("spiffs").style.width = (ajaxobj.availspiffs * 100) / ajaxobj.spiffssize + "%";
+    colorStatusbar(document.getElementById("spiffs"));
+    document.getElementById("ssidstat").innerHTML = ajaxobj.ssid;
+    document.getElementById("ip").innerHTML = ajaxobj.ip;
+    document.getElementById("gate").innerHTML = ajaxobj.gateway;
+    document.getElementById("mask").innerHTML = ajaxobj.netmask;
+    document.getElementById("dns").innerHTML = ajaxobj.dns;
+    document.getElementById("mac").innerHTML = ajaxobj.mac;
+    document.getElementById("sver").innerText = config.general.version;
+    $("#mainver").text(config.general.version);
 }
 
 function getContent(contentname) {
@@ -583,6 +667,13 @@ function restoreUser() {
     }
 }
 
+function twoDigits(value) {
+    if (value < 10) {
+        return "0" + value;
+    }
+    return value;
+}
+
 function initEventTable() {
     var newlist = [];
     for (var i = 0; i < data.length; i++) {
@@ -608,7 +699,7 @@ function initEventTable() {
 
     }
     jQuery(function($) {
-        FooTable.init("#eventtable", {
+        window.FooTable.init("#eventtable", {
             columns: [{
                     "name": "type",
                     "title": "Event Type",
@@ -684,7 +775,7 @@ function initLatestLogTable() {
 
     }
     jQuery(function($) {
-        FooTable.init("#latestlogtable", {
+        window.FooTable.init("#latestlogtable", {
             columns: [{
                     "name": "timestamp",
                     "title": "Date",
@@ -734,19 +825,14 @@ function initLatestLogTable() {
     });
 }
 
-function twoDigits(value) {
-    if (value < 10) {
-        return "0" + value;
-    }
-    return value;
-}
+
 
 function initUserTable() {
     jQuery(function($) {
         var $modal = $("#editor-modal"),
             $editor = $("#editor"),
             $editorTitle = $("#editor-title"),
-            ft = FooTable.init("#usertable", {
+            ft = window.FooTable.init("#usertable", {
                 columns: [{
                         "name": "uid",
                         "title": "UID",
@@ -824,12 +910,14 @@ function initUserTable() {
                     }
                 },
                 components: {
-                    filtering: FooTable.MyFiltering
+                    filtering: window.FooTable.MyFiltering
                 }
             }),
             uid = 10001;
         $editor.on("submit", function(e) {
-            if (this.checkValidity && !this.checkValidity()) return;
+            if (this.checkValidity && !this.checkValidity()) {
+                return;
+            }
             e.preventDefault();
             var row = $modal.data("row"),
                 values = {
@@ -838,7 +926,7 @@ function initUserTable() {
                     acctype: parseInt($editor.find("#acctype").val()),
                     validuntil: (new Date($editor.find("#validuntil").val()).getTime() / 1000)
                 };
-            if (row instanceof FooTable.Row) {
+            if (row instanceof window.FooTable.Row) {
                 row.delete();
                 values.id = uid++;
                 ft.rows.add(values);
@@ -861,48 +949,11 @@ function initUserTable() {
 }
 
 
-
-function acctypefinder() {
-    if (values.acctype === "Active") {
-        return 1;
-    } else if (values.acctype === "Admin") {
-        return 99;
-    } else {
-        return 0;
-    }
-}
-
 function restartESP() {
     inProgress("restart");
 }
 
-function colorStatusbar(ref) {
-    var percentage = ref.style.width.slice(0, -1);
-    if (percentage > 50) { ref.className = "progress-bar progress-bar-success"; } else if (percentage > 25) { ref.className = "progress-bar progress-bar-warning"; } else { ref.class = "progress-bar progress-bar-danger"; }
-}
 
-function listStats() {
-    document.getElementById("chip").innerHTML = ajaxobj.chipid;
-    document.getElementById("cpu").innerHTML = ajaxobj.cpu + " Mhz";
-    document.getElementById("uptime").innerHTML = ajaxobj.uptime;
-    document.getElementById("heap").innerHTML = ajaxobj.heap + " Bytes";
-    document.getElementById("heap").style.width = (ajaxobj.heap * 100) / 40960 + "%";
-    colorStatusbar(document.getElementById("heap"));
-    document.getElementById("flash").innerHTML = ajaxobj.availsize + " Bytes";
-    document.getElementById("flash").style.width = (ajaxobj.availsize * 100) / 2092032 + "%";
-    colorStatusbar(document.getElementById("flash"));
-    document.getElementById("spiffs").innerHTML = ajaxobj.availspiffs + " Bytes";
-    document.getElementById("spiffs").style.width = (ajaxobj.availspiffs * 100) / ajaxobj.spiffssize + "%";
-    colorStatusbar(document.getElementById("spiffs"));
-    document.getElementById("ssidstat").innerHTML = ajaxobj.ssid;
-    document.getElementById("ip").innerHTML = ajaxobj.ip;
-    document.getElementById("gate").innerHTML = ajaxobj.gateway;
-    document.getElementById("mask").innerHTML = ajaxobj.netmask;
-    document.getElementById("dns").innerHTML = ajaxobj.dns;
-    document.getElementById("mac").innerHTML = ajaxobj.mac;
-    document.getElementById("sver").innerText = config.general.version;
-    $("#mainver").text(config.general.version);
-}
 
 var nextIsNotJson = false;
 
@@ -958,7 +1009,7 @@ function socketMessageListener(evt) {
                 break;
             case "configfile":
                 config = obj;
-                config.general.version = "v0.7.2";
+                config.general.version = "v0.7.3";
                 break;
             default:
                 break;
@@ -971,7 +1022,7 @@ function socketMessageListener(evt) {
             case "latestlog":
                 if (obj.result === false) {
                     logdata = [];
-                    initLogTable();
+                    initLatestLogTable();
                     document.getElementById("loading-img").style.display = "none";
                 }
                 break;
@@ -1026,18 +1077,7 @@ function socketMessageListener(evt) {
 
 }
 
-function socketCloseListener(evt) {
-    console.log("socket closed");
-    websock = new WebSocket(wsUri);
-    websock.addEventListener("message", socketMessageListener);
-    websock.addEventListener("close", socketCloseListener);
-    websock.addEventListener("error", socketErrorListener);
-}
 
-function socketErrorListener(evt) {
-    console.log("socket error");
-    console.log(evt);
-}
 
 function clearevent() {
     websock.send("{\"command\":\"clearevent\"}");
@@ -1098,7 +1138,7 @@ $(".noimp").on("click", function() {
 
 
 
-FooTable.MyFiltering = FooTable.Filtering.extend({
+window.FooTable.MyFiltering = window.FooTable.Filtering.extend({
     construct: function(instance) {
         this._super(instance);
         this.acctypes = ["1", "99", "0"];
@@ -1109,7 +1149,7 @@ FooTable.MyFiltering = FooTable.Filtering.extend({
     $create: function() {
         this._super();
         var self = this,
-            $form_grp = $("<div/>", {
+            $formgrp = $("<div/>", {
                 "class": "form-group"
             })
             .append($("<label/>", {
@@ -1127,7 +1167,7 @@ FooTable.MyFiltering = FooTable.Filtering.extend({
             .append($("<option/>", {
                 text: self.def
             }))
-            .appendTo($form_grp);
+            .appendTo($formgrp);
 
         $.each(self.acctypes, function(i, acctype) {
             self.$acctype.append($("<option/>").text(self.acctypesstr[i]).val(self.acctypes[i]));
@@ -1146,7 +1186,7 @@ FooTable.MyFiltering = FooTable.Filtering.extend({
     draw: function() {
         this._super();
         var acctype = this.find("acctype");
-        if (acctype instanceof FooTable.Filter) {
+        if (acctype instanceof window.FooTable.Filter) {
             this.$acctype.val(acctype.query.val());
         } else {
             this.$acctype.val(this.def);
@@ -1154,8 +1194,6 @@ FooTable.MyFiltering = FooTable.Filtering.extend({
     }
 });
 
-document.addEventListener("touchstart", handleTouchStart, false);
-document.addEventListener("touchmove", handleTouchMove, false);
 
 var xDown = null;
 var yDown = null;
@@ -1163,7 +1201,7 @@ var yDown = null;
 function handleTouchStart(evt) {
     xDown = evt.touches[0].clientX;
     yDown = evt.touches[0].clientY;
-};
+}
 
 function handleTouchMove(evt) {
     if (!xDown || !yDown) {
@@ -1193,7 +1231,7 @@ function handleTouchMove(evt) {
     /* reset values */
     xDown = null;
     yDown = null;
-};
+}
 
 function logout() {
     jQuery.ajax({
@@ -1214,58 +1252,24 @@ function logout() {
     return false;
 }
 
-$("#update").on("shown.bs.modal", function(e) {
-    GetLatestReleaseInfo();
-})
 
-function inProgress(callback) {
-    $("body").load("esprfid.htm #progresscontent", function(responseTxt, statusTxt, xhr) {
-        if (statusTxt === "success") {
-            $(".progress").css("height", "40");
-            $(".progress").css("font-size", "xx-large");
-            var i = 0;
-            var prg = setInterval(function() {
-                $(".progress-bar").css("width", i + "%").attr("aria-valuenow", i).html(i + "%");
-                i++;
-                if (i === 101) {
-                    clearInterval(prg);
-                    var a = document.createElement("a");
-                    a.href = "http://" + config.general.hostnm + ".local";
-                    a.innerText = "Try to reconnect ESP";
-                    document.getElementById("reconnect").appendChild(a);
-                    document.getElementById("reconnect").style.display = "block";
-                    document.getElementById("updateprog").className = "progress-bar progress-bar-success";
-                    document.getElementById("updateprog").innerHTML = "Completed";
-                }
-            }, 500);
-            switch (callback) {
-                case "upload":
-                    $.ajax({
-                        url: "/update",
-                        type: "POST",
-                        data: formData,
-                        processData: false,
-                        contentType: false
-                    });
-                    break;
-                case "commit":
-                    websock.send(JSON.stringify(config));
-                    break;
-                case "destroy":
-                    websock.send("{\"command\":\"destroy\"}");
-                    break;
-                case "restart":
-                    websock.send("{\"command\":\"restart\"}");
-                    break;
-                default:
-                    break;
 
-            }
-        }
-    }).hide().fadeIn();
+
+
+function connectWS() {
+    if (window.location.protocol === "https:") {
+        wsUri = "wss://" + window.location.hostname + "/ws";
+    } else if (window.location.protocol === "file:") {
+        wsUri = "ws://" + "localhost" + "/ws";
+    }
+    websock = new WebSocket(wsUri);
+    websock.addEventListener("message", socketMessageListener);
+
+    websock.onopen = function(evt) {
+        websock.send("{\"command\":\"getconf\"}");
+        websock.send("{\"command\":\"status\"}");
+    };
 }
-
-var formData = new FormData();
 
 
 function upload() {
@@ -1278,7 +1282,7 @@ function login() {
         $("#signin").modal("hide");
         connectWS();
     } else {
-        var username = "admin"
+        var username = "admin";
         var password = document.getElementById("password").value;
         var url = "/login";
         var xhr = new XMLHttpRequest();
@@ -1298,11 +1302,10 @@ function login() {
 }
 
 
-function GetLatestReleaseInfo() {
+function getLatestReleaseInfo() {
 
     $.getJSON("https://api.github.com/repos/omersiar/esp-rfid/releases/latest").done(function(release) {
         var asset = release.assets[0];
-        onlinebin = asset.browser_download_url;
         var downloadCount = 0;
         for (var i = 0; i < release.assets.length; i++) {
             downloadCount += release.assets[i].download_count;
@@ -1326,34 +1329,24 @@ function GetLatestReleaseInfo() {
     }).error(function() { $("#onlineupdate").html("<h5>Couldn't get release info. Are you connected to the Internet?</h5>"); });
 }
 
+
+$("#update").on("shown.bs.modal", function(e) {
+    getLatestReleaseInfo();
+});
+
 function allowUpload() {
     $("#upbtn").prop("disabled", false);
 }
 
-function connectWS() {
-    if (window.location.protocol === "https:") {
-        wsUri = "wss://" + window.location.hostname + "/ws";
-    } else if (window.location.protocol === "file:") {
-        wsUri = "ws://" + "localhost" + "/ws";
-    }
-    websock = new WebSocket(wsUri);
-    websock.addEventListener("message", socketMessageListener);
-    websock.addEventListener("error", socketErrorListener);
-    websock.addEventListener("close", socketCloseListener);
 
-    websock.onopen = function(evt) {
-        websock.send("{\"command\":\"getconf\"}");
-        websock.send("{\"command\":\"status\"}");
-    };
-}
 
 function start() {
     esprfidcontent = document.createElement("div");
     esprfidcontent.id = "mastercontent";
     esprfidcontent.style.display = "none";
     document.body.appendChild(esprfidcontent);
-    $('#signin').on('shown.bs.modal', function() {
-        $('#password').focus().select();
+    $("#signin").on("shown.bs.modal", function() {
+        $("#password").focus().select();
     });
     $("#mastercontent").load("esprfid.htm", function(responseTxt, statusTxt, xhr) {
         if (statusTxt === "success") {
@@ -1365,3 +1358,6 @@ function start() {
         }
     });
 }
+
+document.addEventListener("touchstart", handleTouchStart, false);
+document.addEventListener("touchmove", handleTouchMove, false);

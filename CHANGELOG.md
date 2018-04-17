@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.7.3] - 2018-04-04
+#### Added
+- [firmware] More debug messages
+
+#### Fixed
+- [webui] minor fixes suggested by Codacy
+- [webui] get javascript values as real integers
+
 ## [0.7.2] - 2018-04-02
 #### Fixed
 - [webui] MQTT is enabled by default.
