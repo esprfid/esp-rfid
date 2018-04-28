@@ -1,11 +1,16 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## [0.7.3] - 2018-04-28
+#### Fixed
 - [webui] comment out access types
-- [firmware] fix compile warning
+- [firmware] fix a compile warning
 - [firmware] change startAP behaviour
 - [firmware] publish username to MQTT broker
+- [firmware] mqtt username password memory collusion
+
+#### Removed
+- [firmware] Modified header
 
 ## [0.7.3] - 2018-04-04
 #### Added

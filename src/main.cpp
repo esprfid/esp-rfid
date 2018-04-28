@@ -83,8 +83,6 @@ bool activateRelay = false;
 bool inAPMode = false;
 bool isWifiConnected = false;
 int autoRestartIntervalSeconds = 0;
-// Variable to hold the last modification datetime
-char last_modified[50];
 
 bool wifiDisabled = true;
 bool doDisableWifi = false;
@@ -1124,99 +1122,61 @@ void ICACHE_FLASH_ATTR setupWebServer() {
     // Inspect impact on memory, firmware size.
 
     server.on("/fonts/glyphicons-halflings-regular.woff", HTTP_GET, [](AsyncWebServerRequest * request) {
-        // Check if the client already has the same version and respond with a 304 (Not modified)
-        if (request->header("If-Modified-Since").equals(last_modified)) {
-            request->send(304);
-
-        } else {
-            // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
+                 // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
             AsyncWebServerResponse * response = request->beginResponse_P(200, "font/woff", glyphicons_halflings_regular_woff_gz, glyphicons_halflings_regular_woff_gz_len);
             // Tell the browswer the contemnt is Gzipped
             response->addHeader("Content-Encoding", "gzip");
-            // And set the last-modified datetime so we can check if we need to send it again next time or not
-            response->addHeader("Last-Modified", last_modified);
             request->send(response);
-        }
+    
     });
 
     server.on("/css/required.css", HTTP_GET, [](AsyncWebServerRequest * request) {
-        // Check if the client already has the same version and respond with a 304 (Not modified)
-        if (request->header("If-Modified-Since").equals(last_modified)) {
-            request->send(304);
-
-        } else {
+        
             // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
             AsyncWebServerResponse * response = request->beginResponse_P(200, "text/css", required_css_gz, required_css_gz_len);
             // Tell the browswer the contemnt is Gzipped
             response->addHeader("Content-Encoding", "gzip");
-            // And set the last-modified datetime so we can check if we need to send it again next time or not
-            response->addHeader("Last-Modified", last_modified);
             request->send(response);
-        }
+        
     });
 
     server.on("/js/required.js", HTTP_GET, [](AsyncWebServerRequest * request) {
-        // Check if the client already has the same version and respond with a 304 (Not modified)
-        if (request->header("If-Modified-Since").equals(last_modified)) {
-            request->send(304);
-
-        } else {
+        
             // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
             AsyncWebServerResponse * response = request->beginResponse_P(200, "text/javascript", required_js_gz, required_js_gz_len);
             // Tell the browswer the contemnt is Gzipped
             response->addHeader("Content-Encoding", "gzip");
-            // And set the last-modified datetime so we can check if we need to send it again next time or not
-            response->addHeader("Last-Modified", last_modified);
             request-> send(response);
-        }
+        
     });
 
     server.on("/js/esprfid.js", HTTP_GET, [](AsyncWebServerRequest * request) {
-        // Check if the client already has the same version and respond with a 304 (Not modified)
-        if (request->header("If-Modified-Since").equals(last_modified)) {
-            request->send(304);
-
-        } else {
+        
             // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
             AsyncWebServerResponse * response = request->beginResponse_P(200, "text/javascript", esprfid_js_gz, esprfid_js_gz_len);
             // Tell the browswer the contemnt is Gzipped
             response->addHeader("Content-Encoding", "gzip");
-            // And set the last-modified datetime so we can check if we need to send it again next time or not
-            response->addHeader("Last-Modified", last_modified);
             request-> send(response);
-        }
+        
     });
 
     server.on("/index.html", HTTP_GET, [](AsyncWebServerRequest * request) {
-        // Check if the client already has the same version and respond with a 304 (Not modified)
-        if (request->header("If-Modified-Since").equals(last_modified)) {
-            request->send(304);
-
-        } else {
             // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
             AsyncWebServerResponse * response = request->beginResponse_P(200, "text/html", index_html_gz, index_html_gz_len);
             // Tell the browswer the contemnt is Gzipped
             response->addHeader("Content-Encoding", "gzip");
-            // And set the last-modified datetime so we can check if we need to send it again next time or not
-            response->addHeader("Last-Modified", last_modified);
             request->send(response);
-        }
+        
     });
 
     server.on("/esprfid.htm", HTTP_GET, [](AsyncWebServerRequest * request) {
-        // Check if the client already has the same version and respond with a 304 (Not modified)
-        if (request->header("If-Modified-Since").equals(last_modified)) {
-            request->send(304);
-
-        } else {
+        
             // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
             AsyncWebServerResponse * response = request->beginResponse_P(200, "text/html", esprfid_htm_gz, esprfid_htm_gz_len);
             // Tell the browswer the contemnt is Gzipped
             response->addHeader("Content-Encoding", "gzip");
-            // And set the last-modified datetime so we can check if we need to send it again next time or not
-            response->addHeader("Last-Modified", last_modified);
             request->send(response);
-        }
+        
     });
 
     if (http_pass == NULL) {
@@ -1249,8 +1209,7 @@ void onWifiDisconnect(const WiFiEventStationModeDisconnected& event) {
 
 // Set things up
 void ICACHE_FLASH_ATTR setup() {
-    // Populate the last modification date based on build datetime
-    sprintf(last_modified, "%s %s GMT", __DATE__, __TIME__);
+
     delay(2000);
     Serial.begin(115200);
     wifiDisconnectHandler = WiFi.onStationModeDisconnected(onWifiDisconnect);
