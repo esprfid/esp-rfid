@@ -1,6 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+- [webui] comment out access types
+- [firmware] fix compile warning
+- [firmware] change startAP behaviour
+- [firmware] publish username to MQTT broker
+
 ## [0.7.3] - 2018-04-04
 #### Added
 - [firmware] More debug messages
