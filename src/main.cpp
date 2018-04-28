@@ -1,6 +1,6 @@
 /*
-    Authors :   Ömer Şiar Baysal
-                ESP-RFID Community
+   Authors :   Ömer Şiar Baysal
+               ESP-RFID Community
 
    Released to Public Domain
 
@@ -83,8 +83,6 @@ bool activateRelay = false;
 bool inAPMode = false;
 bool isWifiConnected = false;
 int autoRestartIntervalSeconds = 0;
-// Variable to hold the last modification datetime
-char last_modified[50];
 
 bool wifiDisabled = true;
 bool doDisableWifi = false;
@@ -386,7 +384,7 @@ void ICACHE_FLASH_ATTR disableWifi() {
 #endif
 }
 
-bool ICACHE_FLASH_ATTR startAP(const char * ssid, const char * password = NULL, int hid = NULL) {
+bool ICACHE_FLASH_ATTR startAP(int hid, const char * ssid, const char * password = NULL) {
     inAPMode = true;
     WiFi.mode(WIFI_AP);
     Serial.print(F("[ INFO ] Configuring access point... "));
@@ -410,12 +408,15 @@ bool ICACHE_FLASH_ATTR startAP(const char * ssid, const char * password = NULL, 
 
 // Fallback to AP Mode, so we can connect to ESP if there is no Internet connection
 void ICACHE_FLASH_ATTR fallbacktoAPMode() {
+    inAPMode = true;
     Serial.println(F("[ INFO ] ESP-RFID is running in Fallback AP Mode"));
     uint8_t macAddr[6];
     WiFi.softAPmacAddress(macAddr);
     char ssid[15];
     sprintf(ssid, "ESP-RFID-%02x%02x%02x", macAddr[3], macAddr[4], macAddr[5]);
-    isWifiConnected = startAP(ssid);
+    WiFi.mode(WIFI_AP);
+    WiFi.softAP(ssid);
+    isWifiConnected = true;
 }
 
 // Try to connect Wi-Fi
@@ -590,6 +591,10 @@ void ICACHE_FLASH_ATTR rfidloop() {
                 Serial.println(" does not have access");
 #endif
             }
+                if (mqttenabled == 1) {
+        const char * topic = mqttTopic;
+        mqttClient.publish(topic, 0, true, username.c_str());
+    }
             writeLatest(uid, username, AccType);
             // Also inform Administrator Portal
             // Encode a JSON Object and send it to All WebSocket Clients
@@ -988,7 +993,7 @@ bool ICACHE_FLASH_ATTR loadConfiguration() {
     if (wmode == 1) {
         int hid = network["hide"];
         Serial.println(F("[ INFO ] ESP-RFID is running in AP Mode "));
-        return startAP(ssid, password, hid);
+        return startAP(hid, ssid, password);
     }
     else {
         if (network["dhcp"] == "0") {
@@ -1029,8 +1034,12 @@ bool ICACHE_FLASH_ATTR loadConfiguration() {
 
     const char * mhs = mqtt["host"];
     int mport = mqtt["port"];
-    const char * muser = mqtt["user"];
-    const char * mpas = mqtt["pswd"];
+    const char * muser;
+    const char * mpas;
+    String muserString = mqtt["user"];
+    muser = strdup(muserString.c_str());
+    String mpasString = mqtt["pswd"];
+    mpas = strdup(mpasString.c_str());
 
     mqttenabled = mqtt["enabled"];
 
@@ -1113,99 +1122,61 @@ void ICACHE_FLASH_ATTR setupWebServer() {
     // Inspect impact on memory, firmware size.
 
     server.on("/fonts/glyphicons-halflings-regular.woff", HTTP_GET, [](AsyncWebServerRequest * request) {
-        // Check if the client already has the same version and respond with a 304 (Not modified)
-        if (request->header("If-Modified-Since").equals(last_modified)) {
-            request->send(304);
-
-        } else {
-            // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
+                 // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
             AsyncWebServerResponse * response = request->beginResponse_P(200, "font/woff", glyphicons_halflings_regular_woff_gz, glyphicons_halflings_regular_woff_gz_len);
             // Tell the browswer the contemnt is Gzipped
             response->addHeader("Content-Encoding", "gzip");
-            // And set the last-modified datetime so we can check if we need to send it again next time or not
-            response->addHeader("Last-Modified", last_modified);
             request->send(response);
-        }
+    
     });
 
     server.on("/css/required.css", HTTP_GET, [](AsyncWebServerRequest * request) {
-        // Check if the client already has the same version and respond with a 304 (Not modified)
-        if (request->header("If-Modified-Since").equals(last_modified)) {
-            request->send(304);
-
-        } else {
+        
             // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
             AsyncWebServerResponse * response = request->beginResponse_P(200, "text/css", required_css_gz, required_css_gz_len);
             // Tell the browswer the contemnt is Gzipped
             response->addHeader("Content-Encoding", "gzip");
-            // And set the last-modified datetime so we can check if we need to send it again next time or not
-            response->addHeader("Last-Modified", last_modified);
             request->send(response);
-        }
+        
     });
 
     server.on("/js/required.js", HTTP_GET, [](AsyncWebServerRequest * request) {
-        // Check if the client already has the same version and respond with a 304 (Not modified)
-        if (request->header("If-Modified-Since").equals(last_modified)) {
-            request->send(304);
-
-        } else {
+        
             // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
             AsyncWebServerResponse * response = request->beginResponse_P(200, "text/javascript", required_js_gz, required_js_gz_len);
             // Tell the browswer the contemnt is Gzipped
             response->addHeader("Content-Encoding", "gzip");
-            // And set the last-modified datetime so we can check if we need to send it again next time or not
-            response->addHeader("Last-Modified", last_modified);
             request-> send(response);
-        }
+        
     });
 
     server.on("/js/esprfid.js", HTTP_GET, [](AsyncWebServerRequest * request) {
-        // Check if the client already has the same version and respond with a 304 (Not modified)
-        if (request->header("If-Modified-Since").equals(last_modified)) {
-            request->send(304);
-
-        } else {
+        
             // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
             AsyncWebServerResponse * response = request->beginResponse_P(200, "text/javascript", esprfid_js_gz, esprfid_js_gz_len);
             // Tell the browswer the contemnt is Gzipped
             response->addHeader("Content-Encoding", "gzip");
-            // And set the last-modified datetime so we can check if we need to send it again next time or not
-            response->addHeader("Last-Modified", last_modified);
             request-> send(response);
-        }
+        
     });
 
     server.on("/index.html", HTTP_GET, [](AsyncWebServerRequest * request) {
-        // Check if the client already has the same version and respond with a 304 (Not modified)
-        if (request->header("If-Modified-Since").equals(last_modified)) {
-            request->send(304);
-
-        } else {
             // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
             AsyncWebServerResponse * response = request->beginResponse_P(200, "text/html", index_html_gz, index_html_gz_len);
             // Tell the browswer the contemnt is Gzipped
             response->addHeader("Content-Encoding", "gzip");
-            // And set the last-modified datetime so we can check if we need to send it again next time or not
-            response->addHeader("Last-Modified", last_modified);
             request->send(response);
-        }
+        
     });
 
     server.on("/esprfid.htm", HTTP_GET, [](AsyncWebServerRequest * request) {
-        // Check if the client already has the same version and respond with a 304 (Not modified)
-        if (request->header("If-Modified-Since").equals(last_modified)) {
-            request->send(304);
-
-        } else {
+        
             // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
             AsyncWebServerResponse * response = request->beginResponse_P(200, "text/html", esprfid_htm_gz, esprfid_htm_gz_len);
             // Tell the browswer the contemnt is Gzipped
             response->addHeader("Content-Encoding", "gzip");
-            // And set the last-modified datetime so we can check if we need to send it again next time or not
-            response->addHeader("Last-Modified", last_modified);
             request->send(response);
-        }
+        
     });
 
     if (http_pass == NULL) {
@@ -1238,16 +1209,15 @@ void onWifiDisconnect(const WiFiEventStationModeDisconnected& event) {
 
 // Set things up
 void ICACHE_FLASH_ATTR setup() {
-    // Populate the last modification date based on build datetime
-    sprintf(last_modified, "%s %s GMT", __DATE__, __TIME__);
+
     delay(2000);
     Serial.begin(115200);
     wifiDisconnectHandler = WiFi.onStationModeDisconnected(onWifiDisconnect);
 
     Serial.println();
     Serial.println(F("[ INFO ] ESP RFID v0.7"));
-    #ifdef DEBUG
-        uint32_t realSize = ESP.getFlashChipRealSize();
+#ifdef DEBUG
+    uint32_t realSize = ESP.getFlashChipRealSize();
     uint32_t ideSize = ESP.getFlashChipSize();
     FlashMode_t ideMode = ESP.getFlashChipMode();
 
@@ -1258,12 +1228,12 @@ void ICACHE_FLASH_ATTR setup() {
     Serial.printf("Flash ide speed: %u\n", ESP.getFlashChipSpeed());
     Serial.printf("Flash ide mode:  %s\n", (ideMode == FM_QIO ? "QIO" : ideMode == FM_QOUT ? "QOUT" : ideMode == FM_DIO ? "DIO" : ideMode == FM_DOUT ? "DOUT" : "UNKNOWN"));
 
-    if(ideSize != realSize) {
+    if (ideSize != realSize) {
         Serial.println("Flash Chip configuration wrong!\n");
     } else {
         Serial.println("Flash Chip configuration ok.\n");
     }
-    #endif
+#endif
     // Start SPIFFS filesystem
     if (!SPIFFS.begin()) {
 #ifdef DEBUG

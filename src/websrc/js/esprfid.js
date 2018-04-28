@@ -34,7 +34,7 @@ var config = {
         "hostnm": "esp-rfid",
         "restart": 0,
         "pswd": "admin",
-        "version": "0.7.3"
+        "version": "0.7.4"
     },
     "mqtt": {
         "enabled": 0,
@@ -1009,7 +1009,7 @@ function socketMessageListener(evt) {
                 break;
             case "configfile":
                 config = obj;
-                config.general.version = "v0.7.3";
+                config.general.version = "v0.7.4";
                 break;
             default:
                 break;
