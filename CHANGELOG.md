@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 #### Fixed
 - [build] BearSSL dependency error with Platformio
 - [webui] #115 version numbering
+- [firmware] #101 Permanent AP Mode
 
 #### Changed
 - [build] Updated PlatformIO configuration file for next PIO release
