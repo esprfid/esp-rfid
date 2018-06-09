@@ -6,6 +6,9 @@ All notable changes to this project will be documented in this file.
 - [build] BearSSL dependency error with Platformio
 - [webui] #115 version numbering
 
+#### Changed
+- [build] Updated PlatformIO configuration file for next PIO release
+
 ## [0.7.4] - 2018-04-28
 #### Fixed
 - [webui] comment out access types
