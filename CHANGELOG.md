@@ -1,7 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [0.7.3] - 2018-04-28
+## [0.7.5] - 2018-06-09
+#### Fixed
+- [build] BearSSL dependency error with Platformio
+- [webui] #115 version numbering
+
+## [0.7.4] - 2018-04-28
 #### Fixed
 - [webui] comment out access types
 - [firmware] fix a compile warning

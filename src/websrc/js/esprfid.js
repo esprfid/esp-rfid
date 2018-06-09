@@ -1,3 +1,5 @@
+var version = "0.7.5";
+
 var websock = null;
 var wsUri = "ws://" + window.location.hostname + "/ws";
 var utcSeconds;
@@ -33,8 +35,7 @@ var config = {
     "general": {
         "hostnm": "esp-rfid",
         "restart": 0,
-        "pswd": "admin",
-        "version": "0.7.4"
+        "pswd": "admin"
     },
     "mqtt": {
         "enabled": 0,
@@ -62,8 +63,6 @@ var backupstarted = false;
 var restorestarted = false;
 
 var esprfidcontent;
-
-
 
 function browserTime() {
     var d = new Date(0);
@@ -501,8 +500,8 @@ function listStats() {
     document.getElementById("mask").innerHTML = ajaxobj.netmask;
     document.getElementById("dns").innerHTML = ajaxobj.dns;
     document.getElementById("mac").innerHTML = ajaxobj.mac;
-    document.getElementById("sver").innerText = config.general.version;
-    $("#mainver").text(config.general.version);
+    document.getElementById("sver").innerText = version;
+    $("#mainver").text(version);
 }
 
 function getContent(contentname) {
@@ -1009,7 +1008,6 @@ function socketMessageListener(evt) {
                 break;
             case "configfile":
                 config = obj;
-                config.general.version = "v0.7.4";
                 break;
             default:
                 break;
@@ -1325,7 +1323,7 @@ function getLatestReleaseInfo() {
         $("#releasehead").text(releaseInfo);
         $("#releasebody").text(release.body);
         $("#releaseinfo").fadeIn("slow");
-        $("#versionhead").text(config.general.version);
+        $("#versionhead").text(version);
     }).error(function() { $("#onlineupdate").html("<h5>Couldn't get release info. Are you connected to the Internet?</h5>"); });
 }
 

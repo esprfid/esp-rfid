@@ -421,7 +421,8 @@ void ICACHE_FLASH_ATTR fallbacktoAPMode() {
 
 // Try to connect Wi-Fi
 bool ICACHE_FLASH_ATTR connectSTA(const char* ssid, const char* password, byte bssid[6]) {
-    WiFi.disconnect(true);
+    // WiFi.disconnect(true);
+	WiFi.mode(WIFI_STA);
     // First connect to a wi-fi network
     WiFi.begin(ssid, password, 0, bssid);
     // Inform user we are trying to connect
