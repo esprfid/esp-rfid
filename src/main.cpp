@@ -447,7 +447,7 @@ bool ICACHE_FLASH_ATTR connectSTA(const char* ssid, const char* password, byte b
         Serial.println(WiFi.localIP());
         isWifiConnected = true;
         String data = ssid;
-        data += " " + WiFi.localIP();
+        data += " " + WiFi.localIP().toString();
         writeEvent("INFO", "wifi", "WiFi is connected", data);
         return true;
     }
