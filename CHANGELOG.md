@@ -1,6 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+## [0.7.6] - 2018-07-13
+#### Fixed
+- [firmware] #98 WDT Reset
+
 ## [0.7.5] - 2018-06-09
 #### Fixed
 - [build] BearSSL dependency error with Platformio
