@@ -21,11 +21,10 @@
 #include <FS.h>
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
-// #include <TimeLib.h>
+#include <TimeLib.h>
 #include <Ticker.h>
 #include <Ntp.h>
 #include <AsyncMqttClient.h>
-#include <SoftwareSerial.h>
 
 // RFID Hardware Libraries
 
@@ -69,7 +68,6 @@ WIEGAND wg;
 // Create MFRC522 RFID instance
 MFRC522 mfrc522 = MFRC522();
 PN532 pn532;
-
 WIEGAND wg;
 #endif
 
@@ -107,15 +105,81 @@ char * deviceHostname = NULL;
 
 int mqttenabled = 0;
 char *mqttTopic = NULL;
+unsigned long nextbeat = 0;
+unsigned long interval = 1800;
 
+#ifndef OFFICIALBOARD
 int rfidss;
 int readerType;
 int relayPin;
+#endif
+
 int relayType;
 int activateTime;
 int timeZone;
 
 
+#ifdef OFFICIALBOARD
+int relayPin = 13;
+#endif
+
+
+//  mqtt function
+void mqtt_publish_boot(time_t boot_time, String const &wifi, String const &ip)
+{
+    const char *topic = mqttTopic;
+    DynamicJsonBuffer jsonBuffer_boot;
+
+    JsonObject &root = jsonBuffer_boot.createObject();
+    root["type"] = "boot";
+    root["time"] = boot_time;
+    root["Wifi SSID"] = wifi;
+    root["Local IP"] = ip;
+
+    String mqttBuffer_boot;
+    root.printTo(mqttBuffer_boot);
+    Serial.print("[ INFO ] Mqtt Publish:");
+    Serial.println(mqttBuffer_boot);
+    mqttClient.publish(topic, 0, false, mqttBuffer_boot.c_str());
+}
+
+void mqtt_publish_heartbeat(time_t heartbeat)
+{
+    const char *topic = mqttTopic;
+    DynamicJsonBuffer jsonBuffer_heartbeat;
+
+    JsonObject &root = jsonBuffer_heartbeat.createObject();
+    root["type"] = "hearthbeat";
+    root["time"] = heartbeat;
+    String mqttBuffer4;
+    root.printTo(mqttBuffer4);
+    Serial.print("[ INFO ] Mqtt Publish:");
+    Serial.println(mqttBuffer4);
+    mqttClient.publish(topic, 0, false, mqttBuffer4.c_str());
+}
+
+void mqtt_publish_access(time_t accesstime, String const &isknown, String const &type, String const &user, String const &uid)
+{
+    if (mqttClient.connected())
+    {
+
+        const char *topic = mqttTopic;
+        DynamicJsonBuffer jsonBuffer2633;
+
+        JsonObject &root = jsonBuffer2633.createObject();
+        root["type"] = accesstime;
+        root["time"] = now();
+        root["isKnown"] = isknown;
+        root["access"] = type;
+        root["username"] = user;
+        root["uid"] = uid;
+        String mqttBuffer;
+        root.printTo(mqttBuffer);
+        Serial.print("[ INFO ] Mqtt Publish:");
+        Serial.println(mqttBuffer);
+        mqttClient.publish(topic, 0, false, mqttBuffer.c_str());
+    }
+}
 
 /* ------------------ TRIVIAL Functions ------------------- */
 String ICACHE_FLASH_ATTR printIP(IPAddress adress) {
@@ -603,6 +667,10 @@ void ICACHE_FLASH_ATTR rfidloop() {
                 previousMillis = millis();
 #ifdef DEBUG
                 Serial.println(" have access");
+				                if (mqttenabled == 1)
+                {
+                    mqtt_publish_access(now(), "true", "Always", username, uid);
+                }
 #endif
             }
             else if (AccType == 99)
@@ -610,11 +678,19 @@ void ICACHE_FLASH_ATTR rfidloop() {
                 previousMillis = millis();
                 doEnableWifi = true;
                 activateRelay = true; // Give user Access to Door, Safe, Box whatever you like
+				if (mqttenabled == 1)
+                {
+                    mqtt_publish_access(now(), "true", "Admin", username, uid);
+                }
 #ifdef DEBUG
                 Serial.println(" have admin access, enable wifi");
 #endif
             }
             else {
+				if (mqttenabled == 1)
+                {
+                    mqtt_publish_access(now(), "true", "Disabled", username, uid);
+                }
 #ifdef DEBUG
                 Serial.println(" does not have access");
 #endif
@@ -675,6 +751,10 @@ void ICACHE_FLASH_ATTR rfidloop() {
             ws.textAll(buffer);
         }
     }
+	 if (mqttenabled == 1)
+        {
+            mqtt_publish_access(now(), "false", "Denied", "Unknown", uid);
+        }
     // So far got we got UID of Scanned RFID Tag, checked it if it's on the database and access status, informed Administrator Portal
 }
 
@@ -927,11 +1007,11 @@ void onMqttPublish(uint16_t packetId) {
 
 void onMqttConnect(bool sessionPresent) {
     Serial.println("MQTT Connected session");
-    uint16_t packetIdPub1 = mqttClient.publish("test/lol", 1, false, "test 2");
     if (sessionPresent == true) {
         Serial.println("MQTT Connected session");
         writeEvent("INFO", "mqtt", "Connected to MQTT Server", "Session Present");
     }
+	mqtt_publish_boot(now(), WiFi.SSID(), WiFi.localIP().toString());
 }
 
 
@@ -1014,10 +1094,13 @@ bool ICACHE_FLASH_ATTR loadConfiguration() {
     timeZone = ntp["timezone"];
 
     activateTime = hardware["rtime"];
+	#ifndef OFFICIALBOARD
     relayPin = hardware["rpin"];
+	#endif
     relayType = hardware["rtype"];
     pinMode(relayPin, OUTPUT);
     digitalWrite(relayPin, relayType);
+	
 
     const char * ssid = network["ssid"];
     const char * password = network["pswd"];
@@ -1246,13 +1329,15 @@ void onWifiDisconnect(const WiFiEventStationModeDisconnected& event) {
 
 // Set things up
 void ICACHE_FLASH_ATTR setup() {
-
-    delay(2000);
+#ifdef OFFICIALBOARD
+    pinMode(13, OUTPUT);
+    digitalWrite(13, LOW);
+	#endif
     Serial.begin(115200);
     wifiDisconnectHandler = WiFi.onStationModeDisconnected(onWifiDisconnect);
 
     Serial.println();
-    Serial.println(F("[ INFO ] ESP RFID v0.7"));
+    Serial.println(F("[ INFO ] ESP RFID v0.8"));
 #ifdef DEBUG
     uint32_t realSize = ESP.getFlashChipRealSize();
     uint32_t ideSize = ESP.getFlashChipSize();
@@ -1370,7 +1455,18 @@ void ICACHE_RAM_ATTR loop() {
     }
     // Another loop for RFID Events, since we are using polling method instead of Interrupt we need to check RFID hardware for events
     if (currentMillis >= cooldown) {
+		
         rfidloop();
     }
+	if (mqttenabled == 1)
+        
+        {
+
+            if ((unsigned)now() >= nextbeat)
+            {
+                mqtt_publish_heartbeat(now());
+            }
+            nextbeat = (unsigned)now() + interval;
+        }
 
 }
