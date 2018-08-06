@@ -12,7 +12,7 @@ script:
 
 before_deploy:
 - cd ..
-- tar -zcf ${TRAVIS_BUILD_DIR}-${TRAVIS_TAG}.tar.gz ${TRAVIS_BUILD_DIR}/bin
+- tar -zcf ${TRAVIS_BUILD_DIR}-${TRAVIS_TAG}.tar.gz -C ${TRAVIS_BUILD_DIR}/bin .
 
 deploy:
   provider: releases
