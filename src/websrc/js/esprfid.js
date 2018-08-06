@@ -1,4 +1,4 @@
-var version = "0.7.6";
+var version = "0.8.0";
 
 var websock = null;
 var wsUri = "ws://" + window.location.hostname + "/ws";
@@ -12,7 +12,7 @@ var config = {
     "network": {
         "bssid": "",
         "ssid": "",
-        "wmode": 0,
+        "wmode": 1,
         "hide": 0,
         "pswd": "",
         "offtime": 0,
@@ -74,8 +74,8 @@ function browserTime() {
 
 function deviceTime() {
     var t = new Date(0); // The 0 there is the key, which sets the date to the epoch,
-    utcSeconds = Math.floor(utcSeconds + ((t.getTimezoneOffset() * 60) * -1));
-    t.setUTCSeconds(utcSeconds);
+    var devTime = Math.floor(utcSeconds + ((t.getTimezoneOffset() * 60) * -1));
+    t.setUTCSeconds(devTime);
     document.getElementById("utc").innerHTML = t.toUTCString().slice(0, -3);
 }
 

@@ -14,22 +14,32 @@
  */
 
 #include <Arduino.h>
-
 #include <ESP8266WiFi.h>
 #include <SPI.h>
 #include <ESP8266mDNS.h>
-#include <MFRC522.h>
-#include <Wiegand.h>
 #include <ArduinoJson.h>
 #include <FS.h>
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
-#include <TimeLib.h>
+// #include <TimeLib.h>
 #include <Ticker.h>
-
 #include <Ntp.h>
-#include <PN532.h>
 #include <AsyncMqttClient.h>
+#include <SoftwareSerial.h>
+
+// RFID Hardware Libraries
+
+#ifdef OFFICIALBOARD
+#include <Wiegand.h>
+#endif
+
+#ifndef OFFICIALBOARD
+#include <MFRC522.h>
+#include <PN532.h>
+#include <Wiegand.h>
+#endif
+
+
 
 // these are from vendors
 #include "webh/glyphicons-halflings-regular.woff.gz.h"
@@ -50,26 +60,28 @@ extern "C" {
 
 // #define DEBUG
 
+#ifdef OFFICIALBOARD
 // Create instance for Wiegand reade
 WIEGAND wg;
+#endif
+
+#ifndef OFFICIALBOARD
 // Create MFRC522 RFID instance
 MFRC522 mfrc522 = MFRC522();
-
 PN532 pn532;
 
+WIEGAND wg;
+#endif
+
 NtpClient NTP;
-
 AsyncMqttClient mqttClient;
-
 Ticker mqttReconnectTimer;
-
 WiFiEventHandler wifiDisconnectHandler;
 
 // Create AsyncWebServer instance on port "80"
 AsyncWebServer server(80);
 // Create WebSocket instance on URL "/ws"
 AsyncWebSocket ws("/ws");
-
 
 
 // Variables for whole scope
@@ -464,6 +476,7 @@ void ICACHE_FLASH_ATTR rfidloop() {
 
     String uid = "";
     String type = "";
+#ifndef OFFICIALBOARD
 
     // This way of constantly checking the reader type is simply not how it should be.. but leave it for now
     if (readerType == 0) {
@@ -495,7 +508,8 @@ void ICACHE_FLASH_ATTR rfidloop() {
         Serial.print(" " + type);
 
 
-    } else if (readerType == 1) {
+    } 
+	else if (readerType == 1) {
         if (wg.available()) {
             Serial.print(F("[ INFO ] PICC's UID: "));
             Serial.println(wg.getCode());
@@ -505,7 +519,8 @@ void ICACHE_FLASH_ATTR rfidloop() {
         } else {
             return;
         }
-    } else if (readerType == 2) {
+    } 
+	else if (readerType == 2) {
         bool found = false;
         byte pnuid[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
         eCardType e_CardType;
@@ -530,9 +545,21 @@ void ICACHE_FLASH_ATTR rfidloop() {
         delay(50);
         return;
     }
+	#endif
+	#ifdef OFFICIALBOARD
+	        if (wg.available()) {
+            Serial.print(F("[ INFO ] PICC's UID: "));
+            Serial.println(wg.getCode());
+            uid = String(wg.getCode(), HEX);
+            type = String(wg.getWiegandType(), HEX);
+            cooldown = millis() + 2000;
+        } else {
+            return;
+        }
+	#endif
     if (mqttenabled == 1) {
         const char * topic = mqttTopic;
-        mqttClient.publish(topic, 0, true, uid.c_str());
+        mqttClient.publish(topic, 0, false, uid.c_str());
     }
 
     // We are going to use filesystem to store known UIDs.
@@ -594,7 +621,7 @@ void ICACHE_FLASH_ATTR rfidloop() {
             }
                 if (mqttenabled == 1) {
         const char * topic = mqttTopic;
-        mqttClient.publish(topic, 0, true, username.c_str());
+        mqttClient.publish(topic, 0, false, username.c_str());
     }
             writeLatest(uid, username, AccType);
             // Also inform Administrator Portal
@@ -651,6 +678,7 @@ void ICACHE_FLASH_ATTR rfidloop() {
     // So far got we got UID of Scanned RFID Tag, checked it if it's on the database and access status, informed Administrator Portal
 }
 
+#ifndef OFFICIALBOARD
 #ifdef DEBUG
 void ICACHE_FLASH_ATTR ShowMFRC522ReaderDetails() {
     // Get the MFRC522 software version
@@ -673,11 +701,14 @@ void ICACHE_FLASH_ATTR ShowMFRC522ReaderDetails() {
     }
 }
 #endif
+#endif
+
 
 void ICACHE_FLASH_ATTR setupWiegandReader(int d0, int d1) {
     wg.begin(d0, d1);
 }
 
+#ifndef OFFICIALBOARD
 // Configure RFID Hardware
 void ICACHE_FLASH_ATTR setupMFRC522Reader(int rfidss, int rfidgain) {
     SPI.begin();     // MFRC522 Hardware uses SPI protocol
@@ -693,8 +724,9 @@ void ICACHE_FLASH_ATTR setupMFRC522Reader(int rfidss, int rfidgain) {
     ShowMFRC522ReaderDetails(); // Show details of PCD - MFRC522 Card Reader details
 #endif
 }
+#endif
 
-
+#ifndef OFFICIALBOARD
 void ICACHE_FLASH_ATTR setupPN532Reader(int rfidss) {
     // init controller
     pn532.InitSoftwareSPI(14, 12, 13, rfidss, 0);
@@ -728,6 +760,7 @@ void ICACHE_FLASH_ATTR setupPN532Reader(int rfidss) {
     }
     while (false);
 }
+#endif
 
 
 
@@ -894,7 +927,7 @@ void onMqttPublish(uint16_t packetId) {
 
 void onMqttConnect(bool sessionPresent) {
     Serial.println("MQTT Connected session");
-    uint16_t packetIdPub1 = mqttClient.publish("test/lol", 1, true, "test 2");
+    uint16_t packetIdPub1 = mqttClient.publish("test/lol", 1, false, "test 2");
     if (sessionPresent == true) {
         Serial.println("MQTT Connected session");
         writeEvent("INFO", "mqtt", "Connected to MQTT Server", "Session Present");
@@ -935,6 +968,8 @@ bool ICACHE_FLASH_ATTR loadConfiguration() {
 #ifdef DEBUG
     Serial.print(F("[ INFO ] Trying to setup RFID Hardware :"));
 #endif
+
+#ifndef OFFICIALBOARD
     readerType = hardware["readerType"];
 
     if ( readerType == 1 ) {
@@ -952,7 +987,8 @@ bool ICACHE_FLASH_ATTR loadConfiguration() {
         rfidss = hardware["sspin"];
         setupPN532Reader(rfidss);
     }
-
+	#endif
+	
     autoRestartIntervalSeconds = general["restart"];
     wifiTimeout = network["offtime"];
 

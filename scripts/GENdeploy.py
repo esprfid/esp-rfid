@@ -3,7 +3,7 @@ import shutil
 import os
 #
 # Dump build environment (for debug)
-#print env.Dump()
+# print env.Dump()
 #
 
 #
@@ -11,7 +11,7 @@ import os
 #
 
 def after_build(source, target, env):
-	shutil.copy(firmware_source, 'bin/firmware.bin')
+	shutil.copy(firmware_source, 'bin/generic.bin')
 
 env.AddPostAction("buildprog", after_build)
 

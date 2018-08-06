@@ -1,7 +1,17 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [Unreleased 0.8.0]
+#### Added
+- [build] Optimize code for official board 
+
+#### Fixed
+- [firmware] #128 Do not retain MQTT publishes
+
+#### Changed
+- [webui] Default wifi type to AP,
+- [firmware] MQTT Messages are now plain JSON encoded texts
+- [build] flash.bat file now asks which firmware to flash
 
 ## [0.7.6] - 2018-07-13
 #### Fixed

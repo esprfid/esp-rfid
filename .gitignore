@@ -11,6 +11,9 @@ src/websrc/js/required.js
 src/websrc/fonts
 src/websrc/gzipped
 
+bin/generic.bin
+bin/forV2Board.bin
+
 # node js
 
 # Logs
