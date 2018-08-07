@@ -38,8 +38,6 @@
 #include <Wiegand.h>
 #endif
 
-
-
 // these are from vendors
 #include "webh/glyphicons-halflings-regular.woff.gz.h"
 #include "webh/required.css.gz.h"
@@ -50,10 +48,10 @@
 #include "webh/esprfid.htm.gz.h"
 #include "webh/index.html.gz.h"
 
-
 #ifdef ESP8266
-extern "C" {
-#include "user_interface.h"  // Used to get Wifi status information
+extern "C"
+{
+#include "user_interface.h" // Used to get Wifi status information
 }
 #endif
 
@@ -81,9 +79,8 @@ AsyncWebServer server(80);
 // Create WebSocket instance on URL "/ws"
 AsyncWebSocket ws("/ws");
 
-
 // Variables for whole scope
-const char * http_username = "admin";
+const char *http_username = "admin";
 char *http_pass = NULL;
 unsigned long previousMillis = 0;
 unsigned long previousLoopMillis = 0;
@@ -101,7 +98,7 @@ bool timerequest = false;
 bool formatreq = false;
 int wifiTimeout = -1;
 unsigned long wiFiUptimeMillis = 0;
-char * deviceHostname = NULL;
+char *deviceHostname = NULL;
 
 int mqttenabled = 0;
 char *mqttTopic = NULL;
@@ -118,11 +115,9 @@ int relayType;
 int activateTime;
 int timeZone;
 
-
 #ifdef OFFICIALBOARD
 int relayPin = 13;
 #endif
-
 
 //  mqtt function
 void mqtt_publish_boot(time_t boot_time, String const &wifi, String const &ip)
@@ -182,13 +177,15 @@ void mqtt_publish_access(time_t accesstime, String const &isknown, String const 
 }
 
 /* ------------------ TRIVIAL Functions ------------------- */
-String ICACHE_FLASH_ATTR printIP(IPAddress adress) {
+String ICACHE_FLASH_ATTR printIP(IPAddress adress)
+{
     return (String)adress[0] + "." + (String)adress[1] + "." + (String)adress[2] + "." + (String)adress[3];
 }
 
-void ICACHE_FLASH_ATTR writeEvent(String type, String src, String desc, String data) {
+void ICACHE_FLASH_ATTR writeEvent(String type, String src, String desc, String data)
+{
     DynamicJsonBuffer jsonBuffer44333;
-    JsonObject& root = jsonBuffer44333.createObject();
+    JsonObject &root = jsonBuffer44333.createObject();
     root["type"] = type;
     root["src"] = src;
     root["desc"] = desc;
@@ -200,9 +197,10 @@ void ICACHE_FLASH_ATTR writeEvent(String type, String src, String desc, String d
     eventlog.close();
 }
 
-void ICACHE_FLASH_ATTR writeLatest(String uid, String username, int acctype) {
+void ICACHE_FLASH_ATTR writeLatest(String uid, String username, int acctype)
+{
     DynamicJsonBuffer jsonBuffer;
-    JsonObject& root = jsonBuffer.createObject();
+    JsonObject &root = jsonBuffer.createObject();
     root["uid"] = uid;
     root["username"] = username;
     root["acctype"] = acctype;
@@ -213,20 +211,23 @@ void ICACHE_FLASH_ATTR writeLatest(String uid, String username, int acctype) {
     latestlog.close();
 }
 
-void ICACHE_FLASH_ATTR sendEventLog(int page) {
+void ICACHE_FLASH_ATTR sendEventLog(int page)
+{
     DynamicJsonBuffer jsonBuffer44332;
-    JsonObject& root = jsonBuffer44332.createObject();
+    JsonObject &root = jsonBuffer44332.createObject();
     root["command"] = "eventlist";
     root["page"] = page;
-    JsonArray& items = root.createNestedArray("list");
+    JsonArray &items = root.createNestedArray("list");
     File eventlog = SPIFFS.open("/eventlog.json", "r");
     int first = (page - 1) * 10;
     int last = page * 10;
     int i = 0;
-    while (eventlog.available()) {
+    while (eventlog.available())
+    {
         String item = String();
         item = eventlog.readStringUntil('\n');
-        if (i >= first && i < last) {
+        if (i >= first && i < last)
+        {
             items.add(item);
         }
         i++;
@@ -235,28 +236,32 @@ void ICACHE_FLASH_ATTR sendEventLog(int page) {
     float pages = i / 10.0;
     root["haspages"] = ceil(pages);
     size_t len = root.measureLength();
-    AsyncWebSocketMessageBuffer * buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
-    if (buffer) {
+    AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
+    if (buffer)
+    {
         root.printTo((char *)buffer->get(), len + 1);
         ws.textAll(buffer);
         ws.textAll("{\"command\":\"result\",\"resultof\":\"eventlist\",\"result\": true}");
     }
 }
 
-void ICACHE_FLASH_ATTR sendLatestLog(int page) {
+void ICACHE_FLASH_ATTR sendLatestLog(int page)
+{
     DynamicJsonBuffer jsonBuffer44332;
-    JsonObject& root = jsonBuffer44332.createObject();
+    JsonObject &root = jsonBuffer44332.createObject();
     root["command"] = "latestlist";
     root["page"] = page;
-    JsonArray& items = root.createNestedArray("list");
+    JsonArray &items = root.createNestedArray("list");
     File latestlog = SPIFFS.open("/latestlog.json", "r");
     int first = (page - 1) * 10;
     int last = page * 10;
     int i = 0;
-    while (latestlog.available()) {
+    while (latestlog.available())
+    {
         String item = String();
         item = latestlog.readStringUntil('\n');
-        if (i >= first && i < last) {
+        if (i >= first && i < last)
+        {
             items.add(item);
         }
         i++;
@@ -265,27 +270,31 @@ void ICACHE_FLASH_ATTR sendLatestLog(int page) {
     float pages = i / 10.0;
     root["haspages"] = ceil(pages);
     size_t len = root.measureLength();
-    AsyncWebSocketMessageBuffer * buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
-    if (buffer) {
+    AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
+    if (buffer)
+    {
         root.printTo((char *)buffer->get(), len + 1);
         ws.textAll(buffer);
         ws.textAll("{\"command\":\"result\",\"resultof\":\"latestlist\",\"result\": true}");
     }
 }
 
-void ICACHE_FLASH_ATTR sendUserList(int page, AsyncWebSocketClient * client) {
+void ICACHE_FLASH_ATTR sendUserList(int page, AsyncWebSocketClient *client)
+{
     DynamicJsonBuffer jsonBuffer443;
-    JsonObject& root = jsonBuffer443.createObject();
+    JsonObject &root = jsonBuffer443.createObject();
     root["command"] = "userlist";
     root["page"] = page;
-    JsonArray& users = root.createNestedArray("list");
+    JsonArray &users = root.createNestedArray("list");
     Dir dir = SPIFFS.openDir("/P/");
     int first = (page - 1) * 15;
     int last = page * 15;
     int i = 0;
-    while (dir.next()) {
-        if (i >= first && i < last) {
-            JsonObject& item = users.createNestedObject();
+    while (dir.next())
+    {
+        if (i >= first && i < last)
+        {
+            JsonObject &item = users.createNestedObject();
             String uid = dir.fileName();
             uid.remove(0, 3);
             item["uid"] = uid;
@@ -298,8 +307,9 @@ void ICACHE_FLASH_ATTR sendUserList(int page, AsyncWebSocketClient * client) {
             // use configFile.readString instead.
             f.readBytes(buf.get(), size);
             DynamicJsonBuffer jsonBuffer2;
-            JsonObject& json = jsonBuffer2.parseObject(buf.get());
-            if (json.success()) {
+            JsonObject &json = jsonBuffer2.parseObject(buf.get());
+            if (json.success())
+            {
                 String username = json["user"];
                 int AccType = json["acctype"];
                 unsigned long validuntil = json["validuntil"];
@@ -313,13 +323,17 @@ void ICACHE_FLASH_ATTR sendUserList(int page, AsyncWebSocketClient * client) {
     float pages = i / 15.0;
     root["haspages"] = ceil(pages);
     size_t len = root.measureLength();
-    AsyncWebSocketMessageBuffer * buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
-    if (buffer) {
+    AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
+    if (buffer)
+    {
         root.printTo((char *)buffer->get(), len + 1);
-        if (client) {
+        if (client)
+        {
             client->text(buffer);
             client->text("{\"command\":\"result\",\"resultof\":\"userlist\",\"result\": true}");
-        } else {
+        }
+        else
+        {
             ws.textAll("{\"command\":\"result\",\"resultof\":\"userlist\",\"result\": false}");
         }
     }
@@ -327,16 +341,18 @@ void ICACHE_FLASH_ATTR sendUserList(int page, AsyncWebSocketClient * client) {
 
 /* ------------------ Other Functions ------------------- */
 // Send system status on a WS request
-void ICACHE_FLASH_ATTR sendStatus() {
+void ICACHE_FLASH_ATTR sendStatus()
+{
     struct ip_info info;
     FSInfo fsinfo;
-    if (!SPIFFS.info(fsinfo)) {
+    if (!SPIFFS.info(fsinfo))
+    {
 #ifdef DEBUG
         Serial.print(F("[ WARN ] Error getting info on SPIFFS"));
 #endif
     }
     DynamicJsonBuffer jsonBuffer567;
-    JsonObject& root = jsonBuffer567.createObject();
+    JsonObject &root = jsonBuffer567.createObject();
     root["command"] = "status";
 
     root["heap"] = ESP.getFreeHeap();
@@ -347,19 +363,21 @@ void ICACHE_FLASH_ATTR sendStatus() {
     root["spiffssize"] = fsinfo.totalBytes;
     root["uptime"] = NTP.getDeviceUptimeString();
 
-    if (inAPMode) {
+    if (inAPMode)
+    {
         wifi_get_ip_info(SOFTAP_IF, &info);
         struct softap_config conf;
         wifi_softap_get_config(&conf);
-        root["ssid"] = String(reinterpret_cast<char*>(conf.ssid));
+        root["ssid"] = String(reinterpret_cast<char *>(conf.ssid));
         root["dns"] = printIP(WiFi.softAPIP());
         root["mac"] = WiFi.softAPmacAddress();
     }
-    else {
+    else
+    {
         wifi_get_ip_info(STATION_IF, &info);
         struct station_config conf;
         wifi_station_get_config(&conf);
-        root["ssid"] = String(reinterpret_cast<char*>(conf.ssid));
+        root["ssid"] = String(reinterpret_cast<char *>(conf.ssid));
         root["dns"] = printIP(WiFi.dnsIP());
         root["mac"] = WiFi.macAddress();
     }
@@ -372,25 +390,31 @@ void ICACHE_FLASH_ATTR sendStatus() {
     root["netmask"] = printIP(nmaddr);
 
     size_t len = root.measureLength();
-    AsyncWebSocketMessageBuffer * buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
-    if (buffer) {
+    AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
+    if (buffer)
+    {
         root.printTo((char *)buffer->get(), len + 1);
         ws.textAll(buffer);
     }
 }
 
 // Send Scanned SSIDs to websocket clients as JSON object
-void ICACHE_FLASH_ATTR printScanResult(int networksFound) {
+void ICACHE_FLASH_ATTR printScanResult(int networksFound)
+{
     // sort by RSSI
     int n = networksFound;
     int indices[n];
     int skip[n];
-    for (int i = 0; i < networksFound; i++) {
+    for (int i = 0; i < networksFound; i++)
+    {
         indices[i] = i;
     }
-    for (int i = 0; i < networksFound; i++) {
-        for (int j = i + 1; j < networksFound; j++) {
-            if (WiFi.RSSI(indices[j]) > WiFi.RSSI(indices[i])) {
+    for (int i = 0; i < networksFound; i++)
+    {
+        for (int j = i + 1; j < networksFound; j++)
+        {
+            if (WiFi.RSSI(indices[j]) > WiFi.RSSI(indices[i]))
+            {
                 //int temp = indices[j];
                 //indices[j] = indices[i];
                 //indices[i] = temp;
@@ -401,11 +425,12 @@ void ICACHE_FLASH_ATTR printScanResult(int networksFound) {
     }
 
     DynamicJsonBuffer jsonBuffer78;
-    JsonObject& root = jsonBuffer78.createObject();
+    JsonObject &root = jsonBuffer78.createObject();
     root["command"] = "ssidlist";
-    JsonArray& scan = root.createNestedArray("list");
-    for (int i = 0; i < 5 && i < networksFound ; ++i) {
-        JsonObject& item = scan.createNestedObject();
+    JsonArray &scan = root.createNestedArray("list");
+    for (int i = 0; i < 5 && i < networksFound; ++i)
+    {
+        JsonObject &item = scan.createNestedObject();
         // Print SSID for each network found
         item["ssid"] = WiFi.SSID(indices[i]);
         item["bssid"] = WiFi.BSSIDstr(indices[i]);
@@ -415,44 +440,52 @@ void ICACHE_FLASH_ATTR printScanResult(int networksFound) {
         item["hidden"] = WiFi.isHidden(indices[i]) ? true : false;
     }
     size_t len = root.measureLength();
-    AsyncWebSocketMessageBuffer * buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
-    if (buffer) {
+    AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
+    if (buffer)
+    {
         root.printTo((char *)buffer->get(), len + 1);
         ws.textAll(buffer);
     }
     WiFi.scanDelete();
 }
 
-void connectToMqtt() {
+void connectToMqtt()
+{
     mqttClient.connect();
 }
 
-void ICACHE_FLASH_ATTR sendTime() {
+void ICACHE_FLASH_ATTR sendTime()
+{
     DynamicJsonBuffer jsonBuffer231;
-    JsonObject& root = jsonBuffer231.createObject();
+    JsonObject &root = jsonBuffer231.createObject();
     root["command"] = "gettime";
     root["epoch"] = now();
     root["timezone"] = timeZone;
     size_t len = root.measureLength();
-    AsyncWebSocketMessageBuffer * buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
-    if (buffer) {
+    AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
+    if (buffer)
+    {
         root.printTo((char *)buffer->get(), len + 1);
         ws.textAll(buffer);
     }
 }
 
-void ICACHE_FLASH_ATTR parseBytes(const char* str, char sep, byte* bytes, int maxBytes, int base) {
-    for (int i = 0; i < maxBytes; i++) {
+void ICACHE_FLASH_ATTR parseBytes(const char *str, char sep, byte *bytes, int maxBytes, int base)
+{
+    for (int i = 0; i < maxBytes; i++)
+    {
         bytes[i] = strtoul(str, NULL, base); // Convert byte
-        str = strchr(str, sep);   // Find next separator
-        if (str == NULL || *str == '\0') {
-            break;          // No more separators, exit
+        str = strchr(str, sep);              // Find next separator
+        if (str == NULL || *str == '\0')
+        {
+            break; // No more separators, exit
         }
-        str++;                    // Point to next character after separator
+        str++; // Point to next character after separator
     }
 }
 
-void ICACHE_FLASH_ATTR disableWifi() {
+void ICACHE_FLASH_ATTR disableWifi()
+{
     isWifiConnected = false;
     WiFi.disconnect(true);
 #ifdef DEBUG
@@ -460,19 +493,25 @@ void ICACHE_FLASH_ATTR disableWifi() {
 #endif
 }
 
-bool ICACHE_FLASH_ATTR startAP(int hid, const char * ssid, const char * password = NULL) {
+bool ICACHE_FLASH_ATTR startAP(int hid, const char *ssid, const char *password = NULL)
+{
     inAPMode = true;
     WiFi.mode(WIFI_AP);
     Serial.print(F("[ INFO ] Configuring access point... "));
     bool success;
-    if (hid == 1) {
+    if (hid == 1)
+    {
         success = WiFi.softAP(ssid, password, 3, true);
     }
-    else {
+    else
+    {
         success = WiFi.softAP(ssid, password);
     }
     Serial.println(success ? "Ready" : "Failed!");
-    if (!success) {ESP.restart();}
+    if (!success)
+    {
+        ESP.restart();
+    }
     // Access Point IP
     IPAddress myIP = WiFi.softAPIP();
     Serial.print(F("[ INFO ] AP IP address: "));
@@ -483,7 +522,8 @@ bool ICACHE_FLASH_ATTR startAP(int hid, const char * ssid, const char * password
 }
 
 // Fallback to AP Mode, so we can connect to ESP if there is no Internet connection
-void ICACHE_FLASH_ATTR fallbacktoAPMode() {
+void ICACHE_FLASH_ATTR fallbacktoAPMode()
+{
     inAPMode = true;
     Serial.println(F("[ INFO ] ESP-RFID is running in Fallback AP Mode"));
     uint8_t macAddr[6];
@@ -496,9 +536,10 @@ void ICACHE_FLASH_ATTR fallbacktoAPMode() {
 }
 
 // Try to connect Wi-Fi
-bool ICACHE_FLASH_ATTR connectSTA(const char* ssid, const char* password, byte bssid[6]) {
+bool ICACHE_FLASH_ATTR connectSTA(const char *ssid, const char *password, byte bssid[6])
+{
     // WiFi.disconnect(true);
-	WiFi.mode(WIFI_STA);
+    WiFi.mode(WIFI_STA);
     // First connect to a wi-fi network
     WiFi.begin(ssid, password, 0, bssid);
     // Inform user we are trying to connect
@@ -508,16 +549,18 @@ bool ICACHE_FLASH_ATTR connectSTA(const char* ssid, const char* password, byte b
     unsigned long now = millis();
     uint8_t timeout = 20; // define when to time out in seconds
     // Wait until we connect or 20 seconds pass
-    do {
-        if (WiFi.status() == WL_CONNECTED) {
+    do
+    {
+        if (WiFi.status() == WL_CONNECTED)
+        {
             break;
         }
         delay(500);
         Serial.print(F("."));
-    }
-    while (millis() - now < timeout * 1000);
+    } while (millis() - now < timeout * 1000);
     // We now out of the while loop, either time is out or we connected. check what happened
-    if (WiFi.status() == WL_CONNECTED) { // Assume time is out first and check
+    if (WiFi.status() == WL_CONNECTED)
+    { // Assume time is out first and check
         Serial.println();
         Serial.print(F("[ INFO ] Client IP address: ")); // Great, we connected, inform
         Serial.println(WiFi.localIP());
@@ -527,7 +570,8 @@ bool ICACHE_FLASH_ATTR connectSTA(const char* ssid, const char* password, byte b
         writeEvent("INFO", "wifi", "WiFi is connected", data);
         return true;
     }
-    else { // We couln't connect, time is out, inform
+    else
+    { // We couln't connect, time is out, inform
         Serial.println();
         Serial.println(F("[ WARN ] Couldn't connect in time"));
         return false;
@@ -536,22 +580,26 @@ bool ICACHE_FLASH_ATTR connectSTA(const char* ssid, const char* password, byte b
 
 /* ------------------ RFID Functions ------------------- */
 // RFID Specific Loop
-void ICACHE_FLASH_ATTR rfidloop() {
+void ICACHE_FLASH_ATTR rfidloop()
+{
 
     String uid = "";
     String type = "";
 #ifndef OFFICIALBOARD
 
     // This way of constantly checking the reader type is simply not how it should be.. but leave it for now
-    if (readerType == 0) {
+    if (readerType == 0)
+    {
 
         //If a new PICC placed to RFID reader continue
-        if ( !mfrc522.PICC_IsNewCardPresent()) {
+        if (!mfrc522.PICC_IsNewCardPresent())
+        {
             delay(50);
             return;
         }
         //Since a PICC placed get Serial (UID) and continue
-        if ( !mfrc522.PICC_ReadCardSerial()) {
+        if (!mfrc522.PICC_ReadCardSerial())
+        {
             delay(50);
             return;
         }
@@ -562,7 +610,8 @@ void ICACHE_FLASH_ATTR rfidloop() {
         // There are Mifare PICCs which have 4 byte or 7 byte UID
         // Get PICC's UID and store on a variable
         Serial.print(F("[ INFO ] PICC's UID: "));
-        for (int i = 0; i < mfrc522.uid.size; ++i) {
+        for (int i = 0; i < mfrc522.uid.size; ++i)
+        {
             uid += String(mfrc522.uid.uidByte[i], HEX);
         }
         Serial.print(uid);
@@ -570,61 +619,68 @@ void ICACHE_FLASH_ATTR rfidloop() {
         MFRC522::PICC_Type piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
         type = mfrc522.PICC_GetTypeName(piccType);
         Serial.print(" " + type);
-
-
-    } 
-	else if (readerType == 1) {
-        if (wg.available()) {
+    }
+    else if (readerType == 1)
+    {
+        if (wg.available())
+        {
             Serial.print(F("[ INFO ] PICC's UID: "));
             Serial.println(wg.getCode());
-            uid = String(wg.getCode(), HEX);
-            type = String(wg.getWiegandType(), HEX);
+            uid = String(wg.getCode(), DEC);
+            type = String(wg.getWiegandType(), DEC);
             cooldown = millis() + 2000;
-        } else {
+        }
+        else
+        {
             return;
         }
-    } 
-	else if (readerType == 2) {
+    }
+    else if (readerType == 2)
+    {
         bool found = false;
         byte pnuid[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
         eCardType e_CardType;
 
-        byte     u8_UidLength = 0x00;   // UID = 4 or 7 bytes
+        byte u8_UidLength = 0x00; // UID = 4 or 7 bytes
 
         found = pn532.ReadPassiveTargetID(pnuid, &u8_UidLength, &e_CardType);
 
-        if (found && u8_UidLength >= 4) {
+        if (found && u8_UidLength >= 4)
+        {
             Serial.print(F("[ INFO ] PICC's UID: "));
-            for (uint8_t i = 0; i < u8_UidLength; i++) {
+            for (uint8_t i = 0; i < u8_UidLength; i++)
+            {
                 uid += String(pnuid[i], HEX);
             }
             Serial.print(uid);
             cooldown = millis() + 2000;
-        } else {
+        }
+        else
+        {
             delay(50);
             return;
         }
     }
-    else {
+    else
+    {
         delay(50);
         return;
     }
-	#endif
-	#ifdef OFFICIALBOARD
-	        if (wg.available()) {
-            Serial.print(F("[ INFO ] PICC's UID: "));
-            Serial.println(wg.getCode());
-            uid = String(wg.getCode(), HEX);
-            type = String(wg.getWiegandType(), HEX);
-            cooldown = millis() + 2000;
-        } else {
-            return;
-        }
-	#endif
-    if (mqttenabled == 1) {
-        const char * topic = mqttTopic;
-        mqttClient.publish(topic, 0, false, uid.c_str());
+#endif
+#ifdef OFFICIALBOARD
+    if (wg.available())
+    {
+        Serial.print(F("[ INFO ] PICC's UID: "));
+        Serial.println(wg.getCode());
+        uid = String(wg.getCode(), HEX);
+        type = String(wg.getWiegandType(), HEX);
+        cooldown = millis() + 2000;
     }
+    else
+    {
+        return;
+    }
+#endif
 
     // We are going to use filesystem to store known UIDs.
     // If we know the PICC we need to know if its User have an Access
@@ -635,7 +691,8 @@ void ICACHE_FLASH_ATTR rfidloop() {
 
     File f = SPIFFS.open(filename, "r");
     // Check if we could find it above function returns true if the file is exist
-    if (f) {
+    if (f)
+    {
         // Now we need to read contents of the file to parse JSON object contains Username and Access Status
         size_t size = f.size();
         // Allocate a buffer to store contents of the file.
@@ -645,9 +702,10 @@ void ICACHE_FLASH_ATTR rfidloop() {
         // use configFile.readString instead.
         f.readBytes(buf.get(), size);
         DynamicJsonBuffer jsonBuffer613;
-        JsonObject& json = jsonBuffer613.parseObject(buf.get());
+        JsonObject &json = jsonBuffer613.parseObject(buf.get());
         // Check if we succesfully parse JSON object
-        if (json.success()) {
+        if (json.success())
+        {
             // Get username Access Status
             String username = json["user"];
             AccType = json["acctype"];
@@ -656,21 +714,24 @@ void ICACHE_FLASH_ATTR rfidloop() {
             Serial.print("[ INFO ] User Name: ");
 
             if (username == "undefined")
-                Serial.print(uid);
+                Serial.println(uid);
             else
-                Serial.print(username);
+                Serial.println(username);
 #endif
 
             // Check if user have an access
-            if (AccType == 1) {
+            if (AccType == 1)
+            {
                 activateRelay = true; // Give user Access to Door, Safe, Box whatever you like
                 previousMillis = millis();
-#ifdef DEBUG
-                Serial.println(" have access");
-				                if (mqttenabled == 1)
+
+                if (mqttenabled == 1)
                 {
                     mqtt_publish_access(now(), "true", "Always", username, uid);
                 }
+#ifdef DEBUG
+                Serial.println(" have access");
+
 #endif
             }
             else if (AccType == 99)
@@ -678,7 +739,7 @@ void ICACHE_FLASH_ATTR rfidloop() {
                 previousMillis = millis();
                 doEnableWifi = true;
                 activateRelay = true; // Give user Access to Door, Safe, Box whatever you like
-				if (mqttenabled == 1)
+                if (mqttenabled == 1)
                 {
                     mqtt_publish_access(now(), "true", "Admin", username, uid);
                 }
@@ -686,8 +747,9 @@ void ICACHE_FLASH_ATTR rfidloop() {
                 Serial.println(" have admin access, enable wifi");
 #endif
             }
-            else {
-				if (mqttenabled == 1)
+            else
+            {
+                if (mqttenabled == 1)
                 {
                     mqtt_publish_access(now(), "true", "Disabled", username, uid);
                 }
@@ -695,15 +757,12 @@ void ICACHE_FLASH_ATTR rfidloop() {
                 Serial.println(" does not have access");
 #endif
             }
-                if (mqttenabled == 1) {
-        const char * topic = mqttTopic;
-        mqttClient.publish(topic, 0, false, username.c_str());
-    }
+
             writeLatest(uid, username, AccType);
             // Also inform Administrator Portal
             // Encode a JSON Object and send it to All WebSocket Clients
             DynamicJsonBuffer jsonBuffer2222;
-            JsonObject& root = jsonBuffer2222.createObject();
+            JsonObject &root = jsonBuffer2222.createObject();
             root["command"] = "piccscan";
             // UID of Scanned RFID Tag
             root["uid"] = uid;
@@ -714,20 +773,22 @@ void ICACHE_FLASH_ATTR rfidloop() {
             // Username
             root["user"] = username;
             size_t len = root.measureLength();
-            AsyncWebSocketMessageBuffer * buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
-            if (buffer) {
+            AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
+            if (buffer)
+            {
                 root.printTo((char *)buffer->get(), len + 1);
                 ws.textAll(buffer);
             }
         }
-        else {
+        else
+        {
             Serial.println("");
             Serial.println(F("[ WARN ] Failed to parse User Data"));
         }
         f.close();
-
     }
-    else {
+    else
+    {
         // If we don't know the UID, inform Administrator Portal so admin can give access or add it to database
         String data = String(uid);
         data += " " + String(type);
@@ -737,7 +798,7 @@ void ICACHE_FLASH_ATTR rfidloop() {
         Serial.println(" = unknown PICC");
 #endif
         DynamicJsonBuffer jsonBuffer2344;
-        JsonObject& root = jsonBuffer2344.createObject();
+        JsonObject &root = jsonBuffer2344.createObject();
         root["command"] = "piccscan";
         // UID of Scanned RFID Tag
         root["uid"] = uid;
@@ -745,22 +806,26 @@ void ICACHE_FLASH_ATTR rfidloop() {
         root["type"] = type;
         root["known"] = 0;
         size_t len = root.measureLength();
-        AsyncWebSocketMessageBuffer * buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
-        if (buffer) {
+        AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
+        if (buffer)
+        
+        {
             root.printTo((char *)buffer->get(), len + 1);
             ws.textAll(buffer);
         }
-    }
-	 if (mqttenabled == 1)
+        if (mqttenabled == 1)
         {
             mqtt_publish_access(now(), "false", "Denied", "Unknown", uid);
         }
+    }
+
     // So far got we got UID of Scanned RFID Tag, checked it if it's on the database and access status, informed Administrator Portal
 }
 
 #ifndef OFFICIALBOARD
 #ifdef DEBUG
-void ICACHE_FLASH_ATTR ShowMFRC522ReaderDetails() {
+void ICACHE_FLASH_ATTR ShowMFRC522ReaderDetails()
+{
     // Get the MFRC522 software version
     byte v = mfrc522.PCD_ReadRegister(mfrc522.VersionReg);
 
@@ -776,22 +841,24 @@ void ICACHE_FLASH_ATTR ShowMFRC522ReaderDetails() {
         Serial.print(F(" (unknown)"));
     Serial.println("");
     // When 0x00 or 0xFF is returned, communication probably failed
-    if ((v == 0x00) || (v == 0xFF)) {
+    if ((v == 0x00) || (v == 0xFF))
+    {
         Serial.println(F("[ WARN ] Communication failure, check if MFRC522 properly connected"));
     }
 }
 #endif
 #endif
 
-
-void ICACHE_FLASH_ATTR setupWiegandReader(int d0, int d1) {
+void ICACHE_FLASH_ATTR setupWiegandReader(int d0, int d1)
+{
     wg.begin(d0, d1);
 }
 
 #ifndef OFFICIALBOARD
 // Configure RFID Hardware
-void ICACHE_FLASH_ATTR setupMFRC522Reader(int rfidss, int rfidgain) {
-    SPI.begin();     // MFRC522 Hardware uses SPI protocol
+void ICACHE_FLASH_ATTR setupMFRC522Reader(int rfidss, int rfidgain)
+{
+    SPI.begin();                         // MFRC522 Hardware uses SPI protocol
     mfrc522.PCD_Init(rfidss, UINT8_MAX); // Initialize MFRC522 Hardware
     // Set RFID Hardware Antenna Gain
     // This may not work with some boards
@@ -807,7 +874,8 @@ void ICACHE_FLASH_ATTR setupMFRC522Reader(int rfidss, int rfidgain) {
 #endif
 
 #ifndef OFFICIALBOARD
-void ICACHE_FLASH_ATTR setupPN532Reader(int rfidss) {
+void ICACHE_FLASH_ATTR setupPN532Reader(int rfidss)
+{
     // init controller
     pn532.InitSoftwareSPI(14, 12, 13, rfidss, 0);
     do // pseudo loop (just used for aborting with break;)
@@ -836,127 +904,145 @@ void ICACHE_FLASH_ATTR setupPN532Reader(int rfidss) {
         if (!pn532.SamConfig())
             break;
 
-
-    }
-    while (false);
+    } while (false);
 }
 #endif
 
-
-
-
-
 // Handles WebSocket Events
-void ICACHE_FLASH_ATTR onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len) {
-    if (type == WS_EVT_ERROR) {
+void ICACHE_FLASH_ATTR onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len)
+{
+    if (type == WS_EVT_ERROR)
+    {
 #ifdef DEBUG
-        Serial.printf("[ WARN ] WebSocket[%s][%u] error(%u): %s\r\n", server->url(), client->id(), *((uint16_t*)arg), (char*)data);
+        Serial.printf("[ WARN ] WebSocket[%s][%u] error(%u): %s\r\n", server->url(), client->id(), *((uint16_t *)arg), (char *)data);
 #endif
     }
-    else if (type == WS_EVT_DATA) {
+    else if (type == WS_EVT_DATA)
+    {
 
-        AwsFrameInfo * info = (AwsFrameInfo*)arg;
+        AwsFrameInfo *info = (AwsFrameInfo *)arg;
         String msg = "";
 
-        if (info->final && info->index == 0 && info->len == len) {
+        if (info->final && info->index == 0 && info->len == len)
+        {
             //the whole message is in a single frame and we got all of it's data
-            for (size_t i = 0; i < info->len; i++) {
-                msg += (char) data[i];
+            for (size_t i = 0; i < info->len; i++)
+            {
+                msg += (char)data[i];
             }
 
             // We should always get a JSON object (stringfied) from browser, so parse it
             DynamicJsonBuffer jsonBuffer413;
-            JsonObject& root = jsonBuffer413.parseObject(msg);
-            if (!root.success()) {
+            JsonObject &root = jsonBuffer413.parseObject(msg);
+            if (!root.success())
+            {
 #ifdef DEBUG
                 Serial.println(F("[ WARN ] Couldn't parse WebSocket message"));
 #endif
                 return;
-
             }
 
             // Web Browser sends some commands, check which command is given
-            const char * command = root["command"];
+            const char *command = root["command"];
 
             // Check whatever the command is and act accordingly
-            if (strcmp(command, "remove")  == 0) {
-                const char* uid = root["uid"];
+            if (strcmp(command, "remove") == 0)
+            {
+                const char *uid = root["uid"];
                 String filename = "/P/";
                 filename += uid;
                 SPIFFS.remove(filename);
             }
-            else if (strcmp(command, "configfile")  == 0) {
+            else if (strcmp(command, "configfile") == 0)
+            {
                 File f = SPIFFS.open("/config.json", "w+");
-                if (f) {
+                if (f)
+                {
                     root.prettyPrintTo(f);
                     //f.print(msg);
                     f.close();
                     ESP.restart();
                 }
             }
-            else if (strcmp(command, "userlist")  == 0) {
+            else if (strcmp(command, "userlist") == 0)
+            {
                 int page = root["page"];
                 sendUserList(page, client);
             }
-            else if (strcmp(command, "status")  == 0) {
+            else if (strcmp(command, "status") == 0)
+            {
                 sendStatus();
             }
-            else if (strcmp(command, "restart")  == 0) {
+            else if (strcmp(command, "restart") == 0)
+            {
                 shouldReboot = true;
             }
-            else if (strcmp(command, "destroy")  == 0) {
+            else if (strcmp(command, "destroy") == 0)
+            {
                 formatreq = true;
             }
-            else if (strcmp(command, "geteventlog")  == 0) {
+            else if (strcmp(command, "geteventlog") == 0)
+            {
                 int page = root["page"];
                 sendEventLog(page);
             }
-            else if (strcmp(command, "getlatestlog")  == 0) {
+            else if (strcmp(command, "getlatestlog") == 0)
+            {
                 int page = root["page"];
                 sendLatestLog(page);
             }
-            else if (strcmp(command, "clearevent")  == 0) {
+            else if (strcmp(command, "clearevent") == 0)
+            {
                 SPIFFS.remove("/eventlog.json");
                 writeEvent("WARN", "sys", "Event log cleared!", "");
             }
-            else if (strcmp(command, "clearlatest")  == 0) {
+            else if (strcmp(command, "clearlatest") == 0)
+            {
                 SPIFFS.remove("/latestlog.json");
                 writeEvent("WARN", "sys", "Latest Access log cleared!", "");
             }
-            else if (strcmp(command, "userfile")  == 0) {
-                const char* uid = root["uid"];
+            else if (strcmp(command, "userfile") == 0)
+            {
+                const char *uid = root["uid"];
                 String filename = "/P/";
                 filename += uid;
                 File f = SPIFFS.open(filename, "w+");
                 // Check if we created the file
-                if (f) {
+                if (f)
+                {
                     f.print(msg);
                 }
                 f.close();
                 ws.textAll("{\"command\":\"result\",\"resultof\":\"userfile\",\"result\": true}");
             }
-            else if (strcmp(command, "testrelay")  == 0) {
+            else if (strcmp(command, "testrelay") == 0)
+            {
                 activateRelay = true;
                 previousMillis = millis();
             }
-            else if (strcmp(command, "scan")  == 0) {
+            else if (strcmp(command, "scan") == 0)
+            {
                 WiFi.scanNetworksAsync(printScanResult, true);
             }
-            else if (strcmp(command, "gettime")  == 0) {
+            else if (strcmp(command, "gettime") == 0)
+            {
                 timerequest = true;
-
             }
-            else if (strcmp(command, "settime")  == 0) {
+            else if (strcmp(command, "settime") == 0)
+            {
                 time_t t = root["epoch"];
                 setTime(t);
                 timerequest = true;
             }
-            else if (strcmp(command, "getconf")  == 0) {
+            else if (strcmp(command, "getconf") == 0)
+            {
                 File configFile = SPIFFS.open("/config.json", "r");
-                if (configFile) {
+                if (configFile)
+                {
                     size_t len = configFile.size();
-                    AsyncWebSocketMessageBuffer * buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
-                    if (buffer) {
+                    AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
+                    if (buffer)
+                    {
                         configFile.readBytes((char *)buffer->get(), len + 1);
                         ws.textAll(buffer);
                     }
@@ -967,9 +1053,11 @@ void ICACHE_FLASH_ATTR onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient *
     }
 }
 
-void onMqttDisconnect(AsyncMqttClientDisconnectReason reason) {
+void onMqttDisconnect(AsyncMqttClientDisconnectReason reason)
+{
     String reasonstr = "";
-    switch (reason) {
+    switch (reason)
+    {
     case (AsyncMqttClientDisconnectReason::TCP_DISCONNECTED):
         reasonstr = "TCP_DISCONNECTED";
         break;
@@ -996,29 +1084,33 @@ void onMqttDisconnect(AsyncMqttClientDisconnectReason reason) {
         break;
     }
     writeEvent("WARN", "mqtt", "Disconnected from MQTT server", reasonstr);
-    if (WiFi.isConnected()) {
+    if (WiFi.isConnected())
+    {
         mqttReconnectTimer.once(60, connectToMqtt);
     }
 }
 
-void onMqttPublish(uint16_t packetId) {
+void onMqttPublish(uint16_t packetId)
+{
     writeEvent("INFO", "mqtt", "MQTT publish acknowledged", String(packetId));
 }
 
-void onMqttConnect(bool sessionPresent) {
+void onMqttConnect(bool sessionPresent)
+{
     Serial.println("MQTT Connected session");
-    if (sessionPresent == true) {
+    if (sessionPresent == true)
+    {
         Serial.println("MQTT Connected session");
         writeEvent("INFO", "mqtt", "Connected to MQTT Server", "Session Present");
     }
-	mqtt_publish_boot(now(), WiFi.SSID(), WiFi.localIP().toString());
+    mqtt_publish_boot(now(), WiFi.SSID(), WiFi.localIP().toString());
 }
 
-
-
-bool ICACHE_FLASH_ATTR loadConfiguration() {
+bool ICACHE_FLASH_ATTR loadConfiguration()
+{
     File configFile = SPIFFS.open("/config.json", "r");
-    if (!configFile) {
+    if (!configFile)
+    {
         Serial.println(F("[ WARN ] Failed to open config file"));
         return false;
     }
@@ -1030,8 +1122,9 @@ bool ICACHE_FLASH_ATTR loadConfiguration() {
     // use configFile.readString instead.
     configFile.readBytes(buf.get(), size);
     DynamicJsonBuffer jsonBuffer98;
-    JsonObject& json = jsonBuffer98.parseObject(buf.get());
-    if (!json.success()) {
+    JsonObject &json = jsonBuffer98.parseObject(buf.get());
+    if (!json.success())
+    {
         Serial.println(F("[ WARN ] Failed to parse config file"));
         return false;
     }
@@ -1040,11 +1133,11 @@ bool ICACHE_FLASH_ATTR loadConfiguration() {
     json.prettyPrintTo(Serial);
     Serial.println();
 
-    JsonObject& network = json["network"];
-    JsonObject& hardware = json["hardware"];
-    JsonObject& general = json["general"];
-    JsonObject& mqtt = json["mqtt"];
-    JsonObject& ntp = json["ntp"];
+    JsonObject &network = json["network"];
+    JsonObject &hardware = json["hardware"];
+    JsonObject &general = json["general"];
+    JsonObject &mqtt = json["mqtt"];
+    JsonObject &ntp = json["ntp"];
 #ifdef DEBUG
     Serial.print(F("[ INFO ] Trying to setup RFID Hardware :"));
 #endif
@@ -1052,27 +1145,33 @@ bool ICACHE_FLASH_ATTR loadConfiguration() {
 #ifndef OFFICIALBOARD
     readerType = hardware["readerType"];
 
-    if ( readerType == 1 ) {
+    if (readerType == 1)
+    {
         int wgd0pin = hardware["wgd0pin"];
         int wgd1pin = hardware["wgd1pin"];
         setupWiegandReader(wgd0pin, wgd1pin); // also some other settings like weather to use keypad or not, LED pin, BUZZER pin, Wiegand 26/34 version
-    } else if ( readerType == 0 ) {
+    }
+    else if (readerType == 0)
+    {
         rfidss = 15;
-        if (hardware.containsKey("sspin")) {
+        if (hardware.containsKey("sspin"))
+        {
             rfidss = hardware["sspin"];
         }
         int rfidgain = hardware["rfidgain"];
         setupMFRC522Reader(rfidss, rfidgain);
-    } else if ( readerType == 2) {
+    }
+    else if (readerType == 2)
+    {
         rfidss = hardware["sspin"];
         setupPN532Reader(rfidss);
     }
-	#endif
-	
+#endif
+
     autoRestartIntervalSeconds = general["restart"];
     wifiTimeout = network["offtime"];
 
-    const char * bssidmac = network["bssid"];
+    const char *bssidmac = network["bssid"];
     byte bssid[6];
     parseBytes(bssidmac, ':', bssid, 6, 16);
 
@@ -1081,7 +1180,8 @@ bool ICACHE_FLASH_ATTR loadConfiguration() {
     WiFi.hostname(deviceHostname);
 
     // Start mDNS service so we can connect to http://esp-rfid.local (if Bonjour installed on Windows or Avahi on Linux)
-    if (!MDNS.begin(deviceHostname)) {
+    if (!MDNS.begin(deviceHostname))
+    {
 #ifdef DEBUG
         Serial.println("Error setting up MDNS responder!");
 #endif
@@ -1089,40 +1189,42 @@ bool ICACHE_FLASH_ATTR loadConfiguration() {
     // Add Web Server service to mDNS
     MDNS.addService("http", "tcp", 80);
 
-    const char * ntpserver = ntp["server"];
+    const char *ntpserver = ntp["server"];
     int ntpinter = ntp["interval"];
     timeZone = ntp["timezone"];
 
     activateTime = hardware["rtime"];
-	#ifndef OFFICIALBOARD
+#ifndef OFFICIALBOARD
     relayPin = hardware["rpin"];
-	#endif
+#endif
     relayType = hardware["rtype"];
     pinMode(relayPin, OUTPUT);
     digitalWrite(relayPin, relayType);
-	
 
-    const char * ssid = network["ssid"];
-    const char * password = network["pswd"];
+    const char *ssid = network["ssid"];
+    const char *password = network["pswd"];
     int wmode = network["wmode"];
 
     http_pass = strdup(general["pswd"]);
 
     ws.setAuthentication("admin", http_pass);
 
-    if (wmode == 1) {
+    if (wmode == 1)
+    {
         int hid = network["hide"];
         Serial.println(F("[ INFO ] ESP-RFID is running in AP Mode "));
         return startAP(hid, ssid, password);
     }
-    else {
-        if (network["dhcp"] == "0") {
+    else
+    {
+        if (network["dhcp"] == "0")
+        {
             WiFi.mode(WIFI_STA);
 
-            const char * clientipch = network["ip"];
-            const char * subnetch = network["subnet"];
-            const char * gatewaych = network["gateway"];
-            const char * dnsch = network["dns"];
+            const char *clientipch = network["ip"];
+            const char *subnetch = network["subnet"];
+            const char *gatewaych = network["gateway"];
+            const char *dnsch = network["dns"];
 
             IPAddress clientip;
             IPAddress subnet;
@@ -1136,11 +1238,11 @@ bool ICACHE_FLASH_ATTR loadConfiguration() {
 
             WiFi.config(clientip, gateway, subnet, dns);
         }
-        if (!connectSTA(ssid, password, bssid)) {
+        if (!connectSTA(ssid, password, bssid))
+        {
             return false;
         }
     }
-
 
 #ifdef DEBUG
     Serial.println("Trying to setup NTP Server");
@@ -1152,10 +1254,10 @@ bool ICACHE_FLASH_ATTR loadConfiguration() {
     writeEvent("INFO", "ntp", "Connecting NTP Server", ip);
     NTP.Ntp(ntpserver, timeZone, ntpinter * 60);
 
-    const char * mhs = mqtt["host"];
+    const char *mhs = mqtt["host"];
     int mport = mqtt["port"];
-    const char * muser;
-    const char * mpas;
+    const char *muser;
+    const char *mpas;
     String muserString = mqtt["user"];
     muser = strdup(muserString.c_str());
     String mpasString = mqtt["pswd"];
@@ -1163,8 +1265,8 @@ bool ICACHE_FLASH_ATTR loadConfiguration() {
 
     mqttenabled = mqtt["enabled"];
 
-
-    if (mqttenabled == 1) {
+    if (mqttenabled == 1)
+    {
 #ifdef DEBUG
         Serial.println("Trying to setup MQTT");
 #endif
@@ -1177,13 +1279,12 @@ bool ICACHE_FLASH_ATTR loadConfiguration() {
         connectToMqtt();
     }
 
-
-
     Serial.println(F("[ INFO ] Configuration done."));
     return true;
 }
 
-void ICACHE_FLASH_ATTR enableWifi() {
+void ICACHE_FLASH_ATTR enableWifi()
+{
 #ifdef DEBUG
     Serial.println("Turn wifi on.");
 #endif
@@ -1191,25 +1292,23 @@ void ICACHE_FLASH_ATTR enableWifi() {
         fallbacktoAPMode();
 }
 
-
-
 /* ------------------ BASIC SYSTEM Functions ------------------- */
-void ICACHE_FLASH_ATTR setupWebServer() {
+void ICACHE_FLASH_ATTR setupWebServer()
+{
     // Start WebSocket Plug-in and handle incoming message on "onWsEvent" function
     server.addHandler(&ws);
     ws.onEvent(onWsEvent);
     // Handle what happens when requested web file couldn't be found
-    server.onNotFound([](AsyncWebServerRequest * request) {
-        AsyncWebServerResponse * response = request->beginResponse(404, "text/plain", "Not found");
+    server.onNotFound([](AsyncWebServerRequest *request) {
+        AsyncWebServerResponse *response = request->beginResponse(404, "text/plain", "Not found");
         request->send(response);
     });
 
     // Simple Firmware Update Handler
-    server.on("/update", HTTP_POST, [](AsyncWebServerRequest * request) {
+    server.on("/update", HTTP_POST, [](AsyncWebServerRequest *request) {
         AsyncWebServerResponse * response = request->beginResponse(200, "text/plain", shouldReboot ? "OK" : "FAIL");
         response->addHeader("Connection", "close");
-        request->send(response);
-    }, [](AsyncWebServerRequest * request, String filename, size_t index, uint8_t * data, size_t len, bool final) {
+        request->send(response); }, [](AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
         if (!request->authenticate(http_username, http_pass)) {
             return;
         }
@@ -1236,77 +1335,68 @@ void ICACHE_FLASH_ATTR setupWebServer() {
             } else {
                 Update.printError(Serial);
             }
-        }
-    });
+        } });
     // Bootstrap Fonts hardcode workaround
     // Inspect impact on memory, firmware size.
 
-    server.on("/fonts/glyphicons-halflings-regular.woff", HTTP_GET, [](AsyncWebServerRequest * request) {
-                 // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
-            AsyncWebServerResponse * response = request->beginResponse_P(200, "font/woff", glyphicons_halflings_regular_woff_gz, glyphicons_halflings_regular_woff_gz_len);
-            // Tell the browswer the contemnt is Gzipped
-            response->addHeader("Content-Encoding", "gzip");
-            request->send(response);
-    
+    server.on("/fonts/glyphicons-halflings-regular.woff", HTTP_GET, [](AsyncWebServerRequest *request) {
+        // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
+        AsyncWebServerResponse *response = request->beginResponse_P(200, "font/woff", glyphicons_halflings_regular_woff_gz, glyphicons_halflings_regular_woff_gz_len);
+        // Tell the browswer the contemnt is Gzipped
+        response->addHeader("Content-Encoding", "gzip");
+        request->send(response);
     });
 
-    server.on("/css/required.css", HTTP_GET, [](AsyncWebServerRequest * request) {
-        
-            // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
-            AsyncWebServerResponse * response = request->beginResponse_P(200, "text/css", required_css_gz, required_css_gz_len);
-            // Tell the browswer the contemnt is Gzipped
-            response->addHeader("Content-Encoding", "gzip");
-            request->send(response);
-        
+    server.on("/css/required.css", HTTP_GET, [](AsyncWebServerRequest *request) {
+        // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
+        AsyncWebServerResponse *response = request->beginResponse_P(200, "text/css", required_css_gz, required_css_gz_len);
+        // Tell the browswer the contemnt is Gzipped
+        response->addHeader("Content-Encoding", "gzip");
+        request->send(response);
     });
 
-    server.on("/js/required.js", HTTP_GET, [](AsyncWebServerRequest * request) {
-        
-            // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
-            AsyncWebServerResponse * response = request->beginResponse_P(200, "text/javascript", required_js_gz, required_js_gz_len);
-            // Tell the browswer the contemnt is Gzipped
-            response->addHeader("Content-Encoding", "gzip");
-            request-> send(response);
-        
+    server.on("/js/required.js", HTTP_GET, [](AsyncWebServerRequest *request) {
+        // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
+        AsyncWebServerResponse *response = request->beginResponse_P(200, "text/javascript", required_js_gz, required_js_gz_len);
+        // Tell the browswer the contemnt is Gzipped
+        response->addHeader("Content-Encoding", "gzip");
+        request->send(response);
     });
 
-    server.on("/js/esprfid.js", HTTP_GET, [](AsyncWebServerRequest * request) {
-        
-            // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
-            AsyncWebServerResponse * response = request->beginResponse_P(200, "text/javascript", esprfid_js_gz, esprfid_js_gz_len);
-            // Tell the browswer the contemnt is Gzipped
-            response->addHeader("Content-Encoding", "gzip");
-            request-> send(response);
-        
+    server.on("/js/esprfid.js", HTTP_GET, [](AsyncWebServerRequest *request) {
+        // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
+        AsyncWebServerResponse *response = request->beginResponse_P(200, "text/javascript", esprfid_js_gz, esprfid_js_gz_len);
+        // Tell the browswer the contemnt is Gzipped
+        response->addHeader("Content-Encoding", "gzip");
+        request->send(response);
     });
 
-    server.on("/index.html", HTTP_GET, [](AsyncWebServerRequest * request) {
-            // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
-            AsyncWebServerResponse * response = request->beginResponse_P(200, "text/html", index_html_gz, index_html_gz_len);
-            // Tell the browswer the contemnt is Gzipped
-            response->addHeader("Content-Encoding", "gzip");
-            request->send(response);
-        
+    server.on("/index.html", HTTP_GET, [](AsyncWebServerRequest *request) {
+        // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
+        AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", index_html_gz, index_html_gz_len);
+        // Tell the browswer the contemnt is Gzipped
+        response->addHeader("Content-Encoding", "gzip");
+        request->send(response);
     });
 
-    server.on("/esprfid.htm", HTTP_GET, [](AsyncWebServerRequest * request) {
-        
-            // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
-            AsyncWebServerResponse * response = request->beginResponse_P(200, "text/html", esprfid_htm_gz, esprfid_htm_gz_len);
-            // Tell the browswer the contemnt is Gzipped
-            response->addHeader("Content-Encoding", "gzip");
-            request->send(response);
-        
+    server.on("/esprfid.htm", HTTP_GET, [](AsyncWebServerRequest *request) {
+        // Dump the byte array in PROGMEM with a 200 HTTP code (OK)
+        AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", esprfid_htm_gz, esprfid_htm_gz_len);
+        // Tell the browswer the contemnt is Gzipped
+        response->addHeader("Content-Encoding", "gzip");
+        request->send(response);
     });
 
-    if (http_pass == NULL) {
+    if (http_pass == NULL)
+    {
         http_pass = strdup("admin");
     }
 
     // HTTP basic authentication
-    server.on("/login", HTTP_GET, [](AsyncWebServerRequest * request) {
+    server.on("/login", HTTP_GET, [](AsyncWebServerRequest *request) {
         String remoteIP = printIP(request->client()->remoteIP());
-        if (!request->authenticate(http_username, http_pass)) {
+        if (!request->authenticate(http_username, http_pass))
+        {
             writeEvent("WARN", "websrv", "New login attempt", remoteIP);
             return request->requestAuthentication();
         }
@@ -1320,19 +1410,18 @@ void ICACHE_FLASH_ATTR setupWebServer() {
     server.begin();
 }
 
-void onWifiDisconnect(const WiFiEventStationModeDisconnected& event) {
+void onWifiDisconnect(const WiFiEventStationModeDisconnected &event)
+{
     mqttReconnectTimer.detach(); // ensure we don't reconnect to MQTT while reconnecting to Wi-Fi
 }
 
-
-
-
 // Set things up
-void ICACHE_FLASH_ATTR setup() {
+void ICACHE_FLASH_ATTR setup()
+{
 #ifdef OFFICIALBOARD
     pinMode(13, OUTPUT);
     digitalWrite(13, LOW);
-	#endif
+#endif
     Serial.begin(115200);
     wifiDisconnectHandler = WiFi.onStationModeDisconnected(onWifiDisconnect);
 
@@ -1350,32 +1439,37 @@ void ICACHE_FLASH_ATTR setup() {
     Serial.printf("Flash ide speed: %u\n", ESP.getFlashChipSpeed());
     Serial.printf("Flash ide mode:  %s\n", (ideMode == FM_QIO ? "QIO" : ideMode == FM_QOUT ? "QOUT" : ideMode == FM_DIO ? "DIO" : ideMode == FM_DOUT ? "DOUT" : "UNKNOWN"));
 
-    if (ideSize != realSize) {
+    if (ideSize != realSize)
+    {
         Serial.println("Flash Chip configuration wrong!\n");
-    } else {
+    }
+    else
+    {
         Serial.println("Flash Chip configuration ok.\n");
     }
 #endif
     // Start SPIFFS filesystem
-    if (!SPIFFS.begin()) {
+    if (!SPIFFS.begin())
+    {
 #ifdef DEBUG
         Serial.print(F("[ WARN ] Formatting filesystem..."));
 #endif
-        if (SPIFFS.format()) {
+        if (SPIFFS.format())
+        {
             writeEvent("WARN", "sys", "Filesystem formatted", "");
 
 #ifdef DEBUG
             Serial.println(F(" completed!"));
 #endif
         }
-        else {
+        else
+        {
 #ifdef DEBUG
             Serial.println(F(" failed!"));
             Serial.println(F("[ WARN ] Could not format filesystem!"));
 #endif
         }
     }
-
 
     /* Remove Users Helper
        Dir dir = SPIFFS.openDir("/P/");
@@ -1386,7 +1480,8 @@ void ICACHE_FLASH_ATTR setup() {
 
     // Try to load configuration file so we can connect to an Wi-Fi Access Point
     // Do not worry if no config file is present, we fall back to Access Point mode and device can be easily configured
-    if (!loadConfiguration()) {
+    if (!loadConfiguration())
+    {
         fallbacktoAPMode();
     }
     setupWebServer();
@@ -1394,8 +1489,10 @@ void ICACHE_FLASH_ATTR setup() {
 }
 
 // Main Loop
-void ICACHE_RAM_ATTR loop() {
-    if (formatreq) {
+void ICACHE_RAM_ATTR loop()
+{
+    if (formatreq)
+    {
 #ifdef DEBUG
         Serial.println(F("[ WARN ] Factory reset initiated..."));
 #endif
@@ -1404,13 +1501,18 @@ void ICACHE_RAM_ATTR loop() {
         SPIFFS.format();
         ESP.restart();
     }
-    if (timerequest) { sendTime(); timerequest = false;}
+    if (timerequest)
+    {
+        sendTime();
+        timerequest = false;
+    }
     unsigned long currentMillis = millis();
     unsigned long deltaTime = currentMillis - previousLoopMillis;
     unsigned long uptime = NTP.getUptimeSec();
     previousLoopMillis = currentMillis;
 
-    if (autoRestartIntervalSeconds > 0 && uptime > autoRestartIntervalSeconds * 1000) {
+    if (autoRestartIntervalSeconds > 0 && uptime > autoRestartIntervalSeconds * 1000)
+    {
         writeEvent("INFO", "sys", "System is going to reboot", "");
 #ifdef DEBUG
         Serial.println(F("[ WARN ] Auto restarting..."));
@@ -1419,54 +1521,64 @@ void ICACHE_RAM_ATTR loop() {
     }
 
     // check for a new update and restart
-    if (shouldReboot) {
+    if (shouldReboot)
+    {
 #ifdef DEBUG
         Serial.println(F("[ UPDT ] Rebooting..."));
 #endif
         delay(100);
         ESP.restart();
     }
-    if (currentMillis - previousMillis >= activateTime && activateRelay) {
+    if (currentMillis - previousMillis >= activateTime && activateRelay)
+    {
         activateRelay = false;
         digitalWrite(relayPin, relayType);
     }
-    if (activateRelay) {
+    if (activateRelay)
+    {
         digitalWrite(relayPin, !relayType);
     }
-    if (isWifiConnected) {
+    if (isWifiConnected)
+    {
         wiFiUptimeMillis += deltaTime;
     }
-    if (wifiTimeout > 0 && wiFiUptimeMillis > (wifiTimeout * 1000) && isWifiConnected == true) {
+    if (wifiTimeout > 0 && wiFiUptimeMillis > (wifiTimeout * 1000) && isWifiConnected == true)
+    {
         writeEvent("INFO", "wifi", "WiFi is going to be disabled", "");
         doDisableWifi = true;
     }
-    if (doDisableWifi == true) {
+    if (doDisableWifi == true)
+    {
         doDisableWifi = false;
         wiFiUptimeMillis = 0;
         disableWifi();
     }
-    else if (doEnableWifi == true) {
+    else if (doEnableWifi == true)
+    {
         writeEvent("INFO", "wifi", "Enabling WiFi", "");
         doEnableWifi = false;
-        if (!isWifiConnected) {
+        if (!isWifiConnected)
+        {
             wiFiUptimeMillis = 0;
             enableWifi();
         }
     }
     // Another loop for RFID Events, since we are using polling method instead of Interrupt we need to check RFID hardware for events
-    if (currentMillis >= cooldown) {
-		
+    if (currentMillis >= cooldown)
+    {
+
         rfidloop();
     }
-	if (mqttenabled == 1)
-        
-        {
 
+    if (mqttClient.connected())
+    {
+        if (mqttenabled == 1)
+        {
             if ((unsigned)now() >= nextbeat)
             {
                 mqtt_publish_heartbeat(now());
             }
             nextbeat = (unsigned)now() + interval;
         }
-
+    }
 }
