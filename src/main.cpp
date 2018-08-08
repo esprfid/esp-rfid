@@ -92,21 +92,20 @@ bool shouldReboot = false;
 bool activateRelay = false;
 bool inAPMode = false;
 bool isWifiConnected = false;
-int autoRestartIntervalSeconds = 0;
+unsigned long autoRestartIntervalSeconds = 0;
 
 bool wifiDisabled = true;
 bool doDisableWifi = false;
 bool doEnableWifi = false;
 bool timerequest = false;
 bool formatreq = false;
-int wifiTimeout = -1;
+unsigned long wifiTimeout = 0;
 unsigned long wiFiUptimeMillis = 0;
 char *deviceHostname = NULL;
 
 int mqttenabled = 0;
 char *mqttTopic = NULL;
-unsigned long nextbeat = 0;
-unsigned long interval = 1800;
+
 
 #ifndef OFFICIALBOARD
 int rfidss;
@@ -115,12 +114,15 @@ int relayPin;
 #endif
 
 int relayType;
-int activateTime;
+unsigned long activateTime;
 int timeZone;
 
 #ifdef OFFICIALBOARD
 int relayPin = 13;
 #endif
+
+unsigned long nextbeat = 0;
+unsigned long interval = 1800;
 
 //  mqtt function
 void mqtt_publish_boot(time_t boot_time, String const &wifi, String const &ip)
@@ -169,8 +171,8 @@ void mqtt_publish_access(time_t accesstime, String const &isknown, String const 
         DynamicJsonBuffer jsonBuffer2633;
 
         JsonObject &root = jsonBuffer2633.createObject();
-        root["type"] = accesstime;
-        root["time"] = now();
+        root["type"] = "access";
+        root["time"] = accesstime;
         root["isKnown"] = isknown;
         root["access"] = type;
         root["username"] = user;
@@ -460,7 +462,11 @@ void ICACHE_FLASH_ATTR printScanResult(int networksFound)
 
 void connectToMqtt()
 {
+    #ifdef DEBUG
+    Serial.println("[ INFO ] try to connect mqtt ");
+    #endif
     mqttClient.connect();
+    
 }
 
 void ICACHE_FLASH_ATTR sendTime()
@@ -1337,6 +1343,9 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
         mqttClient.onDisconnect(onMqttDisconnect);
         mqttClient.onPublish(onMqttPublish);
         mqttClient.onConnect(onMqttConnect);
+        #ifdef DEBUG
+    Serial.println("[ INFO ] try to call mqttconnect ");
+    #endif
         connectToMqtt();
     }
 #ifdef DEBUG
@@ -1483,6 +1492,7 @@ void ICACHE_FLASH_ATTR setup()
 #ifdef OFFICIALBOARD
     pinMode(13, OUTPUT);
     digitalWrite(13, LOW);
+    delay(2000);
 #endif
     Serial.begin(115200);
     wifiDisconnectHandler = WiFi.onStationModeDisconnected(onWifiDisconnect);
