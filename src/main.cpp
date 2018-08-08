@@ -1148,12 +1148,12 @@ void onMqttPublish(uint16_t packetId)
 void onMqttConnect(bool sessionPresent)
 {
 #ifdef DEBUG
-    Serial.println("MQTT Connected session");
+    Serial.println("[ INFO ] MQTT Connected session");
 #endif
     if (sessionPresent == true)
     {
 #ifdef DEBUG
-        Serial.println("MQTT Connected session");
+        Serial.println("[ INFO ]MQTT session Present: True");
 #endif
         writeEvent("INFO", "mqtt", "Connected to MQTT Server", "Session Present");
     }
@@ -1246,7 +1246,7 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
     if (!MDNS.begin(deviceHostname))
     {
 #ifdef DEBUG
-        Serial.println("Error setting up MDNS responder!");
+        Serial.println("[ WARN ]Error setting up MDNS responder!");
 #endif
     }
     // Add Web Server service to mDNS
@@ -1329,13 +1329,11 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
     mpas = strdup(mpasString.c_str());
 
     mqttenabled = mqtt["enabled"];
-    Serial.print("mqtt enable:");
-    Serial.println(mqttenabled);
 
     if (mqttenabled == 1)
     {
 #ifdef DEBUG
-        Serial.println("Trying to setup MQTT");
+        Serial.println("[ INFO ] Trying to setup MQTT");
 #endif
         mqttTopic = strdup(mqtt["topic"]);
         mqttClient.setServer(mhs, mport);
@@ -1357,7 +1355,7 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 void ICACHE_FLASH_ATTR enableWifi()
 {
 #ifdef DEBUG
-    Serial.println("Turn wifi on.");
+    Serial.println("[ INFO ]Turn wifi on.");
 #endif
     if (!loadConfiguration())
         fallbacktoAPMode();
