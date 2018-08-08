@@ -13,10 +13,9 @@
    THE SOFTWARE.
  */
 
-
 #define OFFICIALBOARD
 
-#include <Arduino.h>
+#include "Arduino.h"
 #include <ESP8266WiFi.h>
 #include <SPI.h>
 #include <ESP8266mDNS.h>
@@ -105,7 +104,6 @@ char *deviceHostname = NULL;
 
 int mqttenabled = 0;
 char *mqttTopic = NULL;
-
 
 #ifndef OFFICIALBOARD
 int rfidss;
@@ -462,11 +460,10 @@ void ICACHE_FLASH_ATTR printScanResult(int networksFound)
 
 void connectToMqtt()
 {
-    #ifdef DEBUG
+#ifdef DEBUG
     Serial.println("[ INFO ] try to connect mqtt ");
-    #endif
+#endif
     mqttClient.connect();
-    
 }
 
 void ICACHE_FLASH_ATTR sendTime()
@@ -774,37 +771,38 @@ void ICACHE_FLASH_ATTR rfidloop()
                 activateRelay = true; // Give user Access to Door, Safe, Box whatever you like
                 previousMillis = millis();
 
-                if (mqttenabled == 1)
-                {
-                    mqtt_publish_access(now(), "true", "Always", username, uid);
-                }
 #ifdef DEBUG
                 Serial.println(" have access");
 
 #endif
+
+                if (mqttenabled == 1)
+                {
+                    mqtt_publish_access(now(), "true", "Always", username, uid);
+                }
             }
             else if (AccType == 99)
             {
                 previousMillis = millis();
                 doEnableWifi = true;
                 activateRelay = true; // Give user Access to Door, Safe, Box whatever you like
+#ifdef DEBUG
+                Serial.println(" have admin access, enable wifi");
+#endif
                 if (mqttenabled == 1)
                 {
                     mqtt_publish_access(now(), "true", "Admin", username, uid);
                 }
-#ifdef DEBUG
-                Serial.println(" have admin access, enable wifi");
-#endif
             }
             else
             {
+#ifdef DEBUG
+                Serial.println(" does not have access");
+#endif
                 if (mqttenabled == 1)
                 {
                     mqtt_publish_access(now(), "true", "Disabled", username, uid);
                 }
-#ifdef DEBUG
-                Serial.println(" does not have access");
-#endif
             }
 
             writeLatest(uid, username, AccType);
@@ -1341,9 +1339,9 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
         mqttClient.onDisconnect(onMqttDisconnect);
         mqttClient.onPublish(onMqttPublish);
         mqttClient.onConnect(onMqttConnect);
-        #ifdef DEBUG
-    Serial.println("[ INFO ] try to call mqttconnect ");
-    #endif
+#ifdef DEBUG
+        Serial.println("[ INFO ] try to call mqttconnect ");
+#endif
         connectToMqtt();
     }
 #ifdef DEBUG

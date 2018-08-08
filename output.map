@@ -891,7 +891,7 @@ Discarded input sections
  .rodata.TIM_DIV265
                 0x00000000        0x4 .pioenvs\relayboard\src\main.cpp.o
  .xt.lit        0x00000000      0x1b8 .pioenvs\relayboard\src\main.cpp.o
- .xt.prop       0x00000000     0x14a0 .pioenvs\relayboard\src\main.cpp.o
+ .xt.prop       0x00000000     0x1488 .pioenvs\relayboard\src\main.cpp.o
  .xt.prop._ZTVN11ArduinoJson9Internals14JsonBufferBaseINS0_21DynamicJsonBufferBaseINS0_16DefaultAllocatorEEEEE
                 0x00000000        0xc .pioenvs\relayboard\src\main.cpp.o
  .literal._ZN16ESP8266WiFiClass9printDiagER5Print
@@ -11084,7 +11084,7 @@ Linker script and memory map
                 0x3ffe8588                _Pri_3_HandlerAddress = ABSOLUTE (.)
                 0x3ffe8588                _data_end = ABSOLUTE (.)
 
-.irom0.text     0x40201010    0x72980
+.irom0.text     0x40201010    0x72950
                 0x40201010                _irom0_text_start = ABSOLUTE (.)
  *(.ver_number)
  .ver_number    0x40201010        0x4 .pioenvs\relayboard\libFrameworkArduino.a(core_esp8266_main.cpp.o)
@@ -19109,8 +19109,8 @@ Linker script and memory map
                 0x4023161c                NtpClient::getUtcTimeNow()
                 0x40231648                NtpClient::getNtpTime()
  *fill*         0x402316dd        0x3 
- .irom0.text    0x402316e0     0x23ed .pioenvs\relayboard\src\main.cpp.o
-                               0x37d9 (size before relaxing)
+ .irom0.text    0x402316e0     0x23bd .pioenvs\relayboard\src\main.cpp.o
+                               0x377d (size before relaxing)
                 0x402316e4                printIP(IPAddress)
                 0x40231798                parseBytes(char const*, char, unsigned char*, int, int)
                 0x402317f8                disableWifi()
@@ -19128,976 +19128,976 @@ Linker script and memory map
                 0x40232658                sendTime()
                 0x402326f8                sendUserList(int, AsyncWebSocketClient*)
                 0x40232978                rfidloop()
-                0x40233258                onWsEvent(AsyncWebSocket*, AsyncWebSocketClient*, AwsEventType, void*, unsigned char*, unsigned int)
-                0x40233360                loadConfiguration()
-                0x40233854                enableWifi()
-                0x402338d4                setup
- *fill*         0x40233acd        0x3 
- .irom0.text    0x40233ad0      0x328 .pioenvs\relayboard\libFrameworkArduino.a(umm_malloc.c.o)
+                0x40233228                onWsEvent(AsyncWebSocket*, AsyncWebSocketClient*, AwsEventType, void*, unsigned char*, unsigned int)
+                0x40233330                loadConfiguration()
+                0x40233824                enableWifi()
+                0x402338a4                setup
+ *fill*         0x40233a9d        0x3 
+ .irom0.text    0x40233aa0      0x328 .pioenvs\relayboard\libFrameworkArduino.a(umm_malloc.c.o)
                                 0x36c (size before relaxing)
-                0x40233afc                umm_info
-                0x40233ddc                umm_free_heap_size
- .irom0.text    0x40233df8      0xb6c C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libpp.a(pm_for_bcn_only_mode.o)
+                0x40233acc                umm_info
+                0x40233dac                umm_free_heap_size
+ .irom0.text    0x40233dc8      0xb6c C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libpp.a(pm_for_bcn_only_mode.o)
                                 0xee4 (size before relaxing)
-                0x40233e14                fpm_set_type_from_upper
-                0x40233e14                wifi_fpm_set_sleep_type
-                0x40233ed0                wifi_fpm_get_sleep_type
-                0x40233ed0                fpm_get_slp_type
-                0x40233ed8                fpm_rf_is_closed
-                0x40233eec                fpm_is_open
-                0x40233ef8                fpm_allow_tx
-                0x40233f28                wifi_fpm_close
-                0x40233f28                fpm_close
-                0x40233fb8                fpm_open
-                0x40233fb8                wifi_fpm_open
-                0x4023403c                fpm_attach
-                0x40234208                fpm_set_wakeup_cb
-                0x40234208                wifi_fpm_set_wakeup_cb
-                0x40234348                wifi_fpm_do_wakeup
-                0x40234348                fpm_do_wakeup
-                0x4023487c                fpm_do_sleep
-                0x4023487c                wifi_fpm_do_sleep
-                0x4023491c                wifi_fpm_auto_sleep_set_in_null_mode
-                0x4023491c                fpm_auto_sleep_set_in_null_mode
-                0x4023495c                get_fpm_auto_sleep_flag
- .irom0.text    0x40234964     0x19d6 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libpp.a(pp.o)
+                0x40233de4                fpm_set_type_from_upper
+                0x40233de4                wifi_fpm_set_sleep_type
+                0x40233ea0                wifi_fpm_get_sleep_type
+                0x40233ea0                fpm_get_slp_type
+                0x40233ea8                fpm_rf_is_closed
+                0x40233ebc                fpm_is_open
+                0x40233ec8                fpm_allow_tx
+                0x40233ef8                wifi_fpm_close
+                0x40233ef8                fpm_close
+                0x40233f88                fpm_open
+                0x40233f88                wifi_fpm_open
+                0x4023400c                fpm_attach
+                0x402341d8                fpm_set_wakeup_cb
+                0x402341d8                wifi_fpm_set_wakeup_cb
+                0x40234318                wifi_fpm_do_wakeup
+                0x40234318                fpm_do_wakeup
+                0x4023484c                fpm_do_sleep
+                0x4023484c                wifi_fpm_do_sleep
+                0x402348ec                wifi_fpm_auto_sleep_set_in_null_mode
+                0x402348ec                fpm_auto_sleep_set_in_null_mode
+                0x4023492c                get_fpm_auto_sleep_flag
+ .irom0.text    0x40234934     0x19d6 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libpp.a(pp.o)
                                0x1e76 (size before relaxing)
-                0x40234970                PPWdtReset
-                0x402349a4                pp_soft_wdt_init
-                0x402349c4                system_soft_wdt_feed
-                0x402349c4                pp_soft_wdt_feed
-                0x402349e0                system_soft_wdt_stop
-                0x402349e0                pp_soft_wdt_stop
-                0x40234a0c                pp_soft_wdt_restart
-                0x40234a0c                system_soft_wdt_restart
-                0x40234a44                RxNodeNum
-                0x40234a5c                TxNodeNum
-                0x40234a80                pp_disable_noise_timer
-                0x40234aa0                pp_enable_noise_timer
-                0x40234bb0                pp_noise_test
-                0x40234bc0                reset_noise_timer
-                0x40234bf8                pp_disable_idle_timer
-                0x40234c1c                pp_enable_idle_timer
-                0x40234c44                pp_try_enable_idle_timer
-                0x40234c80                ppPeocessRxPktHdr
-                0x40234fbc                HdlAllBuffedEb
-                0x40235094                ppTxPkt
-                0x4023520c                ppProcessWaitQ
-                0x4023521c                ppRegisterTxCallback
-                0x40235244                ppUnregisterTxCallback
-                0x40235278                ppRecycleRxPkt
-                0x402352d8                ppCheckTxIdle
-                0x4023556c                pp_tx_idle_timeout
-                0x4023572c                freq_change_sta_scan_force_enable
-                0x40235734                freq_changle_sta_scan_do_cb
-                0x402357dc                freq_change_check_scan_start
-                0x402357fc                freq_change_check_scan_done
-                0x402359a0                freq_change_check_scan_work
-                0x402359dc                DefFreqCalTimerCB
-                0x40235e48                ppGetTxQFirstAvail_Locked
-                0x40235f28                pp_attach
- *fill*         0x4023633a        0x2 
- .irom0.text    0x4023633c      0x296 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libpp.a(rate_control.o)
+                0x40234940                PPWdtReset
+                0x40234974                pp_soft_wdt_init
+                0x40234994                system_soft_wdt_feed
+                0x40234994                pp_soft_wdt_feed
+                0x402349b0                system_soft_wdt_stop
+                0x402349b0                pp_soft_wdt_stop
+                0x402349dc                pp_soft_wdt_restart
+                0x402349dc                system_soft_wdt_restart
+                0x40234a14                RxNodeNum
+                0x40234a2c                TxNodeNum
+                0x40234a50                pp_disable_noise_timer
+                0x40234a70                pp_enable_noise_timer
+                0x40234b80                pp_noise_test
+                0x40234b90                reset_noise_timer
+                0x40234bc8                pp_disable_idle_timer
+                0x40234bec                pp_enable_idle_timer
+                0x40234c14                pp_try_enable_idle_timer
+                0x40234c50                ppPeocessRxPktHdr
+                0x40234f8c                HdlAllBuffedEb
+                0x40235064                ppTxPkt
+                0x402351dc                ppProcessWaitQ
+                0x402351ec                ppRegisterTxCallback
+                0x40235214                ppUnregisterTxCallback
+                0x40235248                ppRecycleRxPkt
+                0x402352a8                ppCheckTxIdle
+                0x4023553c                pp_tx_idle_timeout
+                0x402356fc                freq_change_sta_scan_force_enable
+                0x40235704                freq_changle_sta_scan_do_cb
+                0x402357ac                freq_change_check_scan_start
+                0x402357cc                freq_change_check_scan_done
+                0x40235970                freq_change_check_scan_work
+                0x402359ac                DefFreqCalTimerCB
+                0x40235e18                ppGetTxQFirstAvail_Locked
+                0x40235ef8                pp_attach
+ *fill*         0x4023630a        0x2 
+ .irom0.text    0x4023630c      0x296 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libpp.a(rate_control.o)
                                 0x2a2 (size before relaxing)
-                0x40236588                RC_SetBasicRate
- *fill*         0x402365d2        0x2 
- .irom0.text    0x402365d4      0x5e9 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libpp.a(trc.o)
+                0x40236558                RC_SetBasicRate
+ *fill*         0x402365a2        0x2 
+ .irom0.text    0x402365a4      0x5e9 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libpp.a(trc.o)
                                 0x64d (size before relaxing)
-                0x402365d4                phytype2mode
-                0x402365f0                rc_set_rate_limit_id
-                0x4023670c                rcUpdatePhyMode
-                0x402368d8                rcAttach
-                0x40236924                rcGetTrc
-                0x4023692c                trc_onDisconnect
-                0x40236930                trc_onScanStart
-                0x40236944                trc_onScanDone
-                0x40236960                rc_enable_trc
-                0x40236a38                rc_get_mask
-                0x40236a4c                rc_disable_trc
-                0x40236aa0                rc_disable_trc_by_interface
-                0x40236abc                rc_get_sta_trc
-                0x40236b00                rc_get_trc
-                0x40236b70                rc_get_trc_by_index
-                0x40236b90                rc_only_sta_trc
- *fill*         0x40236bbd        0x3 
- .irom0.text    0x40236bc0      0xc63 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libpp.a(wdev.o)
+                0x402365a4                phytype2mode
+                0x402365c0                rc_set_rate_limit_id
+                0x402366dc                rcUpdatePhyMode
+                0x402368a8                rcAttach
+                0x402368f4                rcGetTrc
+                0x402368fc                trc_onDisconnect
+                0x40236900                trc_onScanStart
+                0x40236914                trc_onScanDone
+                0x40236930                rc_enable_trc
+                0x40236a08                rc_get_mask
+                0x40236a1c                rc_disable_trc
+                0x40236a70                rc_disable_trc_by_interface
+                0x40236a8c                rc_get_sta_trc
+                0x40236ad0                rc_get_trc
+                0x40236b40                rc_get_trc_by_index
+                0x40236b60                rc_only_sta_trc
+ *fill*         0x40236b8d        0x3 
+ .irom0.text    0x40236b90      0xc63 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libpp.a(wdev.o)
                                 0xdaf (size before relaxing)
-                0x40236bd8                wDev_Option_Init
-                0x40236ccc                wDev_Enable_Beacon_Tsf
-                0x40236ce8                wDev_Disable_Beacon_Tsf
-                0x40236d04                wDev_Set_Beacon_Int
-                0x40236d0c                wDev_Reset_TBTT
-                0x40236d40                wDev_Get_Next_TBTT
-                0x40236fc0                wDev_Initialize
-                0x40237030                wDevForceAck6M
-                0x40237050                wDev_SetMacAddress
-                0x402370ec                wDev_SetRxPolicy
-                0x40237140                wDev_EnableUcRx
-                0x4023716c                wDev_DisableUcRx
-                0x40237198                wDev_SetBssid
-                0x40237270                wDev_ClearBssid
-                0x402372a4                wDev_Is_Mac_Key_Exist
-                0x40237330                wDev_Insert_KeyEntry
-                0x40237460                wDev_remove_KeyEntry
-                0x402374c8                wDev_remove_KeyEntry_all_cnx
-                0x40237514                wDev_Crypto_Conf
-                0x402375b4                wDev_Crypto_Disable
-                0x402375ec                wDevEnableRx
-                0x4023761c                wdev_go_sniffer
-                0x402376f8                wdev_set_sniffer_addr
-                0x40237754                wdev_exit_sniffer
- *fill*         0x40237823        0x1 
- .irom0.text    0x40237824      0x3ed C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libpp.a(esf_buf.o)
+                0x40236ba8                wDev_Option_Init
+                0x40236c9c                wDev_Enable_Beacon_Tsf
+                0x40236cb8                wDev_Disable_Beacon_Tsf
+                0x40236cd4                wDev_Set_Beacon_Int
+                0x40236cdc                wDev_Reset_TBTT
+                0x40236d10                wDev_Get_Next_TBTT
+                0x40236f90                wDev_Initialize
+                0x40237000                wDevForceAck6M
+                0x40237020                wDev_SetMacAddress
+                0x402370bc                wDev_SetRxPolicy
+                0x40237110                wDev_EnableUcRx
+                0x4023713c                wDev_DisableUcRx
+                0x40237168                wDev_SetBssid
+                0x40237240                wDev_ClearBssid
+                0x40237274                wDev_Is_Mac_Key_Exist
+                0x40237300                wDev_Insert_KeyEntry
+                0x40237430                wDev_remove_KeyEntry
+                0x40237498                wDev_remove_KeyEntry_all_cnx
+                0x402374e4                wDev_Crypto_Conf
+                0x40237584                wDev_Crypto_Disable
+                0x402375bc                wDevEnableRx
+                0x402375ec                wdev_go_sniffer
+                0x402376c8                wdev_set_sniffer_addr
+                0x40237724                wdev_exit_sniffer
+ *fill*         0x402377f3        0x1 
+ .irom0.text    0x402377f4      0x3ed C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libpp.a(esf_buf.o)
                                 0x4c1 (size before relaxing)
-                0x4023782c                esf_buf_alloc
-                0x40237a14                esf_buf_recycle
-                0x40237b54                esf_buf_setup
- *fill*         0x40237c11        0x3 
- .irom0.text    0x40237c14      0x4c1 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libpp.a(if_hwctrl.o)
+                0x402377fc                esf_buf_alloc
+                0x402379e4                esf_buf_recycle
+                0x40237b24                esf_buf_setup
+ *fill*         0x40237be1        0x3 
+ .irom0.text    0x40237be4      0x4c1 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libpp.a(if_hwctrl.o)
                                 0x5e1 (size before relaxing)
-                0x40237c34                ic_get_addr
-                0x40237c40                ic_set_opmode
-                0x40237c54                ic_enable_interface
-                0x40237ca4                ic_interface_enabled
-                0x40237cb8                ic_disable_interface
-                0x40237d00                ic_is_pure_sta
-                0x40237d1c                ic_get_ptk_alg
-                0x40237d2c                ic_get_gtk_alg
-                0x40237d3c                ic_set_ptk_alg
-                0x40237d4c                ic_set_gtk_alg
-                0x40237d5c                ic_interface_is_p2p
-                0x40237dfc                ic_set_vif
-                0x40237ec0                ic_set_sta
-                0x40237fc0                ic_bss_info_update
-                0x4023801c                ic_set_key
-                0x4023807c                ic_get_key
-                0x4023809c                ic_remove_key
-                0x402380b0                ic_get_rssi
- *fill*         0x402380d5        0x3 
- .irom0.text    0x402380d8      0x100 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libpp.a(lmac.o)
+                0x40237c04                ic_get_addr
+                0x40237c10                ic_set_opmode
+                0x40237c24                ic_enable_interface
+                0x40237c74                ic_interface_enabled
+                0x40237c88                ic_disable_interface
+                0x40237cd0                ic_is_pure_sta
+                0x40237cec                ic_get_ptk_alg
+                0x40237cfc                ic_get_gtk_alg
+                0x40237d0c                ic_set_ptk_alg
+                0x40237d1c                ic_set_gtk_alg
+                0x40237d2c                ic_interface_is_p2p
+                0x40237dcc                ic_set_vif
+                0x40237e90                ic_set_sta
+                0x40237f90                ic_bss_info_update
+                0x40237fec                ic_set_key
+                0x4023804c                ic_get_key
+                0x4023806c                ic_remove_key
+                0x40238080                ic_get_rssi
+ *fill*         0x402380a5        0x3 
+ .irom0.text    0x402380a8      0x100 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libpp.a(lmac.o)
                                 0x118 (size before relaxing)
-                0x402380dc                lmacInitAc
-                0x40238110                lmacInit
-                0x402381bc                lmacSetRetryLimit
- .irom0.text    0x402381d8     0x1b0d C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libpp.a(pm.o)
+                0x402380ac                lmacInitAc
+                0x402380e0                lmacInit
+                0x4023818c                lmacSetRetryLimit
+ .irom0.text    0x402381a8     0x1b0d C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libpp.a(pm.o)
                                0x2119 (size before relaxing)
-                0x402381dc                pm_set_gpio_wakeup_pin
-                0x40238214                pm_clear_gpio_wakeup_pin
-                0x40238224                pm_is_gpio_int_trig
-                0x4023823c                pm_rtc_clock_cali_proc
-                0x40238274                pm_get_ck170_period
-                0x40238298                pm_set_sleep_time
-                0x40238550                pm_rf_is_closed
-                0x4023857c                pm_set_sleep_type_from_upper
-                0x4023866c                pm_get_sleep_type
-                0x40238828                uart_tx_flush
-                0x4023882c                pm_suspend
-                0x40238a44                pm_shutdown
-                0x40238b28                pm_reset_idle_sleep
-                0x40238b68                pm_idle_sleep
-                0x40238b80                pm_open
-                0x40238cc0                pm_onBcnRx
-                0x40239050                StopLightSleepSetFunc
-                0x40239058                LightSleepWakedCbSetFunc
-                0x40239620                pm_incr_active_cnt
-                0x40239634                pm_disable_active_timer
-                0x4023964c                pm_enable_active_timer
-                0x40239668                pm_keep_active_disable
-                0x40239688                pm_keep_active_enable
-                0x40239700                pm_enable_gpio_wakeup
-                0x4023973c                pm_attach
-                0x40239838                pm_send_nullfunc
-                0x402399ec                pm_is_waked
-                0x40239a04                pm_is_open
-                0x40239a1c                pm_scan_lock
-                0x40239a44                pm_try_scan_unlock
-                0x40239a5c                pm_force_scan_unlock
-                0x40239b0c                pm_scan_unlocked
-                0x40239b20                pm_allow_tx
-                0x40239b3c                pm_assoc_parse
-                0x40239b54                pm_set_addr
-                0x40239b74                pm_sleep_for
-                0x40239ba4                pm_post
-                0x40239ca4                pm_get_idle_wait_time
- *fill*         0x40239ce5        0x3 
- .irom0.text    0x40239ce8      0xca1 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libmain.a(app_main.o)
+                0x402381ac                pm_set_gpio_wakeup_pin
+                0x402381e4                pm_clear_gpio_wakeup_pin
+                0x402381f4                pm_is_gpio_int_trig
+                0x4023820c                pm_rtc_clock_cali_proc
+                0x40238244                pm_get_ck170_period
+                0x40238268                pm_set_sleep_time
+                0x40238520                pm_rf_is_closed
+                0x4023854c                pm_set_sleep_type_from_upper
+                0x4023863c                pm_get_sleep_type
+                0x402387f8                uart_tx_flush
+                0x402387fc                pm_suspend
+                0x40238a14                pm_shutdown
+                0x40238af8                pm_reset_idle_sleep
+                0x40238b38                pm_idle_sleep
+                0x40238b50                pm_open
+                0x40238c90                pm_onBcnRx
+                0x40239020                StopLightSleepSetFunc
+                0x40239028                LightSleepWakedCbSetFunc
+                0x402395f0                pm_incr_active_cnt
+                0x40239604                pm_disable_active_timer
+                0x4023961c                pm_enable_active_timer
+                0x40239638                pm_keep_active_disable
+                0x40239658                pm_keep_active_enable
+                0x402396d0                pm_enable_gpio_wakeup
+                0x4023970c                pm_attach
+                0x40239808                pm_send_nullfunc
+                0x402399bc                pm_is_waked
+                0x402399d4                pm_is_open
+                0x402399ec                pm_scan_lock
+                0x40239a14                pm_try_scan_unlock
+                0x40239a2c                pm_force_scan_unlock
+                0x40239adc                pm_scan_unlocked
+                0x40239af0                pm_allow_tx
+                0x40239b0c                pm_assoc_parse
+                0x40239b24                pm_set_addr
+                0x40239b44                pm_sleep_for
+                0x40239b74                pm_post
+                0x40239c74                pm_get_idle_wait_time
+ *fill*         0x40239cb5        0x3 
+ .irom0.text    0x40239cb8      0xca1 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libmain.a(app_main.o)
                                 0xfdd (size before relaxing)
-                0x40239cf4                uart_div_modify
-                0x40239f30                wdt_init
-                0x40239fcc                user_uart_wait_tx_fifo_empty
-                0x4023a27c                wifi_set_backup_mac
-                0x4023a288                system_phy_freq_trace_enable
-                0x4023a290                flash_data_check
- *fill*         0x4023a989        0x3 
- .irom0.text    0x4023a98c      0x610 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libmain.a(eagle_lib.o)
+                0x40239cc4                uart_div_modify
+                0x40239f00                wdt_init
+                0x40239f9c                user_uart_wait_tx_fifo_empty
+                0x4023a24c                wifi_set_backup_mac
+                0x4023a258                system_phy_freq_trace_enable
+                0x4023a260                flash_data_check
+ *fill*         0x4023a959        0x3 
+ .irom0.text    0x4023a95c      0x610 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libmain.a(eagle_lib.o)
                                 0x620 (size before relaxing)
-                0x4023a990                divide
-                0x4023a9cc                skip_atoi
-                0x4023ab4c                ets_vsnprintf
-                0x4023aeac                ets_vsprintf
-                0x4023aed0                ets_sprintf
-                0x4023aef8                ets_strcat
-                0x4023af18                ets_strrchr
-                0x4023af44                ets_strchr
-                0x4023af5c                bit_popcount
-                0x4023af78                ets_snprintf
- .irom0.text    0x4023af9c      0x326 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libmain.a(eagle_lwip_if.o)
+                0x4023a960                divide
+                0x4023a99c                skip_atoi
+                0x4023ab1c                ets_vsnprintf
+                0x4023ae7c                ets_vsprintf
+                0x4023aea0                ets_sprintf
+                0x4023aec8                ets_strcat
+                0x4023aee8                ets_strrchr
+                0x4023af14                ets_strchr
+                0x4023af2c                bit_popcount
+                0x4023af48                ets_snprintf
+ .irom0.text    0x4023af6c      0x326 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libmain.a(eagle_lwip_if.o)
                                 0x3e6 (size before relaxing)
-                0x4023b05c                eagle_lwip_if_alloc
-                0x4023b21c                eagle_lwip_if_free
-                0x4023b2a0                eagle_lwip_getif
- *fill*         0x4023b2c2        0x2 
- .irom0.text    0x4023b2c4      0x172 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libmain.a(ets_timer.o)
+                0x4023b02c                eagle_lwip_if_alloc
+                0x4023b1ec                eagle_lwip_if_free
+                0x4023b270                eagle_lwip_getif
+ *fill*         0x4023b292        0x2 
+ .irom0.text    0x4023b294      0x172 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libmain.a(ets_timer.o)
                                 0x1b2 (size before relaxing)
-                0x4023b2cc                ets_timer_done
-                0x4023b308                ets_timer_handler_isr
-                0x4023b3d4                ets_timer_init
- *fill*         0x4023b436        0x2 
- .irom0.text    0x4023b438     0x4049 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libmain.a(user_interface.o)
+                0x4023b29c                ets_timer_done
+                0x4023b2d8                ets_timer_handler_isr
+                0x4023b3a4                ets_timer_init
+ *fill*         0x4023b406        0x2 
+ .irom0.text    0x4023b408     0x4049 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libmain.a(user_interface.o)
                                0x4d09 (size before relaxing)
-                0x4023b43c                system_set_os_print
-                0x4023b44c                system_get_os_print
-                0x4023b614                system_pp_recycle_rx_pkt
-                0x4023b628                system_adc_read
-                0x4023b668                system_adc_read_fast
-                0x4023b6c8                system_get_vdd33
-                0x4023b6f4                system_restart_hook
-                0x4023b70c                system_restart_local
-                0x4023b7e8                system_restart
-                0x4023b844                system_restore
-                0x4023b8ac                system_get_flash_size_map
-                0x4023b8cc                system_get_boot_version
-                0x4023b904                system_get_test_result
-                0x4023b928                system_get_userbin_addr
-                0x4023b9c4                system_get_boot_mode
-                0x4023b9f4                system_restart_enhance
-                0x4023bba0                system_upgrade_userbin_set
-                0x4023bbec                system_upgrade_userbin_check
-                0x4023bc2c                system_upgrade_flag_set
-                0x4023bc40                system_upgrade_flag_check
-                0x4023bc48                spi_flash_erase_protect_enable
-                0x4023bc70                spi_flash_erase_protect_disable
-                0x4023bc84                spi_flash_erase_sector_check
-                0x4023bd30                system_get_current_sumlength
-                0x4023bda8                get_irom0_bin_len
-                0x4023be10                get_flash_bin_len
-                0x4023c0dc                system_upgrade_reboot
-                0x4023c3f0                system_deep_sleep_instant
-                0x4023c448                system_deep_sleep
-                0x4023c4e8                system_deep_sleep_set_option
-                0x4023c504                system_phy_temperature_alert
-                0x4023c518                system_phy_set_max_tpw
-                0x4023c52c                system_phy_set_tpw_via_vdd33
-                0x4023c540                system_phy_set_rfoption
-                0x4023c554                system_phy_set_powerup_option
-                0x4023c568                system_update_cpu_freq
-                0x4023c5c4                system_get_cpu_freq
-                0x4023c5e0                system_overclock
-                0x4023c60c                system_restoreclock
-                0x4023c63c                system_timer_reinit
-                0x4023c654                system_relative_time
-                0x4023c66c                system_station_got_ip_set
-                0x4023c79c                system_print_meminfo
-                0x4023c7fc                system_get_free_heap_size
-                0x4023c810                system_get_chip_id
-                0x4023c850                system_rtc_clock_cali_proc
-                0x4023c864                system_get_rtc_time
-                0x4023c874                system_mktime
-                0x4023c944                system_init_done_cb
-                0x4023c94c                system_get_rst_info
-                0x4023c954                system_get_data_of_array_8
-                0x4023c978                system_get_data_of_array_16
-                0x4023c9a0                system_get_string_from_flash
-                0x4023ca0c                wifi_softap_dhcps_start
-                0x4023ca54                wifi_softap_dhcps_stop
-                0x4023ca94                wifi_softap_dhcps_status
-                0x4023ca9c                wifi_station_dhcpc_start
-                0x4023caf4                wifi_station_dhcpc_stop
-                0x4023cb34                wifi_station_dhcpc_event
-                0x4023cba8                wifi_station_dhcpc_set_maxtry
-                0x4023cbb8                wifi_station_dhcpc_status
-                0x4023cc38                wifi_get_opmode
-                0x4023cc4c                wifi_get_opmode_default
-                0x4023ccc8                wifi_get_broadcast_if
-                0x4023cd04                wifi_set_broadcast_if
-                0x4023cec8                wifi_set_opmode
-                0x4023cedc                wifi_set_opmode_current
-                0x4023cef0                system_get_checksum
-                0x4023cf30                wifi_param_save_protect_with_check
-                0x4023cff0                system_param_save_with_protect
-                0x4023d0a4                system_save_sys_param
-                0x4023d0d0                system_param_load
-                0x4023d214                wifi_station_get_config
-                0x4023d228                wifi_station_get_config_default
-                0x4023d248                wifi_station_get_ap_info
-                0x4023d308                wifi_station_ap_number_set
-                0x4023d7fc                wifi_station_set_config
-                0x4023d814                wifi_station_set_config_current
-                0x4023d82c                wifi_station_restore_config
-                0x4023d844                wifi_station_get_current_ap_id
-                0x4023d858                wifi_station_ap_check
-                0x4023d89c                wifi_station_ap_change
-                0x4023d9b4                wifi_station_scan
-                0x4023da00                wifi_station_get_auto_connect
-                0x4023da20                wifi_station_set_auto_connect
-                0x4023dad8                wifi_station_save_pmk2cache
-                0x4023dc08                wifi_station_save_bssid
-                0x4023dca4                wifi_station_connect
-                0x4023dd38                wifi_station_disconnect
-                0x4023ddf8                wifi_station_get_connect_status
-                0x4023de28                wifi_station_set_reconnect_policy
-                0x4023de40                wifi_station_get_reconnect_policy
-                0x4023de48                wifi_station_get_rssi
-                0x4023de94                wifi_station_set_default_hostname
-                0x4023defc                wifi_station_get_hostname
-                0x4023df24                wifi_station_set_hostname
-                0x4023dfc0                wifi_softap_cacl_mac
-                0x4023e024                wifi_softap_set_default_ssid
-                0x4023e208                wifi_softap_get_config
-                0x4023e21c                wifi_softap_get_config_default
-                0x4023e52c                wifi_softap_set_config
-                0x4023e540                wifi_softap_set_config_current
-                0x4023e55c                wifi_softap_set_station_info
-                0x4023e630                wifi_softap_get_station_info
-                0x4023e6dc                wifi_softap_free_station_info
-                0x4023e71c                wifi_softap_get_station_num
-                0x4023e76c                wifi_softap_deauth
-                0x4023e85c                wifi_softap_get_beacon_only_mode
-                0x4023e870                wifi_softap_set_beacon_only_mode
-                0x4023e8d4                wifi_register_user_ie_manufacturer_recv_cb
-                0x4023e8e8                wifi_unregister_user_ie_manufacturer_recv_cb
-                0x4023e91c                wifi_set_user_ie
-                0x4023ea2c                wifi_get_user_ie
-                0x4023ea60                wifi_get_phy_mode
-                0x4023ea74                wifi_set_phy_mode
-                0x4023eb94                wifi_set_sleep_type
-                0x4023ebb4                wifi_enable_gpio_wakeup
-                0x4023ebe0                wifi_disable_gpio_wakeup
-                0x4023ebf8                wifi_get_sleep_type
-                0x4023ec0c                wifi_get_channel
-                0x4023ec24                wifi_set_channel
-                0x4023ec80                wifi_adjust_ap_chan
-                0x4023ecf8                wifi_set_country
-                0x4023ed38                wifi_get_country
-                0x4023ed70                wifi_promiscuous_set_mac
-                0x4023edcc                wifi_promiscuous_enable
-                0x4023eeb0                wifi_set_promiscuous_rx_cb
-                0x4023eeb8                wifi_get_ip_info
-                0x4023ef38                wifi_set_ip_info
-                0x4023efac                wifi_get_macaddr
-                0x4023f00c                wifi_set_macaddr
-                0x4023f130                wifi_enable_6m_rate
-                0x4023f138                wifi_get_user_fixed_rate
-                0x4023f158                wifi_set_user_fixed_rate
-                0x4023f178                wifi_set_user_sup_rate
-                0x4023f1b4                wifi_set_user_rate_limit
-                0x4023f1d8                wifi_get_user_limit_rate_mask
-                0x4023f1e0                wifi_set_user_limit_rate_mask
-                0x4023f1f8                wifi_register_send_pkt_freedom_cb
-                0x4023f20c                wifi_unregister_send_pkt_freedom_cb
-                0x4023f218                wifi_send_pkt_freedom
-                0x4023f264                wifi_rfid_locp_recv_open
-                0x4023f278                wifi_rfid_locp_recv_close
-                0x4023f28c                wifi_register_rfid_locp_recv_cb
-                0x4023f2a0                wifi_unregister_rfid_locp_recv_cb
-                0x4023f2b8                wifi_status_led_install
-                0x4023f2ec                wifi_status_led_uninstall
-                0x4023f310                wifi_set_status_led_output_level
-                0x4023f364                wifi_set_event_handler_cb
-                0x4023f3ac                system_os_task
-                0x4023f3e8                system_uart_swap
-                0x4023f448                system_uart_de_swap
-                0x4023f47c                system_get_sdk_version
- *fill*         0x4023f481        0x3 
- .irom0.text    0x4023f484      0xd34 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(dhcpserver.o)
+                0x4023b40c                system_set_os_print
+                0x4023b41c                system_get_os_print
+                0x4023b5e4                system_pp_recycle_rx_pkt
+                0x4023b5f8                system_adc_read
+                0x4023b638                system_adc_read_fast
+                0x4023b698                system_get_vdd33
+                0x4023b6c4                system_restart_hook
+                0x4023b6dc                system_restart_local
+                0x4023b7b8                system_restart
+                0x4023b814                system_restore
+                0x4023b87c                system_get_flash_size_map
+                0x4023b89c                system_get_boot_version
+                0x4023b8d4                system_get_test_result
+                0x4023b8f8                system_get_userbin_addr
+                0x4023b994                system_get_boot_mode
+                0x4023b9c4                system_restart_enhance
+                0x4023bb70                system_upgrade_userbin_set
+                0x4023bbbc                system_upgrade_userbin_check
+                0x4023bbfc                system_upgrade_flag_set
+                0x4023bc10                system_upgrade_flag_check
+                0x4023bc18                spi_flash_erase_protect_enable
+                0x4023bc40                spi_flash_erase_protect_disable
+                0x4023bc54                spi_flash_erase_sector_check
+                0x4023bd00                system_get_current_sumlength
+                0x4023bd78                get_irom0_bin_len
+                0x4023bde0                get_flash_bin_len
+                0x4023c0ac                system_upgrade_reboot
+                0x4023c3c0                system_deep_sleep_instant
+                0x4023c418                system_deep_sleep
+                0x4023c4b8                system_deep_sleep_set_option
+                0x4023c4d4                system_phy_temperature_alert
+                0x4023c4e8                system_phy_set_max_tpw
+                0x4023c4fc                system_phy_set_tpw_via_vdd33
+                0x4023c510                system_phy_set_rfoption
+                0x4023c524                system_phy_set_powerup_option
+                0x4023c538                system_update_cpu_freq
+                0x4023c594                system_get_cpu_freq
+                0x4023c5b0                system_overclock
+                0x4023c5dc                system_restoreclock
+                0x4023c60c                system_timer_reinit
+                0x4023c624                system_relative_time
+                0x4023c63c                system_station_got_ip_set
+                0x4023c76c                system_print_meminfo
+                0x4023c7cc                system_get_free_heap_size
+                0x4023c7e0                system_get_chip_id
+                0x4023c820                system_rtc_clock_cali_proc
+                0x4023c834                system_get_rtc_time
+                0x4023c844                system_mktime
+                0x4023c914                system_init_done_cb
+                0x4023c91c                system_get_rst_info
+                0x4023c924                system_get_data_of_array_8
+                0x4023c948                system_get_data_of_array_16
+                0x4023c970                system_get_string_from_flash
+                0x4023c9dc                wifi_softap_dhcps_start
+                0x4023ca24                wifi_softap_dhcps_stop
+                0x4023ca64                wifi_softap_dhcps_status
+                0x4023ca6c                wifi_station_dhcpc_start
+                0x4023cac4                wifi_station_dhcpc_stop
+                0x4023cb04                wifi_station_dhcpc_event
+                0x4023cb78                wifi_station_dhcpc_set_maxtry
+                0x4023cb88                wifi_station_dhcpc_status
+                0x4023cc08                wifi_get_opmode
+                0x4023cc1c                wifi_get_opmode_default
+                0x4023cc98                wifi_get_broadcast_if
+                0x4023ccd4                wifi_set_broadcast_if
+                0x4023ce98                wifi_set_opmode
+                0x4023ceac                wifi_set_opmode_current
+                0x4023cec0                system_get_checksum
+                0x4023cf00                wifi_param_save_protect_with_check
+                0x4023cfc0                system_param_save_with_protect
+                0x4023d074                system_save_sys_param
+                0x4023d0a0                system_param_load
+                0x4023d1e4                wifi_station_get_config
+                0x4023d1f8                wifi_station_get_config_default
+                0x4023d218                wifi_station_get_ap_info
+                0x4023d2d8                wifi_station_ap_number_set
+                0x4023d7cc                wifi_station_set_config
+                0x4023d7e4                wifi_station_set_config_current
+                0x4023d7fc                wifi_station_restore_config
+                0x4023d814                wifi_station_get_current_ap_id
+                0x4023d828                wifi_station_ap_check
+                0x4023d86c                wifi_station_ap_change
+                0x4023d984                wifi_station_scan
+                0x4023d9d0                wifi_station_get_auto_connect
+                0x4023d9f0                wifi_station_set_auto_connect
+                0x4023daa8                wifi_station_save_pmk2cache
+                0x4023dbd8                wifi_station_save_bssid
+                0x4023dc74                wifi_station_connect
+                0x4023dd08                wifi_station_disconnect
+                0x4023ddc8                wifi_station_get_connect_status
+                0x4023ddf8                wifi_station_set_reconnect_policy
+                0x4023de10                wifi_station_get_reconnect_policy
+                0x4023de18                wifi_station_get_rssi
+                0x4023de64                wifi_station_set_default_hostname
+                0x4023decc                wifi_station_get_hostname
+                0x4023def4                wifi_station_set_hostname
+                0x4023df90                wifi_softap_cacl_mac
+                0x4023dff4                wifi_softap_set_default_ssid
+                0x4023e1d8                wifi_softap_get_config
+                0x4023e1ec                wifi_softap_get_config_default
+                0x4023e4fc                wifi_softap_set_config
+                0x4023e510                wifi_softap_set_config_current
+                0x4023e52c                wifi_softap_set_station_info
+                0x4023e600                wifi_softap_get_station_info
+                0x4023e6ac                wifi_softap_free_station_info
+                0x4023e6ec                wifi_softap_get_station_num
+                0x4023e73c                wifi_softap_deauth
+                0x4023e82c                wifi_softap_get_beacon_only_mode
+                0x4023e840                wifi_softap_set_beacon_only_mode
+                0x4023e8a4                wifi_register_user_ie_manufacturer_recv_cb
+                0x4023e8b8                wifi_unregister_user_ie_manufacturer_recv_cb
+                0x4023e8ec                wifi_set_user_ie
+                0x4023e9fc                wifi_get_user_ie
+                0x4023ea30                wifi_get_phy_mode
+                0x4023ea44                wifi_set_phy_mode
+                0x4023eb64                wifi_set_sleep_type
+                0x4023eb84                wifi_enable_gpio_wakeup
+                0x4023ebb0                wifi_disable_gpio_wakeup
+                0x4023ebc8                wifi_get_sleep_type
+                0x4023ebdc                wifi_get_channel
+                0x4023ebf4                wifi_set_channel
+                0x4023ec50                wifi_adjust_ap_chan
+                0x4023ecc8                wifi_set_country
+                0x4023ed08                wifi_get_country
+                0x4023ed40                wifi_promiscuous_set_mac
+                0x4023ed9c                wifi_promiscuous_enable
+                0x4023ee80                wifi_set_promiscuous_rx_cb
+                0x4023ee88                wifi_get_ip_info
+                0x4023ef08                wifi_set_ip_info
+                0x4023ef7c                wifi_get_macaddr
+                0x4023efdc                wifi_set_macaddr
+                0x4023f100                wifi_enable_6m_rate
+                0x4023f108                wifi_get_user_fixed_rate
+                0x4023f128                wifi_set_user_fixed_rate
+                0x4023f148                wifi_set_user_sup_rate
+                0x4023f184                wifi_set_user_rate_limit
+                0x4023f1a8                wifi_get_user_limit_rate_mask
+                0x4023f1b0                wifi_set_user_limit_rate_mask
+                0x4023f1c8                wifi_register_send_pkt_freedom_cb
+                0x4023f1dc                wifi_unregister_send_pkt_freedom_cb
+                0x4023f1e8                wifi_send_pkt_freedom
+                0x4023f234                wifi_rfid_locp_recv_open
+                0x4023f248                wifi_rfid_locp_recv_close
+                0x4023f25c                wifi_register_rfid_locp_recv_cb
+                0x4023f270                wifi_unregister_rfid_locp_recv_cb
+                0x4023f288                wifi_status_led_install
+                0x4023f2bc                wifi_status_led_uninstall
+                0x4023f2e0                wifi_set_status_led_output_level
+                0x4023f334                wifi_set_event_handler_cb
+                0x4023f37c                system_os_task
+                0x4023f3b8                system_uart_swap
+                0x4023f418                system_uart_de_swap
+                0x4023f44c                system_get_sdk_version
+ *fill*         0x4023f451        0x3 
+ .irom0.text    0x4023f454      0xd34 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(dhcpserver.o)
                                 0xef0 (size before relaxing)
-                0x4023f680                node_insert_to_list
-                0x4023f6bc                node_remove_from_list
-                0x4023f6f4                dhcps_start
-                0x4023f878                dhcps_stop
-                0x4023f8fc                wifi_softap_set_dhcps_lease
-                0x4023f9e8                wifi_softap_get_dhcps_lease
-                0x4023fa30                dhcps_coarse_tmr
-                0x4023faf0                wifi_softap_set_dhcps_offer_option
-                0x4023fb30                wifi_softap_set_dhcps_lease_time
-                0x4023fb64                wifi_softap_reset_dhcps_lease_time
-                0x4023fb90                wifi_softap_get_dhcps_lease_time
-                0x4023fb98                wifi_softap_dhcps_client_leave
-                0x4023fc54                wifi_softap_dhcps_client_update
- .irom0.text    0x402401b8      0xc71 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(espconn.o)
+                0x4023f650                node_insert_to_list
+                0x4023f68c                node_remove_from_list
+                0x4023f6c4                dhcps_start
+                0x4023f848                dhcps_stop
+                0x4023f8cc                wifi_softap_set_dhcps_lease
+                0x4023f9b8                wifi_softap_get_dhcps_lease
+                0x4023fa00                dhcps_coarse_tmr
+                0x4023fac0                wifi_softap_set_dhcps_offer_option
+                0x4023fb00                wifi_softap_set_dhcps_lease_time
+                0x4023fb34                wifi_softap_reset_dhcps_lease_time
+                0x4023fb60                wifi_softap_get_dhcps_lease_time
+                0x4023fb68                wifi_softap_dhcps_client_leave
+                0x4023fc24                wifi_softap_dhcps_client_update
+ .irom0.text    0x40240188      0xc71 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(espconn.o)
                                 0xd71 (size before relaxing)
-                0x402401b8                espconn_copy_partial
-                0x4024026c                espconn_list_creat
-                0x4024028c                espconn_list_delete
-                0x402402b0                espconn_pbuf_create
-                0x402402cc                espconn_pbuf_delete
-                0x402402f4                espconn_find_connection
-                0x4024039c                espconn_connect
-                0x402404b0                espconn_create
-                0x40240508                espconn_send
-                0x40240508                espconn_sent
-                0x402405f8                espconn_recv
-                0x40240678                espconn_sendto
-                0x402406d4                espconn_tcp_get_wnd
-                0x402406f4                espconn_tcp_set_wnd
-                0x4024071c                espconn_tcp_get_mss
-                0x40240724                espconn_tcp_get_max_con
-                0x40240734                espconn_tcp_set_max_con
-                0x40240758                espconn_tcp_get_max_retran
-                0x40240768                espconn_tcp_set_max_retran
-                0x4024078c                espconn_tcp_get_max_syn
-                0x4024079c                espconn_tcp_set_max_syn
-                0x402407bc                espconn_tcp_get_max_con_allow
-                0x402407e4                espconn_tcp_set_max_con_allow
-                0x40240818                espconn_tcp_set_buf_count
-                0x40240848                espconn_regist_sentcb
-                0x40240858                espconn_regist_write_finish
-                0x40240870                espconn_regist_connectcb
-                0x40240884                espconn_regist_recvcb
-                0x40240894                espconn_regist_reconcb
-                0x402408a4                espconn_regist_disconcb
-                0x402408bc                espconn_get_connection_info
-                0x40240980                espconn_accept
-                0x402409d4                espconn_regist_time
-                0x40240a3c                espconn_disconnect
-                0x40240a8c                espconn_abort
-                0x40240ae0                espconn_get_packet_info
-                0x40240b90                espconn_set_opt
-                0x40240bf4                espconn_clear_opt
-                0x40240c5c                espconn_set_keepalive
-                0x40240cec                espconn_get_keepalive
-                0x40240d78                espconn_delete
-                0x40240dc0                espconn_port
-                0x40240df8                espconn_gethostbyname
-                0x40240e14                espconn_dns_setserver
- *fill*         0x40240e29        0x3 
- .irom0.text    0x40240e2c     0x1114 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(espconn_tcp.o)
+                0x40240188                espconn_copy_partial
+                0x4024023c                espconn_list_creat
+                0x4024025c                espconn_list_delete
+                0x40240280                espconn_pbuf_create
+                0x4024029c                espconn_pbuf_delete
+                0x402402c4                espconn_find_connection
+                0x4024036c                espconn_connect
+                0x40240480                espconn_create
+                0x402404d8                espconn_send
+                0x402404d8                espconn_sent
+                0x402405c8                espconn_recv
+                0x40240648                espconn_sendto
+                0x402406a4                espconn_tcp_get_wnd
+                0x402406c4                espconn_tcp_set_wnd
+                0x402406ec                espconn_tcp_get_mss
+                0x402406f4                espconn_tcp_get_max_con
+                0x40240704                espconn_tcp_set_max_con
+                0x40240728                espconn_tcp_get_max_retran
+                0x40240738                espconn_tcp_set_max_retran
+                0x4024075c                espconn_tcp_get_max_syn
+                0x4024076c                espconn_tcp_set_max_syn
+                0x4024078c                espconn_tcp_get_max_con_allow
+                0x402407b4                espconn_tcp_set_max_con_allow
+                0x402407e8                espconn_tcp_set_buf_count
+                0x40240818                espconn_regist_sentcb
+                0x40240828                espconn_regist_write_finish
+                0x40240840                espconn_regist_connectcb
+                0x40240854                espconn_regist_recvcb
+                0x40240864                espconn_regist_reconcb
+                0x40240874                espconn_regist_disconcb
+                0x4024088c                espconn_get_connection_info
+                0x40240950                espconn_accept
+                0x402409a4                espconn_regist_time
+                0x40240a0c                espconn_disconnect
+                0x40240a5c                espconn_abort
+                0x40240ab0                espconn_get_packet_info
+                0x40240b60                espconn_set_opt
+                0x40240bc4                espconn_clear_opt
+                0x40240c2c                espconn_set_keepalive
+                0x40240cbc                espconn_get_keepalive
+                0x40240d48                espconn_delete
+                0x40240d90                espconn_port
+                0x40240dc8                espconn_gethostbyname
+                0x40240de4                espconn_dns_setserver
+ *fill*         0x40240df9        0x3 
+ .irom0.text    0x40240dfc     0x1114 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(espconn_tcp.o)
                                0x1484 (size before relaxing)
-                0x40241304                espconn_kill_oldest_pcb
-                0x40241430                espconn_kill_pcb
-                0x4024149c                espconn_find_current_pcb
-                0x40241550                espconn_tcp_memp_free
-                0x402417a0                espconn_tcp_sent
-                0x4024187c                espconn_tcp_disconnect
-                0x402418ac                espconn_recv_hold
-                0x402418f4                espconn_recv_unhold
-                0x40241958                espconn_lock_recv
-                0x40241b98                espconn_unlock_recv
-                0x40241bc4                espconn_tcp_write
-                0x40241ce8                espconn_tcp_client
-                0x40241ddc                espconn_tcp_server
-                0x40241e90                espconn_tcp_delete
-                0x40241f24                espconn_init
- .irom0.text    0x40241f40      0x53c C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(espconn_udp.o)
+                0x402412d4                espconn_kill_oldest_pcb
+                0x40241400                espconn_kill_pcb
+                0x4024146c                espconn_find_current_pcb
+                0x40241520                espconn_tcp_memp_free
+                0x40241770                espconn_tcp_sent
+                0x4024184c                espconn_tcp_disconnect
+                0x4024187c                espconn_recv_hold
+                0x402418c4                espconn_recv_unhold
+                0x40241928                espconn_lock_recv
+                0x40241b68                espconn_unlock_recv
+                0x40241b94                espconn_tcp_write
+                0x40241cb8                espconn_tcp_client
+                0x40241dac                espconn_tcp_server
+                0x40241e60                espconn_tcp_delete
+                0x40241ef4                espconn_init
+ .irom0.text    0x40241f10      0x53c C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(espconn_udp.o)
                                 0x6b8 (size before relaxing)
-                0x40242024                espconn_udp_sendto
-                0x40242204                espconn_udp_sent
-                0x40242394                espconn_udp_disconnect
-                0x402423d4                espconn_udp_server
-                0x40242444                espconn_igmp_leave
-                0x40242460                espconn_igmp_join
- .irom0.text    0x4024247c     0x1490 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(dhcp.o)
+                0x40241ff4                espconn_udp_sendto
+                0x402421d4                espconn_udp_sent
+                0x40242364                espconn_udp_disconnect
+                0x402423a4                espconn_udp_server
+                0x40242414                espconn_igmp_leave
+                0x40242430                espconn_igmp_join
+ .irom0.text    0x4024244c     0x1490 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(dhcp.o)
                                0x1680 (size before relaxing)
-                0x4024328c                dhcp_set_struct
-                0x402432b8                dhcp_cleanup
-                0x402432e0                dhcp_inform
-                0x4024338c                dhcp_network_changed
-                0x402433d8                dhcp_arp_reply
-                0x40243484                dhcp_renew
-                0x402435c4                dhcp_coarse_tmr
-                0x40243650                dhcp_release
-                0x4024371c                dhcp_fine_tmr
-                0x40243818                dhcp_stop
-                0x40243854                dhcp_start
- .irom0.text    0x4024390c      0x5cd C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(dns.o)
+                0x4024325c                dhcp_set_struct
+                0x40243288                dhcp_cleanup
+                0x402432b0                dhcp_inform
+                0x4024335c                dhcp_network_changed
+                0x402433a8                dhcp_arp_reply
+                0x40243454                dhcp_renew
+                0x40243594                dhcp_coarse_tmr
+                0x40243620                dhcp_release
+                0x402436ec                dhcp_fine_tmr
+                0x402437e8                dhcp_stop
+                0x40243824                dhcp_start
+ .irom0.text    0x402438dc      0x5cd C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(dns.o)
                                 0x67d (size before relaxing)
-                0x40243d1c                dns_setserver
-                0x40243d44                dns_init
-                0x40243d88                dns_getserver
-                0x40243da0                dns_tmr
-                0x40243dd0                dns_gethostbyname
- *fill*         0x40243ed9        0x3 
- .irom0.text    0x40243edc       0x45 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(init.o)
+                0x40243cec                dns_setserver
+                0x40243d14                dns_init
+                0x40243d58                dns_getserver
+                0x40243d70                dns_tmr
+                0x40243da0                dns_gethostbyname
+ *fill*         0x40243ea9        0x3 
+ .irom0.text    0x40243eac       0x45 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(init.o)
                                  0x71 (size before relaxing)
-                0x40243ee0                lwip_init
- *fill*         0x40243f21        0x3 
- .irom0.text    0x40243f24      0x290 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(netif.o)
+                0x40243eb0                lwip_init
+ *fill*         0x40243ef1        0x3 
+ .irom0.text    0x40243ef4      0x290 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(netif.o)
                                 0x2dc (size before relaxing)
-                0x40243f24                netif_init
-                0x40243f28                netif_find
-                0x40243f5c                netif_set_ipaddr
-                0x40243fc8                netif_set_addr
-                0x40243ffc                netif_add
-                0x4024406c                netif_set_gw
-                0x40244074                netif_set_netmask
-                0x4024407c                netif_set_default
-                0x40244084                netif_set_up
-                0x402440c4                netif_set_down
-                0x402440ec                netif_remove
-                0x40244154                netif_set_link_up
-                0x402441a4                netif_set_link_down
- .irom0.text    0x402441b4      0x748 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(pbuf.o)
+                0x40243ef4                netif_init
+                0x40243ef8                netif_find
+                0x40243f2c                netif_set_ipaddr
+                0x40243f98                netif_set_addr
+                0x40243fcc                netif_add
+                0x4024403c                netif_set_gw
+                0x40244044                netif_set_netmask
+                0x4024404c                netif_set_default
+                0x40244054                netif_set_up
+                0x40244094                netif_set_down
+                0x402440bc                netif_remove
+                0x40244124                netif_set_link_up
+                0x40244174                netif_set_link_down
+ .irom0.text    0x40244184      0x748 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(pbuf.o)
                                 0x78c (size before relaxing)
-                0x402441b4                pbuf_free_ooseq_new
-                0x40244210                pbuf_header
-                0x402442a0                pbuf_free
-                0x40244338                pbuf_alloc
-                0x402444b8                pbuf_realloc
-                0x40244504                pbuf_clen
-                0x40244518                pbuf_ref
-                0x40244524                pbuf_cat
-                0x40244558                pbuf_chain
-                0x40244574                pbuf_dechain
-                0x402445ac                pbuf_copy
-                0x4024466c                pbuf_copy_partial
-                0x40244700                pbuf_take
-                0x40244770                pbuf_coalesce
-                0x402447b0                pbuf_get_at
-                0x402447d4                pbuf_memcmp
-                0x40244850                pbuf_memfind
-                0x402448b4                pbuf_strstr
- .irom0.text    0x402448fc      0xb7b C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(tcp.o)
+                0x40244184                pbuf_free_ooseq_new
+                0x402441e0                pbuf_header
+                0x40244270                pbuf_free
+                0x40244308                pbuf_alloc
+                0x40244488                pbuf_realloc
+                0x402444d4                pbuf_clen
+                0x402444e8                pbuf_ref
+                0x402444f4                pbuf_cat
+                0x40244528                pbuf_chain
+                0x40244544                pbuf_dechain
+                0x4024457c                pbuf_copy
+                0x4024463c                pbuf_copy_partial
+                0x402446d0                pbuf_take
+                0x40244740                pbuf_coalesce
+                0x40244780                pbuf_get_at
+                0x402447a4                pbuf_memcmp
+                0x40244820                pbuf_memfind
+                0x40244884                pbuf_strstr
+ .irom0.text    0x402448cc      0xb7b C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(tcp.o)
                                 0xcdb (size before relaxing)
-                0x402448fc                tcp_bind
-                0x402449a0                tcp_listen_with_backlog
-                0x40244a88                tcp_update_rcv_ann_wnd
-                0x40244ad4                tcp_recved
-                0x40244b2c                tcp_seg_free
-                0x40244b58                tcp_segs_free
-                0x40244b78                tcp_setprio
-                0x40244b80                tcp_seg_copy
-                0x40244bbc                tcp_arg
-                0x40244bc0                tcp_recv
-                0x40244bc8                tcp_sent
-                0x40244bd0                tcp_err
-                0x40244bd8                tcp_accept
-                0x40244bdc                tcp_poll
-                0x40244be4                tcp_pcb_purge
-                0x40244c40                tcp_slowtmr
-                0x40244ee8                tcp_pcb_remove
-                0x40244f54                tcp_close
-                0x40244f78                tcp_recv_null
-                0x40244fac                tcp_fasttmr
-                0x40245038                tcp_tmr
-                0x4024505c                tcp_shutdown
-                0x402450bc                tcp_abandon
-                0x4024515c                tcp_abort
-                0x40245174                tcp_next_iss
-                0x40245194                tcp_alloc
-                0x402452e0                tcp_new
-                0x402452f4                tcp_eff_send_mss
-                0x40245328                tcp_connect
- *fill*         0x40245477        0x1 
- .irom0.text    0x40245478      0xf33 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(tcp_out.o)
+                0x402448cc                tcp_bind
+                0x40244970                tcp_listen_with_backlog
+                0x40244a58                tcp_update_rcv_ann_wnd
+                0x40244aa4                tcp_recved
+                0x40244afc                tcp_seg_free
+                0x40244b28                tcp_segs_free
+                0x40244b48                tcp_setprio
+                0x40244b50                tcp_seg_copy
+                0x40244b8c                tcp_arg
+                0x40244b90                tcp_recv
+                0x40244b98                tcp_sent
+                0x40244ba0                tcp_err
+                0x40244ba8                tcp_accept
+                0x40244bac                tcp_poll
+                0x40244bb4                tcp_pcb_purge
+                0x40244c10                tcp_slowtmr
+                0x40244eb8                tcp_pcb_remove
+                0x40244f24                tcp_close
+                0x40244f48                tcp_recv_null
+                0x40244f7c                tcp_fasttmr
+                0x40245008                tcp_tmr
+                0x4024502c                tcp_shutdown
+                0x4024508c                tcp_abandon
+                0x4024512c                tcp_abort
+                0x40245144                tcp_next_iss
+                0x40245164                tcp_alloc
+                0x402452b0                tcp_new
+                0x402452c4                tcp_eff_send_mss
+                0x402452f8                tcp_connect
+ *fill*         0x40245447        0x1 
+ .irom0.text    0x40245448      0xf33 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(tcp_out.o)
                                0x1043 (size before relaxing)
-                0x40245670                tcp_write
-                0x40245984                tcp_enqueue_flags
-                0x40245a40                tcp_send_fin
-                0x40245a88                tcp_send_empty_ack
-                0x40245b20                tcp_output
-                0x40245f40                tcp_rst
-                0x40246084                tcp_rexmit_rto
-                0x40246108                tcp_rexmit
-                0x402461b4                tcp_rexmit_fast
-                0x40246218                tcp_keepalive
-                0x4024629c                tcp_zero_window_probe
- *fill*         0x402463ab        0x1 
- .irom0.text    0x402463ac      0x287 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(timers.o)
+                0x40245640                tcp_write
+                0x40245954                tcp_enqueue_flags
+                0x40245a10                tcp_send_fin
+                0x40245a58                tcp_send_empty_ack
+                0x40245af0                tcp_output
+                0x40245f10                tcp_rst
+                0x40246054                tcp_rexmit_rto
+                0x402460d8                tcp_rexmit
+                0x40246184                tcp_rexmit_fast
+                0x402461e8                tcp_keepalive
+                0x4024626c                tcp_zero_window_probe
+ *fill*         0x4024637b        0x1 
+ .irom0.text    0x4024637c      0x287 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(timers.o)
                                 0x30f (size before relaxing)
-                0x402463b4                sys_timeout
-                0x40246444                tcp_timer_needed
-                0x402464b8                sys_timeouts_init
-                0x40246544                sys_untimeout
-                0x4024659c                sys_check_timeouts
-                0x40246624                sys_restart_timeouts
- *fill*         0x40246633        0x1 
- .irom0.text    0x40246634      0x550 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(udp.o)
+                0x40246384                sys_timeout
+                0x40246414                tcp_timer_needed
+                0x40246488                sys_timeouts_init
+                0x40246514                sys_untimeout
+                0x4024656c                sys_check_timeouts
+                0x402465f4                sys_restart_timeouts
+ *fill*         0x40246603        0x1 
+ .irom0.text    0x40246604      0x550 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(udp.o)
                                 0x5c8 (size before relaxing)
-                0x40246640                udp_input
-                0x40246830                udp_bind
-                0x402468bc                udp_sendto_if
-                0x40246a20                udp_sendto
-                0x40246a70                udp_send
-                0x40246a88                udp_connect
-                0x40246aec                udp_disconnect
-                0x40246b00                udp_recv
-                0x40246b0c                udp_remove
-                0x40246b48                udp_new
- .irom0.text    0x40246b84      0x8d3 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(etharp.o)
+                0x40246610                udp_input
+                0x40246800                udp_bind
+                0x4024688c                udp_sendto_if
+                0x402469f0                udp_sendto
+                0x40246a40                udp_send
+                0x40246a58                udp_connect
+                0x40246abc                udp_disconnect
+                0x40246ad0                udp_recv
+                0x40246adc                udp_remove
+                0x40246b18                udp_new
+ .irom0.text    0x40246b54      0x8d3 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(etharp.o)
                                 0x9db (size before relaxing)
-                0x40246dc8                etharp_tmr
-                0x40246e20                etharp_cleanup_netif
-                0x40246e5c                etharp_find_addr
-                0x40246eac                etharp_request
-                0x40246fe8                etharp_query
-                0x40247170                etharp_output
-                0x40247260                ethernet_input
- *fill*         0x40247457        0x1 
- .irom0.text    0x40247458      0x220 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(icmp.o)
+                0x40246d98                etharp_tmr
+                0x40246df0                etharp_cleanup_netif
+                0x40246e2c                etharp_find_addr
+                0x40246e7c                etharp_request
+                0x40246fb8                etharp_query
+                0x40247140                etharp_output
+                0x40247230                ethernet_input
+ *fill*         0x40247427        0x1 
+ .irom0.text    0x40247428      0x220 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(icmp.o)
                                 0x2a8 (size before relaxing)
-                0x40247458                icmp_input
-                0x402475d0                icmp_dest_unreach
- .irom0.text    0x40247678      0x5b6 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(igmp.o)
+                0x40247428                icmp_input
+                0x402475a0                icmp_dest_unreach
+ .irom0.text    0x40247648      0x5b6 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(igmp.o)
                                 0x63e (size before relaxing)
-                0x40247810                igmp_init
-                0x40247824                igmp_stop
-                0x40247890                igmp_report_groups
-                0x402478c0                igmp_lookfor_group
-                0x402478dc                igmp_start
-                0x40247938                igmp_input
-                0x40247a58                igmp_joingroup
-                0x40247b20                igmp_leavegroup
-                0x40247bf4                igmp_tmr
- *fill*         0x40247c2e        0x2 
- .irom0.text    0x40247c30      0x5a9 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(ip.o)
+                0x402477e0                igmp_init
+                0x402477f4                igmp_stop
+                0x40247860                igmp_report_groups
+                0x40247890                igmp_lookfor_group
+                0x402478ac                igmp_start
+                0x40247908                igmp_input
+                0x40247a28                igmp_joingroup
+                0x40247af0                igmp_leavegroup
+                0x40247bc4                igmp_tmr
+ *fill*         0x40247bfe        0x2 
+ .irom0.text    0x40247c00      0x5a9 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(ip.o)
                                 0x641 (size before relaxing)
-                0x40247c30                ip_route
-                0x40247cac                ip_router
-                0x40247d10                ip_input
-                0x40247f74                ip_output_if_opt
-                0x4024816c                ip_output_if
-                0x40248190                ip_output
- *fill*         0x402481d9        0x3 
- .irom0.text    0x402481dc      0x380 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(ip_addr.o)
+                0x40247c00                ip_route
+                0x40247c7c                ip_router
+                0x40247ce0                ip_input
+                0x40247f44                ip_output_if_opt
+                0x4024813c                ip_output_if
+                0x40248160                ip_output
+ *fill*         0x402481a9        0x3 
+ .irom0.text    0x402481ac      0x380 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(ip_addr.o)
                                 0x3a4 (size before relaxing)
-                0x402481dc                ip4_addr_isbroadcast
-                0x40248218                ip4_addr_netmask_valid
-                0x40248268                ipaddr_aton
-                0x40248450                ipaddr_addr
-                0x4024846c                ipaddr_ntoa_r
-                0x40248548                ipaddr_ntoa
- .irom0.text    0x4024855c      0x1eb C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(raw.o)
+                0x402481ac                ip4_addr_isbroadcast
+                0x402481e8                ip4_addr_netmask_valid
+                0x40248238                ipaddr_aton
+                0x40248420                ipaddr_addr
+                0x4024843c                ipaddr_ntoa_r
+                0x40248518                ipaddr_ntoa
+ .irom0.text    0x4024852c      0x1eb C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(raw.o)
                                 0x233 (size before relaxing)
-                0x40248560                raw_input
-                0x402485e8                raw_bind
-                0x402485f4                raw_connect
-                0x40248600                raw_recv
-                0x40248608                raw_sendto
-                0x402486a8                raw_send
-                0x402486c0                raw_remove
-                0x402486fc                raw_new
- *fill*         0x40248747        0x1 
- .irom0.text    0x40248748     0x1493 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(tcp_in.o)
+                0x40248530                raw_input
+                0x402485b8                raw_bind
+                0x402485c4                raw_connect
+                0x402485d0                raw_recv
+                0x402485d8                raw_sendto
+                0x40248678                raw_send
+                0x40248690                raw_remove
+                0x402486cc                raw_new
+ *fill*         0x40248717        0x1 
+ .irom0.text    0x40248718     0x1493 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(tcp_in.o)
                                0x167f (size before relaxing)
-                0x4024915c                tcp_input
- *fill*         0x40249bdb        0x1 
- .irom0.text    0x40249bdc     0x1388 .pioenvs\relayboard\libf6b\libHash.a(sha1.c.o)
+                0x4024912c                tcp_input
+ *fill*         0x40249bab        0x1 
+ .irom0.text    0x40249bac     0x1388 .pioenvs\relayboard\libf6b\libHash.a(sha1.c.o)
                                0x13a4 (size before relaxing)
-                0x40249bf4                SHA1Transform
-                0x4024adfc                SHA1Init
-                0x4024ae20                SHA1Update
-                0x4024aeac                SHA1Final
- .irom0.text    0x4024af64       0xfa C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libphy.a(phy.o)
+                0x40249bc4                SHA1Transform
+                0x4024adcc                SHA1Init
+                0x4024adf0                SHA1Update
+                0x4024ae7c                SHA1Final
+ .irom0.text    0x4024af34       0xfa C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libphy.a(phy.o)
                                 0x11e (size before relaxing)
-                0x4024af68                rf_init
-                0x4024af84                bb_init
-                0x4024af9c                phy_init
-                0x4024afcc                RFChannelSel
-                0x4024afe8                phy_delete_channel
-                0x4024b000                phy_enable_agc
-                0x4024b018                phy_disable_agc
-                0x4024b030                phy_initialize_bb
-                0x4024b048                phy_set_sense
- *fill*         0x4024b05e        0x2 
- .irom0.text    0x4024b060     0x177b C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libphy.a(phy_chip_v6_ana.o)
+                0x4024af38                rf_init
+                0x4024af54                bb_init
+                0x4024af6c                phy_init
+                0x4024af9c                RFChannelSel
+                0x4024afb8                phy_delete_channel
+                0x4024afd0                phy_enable_agc
+                0x4024afe8                phy_disable_agc
+                0x4024b000                phy_initialize_bb
+                0x4024b018                phy_set_sense
+ *fill*         0x4024b02e        0x2 
+ .irom0.text    0x4024b030     0x177b C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libphy.a(phy_chip_v6_ana.o)
                                0x19b7 (size before relaxing)
-                0x4024b060                ram_pbus_set_rxgain
-                0x4024b130                ram_pbus_debugmode
-                0x4024b1e4                ram_pbus_xpd_tx_on
-                0x4024b250                set_rf_freq_offset
-                0x4024b2c0                chip_v6_rxmax_ext_ana
-                0x4024b414                ram_chip_v6_rx_init
-                0x4024b444                tsen_meas
-                0x4024b4f0                readvdd33
-                0x4024b6b8                txpwr_offset
-                0x4024b774                set_txcap_reg
-                0x4024b7f4                ram_ana_inf_gating_en
-                0x4024b954                ram_restart_cal
-                0x4024b9c0                wait_rfpll_cal_end
-                0x4024ba54                ram_rfpll_set_freq
-                0x4024bb54                ram_set_channel_freq
-                0x4024be58                chip_60_set_channel
-                0x4024c020                chip_v6_set_chan_offset
-                0x4024c07c                chip_v6_set_chan
-                0x4024c12c                chip_v6_set_chan_wakeup
-                0x4024c1a8                chip_v6_rf_init
-                0x4024c40c                low_power_set
-                0x4024c45c                test_tout
-                0x4024c5d4                check_data_flag
-                0x4024c5f4                phy_get_check_flag
-                0x4024c728                phy_get_vdd33
- *fill*         0x4024c7db        0x1 
- .irom0.text    0x4024c7dc     0x3df4 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libphy.a(phy_chip_v6.o)
+                0x4024b030                ram_pbus_set_rxgain
+                0x4024b100                ram_pbus_debugmode
+                0x4024b1b4                ram_pbus_xpd_tx_on
+                0x4024b220                set_rf_freq_offset
+                0x4024b290                chip_v6_rxmax_ext_ana
+                0x4024b3e4                ram_chip_v6_rx_init
+                0x4024b414                tsen_meas
+                0x4024b4c0                readvdd33
+                0x4024b688                txpwr_offset
+                0x4024b744                set_txcap_reg
+                0x4024b7c4                ram_ana_inf_gating_en
+                0x4024b924                ram_restart_cal
+                0x4024b990                wait_rfpll_cal_end
+                0x4024ba24                ram_rfpll_set_freq
+                0x4024bb24                ram_set_channel_freq
+                0x4024be28                chip_60_set_channel
+                0x4024bff0                chip_v6_set_chan_offset
+                0x4024c04c                chip_v6_set_chan
+                0x4024c0fc                chip_v6_set_chan_wakeup
+                0x4024c178                chip_v6_rf_init
+                0x4024c3dc                low_power_set
+                0x4024c42c                test_tout
+                0x4024c5a4                check_data_flag
+                0x4024c5c4                phy_get_check_flag
+                0x4024c6f8                phy_get_vdd33
+ *fill*         0x4024c7ab        0x1 
+ .irom0.text    0x4024c7ac     0x3df4 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libphy.a(phy_chip_v6.o)
                                0x44d0 (size before relaxing)
-                0x4024c7dc                ram_tx_mac_enable
-                0x4024c7e0                ram_tx_mac_disable
-                0x4024c7e4                rtc_mem_backup
-                0x4024c814                rtc_mem_recovery
-                0x4024c844                set_cal_rxdc
-                0x4024c8f8                set_rx_gain_cal_iq
-                0x4024cc54                gen_rx_gain_table
-                0x4024cdac                pbus_set_rxbbgain
-                0x4024ce28                set_rx_gain_testchip_50
-                0x4024d15c                ram_get_corr_power
-                0x4024d24c                check_data_func
-                0x4024d26c                do_noisefloor_lsleep_v50
-                0x4024d2a0                do_noisefloor
-                0x4024d310                start_dig_rx
-                0x4024d354                stop_dig_rx
-                0x4024d380                chip_v6_set_chanfreq
-                0x4024d3ac                tx_cap_init
-                0x4024d5d4                target_power_add_backoff
-                0x4024d5fc                tx_pwctrl_init_cal
-                0x4024d79c                tx_atten_set_interp
-                0x4024d9fc                check_tx_pwr_cal
-                0x4024db40                tx_pwctrl_init
-                0x4024dc64                ram_get_noisefloor
-                0x4024dc80                get_noisefloor_sat
-                0x4024dcb0                ram_set_noise_floor
-                0x4024dd0c                ram_start_noisefloor
-                0x4024dd54                read_hw_noisefloor
-                0x4024dd7c                noise_check_loop
-                0x4024ded4                noise_init
-                0x4024e0d4                target_power_backoff
-                0x4024e128                sdt_on_noise_start
-                0x4024e1a8                chip_v6_set_chan_rx_cmp
-                0x4024e334                chip_v6_set_chan_misc
-                0x4024e3b8                phy_dig_spur_set
-                0x4024e710                phy_dig_spur_prot
-                0x4024e948                chip_v6_rxmax_ext_dig
-                0x4024e994                chip_v6_rxmax_ext
-                0x4024ea40                phy_bb_rx_cfg
-                0x4024ee58                uart_wait_idle
-                0x4024ee8c                phy_pbus_soc_cfg
-                0x4024ef44                phy_gpio_cfg
-                0x4024f158                tx_cont_en
-                0x4024f200                tx_cont_dis
-                0x4024f254                tx_cont_cfg
-                0x4024f274                chip_v6_initialize_bb
-                0x4024f3d8                periodic_cal
-                0x4024f410                bbpll_cal
-                0x4024f4b8                periodic_cal_top
-                0x4024f51c                register_chipv6_phy_init_param
-                0x4024f7c4                change_bbpll160_sleep
-                0x4024f974                change_bbpll160
-                0x4024f9ac                set_crystal_uart
-                0x4024fa3c                ant_switch_init
-                0x4024faec                reduce_current_init
-                0x4024fbd8                rtc_mem_check
-                0x4024fc14                phy_afterwake_set_rfoption
-                0x4024fc30                deep_sleep_set_option
-                0x4024fc5c                write_data_to_rtc
-                0x4024fc94                get_data_from_rtc
-                0x4024fd18                register_chipv6_phy
-                0x40250188                set_dpd_bypass
-                0x402501b0                set_rf_gain_stage10
-                0x402501e0                get_vdd33_offset
-                0x40250254                get_phy_target_power
-                0x40250304                set_most_pwr_reg
-                0x402503d8                phy_set_most_tpw
-                0x402503f8                phy_vdd33_set_tpw
-                0x40250410                get_adc_rand
-                0x40250440                phy_get_rand
-                0x40250458                phy_tx_pwctrl_cali
-                0x40250480                phy_check_data_table
-                0x402504bc                phy_after_init_enrx
-                0x40250520                phy_set_rx11b_reg
-                0x40250554                phy_set_powerup_option
-                0x40250564                phy_get_txpwr_param
-                0x402505b0                phy_get_rxnf_param
-                0x402505bc                phy_get_freq_param
- .irom0.text    0x402505d0     0x219c C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libphy.a(phy_chip_v6_cal.o)
+                0x4024c7ac                ram_tx_mac_enable
+                0x4024c7b0                ram_tx_mac_disable
+                0x4024c7b4                rtc_mem_backup
+                0x4024c7e4                rtc_mem_recovery
+                0x4024c814                set_cal_rxdc
+                0x4024c8c8                set_rx_gain_cal_iq
+                0x4024cc24                gen_rx_gain_table
+                0x4024cd7c                pbus_set_rxbbgain
+                0x4024cdf8                set_rx_gain_testchip_50
+                0x4024d12c                ram_get_corr_power
+                0x4024d21c                check_data_func
+                0x4024d23c                do_noisefloor_lsleep_v50
+                0x4024d270                do_noisefloor
+                0x4024d2e0                start_dig_rx
+                0x4024d324                stop_dig_rx
+                0x4024d350                chip_v6_set_chanfreq
+                0x4024d37c                tx_cap_init
+                0x4024d5a4                target_power_add_backoff
+                0x4024d5cc                tx_pwctrl_init_cal
+                0x4024d76c                tx_atten_set_interp
+                0x4024d9cc                check_tx_pwr_cal
+                0x4024db10                tx_pwctrl_init
+                0x4024dc34                ram_get_noisefloor
+                0x4024dc50                get_noisefloor_sat
+                0x4024dc80                ram_set_noise_floor
+                0x4024dcdc                ram_start_noisefloor
+                0x4024dd24                read_hw_noisefloor
+                0x4024dd4c                noise_check_loop
+                0x4024dea4                noise_init
+                0x4024e0a4                target_power_backoff
+                0x4024e0f8                sdt_on_noise_start
+                0x4024e178                chip_v6_set_chan_rx_cmp
+                0x4024e304                chip_v6_set_chan_misc
+                0x4024e388                phy_dig_spur_set
+                0x4024e6e0                phy_dig_spur_prot
+                0x4024e918                chip_v6_rxmax_ext_dig
+                0x4024e964                chip_v6_rxmax_ext
+                0x4024ea10                phy_bb_rx_cfg
+                0x4024ee28                uart_wait_idle
+                0x4024ee5c                phy_pbus_soc_cfg
+                0x4024ef14                phy_gpio_cfg
+                0x4024f128                tx_cont_en
+                0x4024f1d0                tx_cont_dis
+                0x4024f224                tx_cont_cfg
+                0x4024f244                chip_v6_initialize_bb
+                0x4024f3a8                periodic_cal
+                0x4024f3e0                bbpll_cal
+                0x4024f488                periodic_cal_top
+                0x4024f4ec                register_chipv6_phy_init_param
+                0x4024f794                change_bbpll160_sleep
+                0x4024f944                change_bbpll160
+                0x4024f97c                set_crystal_uart
+                0x4024fa0c                ant_switch_init
+                0x4024fabc                reduce_current_init
+                0x4024fba8                rtc_mem_check
+                0x4024fbe4                phy_afterwake_set_rfoption
+                0x4024fc00                deep_sleep_set_option
+                0x4024fc2c                write_data_to_rtc
+                0x4024fc64                get_data_from_rtc
+                0x4024fce8                register_chipv6_phy
+                0x40250158                set_dpd_bypass
+                0x40250180                set_rf_gain_stage10
+                0x402501b0                get_vdd33_offset
+                0x40250224                get_phy_target_power
+                0x402502d4                set_most_pwr_reg
+                0x402503a8                phy_set_most_tpw
+                0x402503c8                phy_vdd33_set_tpw
+                0x402503e0                get_adc_rand
+                0x40250410                phy_get_rand
+                0x40250428                phy_tx_pwctrl_cali
+                0x40250450                phy_check_data_table
+                0x4025048c                phy_after_init_enrx
+                0x402504f0                phy_set_rx11b_reg
+                0x40250524                phy_set_powerup_option
+                0x40250534                phy_get_txpwr_param
+                0x40250580                phy_get_rxnf_param
+                0x4025058c                phy_get_freq_param
+ .irom0.text    0x402505a0     0x219c C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libphy.a(phy_chip_v6_cal.o)
                                0x23d4 (size before relaxing)
-                0x402505d0                txbbgain2dcoindex
-                0x402505f0                dcoindex2txbbgain
-                0x40250610                init_cal_dcoffset
-                0x402506d4                set_rfanagain_dc_reg
-                0x40250770                set_txdc_pbus
-                0x402507dc                get_rf_gain_qdb
-                0x40250804                correct_rf_ana_gain
-                0x4025090c                get_sar_dout
-                0x4025099c                cal_rf_ana_gain
-                0x40250ab4                meas_tone_pwr_db
-                0x40250b24                tx_pwr_backoff
-                0x40250cd8                get_fcc_1m2m_pwr_offset
-                0x40250d14                ram_set_txbb_atten
-                0x40250da4                txiq_get_mis_pwr
-                0x40250e4c                txiq_cover
-                0x40251068                ram_rfcal_txiq
-                0x402512d4                rc_cal
-                0x40251494                get_target_power_offset
-                0x4025159c                get_pwctrl_correct
-                0x402515f4                tx_pwctrl_cal
-                0x402518f0                tx_pwctrl_bg_init
-                0x40251968                tx_pwctrl_background
-                0x40251a20                read_sar_dout
-                0x40251a84                ram_get_fm_sar_dout
-                0x40251b28                ram_cal_tos_v60
-                0x40251cf8                ram_get_bb_atten
-                0x40251d28                ram_rfcal_txcap
-                0x40251eec                ram_rfcal_pwrctrl
-                0x4025212c                ram_rxiq_get_mis
-                0x402522f8                ram_rxiq_cover_mg_mp
-                0x4025249c                ram_rfcal_rxiq
-                0x402526a8                dpd_scale_set
-                0x402526f0                dpd_mem_write
- .irom0.text    0x4025276c      0xcee C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libphy.a(phy_sleep.o)
+                0x402505a0                txbbgain2dcoindex
+                0x402505c0                dcoindex2txbbgain
+                0x402505e0                init_cal_dcoffset
+                0x402506a4                set_rfanagain_dc_reg
+                0x40250740                set_txdc_pbus
+                0x402507ac                get_rf_gain_qdb
+                0x402507d4                correct_rf_ana_gain
+                0x402508dc                get_sar_dout
+                0x4025096c                cal_rf_ana_gain
+                0x40250a84                meas_tone_pwr_db
+                0x40250af4                tx_pwr_backoff
+                0x40250ca8                get_fcc_1m2m_pwr_offset
+                0x40250ce4                ram_set_txbb_atten
+                0x40250d74                txiq_get_mis_pwr
+                0x40250e1c                txiq_cover
+                0x40251038                ram_rfcal_txiq
+                0x402512a4                rc_cal
+                0x40251464                get_target_power_offset
+                0x4025156c                get_pwctrl_correct
+                0x402515c4                tx_pwctrl_cal
+                0x402518c0                tx_pwctrl_bg_init
+                0x40251938                tx_pwctrl_background
+                0x402519f0                read_sar_dout
+                0x40251a54                ram_get_fm_sar_dout
+                0x40251af8                ram_cal_tos_v60
+                0x40251cc8                ram_get_bb_atten
+                0x40251cf8                ram_rfcal_txcap
+                0x40251ebc                ram_rfcal_pwrctrl
+                0x402520fc                ram_rxiq_get_mis
+                0x402522c8                ram_rxiq_cover_mg_mp
+                0x4025246c                ram_rfcal_rxiq
+                0x40252678                dpd_scale_set
+                0x402526c0                dpd_mem_write
+ .irom0.text    0x4025273c      0xcee C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libphy.a(phy_sleep.o)
                                 0xefe (size before relaxing)
-                0x40252770                pm_usec2rtc
-                0x402527a8                pm_usec2rtc_64
-                0x402527fc                pm_rtc2usec
-                0x40252808                pm_set_sleep_cycles
-                0x40252830                pm_sleep_opt
-                0x40252984                pm_wakeup_opt
-                0x402529c0                get_chip_version
-                0x40252a00                pm_sleep_opt_bb_off
-                0x40252a4c                pm_sleep_opt_bb_on
-                0x40252aa0                pm_set_pll_xtal_wait_time
-                0x40252acc                pm_prepare_to_sleep
-                0x40252ad8                pm_sdio_nidle
-                0x40252b4c                chg_lslp_mem_opt_8266
-                0x40252b6c                pm_wait4wakeup
-                0x40252ba8                pm_open_rf
-                0x40252be4                pm_sleep_set_mac
-                0x40252c68                pm_set_wakeup_mac
-                0x40252d00                pm_check_mac_idle
-                0x40252d58                pm_set_sleep_btco
-                0x40252df8                pm_set_wakeup_btco
-                0x40252f10                pm_set_sleep_mode
-                0x40253030                pm_unmask_bt
-                0x402530a0                pm_wakeup_init
-                0x402532fc                sleep_opt_8266
-                0x4025331c                sleep_opt_bb_on_8266
-                0x40253358                sleep_reset_analog_rtcreg_8266
- *fill*         0x4025345a        0x0 
- *fill*         0x4025345a        0x0 
- *fill*         0x4025345a        0x2 
- .irom.text     0x4025345c    0x1e2a0 .pioenvs\relayboard\src\main.cpp.o
- .irom.text     0x402716fc      0x13c .pioenvs\relayboard\libFrameworkArduino.a(Updater.cpp.o)
- .irom0.text    0x40271838       0x80 .pioenvs\relayboard\libFrameworkArduino.a(core_esp8266_phy.c.o)
- .irom.text     0x402718b8       0x60 .pioenvs\relayboard\libFrameworkArduino.a(core_esp8266_postmortem.c.o)
- .irom.text     0x40271918      0x157 .pioenvs\relayboard\libFrameworkArduino.a(umm_malloc.c.o)
- *fill*         0x40271a6f        0x0 
- *fill*         0x40271a6f        0x1 
- .irom.text     0x40271a70      0x118 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libpp.a(pm_for_bcn_only_mode.o)
- *fill*         0x40271b88        0x8 
- .irom.text     0x40271b90       0x6e C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libpp.a(pp.o)
- *fill*         0x40271bfe        0x0 
- *fill*         0x40271bfe        0x0 
- *fill*         0x40271bfe        0x2 
- .irom.text     0x40271c00       0x38 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libpp.a(trc.o)
- *fill*         0x40271c38        0x0 
- .irom.text     0x40271c38        0x7 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libpp.a(wdev.o)
- *fill*         0x40271c3f        0x0 
- *fill*         0x40271c3f        0x1 
- .irom.text     0x40271c40        0xa C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libpp.a(esf_buf.o)
- *fill*         0x40271c4a        0x0 
- *fill*         0x40271c4a        0x6 
- .irom.text     0x40271c50       0x50 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libpp.a(if_hwctrl.o)
- *fill*         0x40271ca0        0x0 
- .irom.text     0x40271ca0       0x2f C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libpp.a(lmac.o)
- *fill*         0x40271ccf        0x0 
- *fill*         0x40271ccf        0x1 
- .irom.text     0x40271cd0      0x14d C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libpp.a(pm.o)
- *fill*         0x40271e1d        0x3 
- .irom.text     0x40271e20       0x82 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libnet80211.a(ieee80211.o)
-                0x40271e30                ieee80211_opcap
- *fill*         0x40271ea2        0xe 
- .irom.text     0x40271eb0       0x4d C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libnet80211.a(ieee80211_hostap.o)
- *fill*         0x40271efd        0x3 
- .irom.text     0x40271f00       0x19 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libnet80211.a(ieee80211_ht.o)
- *fill*         0x40271f19        0x7 
- .irom.text     0x40271f20       0x12 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libnet80211.a(ieee80211_input.o)
- *fill*         0x40271f32        0xe 
- .irom.text     0x40271f40       0x3d C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libnet80211.a(ieee80211_output.o)
- *fill*         0x40271f7d        0x3 
- .irom.text     0x40271f80       0x89 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libnet80211.a(ieee80211_scan.o)
- *fill*         0x40272009        0x7 
- .irom.text     0x40272010       0x26 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libnet80211.a(ieee80211_sta.o)
- *fill*         0x40272036        0xa 
- .irom.text     0x40272040      0x1c7 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libnet80211.a(wl_cnx.o)
- *fill*         0x40272207        0x9 
- .irom.text     0x40272210       0xe3 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libnet80211.a(ieee80211_action_vendor.o)
- *fill*         0x402722f3        0x1 
- .irom.text     0x402722f4       0x18 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libnet80211.a(ieee80211_crypto_ccmp.o)
-                0x402722f4                ccmp
- *fill*         0x4027230c        0x4 
- .irom.text     0x40272310      0x1b8 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libnet80211.a(ieee80211_phy.o)
- *fill*         0x402724c8        0x8 
- .irom.text     0x402724d0        0xc C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libwpa.a(ap_config.o)
- *fill*         0x402724dc        0x4 
- .irom.text     0x402724e0        0x9 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libwpa.a(common.o)
- *fill*         0x402724e9        0x7 
- .irom.text     0x402724f0       0x74 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libwpa.a(wpa_auth.o)
- *fill*         0x40272564        0xc 
- .irom.text     0x40272570        0xe C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libwpa.a(wpa_auth_ie.o)
- *fill*         0x4027257e        0x2 
- .irom.text     0x40272580       0x17 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libwpa.a(wpa.o)
- *fill*         0x40272597        0x9 
- .irom.text     0x402725a0       0x1c C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libwpa.a(wpa_common.o)
- *fill*         0x402725bc        0x4 
- .irom.text     0x402725c0       0x67 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libwpa.a(wpa_main.o)
- *fill*         0x40272627        0x9 
- .irom.text     0x40272630       0x13 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libcrypto.a(aes-internal-enc.o)
- *fill*         0x40272643        0x0 
- *fill*         0x40272643        0xd 
- .irom.text     0x40272650      0x530 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libmain.a(app_main.o)
- *fill*         0x40272b80        0x0 
- .irom.text     0x40272b80       0x63 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libmain.a(eagle_lwip_if.o)
- *fill*         0x40272be3        0x0 
- *fill*         0x40272be3        0xd 
- .irom.text     0x40272bf0      0x14c C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libmain.a(ets_timer.o)
- *fill*         0x40272d3c        0x4 
- .irom.text     0x40272d40      0x435 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libmain.a(user_interface.o)
-                0x40272d60                default_ssid
- *fill*         0x40273175        0xb 
- .irom.text     0x40273180      0x12f C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libmain.a(spi_flash.o)
- *fill*         0x402732af        0x1 
- .irom.text     0x402732b0        0x4 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(dhcpserver.o)
- *fill*         0x402732b4        0x0 
- *fill*         0x402732b4        0x0 
- *fill*         0x402732b4        0x0 
- *fill*         0x402732b4        0x0 
- .irom.text     0x402732b4       0x24 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(tcp.o)
-                0x402732b4                tcp_pcb_lists
-                0x402732c4                tcp_persist_backoff
-                0x402732cb                tcp_backoff
- *fill*         0x402732d8        0x0 
- *fill*         0x402732d8        0x0 
- *fill*         0x402732d8        0x0 
- *fill*         0x402732d8        0x0 
- .irom0.text    0x402732d8      0x28c C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(inet_chksum.o)
-                0x40273340                inet_chksum_pseudo
-                0x40273400                inet_chksum_pseudo_partial
-                0x402734dc                inet_chksum
-                0x402734f8                inet_chksum_pbuf
+                0x40252740                pm_usec2rtc
+                0x40252778                pm_usec2rtc_64
+                0x402527cc                pm_rtc2usec
+                0x402527d8                pm_set_sleep_cycles
+                0x40252800                pm_sleep_opt
+                0x40252954                pm_wakeup_opt
+                0x40252990                get_chip_version
+                0x402529d0                pm_sleep_opt_bb_off
+                0x40252a1c                pm_sleep_opt_bb_on
+                0x40252a70                pm_set_pll_xtal_wait_time
+                0x40252a9c                pm_prepare_to_sleep
+                0x40252aa8                pm_sdio_nidle
+                0x40252b1c                chg_lslp_mem_opt_8266
+                0x40252b3c                pm_wait4wakeup
+                0x40252b78                pm_open_rf
+                0x40252bb4                pm_sleep_set_mac
+                0x40252c38                pm_set_wakeup_mac
+                0x40252cd0                pm_check_mac_idle
+                0x40252d28                pm_set_sleep_btco
+                0x40252dc8                pm_set_wakeup_btco
+                0x40252ee0                pm_set_sleep_mode
+                0x40253000                pm_unmask_bt
+                0x40253070                pm_wakeup_init
+                0x402532cc                sleep_opt_8266
+                0x402532ec                sleep_opt_bb_on_8266
+                0x40253328                sleep_reset_analog_rtcreg_8266
+ *fill*         0x4025342a        0x0 
+ *fill*         0x4025342a        0x0 
+ *fill*         0x4025342a        0x2 
+ .irom.text     0x4025342c    0x1e2a0 .pioenvs\relayboard\src\main.cpp.o
+ .irom.text     0x402716cc      0x13c .pioenvs\relayboard\libFrameworkArduino.a(Updater.cpp.o)
+ .irom0.text    0x40271808       0x80 .pioenvs\relayboard\libFrameworkArduino.a(core_esp8266_phy.c.o)
+ .irom.text     0x40271888       0x60 .pioenvs\relayboard\libFrameworkArduino.a(core_esp8266_postmortem.c.o)
+ .irom.text     0x402718e8      0x157 .pioenvs\relayboard\libFrameworkArduino.a(umm_malloc.c.o)
+ *fill*         0x40271a3f        0x0 
+ *fill*         0x40271a3f        0x1 
+ .irom.text     0x40271a40      0x118 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libpp.a(pm_for_bcn_only_mode.o)
+ *fill*         0x40271b58        0x8 
+ .irom.text     0x40271b60       0x6e C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libpp.a(pp.o)
+ *fill*         0x40271bce        0x0 
+ *fill*         0x40271bce        0x0 
+ *fill*         0x40271bce        0x2 
+ .irom.text     0x40271bd0       0x38 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libpp.a(trc.o)
+ *fill*         0x40271c08        0x0 
+ .irom.text     0x40271c08        0x7 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libpp.a(wdev.o)
+ *fill*         0x40271c0f        0x0 
+ *fill*         0x40271c0f        0x1 
+ .irom.text     0x40271c10        0xa C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libpp.a(esf_buf.o)
+ *fill*         0x40271c1a        0x0 
+ *fill*         0x40271c1a        0x6 
+ .irom.text     0x40271c20       0x50 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libpp.a(if_hwctrl.o)
+ *fill*         0x40271c70        0x0 
+ .irom.text     0x40271c70       0x2f C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libpp.a(lmac.o)
+ *fill*         0x40271c9f        0x0 
+ *fill*         0x40271c9f        0x1 
+ .irom.text     0x40271ca0      0x14d C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libpp.a(pm.o)
+ *fill*         0x40271ded        0x3 
+ .irom.text     0x40271df0       0x82 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libnet80211.a(ieee80211.o)
+                0x40271e00                ieee80211_opcap
+ *fill*         0x40271e72        0xe 
+ .irom.text     0x40271e80       0x4d C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libnet80211.a(ieee80211_hostap.o)
+ *fill*         0x40271ecd        0x3 
+ .irom.text     0x40271ed0       0x19 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libnet80211.a(ieee80211_ht.o)
+ *fill*         0x40271ee9        0x7 
+ .irom.text     0x40271ef0       0x12 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libnet80211.a(ieee80211_input.o)
+ *fill*         0x40271f02        0xe 
+ .irom.text     0x40271f10       0x3d C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libnet80211.a(ieee80211_output.o)
+ *fill*         0x40271f4d        0x3 
+ .irom.text     0x40271f50       0x89 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libnet80211.a(ieee80211_scan.o)
+ *fill*         0x40271fd9        0x7 
+ .irom.text     0x40271fe0       0x26 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libnet80211.a(ieee80211_sta.o)
+ *fill*         0x40272006        0xa 
+ .irom.text     0x40272010      0x1c7 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libnet80211.a(wl_cnx.o)
+ *fill*         0x402721d7        0x9 
+ .irom.text     0x402721e0       0xe3 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libnet80211.a(ieee80211_action_vendor.o)
+ *fill*         0x402722c3        0x1 
+ .irom.text     0x402722c4       0x18 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libnet80211.a(ieee80211_crypto_ccmp.o)
+                0x402722c4                ccmp
+ *fill*         0x402722dc        0x4 
+ .irom.text     0x402722e0      0x1b8 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libnet80211.a(ieee80211_phy.o)
+ *fill*         0x40272498        0x8 
+ .irom.text     0x402724a0        0xc C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libwpa.a(ap_config.o)
+ *fill*         0x402724ac        0x4 
+ .irom.text     0x402724b0        0x9 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libwpa.a(common.o)
+ *fill*         0x402724b9        0x7 
+ .irom.text     0x402724c0       0x74 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libwpa.a(wpa_auth.o)
+ *fill*         0x40272534        0xc 
+ .irom.text     0x40272540        0xe C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libwpa.a(wpa_auth_ie.o)
+ *fill*         0x4027254e        0x2 
+ .irom.text     0x40272550       0x17 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libwpa.a(wpa.o)
+ *fill*         0x40272567        0x9 
+ .irom.text     0x40272570       0x1c C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libwpa.a(wpa_common.o)
+ *fill*         0x4027258c        0x4 
+ .irom.text     0x40272590       0x67 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libwpa.a(wpa_main.o)
+ *fill*         0x402725f7        0x9 
+ .irom.text     0x40272600       0x13 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libcrypto.a(aes-internal-enc.o)
+ *fill*         0x40272613        0x0 
+ *fill*         0x40272613        0xd 
+ .irom.text     0x40272620      0x530 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libmain.a(app_main.o)
+ *fill*         0x40272b50        0x0 
+ .irom.text     0x40272b50       0x63 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libmain.a(eagle_lwip_if.o)
+ *fill*         0x40272bb3        0x0 
+ *fill*         0x40272bb3        0xd 
+ .irom.text     0x40272bc0      0x14c C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libmain.a(ets_timer.o)
+ *fill*         0x40272d0c        0x4 
+ .irom.text     0x40272d10      0x435 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libmain.a(user_interface.o)
+                0x40272d30                default_ssid
+ *fill*         0x40273145        0xb 
+ .irom.text     0x40273150      0x12f C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libmain.a(spi_flash.o)
+ *fill*         0x4027327f        0x1 
+ .irom.text     0x40273280        0x4 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(dhcpserver.o)
+ *fill*         0x40273284        0x0 
+ *fill*         0x40273284        0x0 
+ *fill*         0x40273284        0x0 
+ *fill*         0x40273284        0x0 
+ .irom.text     0x40273284       0x24 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(tcp.o)
+                0x40273284                tcp_pcb_lists
+                0x40273294                tcp_persist_backoff
+                0x4027329b                tcp_backoff
+ *fill*         0x402732a8        0x0 
+ *fill*         0x402732a8        0x0 
+ *fill*         0x402732a8        0x0 
+ *fill*         0x402732a8        0x0 
+ .irom0.text    0x402732a8      0x28c C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(inet_chksum.o)
+                0x40273310                inet_chksum_pseudo
+                0x402733d0                inet_chksum_pseudo_partial
+                0x402734ac                inet_chksum
+                0x402734c8                inet_chksum_pbuf
+ *fill*         0x40273534        0x0 
+ .irom.text     0x40273534        0x8 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(ip_addr.o)
+                0x40273534                ip_addr_broadcast
+                0x40273538                ip_addr_any
+ .irom.text     0x4027353c       0x28 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(memp.o)
+                0x4027353c                memp_sizes
  *fill*         0x40273564        0x0 
- .irom.text     0x40273564        0x8 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(ip_addr.o)
-                0x40273564                ip_addr_broadcast
-                0x40273568                ip_addr_any
- .irom.text     0x4027356c       0x28 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\liblwip_gcc.a(memp.o)
-                0x4027356c                memp_sizes
- *fill*         0x40273594        0x0 
- *fill*         0x40273594        0x0 
- *fill*         0x40273594        0x0 
- *fill*         0x40273594        0xc 
- .irom.text     0x402735a0       0x65 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libphy.a(phy_chip_v6_ana.o)
- *fill*         0x40273605        0x0 
- *fill*         0x40273605        0xb 
- .irom.text     0x40273610      0x14c C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libphy.a(phy_chip_v6.o)
- *fill*         0x4027375c        0x4 
- .irom.text     0x40273760      0x1f4 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libphy.a(phy_chip_v6_cal.o)
- .irom0.text    0x40273954        0xc C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libphy.a(phy_chip_v6_unused.o)
-                0x40273954                chip_v6_set_sense
-                0x40273958                chip_v6_get_sense
-                0x4027395c                chip_v6_unset_chanfreq
- *fill*         0x40273960        0x0 
- .irom.text     0x40273960       0x18 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libnet80211.a(ieee80211_crypto_tkip.o)
-                0x40273960                tkip
- .irom.text     0x40273978       0x18 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libnet80211.a(ieee80211_crypto_wep.o)
-                0x40273978                wep
-                0x40273990                _irom0_text_end = ABSOLUTE (.)
-                0x40273990                _flash_code_end = ABSOLUTE (.)
+ *fill*         0x40273564        0x0 
+ *fill*         0x40273564        0x0 
+ *fill*         0x40273564        0xc 
+ .irom.text     0x40273570       0x65 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libphy.a(phy_chip_v6_ana.o)
+ *fill*         0x402735d5        0x0 
+ *fill*         0x402735d5        0xb 
+ .irom.text     0x402735e0      0x14c C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libphy.a(phy_chip_v6.o)
+ *fill*         0x4027372c        0x4 
+ .irom.text     0x40273730      0x1f4 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libphy.a(phy_chip_v6_cal.o)
+ .irom0.text    0x40273924        0xc C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libphy.a(phy_chip_v6_unused.o)
+                0x40273924                chip_v6_set_sense
+                0x40273928                chip_v6_get_sense
+                0x4027392c                chip_v6_unset_chanfreq
+ *fill*         0x40273930        0x0 
+ .irom.text     0x40273930       0x18 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libnet80211.a(ieee80211_crypto_tkip.o)
+                0x40273930                tkip
+ .irom.text     0x40273948       0x18 C:\users\caveira\.platformio\packages\framework-arduinoespressif8266\tools\sdk\lib\libnet80211.a(ieee80211_crypto_wep.o)
+                0x40273948                wep
+                0x40273960                _irom0_text_end = ABSOLUTE (.)
+                0x40273960                _flash_code_end = ABSOLUTE (.)
 
 .text           0x40100000     0x76cc
                 0x40100000                _stext = .
@@ -22600,8 +22600,8 @@ LOAD .pioenvs\relayboard\libd5c\libAsyncMqttClient_ID346.a
 LOAD .pioenvs\relayboard\libeb4\libSPI.a
 LOAD .pioenvs\relayboard\libe02\libMFRC522_ID63.a
 LOAD .pioenvs\relayboard\lib794\libWiegand-Protocol-Library-for-Arduino.a
-LOAD .pioenvs\relayboard\libc1d\libWire.a
 LOAD .pioenvs\relayboard\libfe3\libTicker.a
+LOAD .pioenvs\relayboard\libc1d\libWire.a
 LOAD .pioenvs\relayboard\lib3cb\libESP8266mDNS.a
 LOAD .pioenvs\relayboard\libFrameworkArduinoVariant.a
 LOAD .pioenvs\relayboard\libFrameworkArduino.a
