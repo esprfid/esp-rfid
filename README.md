@@ -6,7 +6,7 @@ Access Control system using a cheap MFRC522, PN532 RFID readers or Wiegand RFID 
 
 [See Demo Here](https://bitadvise.com/esp-rfid/)
 
-[![Showcase Gif](https://raw.githubusercontent.com/omersiar/esp-rfid/stable/demo/showcase.gif)](https://bitadvise.com/esp-rfid/)
+[![Showcase Gif](https://raw.githubusercontent.com/omersiar/esp-rfid/stable/demo/showcase.gif)](https://bitadvise.com/esp-rfid/)[![Board](https://raw.githubusercontent.com/omersiar/esp-rfid/stable/demo/board.jpg)](https://www.tindie.com/products/nardev/esp-rfid-relay-board-12v-in-esp8266-board/)
 
 ## Features
 ### For Users
@@ -34,6 +34,8 @@ This project still in its development phase. New features (and also bugs) are in
 
 ### What You Will Need
 ### Hardware
+* [Official ESP-RFID Relay Board](https://www.tindie.com/products/nardev/esp-rfid-relay-board-12v-in-esp8266-board/)
+or
 * An ESP8266 module or a development board like **WeMos D1 mini** or **NodeMcu 1.0** with at least **32Mbit Flash (equals to 4MBytes)** (ESP32 does not supported for now)
 * A MFRC522 RFID PCD Module or PN532 NFC Reader Module or Wiegand based RFID reader
 * A Relay Module (or you can build your own circuit)
@@ -42,9 +44,12 @@ This project still in its development phase. New features (and also bugs) are in
 ### Software
 
 #### Using Compiled Binaries
-Compiled firmware binary and flasher tool for Windows PCs are available in directory **/bin**. On Windows you can use **"flash.bat"**, it will ask you which COM port that ESP is connected and then flashes it. You can use any flashing tool and do the flashing manually. The flashing process itself has been described at numerous places on Internet.
+Download compiled binaries from GitHub Releases page
+https://github.com/omersiar/esp-rfid/releases
+On Windows you can use **"flash.bat"**, it will ask you which COM port that ESP is connected and then flashes it. You can use any flashing tool and do the flashing manually. The flashing process itself has been described at numerous places on Internet.
 
 #### Building With PlatformIO
+##### Backend
 The build enviroment is based on [PlatformIO](http://platformio.org). Follow the instructions found here: http://platformio.org/#!/get-started for installing it but skip the ```platform init``` step as this has already been done, modified and it is included in this repository. In summary:
 
 ```
@@ -57,13 +62,23 @@ platformio run
 
 When you run ```platformio run``` for the first time, it will download the toolchains and all necessary libraries automatically.
 
-#### Useful commands:
+##### Useful commands:
 
 * ```platformio run``` - process/build all targets
-* ```platformio run -e nodemcu -t upload``` - process/build and flash just the ESP12e target (the NodeMcu v2)
+* ```platformio run -e generic -t upload``` - process/build and flash just the ESP12e target (the NodeMcu v2)
 * ```platformio run -t clean``` - clean project (remove compiled files)
 
 The resulting (built) image(s) can be found in the directory ```/bin``` created during the build process.
+
+##### Frontend
+You can not simply edit Web UI files because you will need to convert them to C arrays, which can be done automaticaly by a gulp script that can be found in tools directory.
+
+If you want to edit esp-rfid's Web UI you will need:
+* NodeJS
+* npm (comes with NodeJS installer)
+* Gulp (can be installed with npm)
+
+Gulp script also minifies HTML and JS files and compresses (gzip) them. 
 
 ### Pin Layout
 
