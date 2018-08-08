@@ -1,6 +1,6 @@
 /*
-   Authors :   Ömer Şiar Baysal
-               ESP-RFID Community
+   Authors :    Ömer Şiar Baysal
+                ESP-RFID Community
 
    Released to Public Domain
 
@@ -13,6 +13,8 @@
    THE SOFTWARE.
  */
 
+
+
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include <SPI.h>
@@ -23,7 +25,7 @@
 #include <ESPAsyncWebServer.h>
 #include <TimeLib.h>
 #include <Ticker.h>
-#include <Ntp.h>
+#include "Ntp.h"
 #include <AsyncMqttClient.h>
 
 // RFID Hardware Libraries
@@ -34,7 +36,7 @@
 
 #ifndef OFFICIALBOARD
 #include <MFRC522.h>
-#include <PN532.h>
+#include "PN532.h"
 #include <Wiegand.h>
 #endif
 
@@ -55,7 +57,7 @@ extern "C"
 }
 #endif
 
-// #define DEBUG
+#define DEBUG
 
 #ifdef OFFICIALBOARD
 // Create instance for Wiegand reade
@@ -133,9 +135,11 @@ void mqtt_publish_boot(time_t boot_time, String const &wifi, String const &ip)
 
     String mqttBuffer_boot;
     root.printTo(mqttBuffer_boot);
+    mqttClient.publish(topic, 0, false, mqttBuffer_boot.c_str());
+#ifdef DEBUG
     Serial.print("[ INFO ] Mqtt Publish:");
     Serial.println(mqttBuffer_boot);
-    mqttClient.publish(topic, 0, false, mqttBuffer_boot.c_str());
+#endif
 }
 
 void mqtt_publish_heartbeat(time_t heartbeat)
@@ -148,9 +152,11 @@ void mqtt_publish_heartbeat(time_t heartbeat)
     root["time"] = heartbeat;
     String mqttBuffer4;
     root.printTo(mqttBuffer4);
+    mqttClient.publish(topic, 0, false, mqttBuffer4.c_str());
+#ifdef DEBUG
     Serial.print("[ INFO ] Mqtt Publish:");
     Serial.println(mqttBuffer4);
-    mqttClient.publish(topic, 0, false, mqttBuffer4.c_str());
+#endif
 }
 
 void mqtt_publish_access(time_t accesstime, String const &isknown, String const &type, String const &user, String const &uid)
@@ -170,9 +176,11 @@ void mqtt_publish_access(time_t accesstime, String const &isknown, String const 
         root["uid"] = uid;
         String mqttBuffer;
         root.printTo(mqttBuffer);
+        mqttClient.publish(topic, 0, false, mqttBuffer.c_str());
+#ifdef DEBUG
         Serial.print("[ INFO ] Mqtt Publish:");
         Serial.println(mqttBuffer);
-        mqttClient.publish(topic, 0, false, mqttBuffer.c_str());
+#endif
     }
 }
 
@@ -497,7 +505,10 @@ bool ICACHE_FLASH_ATTR startAP(int hid, const char *ssid, const char *password =
 {
     inAPMode = true;
     WiFi.mode(WIFI_AP);
+#ifdef DEBUG
     Serial.print(F("[ INFO ] Configuring access point... "));
+#endif
+
     bool success;
     if (hid == 1)
     {
@@ -507,16 +518,23 @@ bool ICACHE_FLASH_ATTR startAP(int hid, const char *ssid, const char *password =
     {
         success = WiFi.softAP(ssid, password);
     }
+#ifdef DEBUG
     Serial.println(success ? "Ready" : "Failed!");
+#endif
+
     if (!success)
     {
         ESP.restart();
     }
+
+#ifdef DEBUG
     // Access Point IP
     IPAddress myIP = WiFi.softAPIP();
+
     Serial.print(F("[ INFO ] AP IP address: "));
     Serial.println(myIP);
     Serial.printf("[ INFO ] AP SSID: %s\n", ssid);
+#endif
     isWifiConnected = success;
     return success;
 }
@@ -525,7 +543,9 @@ bool ICACHE_FLASH_ATTR startAP(int hid, const char *ssid, const char *password =
 void ICACHE_FLASH_ATTR fallbacktoAPMode()
 {
     inAPMode = true;
+#ifdef DEBUG
     Serial.println(F("[ INFO ] ESP-RFID is running in Fallback AP Mode"));
+#endif
     uint8_t macAddr[6];
     WiFi.softAPmacAddress(macAddr);
     char ssid[15];
@@ -542,9 +562,11 @@ bool ICACHE_FLASH_ATTR connectSTA(const char *ssid, const char *password, byte b
     WiFi.mode(WIFI_STA);
     // First connect to a wi-fi network
     WiFi.begin(ssid, password, 0, bssid);
-    // Inform user we are trying to connect
+// Inform user we are trying to connect
+#ifdef DEBUG
     Serial.print(F("[ INFO ] Trying to connect WiFi: "));
     Serial.print(ssid);
+#endif
     // We try it for 20 seconds and give up on if we can't connect
     unsigned long now = millis();
     uint8_t timeout = 20; // define when to time out in seconds
@@ -556,14 +578,18 @@ bool ICACHE_FLASH_ATTR connectSTA(const char *ssid, const char *password, byte b
             break;
         }
         delay(500);
+#ifdef DEBUG
         Serial.print(F("."));
+#endif
     } while (millis() - now < timeout * 1000);
     // We now out of the while loop, either time is out or we connected. check what happened
     if (WiFi.status() == WL_CONNECTED)
     { // Assume time is out first and check
+#ifdef DEBUG
         Serial.println();
         Serial.print(F("[ INFO ] Client IP address: ")); // Great, we connected, inform
         Serial.println(WiFi.localIP());
+#endif
         isWifiConnected = true;
         String data = ssid;
         data += " " + WiFi.localIP().toString();
@@ -572,8 +598,10 @@ bool ICACHE_FLASH_ATTR connectSTA(const char *ssid, const char *password, byte b
     }
     else
     { // We couln't connect, time is out, inform
+#ifdef DEBUG
         Serial.println();
         Serial.println(F("[ WARN ] Couldn't connect in time"));
+#endif
         return false;
     }
 }
@@ -607,25 +635,33 @@ void ICACHE_FLASH_ATTR rfidloop()
         mfrc522.PICC_HaltA();
         cooldown = millis() + 2000;
 
-        // There are Mifare PICCs which have 4 byte or 7 byte UID
-        // Get PICC's UID and store on a variable
+// There are Mifare PICCs which have 4 byte or 7 byte UID
+// Get PICC's UID and store on a variable
+#ifdef DEBUG
         Serial.print(F("[ INFO ] PICC's UID: "));
+#endif
         for (int i = 0; i < mfrc522.uid.size; ++i)
         {
             uid += String(mfrc522.uid.uidByte[i], HEX);
         }
+#ifdef DEBUG
         Serial.print(uid);
+#endif
         // Get PICC type
         MFRC522::PICC_Type piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
         type = mfrc522.PICC_GetTypeName(piccType);
+#ifdef DEBUG
         Serial.print(" " + type);
+#endif
     }
     else if (readerType == 1)
     {
         if (wg.available())
         {
+#ifdef DEBUG
             Serial.print(F("[ INFO ] PICC's UID: "));
             Serial.println(wg.getCode());
+#endif
             uid = String(wg.getCode(), DEC);
             type = String(wg.getWiegandType(), DEC);
             cooldown = millis() + 2000;
@@ -647,12 +683,16 @@ void ICACHE_FLASH_ATTR rfidloop()
 
         if (found && u8_UidLength >= 4)
         {
+#ifdef DEBUG
             Serial.print(F("[ INFO ] PICC's UID: "));
+#endif
             for (uint8_t i = 0; i < u8_UidLength; i++)
             {
                 uid += String(pnuid[i], HEX);
             }
+#ifdef DEBUG
             Serial.print(uid);
+#endif
             cooldown = millis() + 2000;
         }
         else
@@ -670,8 +710,10 @@ void ICACHE_FLASH_ATTR rfidloop()
 #ifdef OFFICIALBOARD
     if (wg.available())
     {
+#ifdef DEBUG
         Serial.print(F("[ INFO ] PICC's UID: "));
         Serial.println(wg.getCode());
+#endif
         uid = String(wg.getCode(), HEX);
         type = String(wg.getWiegandType(), HEX);
         cooldown = millis() + 2000;
@@ -782,8 +824,10 @@ void ICACHE_FLASH_ATTR rfidloop()
         }
         else
         {
+#ifdef DEBUG
             Serial.println("");
             Serial.println(F("[ WARN ] Failed to parse User Data"));
+#endif
         }
         f.close();
     }
@@ -808,7 +852,6 @@ void ICACHE_FLASH_ATTR rfidloop()
         size_t len = root.measureLength();
         AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
         if (buffer)
-        
         {
             root.printTo((char *)buffer->get(), len + 1);
             ws.textAll(buffer);
@@ -1097,10 +1140,14 @@ void onMqttPublish(uint16_t packetId)
 
 void onMqttConnect(bool sessionPresent)
 {
+#ifdef DEBUG
     Serial.println("MQTT Connected session");
+#endif
     if (sessionPresent == true)
     {
+#ifdef DEBUG
         Serial.println("MQTT Connected session");
+#endif
         writeEvent("INFO", "mqtt", "Connected to MQTT Server", "Session Present");
     }
     mqtt_publish_boot(now(), WiFi.SSID(), WiFi.localIP().toString());
@@ -1111,7 +1158,9 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
     File configFile = SPIFFS.open("/config.json", "r");
     if (!configFile)
     {
+#ifdef DEBUG
         Serial.println(F("[ WARN ] Failed to open config file"));
+#endif
         return false;
     }
     size_t size = configFile.size();
@@ -1125,13 +1174,16 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
     JsonObject &json = jsonBuffer98.parseObject(buf.get());
     if (!json.success())
     {
+#ifdef DEBUG
         Serial.println(F("[ WARN ] Failed to parse config file"));
+#endif
         return false;
     }
-
+#ifdef DEBUG
     Serial.println(F("[ INFO ] Config file found"));
     json.prettyPrintTo(Serial);
     Serial.println();
+#endif
 
     JsonObject &network = json["network"];
     JsonObject &hardware = json["hardware"];
@@ -1140,6 +1192,10 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
     JsonObject &ntp = json["ntp"];
 #ifdef DEBUG
     Serial.print(F("[ INFO ] Trying to setup RFID Hardware :"));
+#endif
+
+#ifdef OFFICIALBOARD
+    setupWiegandReader(5, 4);
 #endif
 
 #ifndef OFFICIALBOARD
@@ -1212,7 +1268,9 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
     if (wmode == 1)
     {
         int hid = network["hide"];
+#ifdef DEBUG
         Serial.println(F("[ INFO ] ESP-RFID is running in AP Mode "));
+#endif
         return startAP(hid, ssid, password);
     }
     else
@@ -1278,8 +1336,9 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
         mqttClient.onConnect(onMqttConnect);
         connectToMqtt();
     }
-
+#ifdef DEBUG
     Serial.println(F("[ INFO ] Configuration done."));
+#endif
     return true;
 }
 
@@ -1424,9 +1483,10 @@ void ICACHE_FLASH_ATTR setup()
 #endif
     Serial.begin(115200);
     wifiDisconnectHandler = WiFi.onStationModeDisconnected(onWifiDisconnect);
-
+#ifdef DEBUG
     Serial.println();
     Serial.println(F("[ INFO ] ESP RFID v0.8"));
+#endif
 #ifdef DEBUG
     uint32_t realSize = ESP.getFlashChipRealSize();
     uint32_t ideSize = ESP.getFlashChipSize();
