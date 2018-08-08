@@ -14,6 +14,7 @@
  */
 
 
+#define OFFICIALBOARD
 
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
@@ -712,9 +713,9 @@ void ICACHE_FLASH_ATTR rfidloop()
     {
 #ifdef DEBUG
         Serial.print(F("[ INFO ] PICC's UID: "));
-        Serial.println(wg.getCode());
+        Serial.print(wg.getCode());
 #endif
-        uid = String(wg.getCode(), HEX);
+        uid = String(wg.getCode(), DEC);
         type = String(wg.getWiegandType(), HEX);
         cooldown = millis() + 2000;
     }
@@ -756,9 +757,9 @@ void ICACHE_FLASH_ATTR rfidloop()
             Serial.print("[ INFO ] User Name: ");
 
             if (username == "undefined")
-                Serial.println(uid);
+                Serial.print(uid);
             else
-                Serial.println(username);
+                Serial.print(username);
 #endif
 
             // Check if user have an access
@@ -1191,7 +1192,7 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
     JsonObject &mqtt = json["mqtt"];
     JsonObject &ntp = json["ntp"];
 #ifdef DEBUG
-    Serial.print(F("[ INFO ] Trying to setup RFID Hardware :"));
+    Serial.println(F("[ INFO ] Trying to setup RFID Hardware"));
 #endif
 
 #ifdef OFFICIALBOARD
@@ -1303,7 +1304,7 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
     }
 
 #ifdef DEBUG
-    Serial.println("Trying to setup NTP Server");
+    Serial.println("[ INFO ] Trying to setup NTP Server");
 #endif
 
     IPAddress timeserverip;
@@ -1322,6 +1323,8 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
     mpas = strdup(mpasString.c_str());
 
     mqttenabled = mqtt["enabled"];
+    Serial.print("mqtt enable:");
+    Serial.println(mqttenabled);
 
     if (mqttenabled == 1)
     {
