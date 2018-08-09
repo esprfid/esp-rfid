@@ -2,14 +2,20 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased 0.8.0]
+#### Breaking Changes
+- [firmware] Flash partition is changed to 1+3 !!! You need to backup your settings and users before updating to this version
+- [firmware] For wiegand readers card id's changed hexadecimal to decimal !!! You need to change hexadecimal values to decimal values on your user backup file 
+
 #### Added
 - [build] Optimize code for official board 
+- [firmware] mqtt boot, hearthbeat, access message added
 
 #### Fixed
 - [firmware] #128 Do not retain MQTT publishes
+- [firmware] Compiller warnings fixed 
 
 #### Changed
-- [webui] Default wifi type to AP,
+- [webui] Default wifi type to AP
 - [firmware] MQTT Messages are now plain JSON encoded texts
 - [build] flash.bat file now asks which firmware to flash
 
