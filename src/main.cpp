@@ -13,8 +13,6 @@
    THE SOFTWARE.
  */
 
-#define OFFICIALBOARD
-
 #include "Arduino.h"
 #include <ESP8266WiFi.h>
 #include <SPI.h>
@@ -57,7 +55,7 @@ extern "C"
 }
 #endif
 
-#define DEBUG
+// #define DEBUG
 
 #ifdef OFFICIALBOARD
 // Create instance for Wiegand reade
@@ -363,7 +361,9 @@ void ICACHE_FLASH_ATTR sendStatus()
     DynamicJsonBuffer jsonBuffer567;
     JsonObject &root = jsonBuffer567.createObject();
     root["command"] = "status";
-
+#ifdef OFFICIALBOARD
+	root["board"] = "brdV2";
+#endif
     root["heap"] = ESP.getFreeHeap();
     root["chipid"] = String(ESP.getChipId(), HEX);
     root["cpu"] = ESP.getCpuFreqMHz();

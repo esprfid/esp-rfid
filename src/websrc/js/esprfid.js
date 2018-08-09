@@ -6,6 +6,7 @@ var utcSeconds;
 var timezone;
 var data = [];
 var ajaxobj;
+var isOfficialBoard = false;
 
 var config = {
     "command": "configfile",
@@ -114,7 +115,17 @@ function handleDHCP() {
 }
 
 function listhardware() {
-
+    if (isOfficialBoard) {
+		document.getElementById("readerType").value = 1;
+		document.getElementById("wg0pin").value = 5;
+		document.getElementById("wg1pin").value = 4;
+		document.getElementById("gpiorly").value = 13;
+		document.getElementById("wg0pin").disabled = true;
+		document.getElementById("wg1pin").disabled = true;
+		document.getElementById("gpiorly").disabled = true;
+		document.getElementById("readerType").disabled = true;
+	}
+	else {
     document.getElementById("readerType").value = config.hardware.readerType;
     document.getElementById("wg0pin").value = config.hardware.wgd0pin;
     document.getElementById("wg1pin").value = config.hardware.wgd1pin;
@@ -123,6 +134,7 @@ function listhardware() {
     document.getElementById("typerly").value = config.hardware.rtype;
     document.getElementById("gpiorly").value = config.hardware.rpin;
     document.getElementById("delay").value = config.hardware.rtime;
+	}
     handleReader();
 }
 
@@ -961,6 +973,7 @@ function socketMessageListener(evt) {
     if (obj.hasOwnProperty("command")) {
         switch (obj.command) {
             case "status":
+				if (obj.hasOwnProperty("board")) { isOfficialBoard = true; }
                 ajaxobj = obj;
                 getContent("#statuscontent");
                 break;
