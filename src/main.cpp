@@ -1606,6 +1606,7 @@ void ICACHE_RAM_ATTR loop()
     if (activateRelay)
     {
         digitalWrite(relayPin, !relayType);
+		ws.textAll("{\"command\":\"giveAccess\"");
     }
     if (isWifiConnected)
     {
