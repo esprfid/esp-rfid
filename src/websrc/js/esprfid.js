@@ -1,4 +1,4 @@
-var version = "0.8.0";
+var version = "0.8.1";
 
 var websock = null;
 var wsUri = "ws://" + window.location.hostname + "/ws";
@@ -501,7 +501,7 @@ function listStats() {
     document.getElementById("heap").style.width = (ajaxobj.heap * 100) / 40960 + "%";
     colorStatusbar(document.getElementById("heap"));
     document.getElementById("flash").innerHTML = ajaxobj.availsize + " Bytes";
-    document.getElementById("flash").style.width = (ajaxobj.availsize * 100) / 2092032 + "%";
+    document.getElementById("flash").style.width = (ajaxobj.availsize * 100) / 1000000 + "%";
     colorStatusbar(document.getElementById("flash"));
     document.getElementById("spiffs").innerHTML = ajaxobj.availspiffs + " Bytes";
     document.getElementById("spiffs").style.width = (ajaxobj.availspiffs * 100) / ajaxobj.spiffssize + "%";

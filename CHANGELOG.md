@@ -1,7 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [Unreleased 0.8.0]
+## [Unreleased 0.8.1]
+#### Fixed
+- [webui] Old available flash space calculation fixed
+
+
+## [0.8.0]
 #### Breaking Changes
 - [firmware] Flash partition is changed to 1+3 !!! You need to backup your settings and users before updating to this version
 - [firmware] For wiegand readers card id's changed hexadecimal to decimal !!! You need to change hexadecimal values to decimal values on your user backup file 

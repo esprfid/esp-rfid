@@ -22,6 +22,23 @@ Access Control system using a cheap MFRC522, PN532 RFID readers or Wiegand RFID 
 * MQTT enabled
 * Bootstrap, jQuery, FooTables for beautiful Web Pages for both Mobile and Desktop Screens
 * Thanks to ESPAsyncWebServer Library communication is Asyncronous
+### Official Hardware
+* Small size form factor, sometimes it is possible to glue it into existing readers.
+* Single power source to power 12V/2A powers ESP12 module, RFID Wiegand Reader and magnetic lock for opening doors.
+* Exposed programming pins for ESP8266
+* Regarding hardware design, you get multiple possible setup options:
+* Forward Bell ringing on reader to MCU or pass it out of board
+* Track Door Status
+* Control reader’s status LED
+* Control reader’s status BUZZER sound *
+* Power reader, lock and the board through single 12V, 2A PSU
+* Optionally power magnetic lock through external AC/DC PSU
+* Possible to use any kind and any type of wiegand readers
+* Enables you to make IOT Access System with very litle wiring
+* Fit in universal enclosures with DIN mount
+* Opensource Hardware
+
+Get more information and see accessory options from [Tindie Store](https://www.tindie.com/products/nardev/esp-rfid-relay-board-12v-in-esp8266-board/)
 
 ## Getting Started
 This project still in its development phase. New features (and also bugs) are introduced often and some functions may become deprecated. Please feel free to comment or give feedback.
@@ -116,8 +133,8 @@ For Wiegand based readers, you can configure D0 and D1 pins via settings page. B
 * Congratulations, everything went well, if you encounter any issue feel free to ask help on GitHub.
 
 ### Known Issues
-* MQTT functionality is not stable for now.
-* See [#99](https://github.com/omersiar/esp-rfid/issues/99).
+* You need to properly connect your MFRC522 reader to your ESP or you will get boot loop
+
 * Please also check [GitHub issues](https://github.com/omersiar/esp-rfid/issues).
 
 
