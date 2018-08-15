@@ -55,7 +55,7 @@ extern "C"
 }
 #endif
 
-// #define DEBUG
+#define DEBUG
 
 #ifdef OFFICIALBOARD
 // Create instance for Wiegand reade
@@ -362,7 +362,7 @@ void ICACHE_FLASH_ATTR sendStatus()
     JsonObject &root = jsonBuffer567.createObject();
     root["command"] = "status";
 #ifdef OFFICIALBOARD
-	root["board"] = "brdV2";
+    root["board"] = "brdV2";
 #endif
     root["heap"] = ESP.getFreeHeap();
     root["chipid"] = String(ESP.getChipId(), HEX);
@@ -1647,11 +1647,15 @@ void ICACHE_RAM_ATTR loop()
     {
         if (mqttenabled == 1)
         {
-            if ((unsigned)now() >= nextbeat)
+            if ((unsigned)now() > nextbeat)
             {
                 mqtt_publish_heartbeat(now());
+                nextbeat = (unsigned)now() + interval;
+#ifdef DEBUG
+                Serial.print("[ INFO ] Nextbeat=");
+                Serial.println(nextbeat);
+#endif
             }
-            nextbeat = (unsigned)now() + interval;
         }
     }
 }
