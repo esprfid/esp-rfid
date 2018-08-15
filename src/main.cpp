@@ -770,6 +770,7 @@ void ICACHE_FLASH_ATTR rfidloop()
             {
                 activateRelay = true; // Give user Access to Door, Safe, Box whatever you like
                 previousMillis = millis();
+				ws.textAll("{\"command\":\"giveAccess\"}");
 
 #ifdef DEBUG
                 Serial.println(" have access");
@@ -786,6 +787,7 @@ void ICACHE_FLASH_ATTR rfidloop()
                 previousMillis = millis();
                 doEnableWifi = true;
                 activateRelay = true; // Give user Access to Door, Safe, Box whatever you like
+				ws.textAll("{\"command\":\"giveAccess\"}");
 #ifdef DEBUG
                 Serial.println(" have admin access, enable wifi");
 #endif
@@ -1067,6 +1069,7 @@ void ICACHE_FLASH_ATTR onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *c
             {
                 activateRelay = true;
                 previousMillis = millis();
+				ws.textAll("{\"command\":\"giveAccess\"}");
             }
             else if (strcmp(command, "scan") == 0)
             {
@@ -1606,7 +1609,7 @@ void ICACHE_RAM_ATTR loop()
     if (activateRelay)
     {
         digitalWrite(relayPin, !relayType);
-		ws.textAll("{\"command\":\"giveAccess\"");
+		
     }
     if (isWifiConnected)
     {

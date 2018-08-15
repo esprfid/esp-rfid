@@ -3,8 +3,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased 0.8.1]
 #### Fixed
-- [webui] Old available flash space calculation fixed
+- [webui] available flash space calculation
 
+#### Added
+- [firmware] Global websocket message to inform ws clients to toggle relay (upcoming client version will use it)
 
 ## [0.8.0]
 #### Breaking Changes

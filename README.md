@@ -35,8 +35,8 @@ Access Control system using a cheap MFRC522, PN532 RFID readers or Wiegand RFID 
 * Optionally power magnetic lock through external AC/DC PSU
 * Possible to use any kind and any type of wiegand readers
 * Enables you to make IOT Access System with very litle wiring
-* Fit in universal enclosures with DIN mount
-* Opensource Hardware
+* Fits in an universal enclosures with DIN mount
+* Open Source Hardware
 
 Get more information and see accessory options from [Tindie Store](https://www.tindie.com/products/nardev/esp-rfid-relay-board-12v-in-esp8266-board/)
 
@@ -133,10 +133,8 @@ For Wiegand based readers, you can configure D0 and D1 pins via settings page. B
 * Congratulations, everything went well, if you encounter any issue feel free to ask help on GitHub.
 
 ### Known Issues
-* You need to properly connect your MFRC522 reader to your ESP or you will get boot loop
-
+* You need to connect your MFRC522 reader to your ESP properly or you will end up with a boot loop
 * Please also check [GitHub issues](https://github.com/omersiar/esp-rfid/issues).
-
 
 #### Time
 We are syncing time from a NTP Server (in Client -aka infrastructure- Mode). This will require ESP to have an Internet connection. Additionaly your ESP can also work without Internet connection too (Access Point -aka Ad-Hoc- Mode),  without giving up functionality.
