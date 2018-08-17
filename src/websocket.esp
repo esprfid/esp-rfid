@@ -1,0 +1,98 @@
+// Handles WebSocket Events
+void ICACHE_FLASH_ATTR onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len) {
+	if (type == WS_EVT_ERROR) {
+#ifdef DEBUG
+		Serial.printf("[ WARN ] WebSocket[%s][%u] error(%u): %s\r\n", server->url(), client->id(), *((uint16_t *)arg), (char *)data);
+#endif
+	} else if (type == WS_EVT_DATA) {
+		AwsFrameInfo *info = (AwsFrameInfo *)arg;
+		String msg = "";
+		if (info->final && info->index == 0 && info->len == len) {
+			//the whole message is in a single frame and we got all of it's data
+			for (size_t i = 0; i < info->len; i++) {
+				msg += (char)data[i];
+			}
+			// We should always get a JSON object (stringfied) from browser, so parse it
+			DynamicJsonBuffer jsonBuffer;
+			JsonObject &root = jsonBuffer.parseObject(msg);
+			if (!root.success()) {
+#ifdef DEBUG
+				Serial.println(F("[ WARN ] Couldn't parse WebSocket message"));
+#endif
+				return;
+			}
+			// Web Browser sends some commands, check which command is given
+			const char *command = root["command"];
+			// Check whatever the command is and act accordingly
+			if (strcmp(command, "remove") == 0) {
+				const char *uid = root["uid"];
+				String filename = "/P/";
+				filename += uid;
+				SPIFFS.remove(filename);
+			} else if (strcmp(command, "configfile") == 0) {
+				File f = SPIFFS.open("/config.json", "w+");
+				if (f) {
+					root.prettyPrintTo(f);
+					//f.print(msg);
+					f.close();
+					ESP.restart();
+				}
+			} else if (strcmp(command, "userlist") == 0) {
+				int page = root["page"];
+				sendUserList(page, client);
+			} else if (strcmp(command, "status") == 0) {
+				sendStatus();
+			} else if (strcmp(command, "restart") == 0) {
+				shouldReboot = true;
+			} else if (strcmp(command, "destroy") == 0) {
+				formatreq = true;
+			} else if (strcmp(command, "geteventlog") == 0) {
+				int page = root["page"];
+				sendEventLog(page);
+			} else if (strcmp(command, "getlatestlog") == 0) {
+				int page = root["page"];
+				sendLatestLog(page);
+			} else if (strcmp(command, "clearevent") == 0) {
+				SPIFFS.remove("/eventlog.json");
+				writeEvent("WARN", "sys", "Event log cleared!", "");
+			} else if (strcmp(command, "clearlatest") == 0) {
+				SPIFFS.remove("/latestlog.json");
+				writeEvent("WARN", "sys", "Latest Access log cleared!", "");
+			} else if (strcmp(command, "userfile") == 0) {
+				const char *uid = root["uid"];
+				String filename = "/P/";
+				filename += uid;
+				File f = SPIFFS.open(filename, "w+");
+				// Check if we created the file
+				if (f) {
+					f.print(msg);
+				}
+				f.close();
+				ws.textAll("{\"command\":\"result\",\"resultof\":\"userfile\",\"result\": true}");
+			} else if (strcmp(command, "testrelay") == 0) {
+				activateRelay = true;
+				previousMillis = millis();
+				ws.textAll("{\"command\":\"giveAccess\"}");
+			} else if (strcmp(command, "scan") == 0) {
+				WiFi.scanNetworksAsync(printScanResult, true);
+			} else if (strcmp(command, "gettime") == 0) {
+				timerequest = true;
+			} else if (strcmp(command, "settime") == 0) {
+				time_t t = root["epoch"];
+				setTime(t);
+				timerequest = true;
+			} else if (strcmp(command, "getconf") == 0) {
+				File configFile = SPIFFS.open("/config.json", "r");
+				if (configFile) {
+					size_t len = configFile.size();
+					AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
+					if (buffer) {
+						configFile.readBytes((char *)buffer->get(), len + 1);
+						ws.textAll(buffer);
+					}
+					configFile.close();
+				}
+			}
+		}
+	}
+}

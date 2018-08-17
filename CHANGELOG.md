@@ -2,11 +2,15 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased 0.8.1]
+#### Added
+- [firmware] Global websocket message to inform ws clients to toggle relay (upcoming client version will use it)
+
 #### Fixed
 - [webui] available flash space calculation
 
-#### Added
-- [firmware] Global websocket message to inform ws clients to toggle relay (upcoming client version will use it)
+#### Changed
+- [firmware] do not initialize serial unless we are debugging
+- [build] slice main.cpp to multiple parts for better readability 
 
 ## [0.8.0]
 #### Breaking Changes

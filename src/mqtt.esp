@@ -1,0 +1,112 @@
+void connectToMqtt() {
+#ifdef DEBUG
+	Serial.println("[ INFO ] try to connect mqtt ");
+#endif
+	mqttClient.connect();
+}
+
+void onMqttDisconnect(AsyncMqttClientDisconnectReason reason) {
+	String reasonstr = "";
+	switch (reason) {
+	case (AsyncMqttClientDisconnectReason::TCP_DISCONNECTED):
+		reasonstr = "TCP_DISCONNECTED";
+		break;
+	case (AsyncMqttClientDisconnectReason::MQTT_UNACCEPTABLE_PROTOCOL_VERSION):
+		reasonstr = "MQTT_UNACCEPTABLE_PROTOCOL_VERSION";
+		break;
+	case (AsyncMqttClientDisconnectReason::MQTT_IDENTIFIER_REJECTED):
+		reasonstr = "MQTT_IDENTIFIER_REJECTED";
+		break;
+	case (AsyncMqttClientDisconnectReason::MQTT_SERVER_UNAVAILABLE):
+		reasonstr = "MQTT_SERVER_UNAVAILABLE";
+		break;
+	case (AsyncMqttClientDisconnectReason::MQTT_MALFORMED_CREDENTIALS):
+		reasonstr = "MQTT_MALFORMED_CREDENTIALS";
+		break;
+	case (AsyncMqttClientDisconnectReason::MQTT_NOT_AUTHORIZED):
+		reasonstr = "MQTT_NOT_AUTHORIZED";
+		break;
+	case (AsyncMqttClientDisconnectReason::ESP8266_NOT_ENOUGH_SPACE):
+		reasonstr = "ESP8266_NOT_ENOUGH_SPACE";
+		break;
+	default:
+		reasonstr = "Unknown";
+		break;
+	}
+	writeEvent("WARN", "mqtt", "Disconnected from MQTT server", reasonstr);
+	if (WiFi.isConnected()) {
+		mqttReconnectTimer.once(60, connectToMqtt);
+	}
+}
+
+
+
+void mqtt_publish_boot(time_t boot_time, String const &wifi, String const &ip) {
+	const char *topic = mqttTopic;
+	DynamicJsonBuffer jsonBuffer;
+	JsonObject &root = jsonBuffer.createObject();
+	root["type"] = "boot";
+	root["time"] = boot_time;
+	root["Wifi SSID"] = wifi;
+	root["Local IP"] = ip;
+	String mqttBuffer_boot;
+	root.printTo(mqttBuffer_boot);
+	mqttClient.publish(topic, 0, false, mqttBuffer_boot.c_str());
+#ifdef DEBUG
+	Serial.print("[ INFO ] Mqtt Publish:");
+	Serial.println(mqttBuffer_boot);
+#endif
+}
+
+void mqtt_publish_heartbeat(time_t heartbeat) {
+	const char *topic = mqttTopic;
+	DynamicJsonBuffer jsonBuffer;
+	JsonObject &root = jsonBuffer.createObject();
+	root["type"] = "hearthbeat";
+	root["time"] = heartbeat;
+	String mqttBuffer4;
+	root.printTo(mqttBuffer4);
+	mqttClient.publish(topic, 0, false, mqttBuffer4.c_str());
+#ifdef DEBUG
+	Serial.print("[ INFO ] Mqtt Publish:");
+	Serial.println(mqttBuffer4);
+#endif
+}
+
+void mqtt_publish_access(time_t accesstime, String const &isknown, String const &type, String const &user, String const &uid) {
+	if (mqttClient.connected()) {
+		const char *topic = mqttTopic;
+		DynamicJsonBuffer jsonBuffer;
+		JsonObject &root = jsonBuffer.createObject();
+		root["type"] = "access";
+		root["time"] = accesstime;
+		root["isKnown"] = isknown;
+		root["access"] = type;
+		root["username"] = user;
+		root["uid"] = uid;
+		String mqttBuffer;
+		root.printTo(mqttBuffer);
+		mqttClient.publish(topic, 0, false, mqttBuffer.c_str());
+#ifdef DEBUG
+		Serial.print("[ INFO ] Mqtt Publish:");
+		Serial.println(mqttBuffer);
+#endif
+	}
+}
+
+void onMqttPublish(uint16_t packetId) {
+	writeEvent("INFO", "mqtt", "MQTT publish acknowledged", String(packetId));
+}
+
+void onMqttConnect(bool sessionPresent) {
+#ifdef DEBUG
+	Serial.println("[ INFO ] MQTT Connected session");
+#endif
+	if (sessionPresent == true) {
+#ifdef DEBUG
+		Serial.println("[ INFO ]MQTT session Present: True");
+#endif
+		writeEvent("INFO", "mqtt", "Connected to MQTT Server", "Session Present");
+	}
+	mqtt_publish_boot(now(), WiFi.SSID(), WiFi.localIP().toString());
+}
