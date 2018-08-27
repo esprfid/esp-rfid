@@ -97,6 +97,12 @@ If you want to edit esp-rfid's Web UI you will need:
 
 Gulp script also minifies HTML and JS files and compresses (gzip) them. 
 
+In order to test your changes without flashing the firmware you can launch websocket emulator which is included in tools directory.
+* You will need to Node JS for websocket emulator.
+* Run ```npm update``` to install dependencies
+* Run emulator  ```node wsemulator.js```
+* then you will need to launch your browser with CORS disabled. Get more information here: https://stackoverflow.com/questions/3102819/disable-same-origin-policy-in-chrome
+
 ### Pin Layout
 
 The following table shows the typical pin layout used for connecting MFRC522 hardware to ESP:

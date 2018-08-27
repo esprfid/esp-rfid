@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 #### Changed
 - [firmware] do not initialize serial output unless we are debugging
 - [build] slice main.cpp to multiple parts for better readability 
+- [webui] Access Type Active to Always
 
 ## [0.8.0]
 #### Breaking Changes
