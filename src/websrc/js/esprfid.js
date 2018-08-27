@@ -570,7 +570,7 @@ function getContent(contentname) {
 
 function backupuser() {
     backupstarted = true;
-	file = {};
+	data = [];
     var commandtosend = {};
     commandtosend.command = "userlist";
     commandtosend.page = page;
@@ -690,7 +690,8 @@ function initEventTable() {
     var newlist = [];
     for (var i = 0; i < data.length; i++) {
         var dup = JSON.parse(data[i]);
-        newlist[i] = {};
+		dup.uid = i;
+		newlist[i] = {};
         newlist[i].options = {};
         newlist[i].value = {};
         newlist[i].value = dup;
@@ -713,6 +714,13 @@ function initEventTable() {
     jQuery(function($) {
         window.FooTable.init("#eventtable", {
             columns: [{
+					"name": "uid",
+                    "title": "ID",
+                    "type": "text",
+					"sorted": true,
+                    "direction": "DESC"
+				},
+				{
                     "name": "type",
                     "title": "Event Type",
                     "type": "text"
