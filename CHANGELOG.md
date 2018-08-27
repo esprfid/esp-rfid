@@ -7,9 +7,11 @@ All notable changes to this project will be documented in this file.
 
 #### Fixed
 - [webui] available flash space calculation
+- [webui] #143 duplicate records on User Data backup
+- [firmware] #140 MQTT Heartbeat
 
 #### Changed
-- [firmware] do not initialize serial unless we are debugging
+- [firmware] do not initialize serial output unless we are debugging
 - [build] slice main.cpp to multiple parts for better readability 
 
 ## [0.8.0]

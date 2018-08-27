@@ -570,6 +570,7 @@ function getContent(contentname) {
 
 function backupuser() {
     backupstarted = true;
+	file = {};
     var commandtosend = {};
     commandtosend.command = "userlist";
     commandtosend.page = page;
