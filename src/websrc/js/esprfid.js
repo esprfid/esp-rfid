@@ -866,7 +866,7 @@ function initUserTable() {
                         "breakpoints": "xs",
                         "parser": function(value) {
                             if (value === 1) {
-                                return "Active";
+                                return "Always";
                             } else if (value === 99) {
                                 return "Admin";
                             } else if (value === 0) {
@@ -902,7 +902,7 @@ function initUserTable() {
                     editRow: function(row) {
                         var acctypefinder;
                         var values = row.val();
-                        if (values.acctype === "Active") {
+                        if (values.acctype === "Always") {
                             acctypefinder = 1;
                         } else if (values.acctype === "Admin") {
                             acctypefinder = 99;
@@ -1160,7 +1160,7 @@ window.FooTable.MyFiltering = window.FooTable.Filtering.extend({
     construct: function(instance) {
         this._super(instance);
         this.acctypes = ["1", "99", "0"];
-        this.acctypesstr = ["Active", "Admin", "Disabled"];
+        this.acctypesstr = ["Always", "Admin", "Disabled"];
         this.def = "Access Type";
         this.$acctype = null;
     },
