@@ -749,8 +749,6 @@ function initEventTable() {
                             return formatted;
                         }
                     },
-                    "sorted": true,
-                    "direction": "DESC",
                     "breakpoints": "xs sm"
                 }
             ],
