@@ -1,9 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [Unreleased 0.8.1]
+## [0.8.1]
 #### Added
 - [firmware] Global websocket message to inform ws clients to toggle relay (upcoming client version will use it)
+- [webui] incremental id for event log
 
 #### Fixed
 - [webui] available flash space calculation
