@@ -101,7 +101,6 @@ void ICACHE_FLASH_ATTR rfidloop() {
 #endif
 			if (AccType == 1) {
 				activateRelay = true;
-				previousMillis = millis();
 				ws.textAll("{\"command\":\"giveAccess\"}");
 #ifdef DEBUG
 				Serial.println(" have access");
@@ -110,7 +109,6 @@ void ICACHE_FLASH_ATTR rfidloop() {
 					mqtt_publish_access(now(), "true", "Always", username, uid);
 				}
 			} else if (AccType == 99) {
-				previousMillis = millis();
 				doEnableWifi = true;
 				activateRelay = true;
 				ws.textAll("{\"command\":\"giveAccess\"}");

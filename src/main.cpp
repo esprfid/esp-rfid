@@ -83,9 +83,13 @@ const char *http_username = "admin";
 char *http_pass = NULL;
 unsigned long previousMillis = 0;
 unsigned long previousLoopMillis = 0;
+unsigned long currentMillis = 0;
 unsigned long cooldown = 0;
+unsigned long deltaTime = 0;
+unsigned long uptime = 0;
 bool shouldReboot = false;
 bool activateRelay = false;
+bool deactivateRelay = false;
 bool inAPMode = false;
 bool isWifiConnected = false;
 unsigned long autoRestartIntervalSeconds = 0;
@@ -173,13 +177,39 @@ void ICACHE_FLASH_ATTR setup() {
 }
 
 void ICACHE_RAM_ATTR loop() {
-	unsigned long currentMillis = millis();
-	unsigned long deltaTime = currentMillis - previousLoopMillis;
-	unsigned long uptime = NTP.getUptimeSec();
+	currentMillis = millis();
+	deltaTime = currentMillis - previousLoopMillis;
+	uptime = NTP.getUptimeSec();
 	previousLoopMillis = currentMillis;
 	
 	if (currentMillis >= cooldown) {
 		rfidloop();
+	}
+	
+	if (activateRelay) {
+		#ifdef DEBUG
+		Serial.print("mili : ");
+		Serial.println(millis());
+		Serial.println("activating relay now");
+		#endif
+		digitalWrite(relayPin, !relayType);
+		previousMillis = millis();
+		activateRelay = false;
+		deactivateRelay = true;
+		writeEvent("INFO", "sys", "Activated Relay", "");
+	} else if((currentMillis - previousMillis >= activateTime) && (deactivateRelay)) {
+		#ifdef DEBUG
+		Serial.println(currentMillis);
+		Serial.println(previousMillis);
+		Serial.println(activateTime);
+		Serial.println(activateRelay);
+		Serial.println("deactivate relay after this");
+		Serial.print("mili : ");
+		Serial.println(millis());
+		#endif
+		digitalWrite(relayPin, relayType);
+		deactivateRelay = false;
+		writeEvent("INFO", "sys", "De-Activated Relay", "");
 	}
 
 	if (formatreq) {
@@ -213,16 +243,6 @@ void ICACHE_RAM_ATTR loop() {
 		ESP.restart();
 	}
 	
-	if (currentMillis - previousMillis >= activateTime && activateRelay) {
-		activateRelay = false;
-		digitalWrite(relayPin, relayType);
-	}
-	
-	if (activateRelay) {
-		digitalWrite(relayPin, !relayType);
-
-	}
-	
 	if (isWifiConnected) {
 		wiFiUptimeMillis += deltaTime;
 	}
@@ -244,10 +264,10 @@ void ICACHE_RAM_ATTR loop() {
 			enableWifi();
 		}
 	}
-
-	if (mqttClient.connected()) {
-		if (mqttenabled == 1) {
-			if ((unsigned)now() > nextbeat) {
+	
+	if (mqttenabled == 1) {
+		if (mqttClient.connected()) {
+				if ((unsigned)now() > nextbeat) {
 				mqtt_publish_heartbeat(now());
 				nextbeat = (unsigned)now() + interval;
 #ifdef DEBUG
@@ -257,4 +277,5 @@ void ICACHE_RAM_ATTR loop() {
 			}
 		}
 	}
+	
 }

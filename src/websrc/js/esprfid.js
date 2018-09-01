@@ -124,6 +124,8 @@ function listhardware() {
 		document.getElementById("wg1pin").disabled = true;
 		document.getElementById("gpiorly").disabled = true;
 		document.getElementById("readerType").disabled = true;
+		document.getElementById("typerly").value = config.hardware.rtype;
+		document.getElementById("delay").value = config.hardware.rtime;
 	}
 	else {
     document.getElementById("readerType").value = config.hardware.readerType;
@@ -163,7 +165,7 @@ function uncommited() {
     $("#commit").fadeOut(200, function() {
         $(this).css("background", "gold").fadeIn(1000);
     });
-    document.getElementById("commit").innerHTML = "<h6>You have uncommited changes, please click here to commit and reboot (you will a have chance to review changes).</h6>";
+    document.getElementById("commit").innerHTML = "<h6>You have uncommited changes, please click here to review and commit.</h6>";
     $("#commit").click(function() {
         revcommit();
         return false;
