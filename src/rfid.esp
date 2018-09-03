@@ -100,13 +100,28 @@ void ICACHE_FLASH_ATTR rfidloop() {
 				Serial.print(username);
 #endif
 			if (AccType == 1) {
-				activateRelay = true;
-				ws.textAll("{\"command\":\"giveAccess\"}");
+				unsigned long validL = json["validuntil"];
+				unsigned long nowL = now();
+				
+				if (validL > nowL ) {
+					activateRelay = true;
+					ws.textAll("{\"command\":\"giveAccess\"}");
 #ifdef DEBUG
-				Serial.println(" have access");
+					Serial.println(" have access");
 #endif
-				if (mqttenabled == 1) {
-					mqtt_publish_access(now(), "true", "Always", username, uid);
+					if (mqttenabled == 1) {
+						mqtt_publish_access(now(), "true", "Always", username, uid);
+					}
+				}
+				
+				else {
+#ifdef DEBUG
+					Serial.println(" expired");
+#endif
+					if (mqttenabled == 1) {
+						mqtt_publish_access(now(), "true", "Expired", username, uid);
+					}
+					AccType = 2;
 				}
 			} else if (AccType == 99) {
 				doEnableWifi = true;

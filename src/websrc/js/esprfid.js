@@ -780,6 +780,9 @@ function initLatestLogTable() {
             case 1:
                 newlist[i].options.classes = "success";
                 break;
+			case 2:
+                newlist[i].options.classes = "warning";
+                break;
             case 99:
                 newlist[i].options.classes = "info";
                 break;
@@ -836,6 +839,8 @@ function initLatestLogTable() {
                             return "Disabled";
                         } else if (value === 98) {
                             return "Unknown";
+                        } else if (value === 2) {
+                            return "Expired";
                         }
                     }
                 }

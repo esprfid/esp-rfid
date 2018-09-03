@@ -1,7 +1,15 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [0.8.1]
+## [Unreleased 0.8.2]
+#### Added
+- [firmware] log for firmware update #152
+- [webui] Expired access attempts logged as "Expired"
+
+#### Fixed
+- [firmware] validuntil is being ignored #151
+
+## [0.8.1] 2018-09-01
 #### Added
 - [firmware] Global websocket message to inform ws clients to toggle relay (upcoming client version will use it)
 - [webui] incremental id for event log
