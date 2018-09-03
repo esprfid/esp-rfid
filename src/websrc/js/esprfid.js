@@ -1363,8 +1363,6 @@ function allowUpload() {
     $("#upbtn").prop("disabled", false);
 }
 
-
-
 function start() {
     esprfidcontent = document.createElement("div");
     esprfidcontent.id = "mastercontent";

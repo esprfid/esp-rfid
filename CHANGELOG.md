@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 - [firmware] validuntil is being ignored #151
 
 #### Changed
+- [webui] sanity check for firmware update file #152
 - [firmware] MQTT reconnect code (dirty hack) #149
 
 ## [0.8.1] 2018-09-01
