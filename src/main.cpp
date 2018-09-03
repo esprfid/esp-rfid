@@ -196,7 +196,6 @@ void ICACHE_RAM_ATTR loop() {
 		previousMillis = millis();
 		activateRelay = false;
 		deactivateRelay = true;
-		writeEvent("INFO", "sys", "Activated Relay", "");
 	} else if((currentMillis - previousMillis >= activateTime) && (deactivateRelay)) {
 		#ifdef DEBUG
 		Serial.println(currentMillis);
@@ -209,7 +208,6 @@ void ICACHE_RAM_ATTR loop() {
 		#endif
 		digitalWrite(relayPin, relayType);
 		deactivateRelay = false;
-		writeEvent("INFO", "sys", "De-Activated Relay", "");
 	}
 
 	if (formatreq) {

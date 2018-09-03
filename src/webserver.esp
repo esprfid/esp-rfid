@@ -14,27 +14,38 @@ void ICACHE_FLASH_ATTR setupWebServer() {
 			return;
 		}
 		if (!index) {
+			writeEvent("INFO", "updt", "Firmware update started", filename.c_str());
 #ifdef DEBUG
 			Serial.printf("[ UPDT ] Firmware update started: %s\n", filename.c_str());
 #endif
 			Update.runAsync(true);
 			if (!Update.begin((ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000)) {
+				writeEvent("ERRO", "updt", "Not enough space to update","");
+				#ifdef DEBUG
 				Update.printError(Serial);
+				#endif
 			}
 		}
 		if (!Update.hasError()) {
 			if (Update.write(data, len) != len) {
+				writeEvent("ERRO", "updt", "Writing to flash is failed", filename.c_str());
+				#ifdef DEBUG
 				Update.printError(Serial);
+				#endif
 			}
 		}
 		if (final) {
 			if (Update.end(true)) {
+				writeEvent("INFO", "updt", "Firmware update is finished", "");
 #ifdef DEBUG
 				Serial.printf("[ UPDT ] Firmware update finished: %uB\n", index + len);
 #endif
 				shouldReboot = !Update.hasError();
 			} else {
+				writeEvent("ERRO", "updt", "Update is failed", "");
+				#ifdef DEBUG
 				Update.printError(Serial);
+				#endif
 			}
 		}
 	});
