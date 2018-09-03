@@ -114,8 +114,8 @@ bool ICACHE_FLASH_ATTR loadConfiguration() {
 	String ip = printIP(timeserverip);
 	writeEvent("INFO", "ntp", "Connecting NTP Server", ip);
 	NTP.Ntp(ntpserver, timeZone, ntpinter * 60);
-	const char *mhs = mqtt["host"];
-	int mport = mqtt["port"];
+	mhs = strdup(mqtt["host"]);
+	mport = mqtt["port"];
 	const char *muser;
 	const char *mpas;
 	String muserString = mqtt["user"];

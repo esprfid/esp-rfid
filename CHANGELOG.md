@@ -9,6 +9,9 @@ All notable changes to this project will be documented in this file.
 #### Fixed
 - [firmware] validuntil is being ignored #151
 
+#### Changed
+- [firmware] MQTT reconnect code (dirty hack) #149
+
 ## [0.8.1] 2018-09-01
 #### Added
 - [firmware] Global websocket message to inform ws clients to toggle relay (upcoming client version will use it)
