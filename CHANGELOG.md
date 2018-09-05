@@ -1,7 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [Unreleased 0.8.2]
+## [Unreleased]
+
+## [0.8.2] 2018-09-05
 #### Added
 - [firmware] log for firmware update #152
 - [webui] Expired access attempts logged as "Expired"
