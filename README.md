@@ -101,7 +101,11 @@ In order to test your changes without flashing the firmware you can launch webso
 * You will need to Node JS for websocket emulator.
 * Run ```npm update``` to install dependencies
 * Run emulator  ```node wsemulator.js```
-* then you will need to launch your browser with CORS disabled. Get more information here: https://stackoverflow.com/questions/3102819/disable-same-origin-policy-in-chrome
+* then you will need to launch your browser with CORS disabled:
+* ```chrome.exe --args --disable-web-security -–allow-file-access-from-files --user-data-dir="C:\Users\USERNAME```
+
+Get more information here: https://stackoverflow.com/questions/3102819/disable-same-origin-policy-in-chrome
+
 
 ### Pin Layout
 

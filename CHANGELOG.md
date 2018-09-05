@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 
 #### Fixed
 - [firmware] validuntil is being ignored #151
+- [firmware] the boot loop when ssid is empty on configuration file (actually more a workaround than a fix) #154 
 
 #### Changed
 - [webui] sanity check for firmware update file #152

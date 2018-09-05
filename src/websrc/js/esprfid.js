@@ -12,7 +12,7 @@ var config = {
     "command": "configfile",
     "network": {
         "bssid": "",
-        "ssid": "",
+        "ssid": "esp-rfid",
         "wmode": 1,
         "hide": 0,
         "pswd": "",
