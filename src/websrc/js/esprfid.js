@@ -27,6 +27,7 @@ var config = {
         "readerType": 1,
         "wgd0pin": 4,
         "wgd1pin": 5,
+        "rxpin": 2,
         "sspin": 0,
         "rfidgain": 32,
         "rtype": 1,
@@ -95,13 +96,21 @@ function handleReader() {
         document.getElementById("wiegandForm").style.display = "none";
         document.getElementById("mfrc522Form").style.display = "block";
         document.getElementById("rc522gain").style.display = "block";
+		document.getElementById("rdm6300Form").style.display = "none";
     } else if (parseInt(document.getElementById("readerType").value) === 1) {
         document.getElementById("wiegandForm").style.display = "block";
         document.getElementById("mfrc522Form").style.display = "none";
+		document.getElementById("rdm6300Form").style.display = "none";
     } else if (parseInt(document.getElementById("readerType").value) === 2) {
         document.getElementById("wiegandForm").style.display = "none";
         document.getElementById("mfrc522Form").style.display = "block";
         document.getElementById("rc522gain").style.display = "none";
+		document.getElementById("rdm6300Form").style.display = "none";
+    } else if (parseInt(document.getElementById("readerType").value) === 3) {
+        document.getElementById("wiegandForm").style.display = "none";
+        document.getElementById("mfrc522Form").style.display = "none";
+        document.getElementById("rc522gain").style.display = "none";
+		document.getElementById("rdm6300Form").style.display = "block";
     }
 }
 
@@ -119,9 +128,11 @@ function listhardware() {
 		document.getElementById("readerType").value = 1;
 		document.getElementById("wg0pin").value = 5;
 		document.getElementById("wg1pin").value = 4;
+		document.getElementById("rxpin").value = 2;
 		document.getElementById("gpiorly").value = 13;
 		document.getElementById("wg0pin").disabled = true;
 		document.getElementById("wg1pin").disabled = true;
+		document.getElementById("rxpin").disabled = true;
 		document.getElementById("gpiorly").disabled = true;
 		document.getElementById("readerType").disabled = true;
 		document.getElementById("typerly").value = config.hardware.rtype;
@@ -131,6 +142,7 @@ function listhardware() {
     document.getElementById("readerType").value = config.hardware.readerType;
     document.getElementById("wg0pin").value = config.hardware.wgd0pin;
     document.getElementById("wg1pin").value = config.hardware.wgd1pin;
+    document.getElementById("rxpin").value = config.hardware.rxpin;
     document.getElementById("gpioss").value = config.hardware.sspin;
     document.getElementById("gain").value = config.hardware.rfidgain;
     document.getElementById("typerly").value = config.hardware.rtype;
@@ -176,6 +188,7 @@ function savehardware() {
     config.hardware.readerType = parseInt(document.getElementById("readerType").value);
     config.hardware.wgd0pin = parseInt(document.getElementById("wg0pin").value);
     config.hardware.wgd1pin = parseInt(document.getElementById("wg1pin").value);
+    config.hardware.rxpin = parseInt(document.getElementById("rxpin").value);
     config.hardware.sspin = parseInt(document.getElementById("gpioss").value);
     config.hardware.rfidgain = parseInt(document.getElementById("gain").value);
     config.hardware.rtype = parseInt(document.getElementById("typerly").value);

@@ -60,6 +60,17 @@ void ICACHE_FLASH_ATTR rfidloop() {
 			delay(50);
 			return;
 		}
+	} else if (readerType == 3) {
+		if (rdm6300.update()) {
+			uid = String(rdm6300.get_tag_id(), HEX);
+#ifdef DEBUG
+			Serial.print(F("[ INFO ] PICC's UID: "));
+			Serial.print(uid);
+#endif
+		} else {
+			delay(50);
+			return;
+		}
 	} else {
 		delay(50);
 		return;
@@ -215,6 +226,10 @@ void ICACHE_FLASH_ATTR ShowMFRC522ReaderDetails() {
 
 void ICACHE_FLASH_ATTR setupWiegandReader(int d0, int d1) {
 	wg.begin(d0, d1);
+}
+
+void ICACHE_FLASH_ATTR setupRdm6300Reader(int rx) {
+	rdm6300.begin(rx);
 }
 
 #ifndef OFFICIALBOARD
