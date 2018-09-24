@@ -6,7 +6,7 @@ Access Control system using a cheap MFRC522, PN532 RFID, RDM6300 readers or Wieg
 
 [See Demo Here](https://bitadvise.com/esp-rfid/)
 
-[![Showcase Gif](https://raw.githubusercontent.com/omersiar/esp-rfid/stable/demo/showcase.gif)](https://bitadvise.com/esp-rfid/)[![Board](https://raw.githubusercontent.com/omersiar/esp-rfid/stable/demo/board.jpg)](https://www.tindie.com/products/nardev/esp-rfid-relay-board-12v-in-esp8266-board/)
+[![Showcase Gif](https://raw.githubusercontent.com/esprfid/esp-rfid/stable/demo/showcase.gif)](https://bitadvise.com/esp-rfid/)[![Board](https://raw.githubusercontent.com/esprfid/esp-rfid/stable/demo/board.jpg)](https://www.tindie.com/products/nardev/esp-rfid-relay-board-12v-in-esp8266-board/)
 
 ## Features
 ### For Users
@@ -44,10 +44,10 @@ Get more information and see accessory options from [Tindie Store](https://www.t
 This project still in its development phase. New features (and also bugs) are introduced often and some functions may become deprecated. Please feel free to comment or give feedback.
 
 * [See Demo Here](https://bitadvise.com/esp-rfid/)
-* Get the latest release from [here.](https://github.com/omersiar/esp-rfid/releases)
-* See [Known Issues](https://github.com/omersiar/esp-rfid#known-issues) before starting right away.
-* See [Security](https://github.com/omersiar/esp-rfid#security) for your safety.
-* See [ChangeLog](https://github.com/omersiar/esp-rfid/blob/dev/CHANGELOG.md)
+* Get the latest release from [here.](https://github.com/esprfid/esp-rfid/releases)
+* See [Known Issues](https://github.com/esprfid/esp-rfid#known-issues) before starting right away.
+* See [Security](https://github.com/esprfid/esp-rfid#security) for your safety.
+* See [ChangeLog](https://github.com/esprfid/esp-rfid/blob/dev/CHANGELOG.md)
 
 ### What You Will Need
 ### Hardware
@@ -62,7 +62,7 @@ or
 
 #### Using Compiled Binaries
 Download compiled binaries from GitHub Releases page
-https://github.com/omersiar/esp-rfid/releases
+https://github.com/esprfid/esp-rfid/releases
 On Windows you can use **"flash.bat"**, it will ask you which COM port that ESP is connected and then flashes it. You can use any flashing tool and do the flashing manually. The flashing process itself has been described at numerous places on Internet.
 
 #### Building With PlatformIO
@@ -72,7 +72,7 @@ The build enviroment is based on [PlatformIO](http://platformio.org). Follow the
 ```
 sudo pip install -U pip setuptools
 sudo pip install -U platformio
-git clone https://github.com/omersiar/esp-rfid.git
+git clone https://github.com/esprfid/esp-rfid.git
 cd esp-rfid
 platformio run
 ```
@@ -102,7 +102,7 @@ In order to test your changes without flashing the firmware you can launch webso
 * Run ```npm update``` to install dependencies
 * Run emulator  ```node wsemulator.js```
 * then you will need to launch your browser with CORS disabled:
-* ```chrome.exe --args --disable-web-security -–allow-file-access-from-files --user-data-dir="C:\Users\USERNAME```
+* ```chrome.exe --args --disable-web-security -–allow-file-access-from-files --user-data-dir="C:\Users\USERNAME"```
 
 Get more information here: https://stackoverflow.com/questions/3102819/disable-same-origin-policy-in-chrome
 
@@ -145,7 +145,7 @@ For Wiegand based readers, you can configure D0 and D1 pins via settings page. B
 
 ### Known Issues
 * You need to connect your MFRC522 reader to your ESP properly or you will end up with a boot loop
-* Please also check [GitHub issues](https://github.com/omersiar/esp-rfid/issues).
+* Please also check [GitHub issues](https://github.com/esprfid/esp-rfid/issues).
 
 #### Time
 We are syncing time from a NTP Server (in Client -aka infrastructure- Mode). This will require ESP to have an Internet connection. Additionaly your ESP can also work without Internet connection too (Access Point -aka Ad-Hoc- Mode),  without giving up functionality.
@@ -202,7 +202,7 @@ Thanks to the community, ESP-RFID come to alive with their great effort:
 - @romanzava
 - @arduino12
 
-See [ChangeLog](https://github.com/omersiar/esp-rfid/blob/dev/CHANGELOG.md)
+See [ChangeLog](https://github.com/esprfid/esp-rfid/blob/dev/CHANGELOG.md)
 
 ## Donations
 If this project helps you in a way, you can buy us a beer. You can make a donation to the ESP-RFID community with [Bountysource](https://salt.bountysource.com/teams/esp-rfid)
