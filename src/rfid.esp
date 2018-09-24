@@ -60,6 +60,17 @@ void ICACHE_FLASH_ATTR rfidloop() {
 			delay(50);
 			return;
 		}
+	} else if (readerType == 3) {
+		if (rdm6300.update()) {
+			uid = String(rdm6300.get_tag_id(), HEX);
+#ifdef DEBUG
+			Serial.print(F("[ INFO ] PICC's UID: "));
+			Serial.print(uid);
+#endif
+		} else {
+			delay(50);
+			return;
+		}
 	} else {
 		delay(50);
 		return;
@@ -231,6 +242,10 @@ void ICACHE_FLASH_ATTR setupMFRC522Reader(int rfidss, int rfidgain) {
 #ifdef DEBUG
 	ShowMFRC522ReaderDetails(); // Show details of PCD - MFRC522 Card Reader details
 #endif
+}
+
+void ICACHE_FLASH_ATTR setupRdm6300Reader(int rx) {
+	rdm6300.begin(rx);
 }
 #endif
 

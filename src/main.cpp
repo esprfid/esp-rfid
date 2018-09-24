@@ -42,10 +42,12 @@ int relayPin = 13;
 #include <MFRC522.h>
 #include "PN532.h"
 #include <Wiegand.h>
+#include <rdm6300.h>
 
 MFRC522 mfrc522 = MFRC522();
 PN532 pn532;
 WIEGAND wg;
+Rdm6300 rdm6300;
 
 int rfidss;
 int readerType;

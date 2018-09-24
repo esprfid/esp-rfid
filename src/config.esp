@@ -49,6 +49,9 @@ bool ICACHE_FLASH_ATTR loadConfiguration() {
 	} else if (readerType == 2) {
 		rfidss = hardware["sspin"];
 		setupPN532Reader(rfidss);
+	} else if (readerType == 3) {
+		int rxpin = hardware["rxpin"];
+		setupRdm6300Reader(rxpin);
 	}
 #endif
 	autoRestartIntervalSeconds = general["restart"];
