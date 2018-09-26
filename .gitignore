@@ -13,6 +13,7 @@ src/websrc/gzipped
 
 bin/generic.bin
 bin/forV2Board.bin
+bin/debug.bin
 
 # node js
 
