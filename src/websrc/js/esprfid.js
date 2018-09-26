@@ -27,7 +27,7 @@ var config = {
         "readerType": 1,
         "wgd0pin": 4,
         "wgd1pin": 5,
-        "rxpin": 2,
+        "rxpin": 5,
         "sspin": 0,
         "rfidgain": 32,
         "rtype": 1,
@@ -128,7 +128,7 @@ function listhardware() {
 		document.getElementById("readerType").value = 1;
 		document.getElementById("wg0pin").value = 5;
 		document.getElementById("wg1pin").value = 4;
-		document.getElementById("rxpin").value = 2;
+		document.getElementById("rxpin").value = 5;
 		document.getElementById("gpiorly").value = 13;
 		document.getElementById("wg0pin").disabled = true;
 		document.getElementById("wg1pin").disabled = true;
