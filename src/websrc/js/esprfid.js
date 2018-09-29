@@ -217,6 +217,16 @@ function uncommited() {
 }
 
 function savehardware() {
+    var keypass = document.getElementById("keypass").value;
+    if (keypass === null || keypass === "") {
+        alert("Keypad password cannot be empty");
+        return;
+    }
+    var keymap = document.getElementById("keymap").value;
+    if (keymap === null || keymap === "") {
+        alert("Keypad mapping cannot be empty");
+        return;
+    }
     config.hardware.reader = parseInt(document.getElementById("reader").value);
     config.hardware.d0pin = parseInt(document.getElementById("d0pin").value);
     config.hardware.d1pin = parseInt(document.getElementById("d1pin").value);
@@ -229,8 +239,8 @@ function savehardware() {
     config.hardware.buzzermode = parseInt(document.getElementById("buzzermode").value);
     config.hardware.buzzerpin = parseInt(document.getElementById("buzzerpin").value);
     config.hardware.keypadmode = parseInt(document.getElementById("keypadmode").value);
-    config.hardware.keymap = parseInt(document.getElementById("keymap").value);
-    config.hardware.keypass = parseInt(document.getElementById("keypass").value);
+    config.hardware.keymap = document.getElementById("keymap").value;
+    config.hardware.keypass = keypass;
     config.hardware.sdapin = parseInt(document.getElementById("sdapin").value);
     config.hardware.sclpin = parseInt(document.getElementById("sclpin").value);
     uncommited();

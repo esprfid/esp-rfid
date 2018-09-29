@@ -161,10 +161,13 @@ void setup()
 		wifi_init(1, 1, 0, 0, "esp-rfid", NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 		network_init(NULL, 0, 0, 0, NULL, 0, NULL, NULL, NULL);
 		web_app_init(NULL);
-		// wifi_start_ap();
+		return;
 	}
-	else
-		flash_log_i("System setup completed!");
+
+	flash_log_i("System setup completed!");
+	buzzer_beep(BUZZER_BEEP_SHORT);
+	delay(BUZZER_BEEP_SHORT);
+	buzzer_beep(BUZZER_BEEP_SHORT);
 }
 
 void loop()
@@ -177,9 +180,22 @@ void loop()
 	keypad_update();
 	wifi_update();
 
-	if (keypad_valid_password() || rfid_valid_tag()) {
+	switch (keypad_status) {
+		case KEYPAD_PRESS:
+			buzzer_beep(BUZZER_BEEP_SHORT);
+		break;
+		case KEYPAD_INVALID:
+			buzzer_beep(BUZZER_BEEP_MEDIUM);
+		break;
+		case KEYPAD_VALID:
+			buzzer_beep(BUZZER_BEEP_LONG);
+			relay_open_door();
+		break;
+	}
+
+	if (rfid_valid_tag()) {
+		buzzer_beep(BUZZER_BEEP_LONG);
 		relay_open_door();
-		buzzer_beep(100);
 	}
 
 	if (auto_restart_ms && cur_ms > auto_restart_ms) {
