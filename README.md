@@ -213,4 +213,4 @@ If this project helps you in a way, you can buy us a beer. You can make a donati
 Nothing says better thank you than a donation.
 
 ## License
-UNLICENSE
+[MIT License](https://github.com/esprfid/esp-rfid/blob/stable/LICENSE)
