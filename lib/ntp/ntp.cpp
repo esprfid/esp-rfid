@@ -5,8 +5,8 @@
  *      Author: joe
  */
 
-#include "Ntp.h"
 #include <ESPAsyncUDP.h>
+#include "ntp.h"
 
 
 char * NtpClient::TimeServerName;
@@ -18,7 +18,7 @@ AsyncUDP NtpClient::udpListener;
 
 byte NtpClient::NTPpacket[NTP_PACKET_SIZE];
 
-void ICACHE_FLASH_ATTR NtpClient::Ntp(const char * server, int8_t tz, time_t syncSecs) {
+void NtpClient::Ntp(const char * server, int8_t tz, time_t syncSecs) {
 	TimeServerName = strdup(server);
 	timezone = tz;
 	syncInterval = syncSecs;
@@ -28,12 +28,12 @@ void ICACHE_FLASH_ATTR NtpClient::Ntp(const char * server, int8_t tz, time_t syn
 }
 
 
-ICACHE_FLASH_ATTR NtpClient::~NtpClient() {
+NtpClient::~NtpClient() {
 	udpListener.close();
 }
 
 // send an NTP request to the time server at the given address
-time_t ICACHE_FLASH_ATTR NtpClient::getNtpTime() {
+time_t NtpClient::getNtpTime() {
 	memset(NTPpacket, 0, sizeof(NTPpacket));
 	NTPpacket[0] = 0b11100011;
 	NTPpacket[1] = 0;
@@ -59,7 +59,7 @@ time_t ICACHE_FLASH_ATTR NtpClient::getNtpTime() {
 	return 0;
 }
 
-bool ICACHE_FLASH_ATTR NtpClient::processTime() {
+bool NtpClient::processTime() {
 
 	timeStatus_t ts = timeStatus();
 
@@ -75,7 +75,7 @@ bool ICACHE_FLASH_ATTR NtpClient::processTime() {
 	}
 }
 
-String ICACHE_FLASH_ATTR NtpClient::zeroPaddedIntVal(int val) {
+String NtpClient::zeroPaddedIntVal(int val) {
 	if (val < 10)
 		return "0" + String(val);
 	else
@@ -83,7 +83,7 @@ String ICACHE_FLASH_ATTR NtpClient::zeroPaddedIntVal(int val) {
 }
 
 //returns the current date/time as a string in iso8601 format
-String ICACHE_FLASH_ATTR NtpClient::iso8601DateTime() {
+String NtpClient::iso8601DateTime() {
 
 	String hyphen = "-";
 	String colon = ":";
@@ -102,7 +102,7 @@ time_t NtpClient::getUptimeSec() {
 	return _uptimesec / 1000;
 }
 
-deviceUptime ICACHE_FLASH_ATTR NtpClient::getDeviceUptime() {
+deviceUptime NtpClient::getDeviceUptime() {
 
 	unsigned long currentmillis = millis();
 
@@ -116,7 +116,7 @@ deviceUptime ICACHE_FLASH_ATTR NtpClient::getDeviceUptime() {
 
 }
 
-String ICACHE_FLASH_ATTR NtpClient::getDeviceUptimeString() {
+String NtpClient::getDeviceUptimeString() {
 
 	deviceUptime uptime = getDeviceUptime();
 
@@ -130,7 +130,7 @@ String ICACHE_FLASH_ATTR NtpClient::getDeviceUptimeString() {
 /*
  * returns the current time as UTC (timezone offset removed)
  */
-ICACHE_FLASH_ATTR time_t NtpClient::getUtcTimeNow() {
+time_t NtpClient::getUtcTimeNow() {
 
 	return now() - timezone;
 

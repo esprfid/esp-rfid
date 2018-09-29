@@ -1,8 +1,8 @@
-# ESP RFID - Access Control with ESP8266, RC522 PN532 Wiegand RDM6300
+# ESP RFID - Access Control with ESP8266
 
 [![Chat at https://gitter.im/esp-rfid/Lobby](https://badges.gitter.im/esp-rfid.svg)](https://gitter.im/esp-rfid/Lobby) [![Build Status](https://travis-ci.org/omersiar/esp-rfid.svg?branch=stable)](https://travis-ci.org/omersiar/esp-rfid) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/fc424f75d12644da8b6fe248a5e95157)](https://www.codacy.com/app/omersiar/esp-rfid?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=omersiar/esp-rfid&amp;utm_campaign=Badge_Grade) [![Bountysource](https://api.bountysource.com/badge/team?team_id=242217)](https://salt.bountysource.com/checkout/amount?team=esp-rfid)
 
-Access Control system using a cheap MFRC522, PN532 RFID, RDM6300 readers or Wiegand RFID readers and Espressif's ESP8266 Microcontroller. 
+Access Control system using a cheap RFID readers: (MFRC522, PN532, RDM6300) or Wiegand based RFID readers and Espressif's ESP8266 SOC. 
 
 [See Demo Here](https://bitadvise.com/esp-rfid/)
 
@@ -109,22 +109,18 @@ Get more information here: https://stackoverflow.com/questions/3102819/disable-s
 
 ### Pin Layout
 
-The following table shows the typical pin layout used for connecting readers hardware to ESP:
+The following table shows the typical pin layout used for connecting hardware to ESP8266:
 
-| Signal    | PN532 | MFRC522 | RDM6300 | WeMos D1 mini | NodeMcu | Generic     |
-|-----------|:-----:|:-------:|:-------:|:-------------:|:-------:|:-----------:|
-| RST/Reset | RST   | RST     | N/C     | N/C [1]       | N/C [1] | N/C [1]     |
-| SPI SS    | SS    | SDA [3] | N/C     | D8 [2]        | D8 [2]  | GPIO-15 [2] |
-| SPI MOSI  | MOSI  | MOSI    | N/C     | D7            | D7      | GPIO-13     |
-| SPI MISO  | MISO  | MISO    | N/C     | D6            | D6      | GPIO-12     |
-| SPI SCK   | SCK   | SCK     | N/C     | D5            | D5      | GPIO-14     |
-| SPI SCK   | SCK   | SCK     | TX      | D4            | D4      | GPIO-02     |
+| ESP8266 | NodeMcu/WeMos | Wiegand | PN532 | MFRC522 | RDM6300 | Relay | Buzzer | Keypad(MPR121) |
+|--------:|:-------------:|:-------:|:-----:|:-------:|:-------:|:-----:|:------:|:--------------:|
+| GPIO-15 | D8            |         | SS    | SDA/SS  |         |       |        |                |
+| GPIO-13 | D7            | D0      | MOSI  | MOSI    |         |       |        | SDA            |
+| GPIO-12 | D6            | D1      | MISO  | MISO    |         |       |        | SCL            |
+| GPIO-14 | D5            |         | SCK   | SCK     | TX      |       |        |                |
+| GPIO-04 | D2            |         |       |         |         | EN    |        |                |
+| GPIO-05 | D1            |         |       |         |         |       | EN     |                |
 
-1. Not Connected. Hard-reset no longer needed.
-2. Configurable via settings page.
-3. The SDA pin might be labeled SS on some/older MFRC522 boards.
-
-For Wiegand based readers, you can configure D0 and D1 pins via settings page. By default, D0 is GPIO-4 and D1 is GPIO-5
+All GPIOs configurable via settings page.
 
 ### Steps
 * First, flash firmware (you can use /bin/flash.bat on Windows) to your ESP either using Arduino IDE or with your favourite flash tool

@@ -6,26 +6,25 @@
             <legend>Backup</legend>
             <h6 class="text-muted">Please make sure that you have made a backup on regular basis.</h6>
             <div>
-                <button class="btn btn-link btn-sm" onclick="backupuser();">Backup User Data</button>
+                <button class="btn btn-primary btn-sm" onclick="backupuser();">Backup User Data</button>
                 <a id="downloadUser" style="display:none"></a>
-                <button class="btn btn-link btn-sm" onclick="backupset();">Backup Settings</button>
+                <button class="btn btn-primary btn-sm" onclick="backupset();">Backup Settings</button>
                 <a id="downloadSet" style="display:none"></a>
             </div>
             <br>
             <div>
                 <legend>Restore</legend>
                 <h6 class="text-muted">Click on links and choose your backup file to restore.</h6>
-                <label for="restoreUser" class="btn btn-link btn-sm">Restore User Data</label>
-                <input id="restoreUser" type="file" accept="text/json" onchange="restoreUser();" style="display:none;">
-                <label for="restoreSet" class="btn btn-link btn-sm">Restore Settings</label>
-                <input id="restoreSet" type="file" accept="text/json" onchange="restoreSet();" style="display:none;">
+                <label for="restoreUser" class="btn btn-primary btn-sm">Restore User Data</label>
+                <input id="restoreUser" type="file" accept="text/json" onchange="restoreUser();" style="display:none">
+                <label for="restoreSet" class="btn btn-primary btn-sm">Restore Settings</label>
+                <input id="restoreSet" type="file" accept="text/json" onchange="restoreSet();" style="display:none">
             </div>
             <br>
             <div>
                 <legend>Restart</legend>
                 <h6 class="text-muted">Click to restart your device without saving changes.</h6>
-                <label for="restart" class="btn btn-link btn-sm">Restart Device</label>
-                <button id="restart" class="btn btn-link btn-sm" onclick="restartESP();" style="display:none;"></button>
+                <button id="restart" class="btn btn-primary btn-sm" onclick="restartESP();">Restart Device</button>
             </div>
             <br>
             <div id="restoremodal" class="modal fade" role="dialog">
@@ -79,29 +78,29 @@
     <br>
     <legend>General Settings</legend>
     <div class="row form-group">
-        <label class="col-xs-3">Admin Password<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Log On password for the Administrator"></i></label>
+        <label class="col-xs-3">Admin Password<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Log On password for the administrator"></i></label>
         <span class="col-xs-9 col-md-5">
-              <input class="form-control input-sm" placeholder="Administrator Password" id="adminpwd" type="text">
-              </span>
+            <input class="form-control input-sm" placeholder="Administrator Password" id="adminpwd" type="text">
+            </span>
         <br>
     </div>
     <div class="row form-group">
         <label class="col-xs-3">Host Name<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Hostname for your ESP, When Bonjour is installed on your computer you can access your ESP via http://hostname.local"></i></label>
         <span class="col-xs-9 col-md-5">
-              <input class="form-control input-sm" placeholder="Hostname" value="esp-rfid" id="hostname" type="text">
-              </span>
+            <input class="form-control input-sm" placeholder="Hostname" value="esp-rfid" id="hostname" type="text">
+            </span>
         <br>
     </div>
     <div class="row form-group">
-        <label class="col-xs-3">Auto Restart<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="How often to automatically restart the unit to lessen risk of memory leaks and crashes."></i></label>
+        <label class="col-xs-3">Auto Restart<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="How often to automatically restart the unit to lessen risk of memory leaks and crashes"></i></label>
         <span class="col-xs-9 col-md-5">
-                <select class="form-control input-sm" id="autorestart" name="autorestart">
-                  <option value='0'>Never</option>
-                  <option value='86400' selected>Every 24h</option>
-                  <option value='604800'>Every 7 days</option>
-                  <option value='18144000'>Every 30 days</option>
-                </select>
-              </span>
+            <select class="form-control input-sm" id="autorestart" name="autorestart">
+                <option value='0'>Never</option>
+                <option value='86400' selected>Every 24 Hours</option>
+                <option value='604800'>Every 7 days</option>
+                <option value='18144000'>Every 30 days</option>
+            </select>
+        </span>
         <br>
         <br>
         <div class="col-xs-9 col-md-8">
@@ -120,87 +119,117 @@
     <br>
     <br>
     <legend>Hardware Settings</legend>
-    <h6 class="text-muted">Please refer the <a href="https://github.com/omersiar/esp-rfid#pin-layout">documentation</a> for pin configuration.</h6>
+    <h6 class="text-muted">Please refer the <a href="https://github.com/esprfid/esp-rfid#pin-layout">documentation</a> for pin configuration.</h6>
     <div class="row form-group">
-        <label class="col-xs-3">Reader Type<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Choose RFID reader type."></i></label>
+        <label class="col-xs-3">Reader Type<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Choose RFID reader type"></i></label>
         <div class="col-xs-9 col-md-5">
-            <select class="form-control input-sm" id="readerType" onchange="handleReader();">
-                <option selected="selected" value="0">MFRC522</option>
-                <option value="1">Wiegand</option>
-                <option value="2">PN532</option>
-                <option value="3">RDM6300</option>
+            <select class="form-control input-sm" id="reader" onchange="handleReader();">
+                <option value="0">NONE</option>
+                <option selected="selected" value="1">WIEGAND</option>
+                <option value="2">MFRC522</option>
+                <option value="3">PN532</option>
+                <option value="4">RDM6300</option>
             </select>
         </div>
     </div>
     <div class="" id="wiegandForm" style="display:none">
         <div class="row form-group">
-            <label class="col-xs-3">Pin D0<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Choose Wiegand D0 pin."></i></label>
+            <label class="col-xs-3">Reader D0 Pin<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Choose wiegand D0 pin"></i></label>
             <span class="col-xs-9 col-md-5">
-                  <select class="form-control input-sm" id="wg0pin">
-                    <option value="0">GPIO-0</option>
-                    <option value="1">GPIO-1</option>
-                    <option value="2">GPIO-2</option>
-                    <option selected="selected" value="4">GPIO-4</option>
-                    <option value="5">GPIO-5</option>
-                    <option value="12">GPIO-12</option>
-                    <option value="13">GPIO-13</option>
-                    <option value="14">GPIO-14</option>
-                    <option value="15">GPIO-15</option>
-                    <option value="16">GPIO-16</option>
-                  </select>
-                </span>
-        </div>
-        <div class="row form-group">
-            <label class="col-xs-3">Pin D1<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Choose Wiegand D1 pin."></i></label>
-            <span class="col-xs-9 col-md-5">
-                  <select class="form-control input-sm" id="wg1pin">
+                <select class="form-control input-sm" id="d0pin">
                     <option value="0">GPIO-0</option>
                     <option value="1">GPIO-1</option>
                     <option value="2">GPIO-2</option>
                     <option value="4">GPIO-4</option>
-                    <option selected="selected" value="5">GPIO-5</option>
+                    <option value="5">GPIO-5</option>
                     <option value="12">GPIO-12</option>
+                    <option selected="selected" value="13">GPIO-13</option>
+                    <option value="14">GPIO-14</option>
+                    <option value="15">GPIO-15</option>
+                    <option value="16">GPIO-16</option>
+                </select>
+            </span>
+        </div>
+        <div class="row form-group">
+            <label class="col-xs-3">Reader D1 Pin<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Choose wiegand D1 pin"></i></label>
+            <span class="col-xs-9 col-md-5">
+                <select class="form-control input-sm" id="d1pin">
+                    <option value="0">GPIO-0</option>
+                    <option value="1">GPIO-1</option>
+                    <option value="2">GPIO-2</option>
+                    <option value="4">GPIO-4</option>
+                    <option value="5">GPIO-5</option>
+                    <option selected="selected" value="12">GPIO-12</option>
                     <option value="13">GPIO-13</option>
                     <option value="14">GPIO-14</option>
                     <option value="15">GPIO-15</option>
                     <option value="16">GPIO-16</option>
                   </select>
-                </span>
+            </span>
         </div>
     </div>
     <div class="" id="mfrc522Form" style="display:none">
         <div class="row form-group">
-            <label class="col-xs-3">SPI SS<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Choose which ESP port is connected to RFID Hardware SDA pin"></i></label>
+            <label class="col-xs-3">Reader SS Pin<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Choose which ESP port is connected to reader SS pin"></i></label>
             <span class="col-xs-9 col-md-5">
-                  <select class="form-control input-sm" id="gpioss">
+                <select class="form-control input-sm" id="sspin">
                     <option value="0">GPIO-0</option>
                     <option value="2">GPIO-2</option>
                     <option value="4">GPIO-4</option>
                     <option value="5">GPIO-5</option>
                     <option selected="selected" value="15">GPIO-15</option>
                     <option value="16">GPIO-16</option>
-                  </select>
-                </span>
+                </select>
+            </span>
         </div>
-        <div class="row form-group" id="rc522gain">
-            <label class="col-xs-3">Antenna Gain<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Higher value means further the RFID reader's reading distance"></i></label>
+        <div class="row form-group" id="mfrc522gain">
+            <label class="col-xs-3">Reader Gain<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Higher value means further the RFID reader's reading distance"></i></label>
             <span class="col-xs-9 col-md-5">
-                  <select class="form-control input-sm" id="gain">
+                <select class="form-control input-sm" id="gain">
                     <option value="112">Max (48 db)</option>
                     <option value="96">43 db</option>
                     <option value="48">38 db</option>
                     <option selected="selected" value="32">Avg (33 db)</option>
                     <option value="16">23 db</option>
                     <option value="0">Min (18 db)</option>
-                  </select>
-                </span>
+                </select>
+            </span>
         </div>
     </div>
     <div class="" id="rdm6300Form" style="display:none">
         <div class="row form-group">
-            <label class="col-xs-3">RDM6300 RX<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Choose which ESP pin is connected to RFID Hardware RX pin"></i></label>
+            <label class="col-xs-3">Reader TX Pin<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Choose which ESP pin is connected to RDM6300 TX pin"></i></label>
             <span class="col-xs-9 col-md-5">
-                  <select class="form-control input-sm" id="rxpin">
+                <select class="form-control input-sm" id="rxpin">
+                    <option value="0">GPIO-0</option>
+                    <option value="1">GPIO-1</option>
+                    <option value="2">GPIO-2</option>
+                    <option value="4">GPIO-4</option>
+                    <option value="5">GPIO-5</option>
+                    <option value="12">GPIO-12</option>
+                    <option value="13">GPIO-13</option>
+                    <option selected="selected" value="14">GPIO-14</option>
+                    <option value="15">GPIO-15</option>
+                </select>
+            </span>
+        </div>
+    </div>
+    <br>
+    <div class="row form-group">
+        <label class="col-xs-3">Buzzer Mode<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Depending on your electrical setup, you can choose the buzzer mode"></i></label>
+        <span class="col-xs-9 col-md-5">
+            <select class="form-control input-sm" id="buzzermode" onchange="handleBuzzer();">
+                <option value="0">Disabled</option>
+                <option selected="selected" value="1">Buzzer</option>
+                <option value="2">Pizeo</option>
+            </select>
+        </span>
+    </div>
+    <div class="" id="BuzzerForm" style="display:none">
+        <div class="row form-group">
+            <label class="col-xs-3">Buzzer Pin<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Choose which ESP pin is connected to buzzer pin"></i></label>
+            <span class="col-xs-9 col-md-5">
+                <select class="form-control input-sm" id="buzzerpin">
                     <option value="0">GPIO-0</option>
                     <option value="1">GPIO-1</option>
                     <option value="2">GPIO-2</option>
@@ -210,45 +239,101 @@
                     <option value="13">GPIO-13</option>
                     <option value="14">GPIO-14</option>
                     <option value="15">GPIO-15</option>
-                  </select>
-                </span>
+                </select>
+            </span>
+        </div>
+    </div>
+    <br>
+    <div class="row form-group">
+        <label class="col-xs-3">Keypad Mode<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Depending on your electrical setup, you can choose the keypad (MPR121 based) mode"></i></label>
+        <span class="col-xs-9 col-md-5">
+            <select class="form-control input-sm" id="keypadmode" onchange="handleKeypad();">
+                <option selected="selected" value="0">Disabled</option>
+                <option value="1">MPR121 (12 Keys)</option>
+            </select>
+        </span>
+    </div>
+    <div class="" id="KeypadForm" style="display:none">
+        <div class="row form-group">
+            <label class="col-xs-3">Keypad SDA Pin<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Choose which ESP pin is connected to keypad's MPR121 I2C SDA pin"></i></label>
+            <span class="col-xs-9 col-md-5">
+                <select class="form-control input-sm" id="sdapin">
+                    <option value="0">GPIO-0</option>
+                    <option value="1">GPIO-1</option>
+                    <option value="2">GPIO-2</option>
+                    <option value="4">GPIO-4</option>
+                    <option value="5">GPIO-5</option>
+                    <option value="12">GPIO-12</option>
+                    <option selected="selected" value="13">GPIO-13</option>
+                    <option value="14">GPIO-14</option>
+                    <option value="15">GPIO-15</option>
+                </select>
+            </span>
+        </div>
+        <div class="row form-group">
+            <label class="col-xs-3">Keypad SCL Pin<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Choose which ESP pin is connected to keypad's MPR121 I2C SCL pin"></i></label>
+            <span class="col-xs-9 col-md-5">
+                <select class="form-control input-sm" id="sclpin">
+                    <option value="0">GPIO-0</option>
+                    <option value="1">GPIO-1</option>
+                    <option value="2">GPIO-2</option>
+                    <option value="4">GPIO-4</option>
+                    <option value="5">GPIO-5</option>
+                    <option selected="selected" value="12">GPIO-12</option>
+                    <option value="13">GPIO-13</option>
+                    <option value="14">GPIO-14</option>
+                    <option value="15">GPIO-15</option>
+                </select>
+            </span>
+        </div>
+        <div class="row form-group">
+            <label class="col-xs-3">Keypad Keymap<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Keypad key mapping, each character index is the MPR121 electrode index (0-11), and the character itself is the label on that electrode"></i></label>
+            <span class="col-xs-9 col-md-5">
+                <input id="keymap" class="form-control input-sm" type="text" name="keymap">
+            </span>
+        </div>
+        <div class="row form-group">
+            <label class="col-xs-3">Keypad Password<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Keypad password, use the characters from keymap above"></i></label>
+            <span class="col-xs-9 col-md-5">
+                <input id="keypass" class="form-control input-sm" type="text" name="keypass">
+            </span>
         </div>
     </div>
     <br>
     <div class="row form-group">
         <label class="col-xs-3">Relay Type<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Depending on your electrical setup, you can choose the relay type"></i></label>
         <span class="col-xs-9 col-md-5">
-            <select class="form-control input-sm" id="typerly">
-              <option selected="selected" value="1">Active High</option>
-              <option value="0">Active Low</option>
+            <select class="form-control input-sm" id="relaymode">
+                <option value="0">Active Low</option>
+                <option selected="selected" value="1">Active High</option>
             </select>
-            </span>
+        </span>
     </div>
     <div class="row form-group">
         <label class="col-xs-3">Relay Pin<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Choose which ESP port is connected to your relay"></i></label>
         <span class="col-xs-6 col-md-5">
-                <select class="form-control input-sm" id="gpiorly">
-                    <option value="0">GPIO-0</option>
-                    <option value="1">GPIO-1</option>
-                    <option value="2">GPIO-2</option>
-                    <option selected="selected" value="4">GPIO-4</option>
-                    <option value="5">GPIO-5</option>
-                    <option value="12">GPIO-12</option>
-                    <option value="13">GPIO-13</option>
-                    <option value="14">GPIO-14</option>
-                    <option value="15">GPIO-15</option>
-                    <option value="16">GPIO-16</option>
-                </select>
-              </span>
+            <select class="form-control input-sm" id="relaypin">
+                <option value="0">GPIO-0</option>
+                <option value="1">GPIO-1</option>
+                <option value="2">GPIO-2</option>
+                <option selected="selected" value="4">GPIO-4</option>
+                <option value="5">GPIO-5</option>
+                <option value="12">GPIO-12</option>
+                <option value="13">GPIO-13</option>
+                <option value="14">GPIO-14</option>
+                <option value="15">GPIO-15</option>
+                <option value="16">GPIO-16</option>
+            </select>
+        </span>
         <span class="col-xs-3">
-                <button id="testb" type="button" class="btn btn-primary btn-xs" onclick="testRelay()">Test</button><i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="left" data-content="Test previous relay setting. Keep in mind that this is actually triggers the relay."></i>
-              </span>
+            <button id="testb" type="button" class="btn btn-primary btn-xs" onclick="testRelay()">Test</button><i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="left" data-content="Test previous relay setting. Keep in mind that this is actually triggers the relay."></i>
+        </span>
     </div>
     <div class="row form-group">
-        <label class="col-xs-3">Activate Time<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Relay Toggle time in Microseconds, usually 300ms is enough for the most electric door locks"></i></label>
+        <label class="col-xs-3">Activate Time<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Relay toggle time in microseconds, usually 300ms is enough for the most electric door locks"></i></label>
         <span class="col-xs-9 col-md-5">
-              <input class="form-control input-sm" value="300" placeholder="in Microsecond" id="delay" type="text" name="hightime">
-    </span>
+            <input class="form-control input-sm" value="1000" placeholder="in Microsecond" id="relaydelay" type="text" name="hightime">
+        </span>
         <br>
         <br>
         <div class="col-xs-9 col-md-8">
@@ -320,36 +405,36 @@
     <div class="row form-group">
         <label class="col-xs-3">IP<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="MQTT server IP Address or url"></i></label>
         <span class="col-xs-9">
-    <input class="form-control input-sm" placeholder="MQTT Host" style="display:inline;max-width:185px" id="mqtthost" type="text">
-  </span>
+            <input class="form-control input-sm" placeholder="MQTT Host" style="display:inline;max-width:185px" id="mqtthost" type="text">
+        </span>
         <br>
     </div>
     <div class="row form-group">
         <label class="col-xs-3">Port<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="MQTT server port"></i></label>
         <span class="col-xs-9">
-    <input class="form-control input-sm" placeholder="MQTT Port" value="" style="display:inline;max-width:185px" id="mqttport" type="text">
-  </span>
+            <input class="form-control input-sm" placeholder="MQTT Port" value="" style="display:inline;max-width:185px" id="mqttport" type="text">
+        </span>
         <br>
     </div>
     <div class="row form-group">
         <label class="col-xs-3">User<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="MQTT user"></i></label>
         <span class="col-xs-9">
-    <input class="form-control input-sm" placeholder="" value="" style="display:inline;max-width:185px" id="mqttuser" type="text">
-  </span>
+            <input class="form-control input-sm" placeholder="" value="" style="display:inline;max-width:185px" id="mqttuser" type="text">
+        </span>
         <br>
     </div>
     <div class="row form-group">
         <label class="col-xs-3">Password<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="MQTT server password if any"></i></label>
         <span class="col-xs-9">
-    <input class="form-control input-sm" placeholder="" value="" style="display:inline;max-width:185px" id="mqttpwd" type="text">
-  </span>
+            <input class="form-control input-sm" placeholder="" value="" style="display:inline;max-width:185px" id="mqttpwd" type="text">
+        </span>
         <br>
     </div>
     <div class="row form-group">
         <label class="col-xs-3">Topic<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="MQTT topic"></i></label>
         <span class="col-xs-9">
-    <input class="form-control input-sm" placeholder="MQTT topic" value="" style="display:inline;max-width:185px" id="mqtttopic" type="text">
-  </span>
+            <input class="form-control input-sm" placeholder="MQTT topic" value="" style="display:inline;max-width:185px" id="mqtttopic" type="text">
+        </span>
         <br>
         <br>
         <div class="col-xs-9 col-md-8">
@@ -366,7 +451,7 @@
     <h6 class="text-muted">Type your Wi-Fi Network's SSID or Scan for nerby Wireless Networks to join.</h6>
     <br>
     <div class="row form-group">
-        <label class="col-xs-3">Wi-Fi Mode<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="You can run your ESP in AP Mode or Client Mode. In client mode you will need to connect to an existing Wi-Fi network, in AP Mode ESP creates a Wi-Fi network itself."></i></label>
+        <label class="col-xs-3">Wi-Fi Mode<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="You can run your ESP in AP mode or client Mode. In client mode you will need to connect to an existing Wi-Fi network, in AP mode ESP creates a Wi-Fi network itself."></i></label>
         <div class="col-xs-9">
             <form>
                 <label class="radio-inline">
@@ -377,26 +462,26 @@
         </div>
     </div>
     <div class="row form-group">
-        <label class="col-xs-3">SSID<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Wi-Fi Network's Name"></i></label>
+        <label class="col-xs-3">SSID<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Wi-Fi network's name"></i></label>
         <span class="col-xs-6 col-md-5">
-                <input class="form-control input-sm" id="inputtohide" type="text" name="ap_ssid">
-                <select class="form-control input-sm" style="display:none;" id="ssid" onchange="listBSSID();"></select>
-              </span>
+            <input class="form-control input-sm" id="inputtohide" type="text" name="ap_ssid">
+            <select class="form-control input-sm" style="display:none;" id="ssid" onchange="listBSSID();"></select>
+        </span>
         <span class="col-xs-3">
-                <button id="scanb" type="button" class="btn btn-primary btn-xs" style="display:none;" onclick="scanWifi()">Scan</button>
-              </span>
+            <button id="scanb" type="button" class="btn btn-primary btn-xs" style="display:none;" onclick="scanWifi()">Scan</button>
+        </span>
     </div>
     <div class="row form-group" style="display:none" id="hideBSSID">
         <label class="col-xs-3">BSSID<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="If you have two Wi-Fi networks with the same SSID you may want to choose the specific one by BSSID"></i></label>
         <span class="col-xs-9 col-md-5">
-              <input id="wifibssid" class="form-control input-sm" type="text" name="ap_bssid">
-              </span>
+            <input id="wifibssid" class="form-control input-sm" type="text" name="ap_bssid">
+        </span>
     </div>
     <div class="row form-group">
-        <label class="col-xs-3">Password<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Wi-Fi Password"></i></label>
+        <label class="col-xs-3">Password<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Wi-Fi password"></i></label>
         <span class="col-xs-9 col-md-5">
-              <input id="wifipass" class="form-control input-sm" type="text" name="ap_passwd">
-              </span>
+            <input id="wifipass" class="form-control input-sm" type="text" name="ap_passwd">
+        </span>
     </div>
     <br>
     <div class="row form-group" id="hideap">
@@ -426,42 +511,42 @@
         <div class="row form-group">
             <label class="col-xs-3">IP Address</label>
             <span class="col-xs-9 col-md-5">
-              <input id="ipaddress" class="form-control input-sm">
-              </span>
+                <input id="ipaddress" class="form-control input-sm">
+            </span>
         </div>
         <div class="row form-group">
             <label class="col-xs-3">Subnet</label>
             <span class="col-xs-9 col-md-5">
-              <input id="subnet" class="form-control input-sm">
-              </span>
+                <input id="subnet" class="form-control input-sm">
+            </span>
         </div>
         <div class="row form-group">
             <label class="col-xs-3">DNS Server</label>
             <span class="col-xs-9 col-md-5">
-              <input id="dnsadd" class="form-control input-sm">
-              </span>
+                <input id="dnsadd" class="form-control input-sm">
+            </span>
         </div>
         <div class="row form-group">
             <label class="col-xs-3">Gateway</label>
             <span class="col-xs-9 col-md-5">
-              <input id="gateway" class="form-control input-sm">
-              </span>
+                <input id="gateway" class="form-control input-sm">
+            </span>
         </div>
     </div>
     <br>
     <div class="row form-group">
         <label class="col-xs-3">Auto Disable Wifi<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Disable WiFi after a time interval, to conserve power in battery powered units. WiFi is re-enabled when an admin card is scanned, or device is rebooted. Remember that you need to have enough time to upload your configuration, so don't set it too low."></i></label>
         <span class="col-xs-9 col-md-5">
-                <select class="form-control input-sm" id="disable_wifi_after_seconds" name="auto_restart_interval_seconds">
-                  <option value='0'>Always on</option>
-                  <option value='180'>3 min</option>
-                  <option value='240'>4 min</option>
-                  <option value='300'>5 min</option>
-                  <option value='600'>10 min</option>
-                  <option value='900'>15 min</option>
-                  <option value='1800'>30 min</option>
-                </select>
-              </span>
+            <select class="form-control input-sm" id="networkofftime" name="networkofftime">
+                <option value='0'>Always on</option>
+                <option value='180'>3 min</option>
+                <option value='240'>4 min</option>
+                <option value='300'>5 min</option>
+                <option value='600'>10 min</option>
+                <option value='900'>15 min</option>
+                <option value='1800'>30 min</option>
+            </select>
+        </span>
         <br>
         <br>
         <div class="col-xs-9 col-md-8">
@@ -479,12 +564,12 @@
     <div class="row form-group">
         <label class="col-xs-3">Device Time</label>
         <span id="utc" class="col-xs-9 col-md-5">
-              </span>
+        </span>
     </div>
     <div class="row form-group">
         <label class="col-xs-3">Browser Time</label>
         <span id="rtc" class="col-xs-9 col-md-5">
-              </span>
+        </span>
     </div>
     <div class="row form-group">
         <div class="col-xs-3">
@@ -494,54 +579,54 @@
     <div class="row form-group">
         <label class="col-xs-3">NTP Server<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="The server for the time sync. Choose nearest server for better accuracy, see ntp.org for servers nearby."></i></label>
         <span class="col-xs-9 col-md-5">
-              <input class="form-control input-sm" placeholder="eg. pool.ntp.org" value="pool.ntp.org" id="ntpserver" type="text">
-              </span>
+            <input class="form-control input-sm" placeholder="eg. pool.ntp.org" value="pool.ntp.org" id="ntpserver" type="text">
+        </span>
         <br>
     </div>
     <div class="row form-group">
         <label class="col-xs-3">Intervals<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Intervals between Time Sync in Minutes"></i></label>
         <span class="col-xs-9 col-md-5">
-              <input class="form-control input-sm" placeholder="in Minutes" value="30" id="intervals" type="text">
-              </span>
+            <input class="form-control input-sm" placeholder="in Minutes" value="30" id="intervals" type="text">
+        </span>
         <br>
     </div>
     <div class="row form-group">
         <label class="col-xs-3">Time Zone</label>
         <span class="col-xs-9 col-md-5">
-                <select class="form-control input-sm" name="DropDownTimezone" id="DropDownTimezone">
-                  <option value="-12">(GMT -12:00) Eniwetok, Kwajalein</option>
-                  <option value="-11">(GMT -11:00) Midway Island, Samoa</option>
-                  <option value="-10">(GMT -10:00) Hawaii</option>
-                  <option value="-9">(GMT -9:00) Alaska</option>
-                  <option value="-8">(GMT -8:00) Pacific Time (US &amp; Canada)</option>
-                  <option value="-7">(GMT -7:00) Mountain Time (US &amp; Canada)</option>
-                  <option value="-6">(GMT -6:00) Central Time (US &amp; Canada), Mexico City</option>
-                  <option value="-5">(GMT -5:00) Eastern Time (US &amp; Canada), Bogota, Lima</option>
-                  <option value="-4">(GMT -4:00) Atlantic Time (Canada), Caracas, La Paz</option>
-                  <option value="-3.5">(GMT -3:30) Newfoundland</option>
-                  <option value="-3">(GMT -3:00) Brazil, Buenos Aires, Georgetown</option>
-                  <option value="-2">(GMT -2:00) Mid-Atlantic</option>
-                  <option value="-1">(GMT -1:00 hour) Azores, Cape Verde Islands</option>
-                  <option selected="selected" value="0">(GMT) Western Europe Time, London, Lisbon, Casablanca</option>
-                  <option value="1">(GMT +1:00 hour) Brussels, Copenhagen, Madrid, Paris</option>
-                  <option value="2">(GMT +2:00) Kaliningrad, South Africa</option>
-                  <option value="3">(GMT +3:00) Baghdad, Riyadh, Moscow, St. Petersburg</option>
-                  <option value="3.5">(GMT +3:30) Tehran</option>
-                  <option value="4">(GMT +4:00) Abu Dhabi, Muscat, Baku, Tbilisi</option>
-                  <option value="4.5">(GMT +4:30) Kabul</option>
-                  <option value="5">(GMT +5:00) Ekaterinburg, Islamabad, Karachi, Tashkent</option>
-                  <option value="5.5">(GMT +5:30) Bombay, Calcutta, Madras, New Delhi</option>
-                  <option value="5.75">(GMT +5:45) Kathmandu</option>
-                  <option value="6">(GMT +6:00) Almaty, Dhaka, Colombo</option>
-                  <option value="7">(GMT +7:00) Bangkok, Hanoi, Jakarta</option>
-                  <option value="8">(GMT +8:00) Beijing, Perth, Singapore, Hong Kong</option>
-                  <option value="9">(GMT +9:00) Tokyo, Seoul, Osaka, Sapporo, Yakutsk</option>
-                  <option value="9.5">(GMT +9:30) Adelaide, Darwin</option>
-                  <option value="10">(GMT +10:00) Eastern Australia, Guam, Vladivostok</option>
-                  <option value="11">(GMT +11:00) Magadan, Solomon Islands, New Caledonia</option>
-                  <option value="12">(GMT +12:00) Auckland, Wellington, Fiji, Kamchatka</option>
-                </select>
-              </span>
+            <select class="form-control input-sm" name="DropDownTimezone" id="DropDownTimezone">
+                <option value="-12">(GMT -12:00) Eniwetok, Kwajalein</option>
+                <option value="-11">(GMT -11:00) Midway Island, Samoa</option>
+                <option value="-10">(GMT -10:00) Hawaii</option>
+                <option value="-9">(GMT -9:00) Alaska</option>
+                <option value="-8">(GMT -8:00) Pacific Time (US &amp; Canada)</option>
+                <option value="-7">(GMT -7:00) Mountain Time (US &amp; Canada)</option>
+                <option value="-6">(GMT -6:00) Central Time (US &amp; Canada), Mexico City</option>
+                <option value="-5">(GMT -5:00) Eastern Time (US &amp; Canada), Bogota, Lima</option>
+                <option value="-4">(GMT -4:00) Atlantic Time (Canada), Caracas, La Paz</option>
+                <option value="-3.5">(GMT -3:30) Newfoundland</option>
+                <option value="-3">(GMT -3:00) Brazil, Buenos Aires, Georgetown</option>
+                <option value="-2">(GMT -2:00) Mid-Atlantic</option>
+                <option value="-1">(GMT -1:00 hour) Azores, Cape Verde Islands</option>
+                <option selected="selected" value="0">(GMT) Western Europe Time, London, Lisbon, Casablanca</option>
+                <option value="1">(GMT +1:00 hour) Brussels, Copenhagen, Madrid, Paris</option>
+                <option value="2">(GMT +2:00) Kaliningrad, South Africa</option>
+                <option value="3">(GMT +3:00) Baghdad, Riyadh, Moscow, St. Petersburg</option>
+                <option value="3.5">(GMT +3:30) Tehran</option>
+                <option value="4">(GMT +4:00) Abu Dhabi, Muscat, Baku, Tbilisi</option>
+                <option value="4.5">(GMT +4:30) Kabul</option>
+                <option value="5">(GMT +5:00) Ekaterinburg, Islamabad, Karachi, Tashkent</option>
+                <option value="5.5">(GMT +5:30) Bombay, Calcutta, Madras, New Delhi</option>
+                <option value="5.75">(GMT +5:45) Kathmandu</option>
+                <option value="6">(GMT +6:00) Almaty, Dhaka, Colombo</option>
+                <option value="7">(GMT +7:00) Bangkok, Hanoi, Jakarta</option>
+                <option value="8">(GMT +8:00) Beijing, Perth, Singapore, Hong Kong</option>
+                <option value="9">(GMT +9:00) Tokyo, Seoul, Osaka, Sapporo, Yakutsk</option>
+                <option value="9.5">(GMT +9:30) Adelaide, Darwin</option>
+                <option value="10">(GMT +10:00) Eastern Australia, Guam, Vladivostok</option>
+                <option value="11">(GMT +11:00) Magadan, Solomon Islands, New Caledonia</option>
+                <option value="12">(GMT +12:00) Auckland, Wellington, Fiji, Kamchatka</option>
+            </select>
+        </span>
         <br>
         <br>
         <div class="col-xs-9 col-md-8">
@@ -663,11 +748,11 @@
     </div>
     <div class="modal fade" id="editor-modal" tabindex="-1" role="dialog" aria-labelledby="editor-title">
         <style scoped>
-        .form-group.required .control-label:after {
-            content: "*";
-            color: red;
-            margin-left: 4px;
-        }
+            .form-group.required .control-label:after {
+                content: "*";
+                color: red;
+                margin-left: 4px;
+            }
         </style>
         <div class="modal-dialog" role="document">
             <form class="modal-content form-horizontal" id="editor">
@@ -677,12 +762,6 @@
                 </div>
                 <div class="modal-body">
                     <input type="number" id="id" name="id" class="hidden" />
-                    <div class="form-group">
-                        <label for="picctype" class="col-sm-3 control-label">PICC Type</label>
-                        <div class="col-sm-9">
-                            <input type="text" class="form-control" id="picctype" name="picctype" placeholder="PICC Type" disabled>
-                        </div>
-                    </div>
                     <div class="form-group required">
                         <label for="uid" class="col-sm-3 control-label">UID</label>
                         <div class="col-sm-9">
@@ -690,37 +769,21 @@
                         </div>
                     </div>
                     <div class="form-group required">
-                        <label for="username" class="col-sm-3 control-label">User Name or Label</label>
+                        <label for="username" class="col-sm-3 control-label">User Name</label>
                         <div class="col-sm-9">
-                            <input type="text" class="form-control" id="username" name="username" placeholder="User Name or Label" required>
+                            <input type="text" class="form-control" id="username" name="username" placeholder="User Name" required>
                         </div>
                     </div>
                     <div class="form-group required">
                         <label for="acctype" class="col-sm-3 control-label">Access Type</label>
                         <div class="col-sm-9">
                             <select class="form-control" id="acctype" required>
-                                <option selected="selected" value="1">Always</option>
-                                <!--
-                                <option value="2">Within Selected Hours</option>
-                                <option value="3">Within Selected Days</option>
-                                <option value="4">Within Selected Days and Hours</option>
-                                <option value="5">On Weekends</option>
-                                <option value="6">On Weekdays</option>
-                                -->
-                                <option value="0">Disabled</option>
-                                <option value="99">Admin</option>
+                                <option value="1">Admin</option>
+                                <option selected="selected" value="2">Activated User</option>
+                                <option value="3">Deactivated User</option>
                             </select>
                         </div>
                     </div>
-                    <!--
-                    <div class="form-group">
-                        <label for="accinfo" class="col-sm-3 control-label">Acc Type Info</label>
-                        <div class="col-sm-9">
-                            <pre id="accinfo">
-                            </pre>
-                        </div>
-                    </div>
-                    -->
                     <div class="form-group required">
                         <label for="validuntil" class="col-sm-3 control-label">Valid Until</label>
                         <div class="col-sm-9">

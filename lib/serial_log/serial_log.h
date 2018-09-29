@@ -1,6 +1,7 @@
 #ifndef __SERIAL_LOG_H__
 #define __SERIAL_LOG_H__
 
+#include <Arduino.h>
 
 #define SERIAL_LOG_LEVEL_NONE         (0)
 #define SERIAL_LOG_LEVEL_ERROR        (1)
@@ -9,9 +10,19 @@
 #define SERIAL_LOG_LEVEL_DEBUG        (4)
 #define SERIAL_LOG_LEVEL_VERBOSE      (5)
 
+const char *log_levels[] = {"NONE", "ERROR", "WARN", "INFO", "DEBUG", "VERBOSE", "UNKNOWN"};
+
+const char *log_level_to_str(uint8_t level)
+{
+	return log_levels[level];
+}
 
 #ifndef SERIAL_LOG_LEVEL
 	#define SERIAL_LOG_LEVEL SERIAL_LOG_LEVEL_NONE
+#endif
+
+#if SERIAL_LOG_LEVEL != SERIAL_LOG_LEVEL_NONE
+	#define SERIAL_LOG_ENABLED
 #endif
 
 #ifndef SERIAL_LOG_BAUDRATE
@@ -51,16 +62,19 @@
 	#define SERIAL_LOG_RESET_COLOR
 #endif
 
-#if SERIAL_LOG_LEVEL != SERIAL_LOG_LEVEL_NONE
-	#define SERIAL_LOG_INIT() do { Serial.begin(SERIAL_LOG_BAUDRATE); Serial.println(); } while(0)
+#ifdef SERIAL_LOG_ENABLED
+	#define SERIAL_LOG_INIT() do {\
+		Serial.begin(SERIAL_LOG_BAUDRATE);\
+		Serial.println();\
+		Serial.printf("\nLogging level: %s\n", log_level_to_str(SERIAL_LOG_LEVEL));\
+		} while(0)
 #else
 	#define SERIAL_LOG_INIT()
 #endif
 
-
 #define log_printf(format, ...) Serial.printf(format, ##__VA_ARGS__)
 
-#define SERIAL_LOG_FORMAT(level, format) SERIAL_LOG_COLOR_ ## level "[ " #level " ] " format SERIAL_LOG_RESET_COLOR "\r\n"
+#define SERIAL_LOG_FORMAT(level, format) SERIAL_LOG_COLOR_ ## level "[ " #level " ] " format SERIAL_LOG_RESET_COLOR "\n"
 
 #if SERIAL_LOG_LEVEL >= SERIAL_LOG_LEVEL_VERBOSE
 	#define log_v(format, ...) log_printf(SERIAL_LOG_FORMAT(VERBOSE, format), ##__VA_ARGS__)

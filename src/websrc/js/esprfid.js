@@ -1,4 +1,4 @@
-var version = "0.8.2";
+var version = "1.0.0";
 
 var websock = null;
 var wsUri = "ws://" + window.location.hostname + "/ws";
@@ -6,54 +6,6 @@ var utcSeconds;
 var timezone;
 var data = [];
 var ajaxobj;
-var isOfficialBoard = false;
-
-var config = {
-    "command": "configfile",
-    "network": {
-        "bssid": "",
-        "ssid": "esp-rfid",
-        "wmode": 1,
-        "hide": 0,
-        "pswd": "",
-        "offtime": 0,
-        "dhcp": 1,
-        "ip": "",
-        "subnet": "",
-        "gateway": "",
-        "dns": ""
-    },
-    "hardware": {
-        "readerType": 1,
-        "wgd0pin": 4,
-        "wgd1pin": 5,
-        "rxpin": 5,
-        "sspin": 0,
-        "rfidgain": 32,
-        "rtype": 1,
-        "rpin": 4,
-        "rtime": 400
-    },
-    "general": {
-        "hostnm": "esp-rfid",
-        "restart": 0,
-        "pswd": "admin"
-    },
-    "mqtt": {
-        "enabled": 0,
-        "host": "",
-        "port": 1883,
-        "topic": "",
-        "user": "",
-        "pswd": ""
-    },
-    "ntp": {
-        "server": "pool.ntp.org",
-        "interval": 30,
-        "timezone": 0
-    }
-};
-
 var page = 1;
 var haspages;
 var logdata;
@@ -63,8 +15,64 @@ var completed = false;
 var file = {};
 var backupstarted = false;
 var restorestarted = false;
-
 var esprfidcontent;
+var formData = new FormData();
+var xDown = null;
+var yDown = null;
+var nextIsNotJson = false;
+
+var config = {
+    "command": "configfile",
+    "network": {
+        "bssid": "",
+        "ssid": "esp-rfid",
+        "mode": 1,
+        "hidden": 0,
+        "password": "",
+        "offtime": 0,
+        "dhcp": 1,
+        "ip": "",
+        "subnet": "",
+        "gateway": "",
+        "dns": ""
+    },
+    "hardware": {
+        "reader": 1,
+        "d0pin": 13,
+        "d1pin": 12,
+        "rxpin": 14,
+        "sspin": 15,
+        "gain": 32,
+        "relaymode": 1,
+        "relaypin": 4,
+        "relaydelay": 1000,
+        "buzzermode": 1,
+        "buzzerpin": 5,
+        "keypadmode": 0,
+        "keymap": "369#2580147*",
+        "keypass": "1234",
+        "sdapin": 13,
+        "sclpin": 12,
+    },
+    "general": {
+        "hostname": "esp-rfid",
+        "restart": 0,
+        "password": "admin"
+    },
+    "mqtt": {
+        "enabled": 0,
+        "host": "",
+        "port": 1883,
+        "topic": "",
+        "user": "",
+        "password": ""
+    },
+    "ntp": {
+        "server": "pool.ntp.org",
+        "interval": 30,
+        "timezone": 0
+    }
+};
 
 function browserTime() {
     var d = new Date(0);
@@ -75,7 +83,7 @@ function browserTime() {
 }
 
 function deviceTime() {
-    var t = new Date(0); // The 0 there is the key, which sets the date to the epoch,
+    var t = new Date(0);
     var devTime = Math.floor(utcSeconds + ((t.getTimezoneOffset() * 60) * -1));
     t.setUTCSeconds(devTime);
     document.getElementById("utc").innerHTML = t.toUTCString().slice(0, -3);
@@ -92,25 +100,59 @@ function syncBrowserTime() {
 }
 
 function handleReader() {
-    if (parseInt(document.getElementById("readerType").value) === 0) {
-        document.getElementById("wiegandForm").style.display = "none";
-        document.getElementById("mfrc522Form").style.display = "block";
-        document.getElementById("rc522gain").style.display = "block";
-		document.getElementById("rdm6300Form").style.display = "none";
-    } else if (parseInt(document.getElementById("readerType").value) === 1) {
-        document.getElementById("wiegandForm").style.display = "block";
-        document.getElementById("mfrc522Form").style.display = "none";
-		document.getElementById("rdm6300Form").style.display = "none";
-    } else if (parseInt(document.getElementById("readerType").value) === 2) {
-        document.getElementById("wiegandForm").style.display = "none";
-        document.getElementById("mfrc522Form").style.display = "block";
-        document.getElementById("rc522gain").style.display = "none";
-		document.getElementById("rdm6300Form").style.display = "none";
-    } else if (parseInt(document.getElementById("readerType").value) === 3) {
-        document.getElementById("wiegandForm").style.display = "none";
-        document.getElementById("mfrc522Form").style.display = "none";
-        document.getElementById("rc522gain").style.display = "none";
-		document.getElementById("rdm6300Form").style.display = "block";
+    switch (parseInt(document.getElementById("reader").value)) {
+        case 1:
+            document.getElementById("wiegandForm").style.display = "block";
+            document.getElementById("mfrc522Form").style.display = "none";
+            document.getElementById("rdm6300Form").style.display = "none";
+            break;
+        case 2:
+            document.getElementById("wiegandForm").style.display = "none";
+            document.getElementById("mfrc522Form").style.display = "block";
+            document.getElementById("mfrc522gain").style.display = "block";
+            document.getElementById("rdm6300Form").style.display = "none";
+            break;
+        case 3:
+            document.getElementById("wiegandForm").style.display = "none";
+            document.getElementById("mfrc522Form").style.display = "block";
+            document.getElementById("mfrc522gain").style.display = "none";
+            document.getElementById("rdm6300Form").style.display = "none";
+            break;
+        case 4:
+            document.getElementById("wiegandForm").style.display = "none";
+            document.getElementById("mfrc522Form").style.display = "none";
+            document.getElementById("mfrc522gain").style.display = "none";
+            document.getElementById("rdm6300Form").style.display = "block";
+            break;
+        default:
+            document.getElementById("wiegandForm").style.display = "none";
+            document.getElementById("mfrc522Form").style.display = "none";
+            document.getElementById("mfrc522gain").style.display = "none";
+            document.getElementById("rdm6300Form").style.display = "none";
+            break;
+    }
+}
+
+function handleBuzzer() {
+    switch (parseInt(document.getElementById("buzzermode").value)) {
+        case 1:
+        case 2:
+            document.getElementById("BuzzerForm").style.display = "block";
+            break;
+        default:
+            document.getElementById("BuzzerForm").style.display = "none";
+            break;
+    }
+}
+
+function handleKeypad() {
+    switch (parseInt(document.getElementById("keypadmode").value)) {
+        case 1:
+            document.getElementById("KeypadForm").style.display = "block";
+            break;
+        default:
+            document.getElementById("KeypadForm").style.display = "none";
+            break;
     }
 }
 
@@ -124,35 +166,26 @@ function handleDHCP() {
 }
 
 function listhardware() {
-    if (isOfficialBoard) {
-		document.getElementById("readerType").value = 1;
-		document.getElementById("wg0pin").value = 5;
-		document.getElementById("wg1pin").value = 4;
-		document.getElementById("rxpin").value = 5;
-		document.getElementById("gpiorly").value = 13;
-		document.getElementById("wg0pin").disabled = true;
-		document.getElementById("wg1pin").disabled = true;
-		document.getElementById("rxpin").disabled = true;
-		document.getElementById("gpiorly").disabled = true;
-		document.getElementById("readerType").disabled = true;
-		document.getElementById("typerly").value = config.hardware.rtype;
-		document.getElementById("delay").value = config.hardware.rtime;
-	}
-	else {
-    document.getElementById("readerType").value = config.hardware.readerType;
-    document.getElementById("wg0pin").value = config.hardware.wgd0pin;
-    document.getElementById("wg1pin").value = config.hardware.wgd1pin;
+    document.getElementById("reader").value = config.hardware.reader;
+    document.getElementById("d0pin").value = config.hardware.d0pin;
+    document.getElementById("d1pin").value = config.hardware.d1pin;
     document.getElementById("rxpin").value = config.hardware.rxpin;
-    document.getElementById("gpioss").value = config.hardware.sspin;
-    document.getElementById("gain").value = config.hardware.rfidgain;
-    document.getElementById("typerly").value = config.hardware.rtype;
-    document.getElementById("gpiorly").value = config.hardware.rpin;
-    document.getElementById("delay").value = config.hardware.rtime;
-	}
+    document.getElementById("sspin").value = config.hardware.sspin;
+    document.getElementById("gain").value = config.hardware.gain;
+    document.getElementById("relaymode").value = config.hardware.relaymode;
+    document.getElementById("relaypin").value = config.hardware.relaypin;
+    document.getElementById("relaydelay").value = config.hardware.relaydelay;
+    document.getElementById("buzzermode").value = config.hardware.buzzermode;
+    document.getElementById("buzzerpin").value = config.hardware.buzzerpin;
+    document.getElementById("keypadmode").value = config.hardware.keypadmode;
+    document.getElementById("keymap").value = config.hardware.keymap;
+    document.getElementById("keypass").value = config.hardware.keypass;
+    document.getElementById("sdapin").value = config.hardware.sdapin;
+    document.getElementById("sclpin").value = config.hardware.sclpin;
     handleReader();
+    handleBuzzer();
+    handleKeypad();
 }
-
-
 
 function listlog() {
     websock.send("{\"command\":\"getlatestlog\", \"page\":" + page + "}");
@@ -160,7 +193,6 @@ function listlog() {
 
 function listntp() {
     websock.send("{\"command\":\"gettime\"}");
-
     document.getElementById("ntpserver").value = config.ntp.server;
     document.getElementById("intervals").value = config.ntp.interval;
     document.getElementById("DropDownTimezone").value = config.ntp.timezone;
@@ -185,15 +217,22 @@ function uncommited() {
 }
 
 function savehardware() {
-    config.hardware.readerType = parseInt(document.getElementById("readerType").value);
-    config.hardware.wgd0pin = parseInt(document.getElementById("wg0pin").value);
-    config.hardware.wgd1pin = parseInt(document.getElementById("wg1pin").value);
+    config.hardware.reader = parseInt(document.getElementById("reader").value);
+    config.hardware.d0pin = parseInt(document.getElementById("d0pin").value);
+    config.hardware.d1pin = parseInt(document.getElementById("d1pin").value);
     config.hardware.rxpin = parseInt(document.getElementById("rxpin").value);
-    config.hardware.sspin = parseInt(document.getElementById("gpioss").value);
-    config.hardware.rfidgain = parseInt(document.getElementById("gain").value);
-    config.hardware.rtype = parseInt(document.getElementById("typerly").value);
-    config.hardware.rpin = parseInt(document.getElementById("gpiorly").value);
-    config.hardware.rtime = parseInt(document.getElementById("delay").value);
+    config.hardware.sspin = parseInt(document.getElementById("sspin").value);
+    config.hardware.gain = parseInt(document.getElementById("gain").value);
+    config.hardware.relaymode = parseInt(document.getElementById("relaymode").value);
+    config.hardware.relaypin = parseInt(document.getElementById("relaypin").value);
+    config.hardware.relaydelay = parseInt(document.getElementById("relaydelay").value);
+    config.hardware.buzzermode = parseInt(document.getElementById("buzzermode").value);
+    config.hardware.buzzerpin = parseInt(document.getElementById("buzzerpin").value);
+    config.hardware.keypadmode = parseInt(document.getElementById("keypadmode").value);
+    config.hardware.keymap = parseInt(document.getElementById("keymap").value);
+    config.hardware.keypass = parseInt(document.getElementById("keypass").value);
+    config.hardware.sdapin = parseInt(document.getElementById("sdapin").value);
+    config.hardware.sclpin = parseInt(document.getElementById("sclpin").value);
     uncommited();
 }
 
@@ -201,7 +240,6 @@ function saventp() {
     config.ntp.server = document.getElementById("ntpserver").value;
     config.ntp.interval = parseInt(document.getElementById("intervals").value);
     config.ntp.timezone = parseInt(document.getElementById("DropDownTimezone").value);
-
     uncommited();
 }
 
@@ -211,8 +249,8 @@ function savegeneral() {
         alert("Administrator Password cannot be empty");
         return;
     }
-    config.general.pswd = a;
-    config.general.hostnm = document.getElementById("hostname").value;
+    config.general.password = a;
+    config.general.hostname = document.getElementById("hostname").value;
     config.general.restart = parseInt(document.getElementById("autorestart").value);
     uncommited();
 }
@@ -226,7 +264,7 @@ function savemqtt() {
     config.mqtt.port = parseInt(document.getElementById("mqttport").value);
     config.mqtt.topic = document.getElementById("mqtttopic").value;
     config.mqtt.user = document.getElementById("mqttuser").value;
-    config.mqtt.pswd = document.getElementById("mqttpwd").value;
+    config.mqtt.password = document.getElementById("mqttpwd").value;
     uncommited();
 }
 
@@ -244,9 +282,9 @@ function checkOctects(input) {
 }
 
 function savenetwork() {
-    var wmode = 0;
+    var mode = 0;
     config.network.dhcp = 0;
-    config.network.hide = 0;
+    config.network.hidden = 0;
     if (document.getElementById("inputtohide").style.display === "none") {
         var b = document.getElementById("ssid");
         config.network.ssid = b.options[b.selectedIndex].value;
@@ -254,50 +292,33 @@ function savenetwork() {
         config.network.ssid = document.getElementById("inputtohide").value;
     }
     if (document.getElementById("wmodeap").checked) {
-        wmode = 1;
+        mode = 1;
         config.network.bssid = 0;
         if (parseInt(document.querySelector("input[name=\"hideapenable\"]:checked").value) === 1) {
-            config.network.hide = 1;
+            config.network.hidden = 1;
         } else {
-            config.network.hide = 0;
+            config.network.hidden = 0;
         }
     } else {
         config.network.bssid = document.getElementById("wifibssid").value;
         if (parseInt(document.querySelector("input[name=\"dhcpenabled\"]:checked").value) === 1) {
             config.network.dhcp = 1;
         } else {
-
             config.network.dhcp = 0;
-
-            if (!checkOctects("ipaddress")) {
+            if (!checkOctects("ipaddress") || !checkOctects("subnet") || !checkOctects("dnsadd") || !checkOctects("gateway")) {
                 return;
             }
-            if (!checkOctects("subnet")) {
-                return;
-            }
-            if (!checkOctects("dnsadd")) {
-                return;
-            }
-            if (!checkOctects("gateway")) {
-                return;
-            }
-
             config.network.ip = document.getElementById("ipaddress").value;
             config.network.dns = document.getElementById("dnsadd").value;
             config.network.subnet = document.getElementById("subnet").value;
             config.network.gateway = document.getElementById("gateway").value;
         }
     }
-    config.network.wmode = wmode;
-    config.network.pswd = document.getElementById("wifipass").value;
-
-
-    config.network.offtime = parseInt(document.getElementById("disable_wifi_after_seconds").value);
+    config.network.mode = mode;
+    config.network.password = document.getElementById("wifipass").value;
+    config.network.offtime = parseInt(document.getElementById("networkofftime").value);
     uncommited();
 }
-
-var formData = new FormData();
-
 
 function inProgress(callback) {
     $("body").load("esprfid.htm #progresscontent", function(responseTxt, statusTxt, xhr) {
@@ -305,6 +326,31 @@ function inProgress(callback) {
             $(".progress").css("height", "40");
             $(".progress").css("font-size", "xx-large");
             var i = 0;
+            var speed = 100;
+            switch (callback) {
+                case "upload":
+                    $.ajax({
+                        url: "/update",
+                        type: "POST",
+                        data: formData,
+                        processData: false,
+                        contentType: false
+                    });
+                    speed = 350;
+                    break;
+                case "commit":
+                    websock.send(JSON.stringify(config));
+                    speed = 80;
+                    break;
+                case "destroy":
+                    websock.send("{\"command\":\"destroy\"}");
+                    speed = 350;
+                    break;
+                case "restart":
+                    websock.send("{\"command\":\"restart\"}");
+                    speed = 80;
+                    break;
+            }
             var prg = setInterval(function() {
                 $(".progress-bar").css("width", i + "%").attr("aria-valuenow", i).html(i + "%");
                 i++;
@@ -317,31 +363,9 @@ function inProgress(callback) {
                     document.getElementById("reconnect").style.display = "block";
                     document.getElementById("updateprog").className = "progress-bar progress-bar-success";
                     document.getElementById("updateprog").innerHTML = "Completed";
+                    location.reload();
                 }
-            }, 500);
-            switch (callback) {
-                case "upload":
-                    $.ajax({
-                        url: "/update",
-                        type: "POST",
-                        data: formData,
-                        processData: false,
-                        contentType: false
-                    });
-                    break;
-                case "commit":
-                    websock.send(JSON.stringify(config));
-                    break;
-                case "destroy":
-                    websock.send("{\"command\":\"destroy\"}");
-                    break;
-                case "restart":
-                    websock.send("{\"command\":\"restart\"}");
-                    break;
-                default:
-                    break;
-
-            }
+            }, speed);
         }
     }).hide().fadeIn();
 }
@@ -349,8 +373,6 @@ function inProgress(callback) {
 function commit() {
     inProgress("commit");
 }
-
-
 
 function handleAP() {
     document.getElementById("hideap").style.display = "block";
@@ -360,8 +382,6 @@ function handleAP() {
     document.getElementById("dhcp").style.display = "none";
     document.getElementById("staticip").style.display = "none";
     document.getElementById("inputtohide").style.display = "block";
-
-
 }
 
 function handleSTA() {
@@ -372,12 +392,11 @@ function handleSTA() {
 }
 
 function listnetwork() {
-
     document.getElementById("inputtohide").value = config.network.ssid;
-    document.getElementById("wifipass").value = config.network.pswd;
-    if (config.network.wmode === 1) {
+    document.getElementById("wifipass").value = config.network.password;
+    if (config.network.mode === 1) {
         document.getElementById("wmodeap").checked = true;
-        if (config.network.hide === 1) {
+        if (config.network.hidden === 1) {
             $("input[name=\"hideapenable\"][value=\"1\"]").prop("checked", true);
             //$("input[name=hideapenable][value=\"1\"]").attr("checked", "checked");
         }
@@ -397,15 +416,12 @@ function listnetwork() {
         handleSTA();
 
     }
-
-    document.getElementById("disable_wifi_after_seconds").value = config.network.offtime;
-
+    document.getElementById("networkofftime").value = config.network.offtime;
 }
 
 function listgeneral() {
-
-    document.getElementById("adminpwd").value = config.general.pswd;
-    document.getElementById("hostname").value = config.general.hostnm;
+    document.getElementById("adminpwd").value = config.general.password;
+    document.getElementById("hostname").value = config.general.hostname;
     document.getElementById("autorestart").value = config.general.restart;
 }
 
@@ -418,16 +434,13 @@ function listmqtt() {
     document.getElementById("mqttport").value = config.mqtt.port;
     document.getElementById("mqtttopic").value = config.mqtt.topic;
     document.getElementById("mqttuser").value = config.mqtt.user;
-    document.getElementById("mqttpwd").value = config.mqtt.pswd;
+    document.getElementById("mqttpwd").value = config.mqtt.password;
 }
-
-
 
 function listBSSID() {
     var select = document.getElementById("ssid");
     document.getElementById("wifibssid").value = select.options[select.selectedIndex].bssidvalue;
 }
-
 
 function listSSID(obj) {
     var select = document.getElementById("ssid");
@@ -443,7 +456,6 @@ function listSSID(obj) {
     document.getElementById("scanb").innerHTML = "Re-Scan";
     listBSSID();
 }
-
 
 function scanWifi() {
     websock.send("{\"command\":\"scan\"}");
@@ -465,16 +477,15 @@ function getEvents() {
 }
 
 function listSCAN(obj) {
-    if (obj.known === 1) {
+    if (obj.acctype === 0) {
+        $(".footable-add").click();
+        document.getElementById("uid").value = obj.uid;
+        document.getElementById("username").value = obj.username;
+        document.getElementById("acctype").value = 2;
+    } else {
         $(".fooicon-remove").click();
         document.querySelector("input.form-control[type=text]").value = obj.uid;
         $(".fooicon-search").click();
-    } else {
-        $(".footable-add").click();
-        document.getElementById("uid").value = obj.uid;
-        document.getElementById("picctype").value = obj.type;
-        document.getElementById("username").value = obj.user;
-        document.getElementById("acctype").value = obj.acctype;
     }
 }
 
@@ -496,17 +507,14 @@ function builddata(obj) {
     data = data.concat(obj.list);
 }
 
-
 function testRelay() {
     websock.send("{\"command\":\"testrelay\"}");
 }
-
 
 function colorStatusbar(ref) {
     var percentage = ref.style.width.slice(0, -1);
     if (percentage > 50) { ref.className = "progress-bar progress-bar-success"; } else if (percentage > 25) { ref.className = "progress-bar progress-bar-warning"; } else { ref.class = "progress-bar progress-bar-danger"; }
 }
-
 
 function listStats() {
     document.getElementById("chip").innerHTML = ajaxobj.chipid;
@@ -639,17 +647,17 @@ function restoreSet() {
 
 function restore1by1(i, len, data) {
     var part = 100 / len;
-    var uid, user, acc, valid;
+    var uid, username, acctype, valid;
     document.getElementById("dynamic").style.width = part * (i + 1) + "%";
     var datatosend = {};
     uid = data[i].uid;
-    user = data[i].username;
-    acc = data[i].acctype;
+    username = data[i].username;
+    acctype = data[i].acctype;
     valid = data[i].validuntil;
     datatosend.command = "userfile";
     datatosend.uid = uid;
-    datatosend.user = user;
-    datatosend.acctype = acc;
+    datatosend.username = username;
+    datatosend.acctype = acctype;
     datatosend.validuntil = valid;
     websock.send(JSON.stringify(datatosend));
     slot++;
@@ -705,74 +713,71 @@ function initEventTable() {
     var newlist = [];
     for (var i = 0; i < data.length; i++) {
         var dup = JSON.parse(data[i]);
-		dup.uid = i;
-		newlist[i] = {};
+        newlist[i] = {};
         newlist[i].options = {};
         newlist[i].value = {};
         newlist[i].value = dup;
-        var c = dup.type;
+        var c = dup.level;
         switch (c) {
-            case "WARN":
+			case 2:
                 newlist[i].options.classes = "warning";
                 break;
-            case "INFO":
+            case 3:
                 newlist[i].options.classes = "info";
                 break;
-            case "ERRO":
-                newlist[i].options.classes = "danger";
+            case 4:
+            case 5:
+                newlist[i].options.classes = "success";
                 break;
             default:
+                newlist[i].options.classes = "danger";
                 break;
         }
-
     }
     jQuery(function($) {
         window.FooTable.init("#eventtable", {
             columns: [{
-					"name": "uid",
-                    "title": "ID",
+                    "name": "level",
+                    "title": "Log Level",
+                    "parser": function(value) {
+                        switch (value) {
+                            case 1:
+                                return "error";
+                            case 2:
+                                return "warning";
+                            case 3:
+                                return "info";
+                            case 4:
+                                return "debug";
+                            case 5:
+                                return "verbose";
+                        }
+                        return "unknown";
+                    }
+                },
+                {
+                    "name": "record",
+                    "title": "Log Record",
                     "type": "text",
-					"sorted": true,
-                    "direction": "DESC"
-				},
-				{
-                    "name": "type",
-                    "title": "Event Type",
-                    "type": "text"
-                },
-                {
-                    "name": "src",
-                    "title": "Source"
-                },
-                {
-                    "name": "desc",
-                    "title": "Description"
-                },
-                {
-                    "name": "data",
-                    "title": "Additional Data",
                     "breakpoints": "xs sm"
                 },
                 {
                     "name": "time",
                     "title": "Date",
                     "parser": function(value) {
-                        if (value < 1520665101) {
-                            return value;
-                        } else {
-                            var comp = new Date();
-                            value = Math.floor(value + ((comp.getTimezoneOffset() * 60) * -1));
-                            var vuepoch = new Date(value * 1000);
-                            var formatted = vuepoch.getUTCFullYear() +
-                                "-" + twoDigits(vuepoch.getUTCMonth() + 1) +
-                                "-" + twoDigits(vuepoch.getUTCDate()) +
-                                "-" + twoDigits(vuepoch.getUTCHours()) +
-                                ":" + twoDigits(vuepoch.getUTCMinutes()) +
-                                ":" + twoDigits(vuepoch.getUTCSeconds());
-                            return formatted;
-                        }
+                        var comp = new Date();
+                        value = Math.floor(value + ((comp.getTimezoneOffset() * 60) * -1));
+                        var vuepoch = new Date(value * 1000);
+                        var formatted = vuepoch.getUTCFullYear() +
+                            "-" + twoDigits(vuepoch.getUTCMonth() + 1) +
+                            "-" + twoDigits(vuepoch.getUTCDate()) +
+                            "-" + twoDigits(vuepoch.getUTCHours()) +
+                            ":" + twoDigits(vuepoch.getUTCMinutes()) +
+                            ":" + twoDigits(vuepoch.getUTCSeconds());
+                        return formatted;
                     },
-                    "breakpoints": "xs sm"
+                    "sorted": true,
+                    "direction": "DESC"
                 }
             ],
             rows: newlist
@@ -791,29 +796,23 @@ function initLatestLogTable() {
         var c = dup.acctype;
         switch (c) {
             case 1:
-                newlist[i].options.classes = "success";
-                break;
-			case 2:
-                newlist[i].options.classes = "warning";
-                break;
-            case 99:
                 newlist[i].options.classes = "info";
                 break;
-            case 0:
+            case 2:
+                newlist[i].options.classes = "success";
+                break;
+			case 4:
                 newlist[i].options.classes = "warning";
                 break;
-            case 98:
+            default:
                 newlist[i].options.classes = "danger";
                 break;
-            default:
-                break;
         }
-
     }
     jQuery(function($) {
         window.FooTable.init("#latestlogtable", {
             columns: [{
-                    "name": "timestamp",
+                    "name": "time",
                     "title": "Date",
                     "parser": function(value) {
                         var comp = new Date();
@@ -831,29 +830,31 @@ function initLatestLogTable() {
                     "direction": "DESC"
                 },
                 {
-                    "name": "uid",
-                    "title": "UID",
-                    "type": "text",
+                    "name": "username",
+                    "title": "User Name",
+                    "type": "text"
                 },
                 {
-                    "name": "username",
-                    "title": "User Name or Label"
+                    "name": "uid",
+                    "title": "UID",
+                    "type": "text"
                 },
                 {
                     "name": "acctype",
                     "title": "Access",
                     "breakpoints": "xs sm",
                     "parser": function(value) {
-                        if (value === 1) {
-                            return "Granted";
-                        } else if (value === 99) {
-                            return "Admin";
-                        } else if (value === 0) {
-                            return "Disabled";
-                        } else if (value === 98) {
-                            return "Unknown";
-                        } else if (value === 2) {
-                            return "Expired";
+                        switch (value) {
+                            case 1:
+                                return "Admin"
+                            case 2:
+                                return "Activated User"
+                            case 3:
+                                return "Deactivated User"
+                            case 4:
+                                return "Expired User"
+                            default:
+                                return "Unknown";
                         }
                     }
                 }
@@ -862,8 +863,6 @@ function initLatestLogTable() {
         });
     });
 }
-
-
 
 function initUserTable() {
     jQuery(function($) {
@@ -878,22 +877,26 @@ function initUserTable() {
                     },
                     {
                         "name": "username",
-                        "title": "User Name or Label"
+                        "title": "User Name"
                     },
                     {
                         "name": "acctype",
                         "title": "Access Type",
                         "breakpoints": "xs",
                         "parser": function(value) {
-                            if (value === 1) {
-                                return "Always";
-                            } else if (value === 99) {
-                                return "Admin";
-                            } else if (value === 0) {
-                                return "Disabled";
+                            switch (value) {
+                                case 1:
+                                    return "Admin"
+                                case 2:
+                                    return "Activated User"
+                                case 3:
+                                    return "Deactivated User"
+                                case 4:
+                                    return "Expired User"
+                                default:
+                                    return "Unknown";
                             }
-                            return value;
-                        },
+                        }
                     },
                     {
                         "name": "validuntil",
@@ -916,31 +919,35 @@ function initUserTable() {
                     addText: "New User",
                     addRow: function() {
                         $editor[0].reset();
-                        $editorTitle.text("Add a new User");
+                        $editorTitle.text("Add User");
                         $modal.modal("show");
                     },
                     editRow: function(row) {
                         var acctypefinder;
                         var values = row.val();
-                        if (values.acctype === "Always") {
-                            acctypefinder = 1;
-                        } else if (values.acctype === "Admin") {
-                            acctypefinder = 99;
-                        } else if (values.acctype === "Disabled") {
-                            acctypefinder = 0;
+                        switch (values.acctype) {
+                            case "Admin":
+                                acctypefinder = 1;
+                                break;
+                            case "Activated User":
+                                acctypefinder = 2;
+                                break;
+                            case "Deactivated User":
+                                acctypefinder = 3;
+                                break;
                         }
                         $editor.find("#uid").val(values.uid);
                         $editor.find("#username").val(values.username);
                         $editor.find("#acctype").val(acctypefinder);
                         $editor.find("#validuntil").val(values.validuntil);
                         $modal.data("row", row);
-                        $editorTitle.text("Edit User # " + values.username);
+                        $editorTitle.text("Edit User: " + values.username);
                         $modal.modal("show");
                     },
                     deleteRow: function(row) {
                         var uid = row.value.uid;
                         var username = row.value.username;
-                        if (confirm("This will remove " + uid + " : " + username + " from database. Are you sure?")) {
+                        if (confirm("Remove " + username + " (" + uid + ") from database?")) {
                             var jsontosend = "{\"uid\":\"" + uid + "\",\"command\":\"remove\"}";
                             websock.send(jsontosend);
                             row.delete();
@@ -975,7 +982,7 @@ function initUserTable() {
             var datatosend = {};
             datatosend.command = "userfile";
             datatosend.uid = $editor.find("#uid").val();
-            datatosend.user = $editor.find("#username").val();
+            datatosend.username = $editor.find("#username").val();
             datatosend.acctype = parseInt($editor.find("#acctype").val());
             var validuntil = $editor.find("#validuntil").val();
             var vuepoch = (new Date(validuntil).getTime() / 1000);
@@ -986,21 +993,15 @@ function initUserTable() {
     });
 }
 
-
 function restartESP() {
     inProgress("restart");
 }
-
-
-
-var nextIsNotJson = false;
 
 function socketMessageListener(evt) {
     var obj = JSON.parse(evt.data);
     if (obj.hasOwnProperty("command")) {
         switch (obj.command) {
             case "status":
-				if (obj.hasOwnProperty("board")) { isOfficialBoard = true; }
                 ajaxobj = obj;
                 getContent("#statuscontent");
                 break;
@@ -1040,7 +1041,7 @@ function socketMessageListener(evt) {
                 timezone = obj.timezone;
                 deviceTime();
                 break;
-            case "piccscan":
+            case "rfidscanned":
                 listSCAN(obj);
                 break;
             case "ssidlist":
@@ -1054,8 +1055,6 @@ function socketMessageListener(evt) {
         }
     }
     if (obj.hasOwnProperty("resultof")) {
-
-
         switch (obj.resultof) {
             case "latestlog":
                 if (obj.result === false) {
@@ -1071,7 +1070,6 @@ function socketMessageListener(evt) {
                     if (!backupstarted) {
                         initUserTable();
                         document.getElementById("loading-img").style.display = "none";
-
                         $(".footable-show").click();
                         $(".fooicon-remove").click();
                     } else {
@@ -1106,16 +1104,11 @@ function socketMessageListener(evt) {
                     }
                 }
                 break;
-
-
             default:
                 break;
         }
     }
-
 }
-
-
 
 function clearevent() {
     websock.send("{\"command\":\"clearevent\"}");
@@ -1127,12 +1120,8 @@ function clearlatest() {
     $("#latestlog").click();
 }
 
-
-
-
-
 function compareDestroy() {
-    if (config.general.hostnm === document.getElementById("compare").value) {
+    if (config.general.hostname === document.getElementById("compare").value) {
         $("#destroybtn").prop("disabled", false);
     } else { $("#destroybtn").prop("disabled", true); }
 }
@@ -1140,7 +1129,6 @@ function compareDestroy() {
 function destroy() {
     inProgress("destroy");
 }
-
 
 $("#dismiss, .overlay").on("click", function() {
     $("#sidebar").removeClass("active");
@@ -1169,18 +1157,13 @@ $("#latestlog").click(function() { getContent("#logcontent"); return false; });
 $("#backup").click(function() { getContent("#backupcontent"); return false; });
 $("#reset").click(function() { $("#destroy").modal("show"); return false; });
 $("#eventlog").click(function() { getContent("#eventcontent"); return false; });
-
-$(".noimp").on("click", function() {
-    $("#noimp").modal("show");
-});
-
-
+$(".noimp").on("click", function() { $("#noimp").modal("show"); });
 
 window.FooTable.MyFiltering = window.FooTable.Filtering.extend({
     construct: function(instance) {
         this._super(instance);
-        this.acctypes = ["1", "99", "0"];
-        this.acctypesstr = ["Always", "Admin", "Disabled"];
+        this.acctypes = ["1", "2", "3", "4"];
+        this.acctypesstr = ["Admin", "Activated User", "Deactivated User", "Expired User"];
         this.def = "Access Type";
         this.$acctype = null;
     },
@@ -1232,10 +1215,6 @@ window.FooTable.MyFiltering = window.FooTable.Filtering.extend({
     }
 });
 
-
-var xDown = null;
-var yDown = null;
-
 function handleTouchStart(evt) {
     xDown = evt.touches[0].clientX;
     yDown = evt.touches[0].clientY;
@@ -1283,16 +1262,12 @@ function logout() {
             // If we don"t get an error, we actually got an error as we expect an 401!
         })
         .fail(function() {
-            // We expect to get an 401 Unauthorized error! In this case we are successfully 
+            // We expect to get an 401 Unauthorized error! In this case we are successfully
             // logged out and we redirect the user.
             document.location = "index.html";
         });
     return false;
 }
-
-
-
-
 
 function connectWS() {
     if (window.location.protocol === "https:") {
@@ -1302,13 +1277,11 @@ function connectWS() {
     }
     websock = new WebSocket(wsUri);
     websock.addEventListener("message", socketMessageListener);
-
     websock.onopen = function(evt) {
         websock.send("{\"command\":\"getconf\"}");
         websock.send("{\"command\":\"status\"}");
     };
 }
-
 
 function upload() {
     formData.append("bin", $("#binform")[0].files[0]);
@@ -1339,9 +1312,7 @@ function login() {
     }
 }
 
-
 function getLatestReleaseInfo() {
-
     $.getJSON("https://api.github.com/repos/esprfid/esp-rfid/releases/latest").done(function(release) {
         var asset = release.assets[0];
         var downloadCount = 0;
@@ -1366,7 +1337,6 @@ function getLatestReleaseInfo() {
         $("#versionhead").text(version);
     }).error(function() { $("#onlineupdate").html("<h5>Couldn't get release info. Are you connected to the Internet?</h5>"); });
 }
-
 
 $("#update").on("shown.bs.modal", function(e) {
     getLatestReleaseInfo();
