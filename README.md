@@ -213,4 +213,4 @@ If this project helps you in a way, you can buy us a beer. You can make a donati
 Nothing says better thank you than a donation.
 
 ## License
-[MIT License](https://github.com/esprfid/esp-rfid/blob/stable/LICENSE)
+The code parts written by ESP-RFID project authors are licensed under [MIT License](https://github.com/esprfid/esp-rfid/blob/stable/LICENSE), 3rd party libraries that are used by this project are licensed under different license schemes, please check them out as well.

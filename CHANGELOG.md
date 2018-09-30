@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 ## [0.9.0] Unreleased
 #### Added
 - [firmware] Support for RDM6300 RFID readers (125kHz, UART) #163 @arduino12
+- [firmware] debug firmware for debugging purposes
 
 
 ## [0.8.2] 2018-09-05
