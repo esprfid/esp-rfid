@@ -3,11 +3,8 @@
 
 #include <Arduino.h>
 #include <ESP8266mDNS.h>
+#include <NtpClientLib.h>
 #include "wifi.h"
-#include "Ntp.h"
-
-
-NtpClient network_ntp;
 
 
 void network_init(const char *ntp_server, uint32_t ntp_interval, int8_t ntp_zone,
@@ -20,8 +17,8 @@ void network_init(const char *ntp_server, uint32_t ntp_interval, int8_t ntp_zone
 	MDNS.addService("http", "tcp", 80);
 
 	if (ntp_server) {
-		log_i("Starting ntp...");
-		network_ntp.Ntp(ntp_server, ntp_zone, ntp_interval);
+		NTP.setInterval(ntp_interval);
+        NTP.begin(ntp_server, ntp_zone);
 	}
 }
 

@@ -207,7 +207,7 @@ bool send_status(AsyncWebSocketClient *client)
 	root["availsize"] = ESP.getFreeSketchSpace();
 	root["availspiffs"] = fsinfo.totalBytes - fsinfo.usedBytes;
 	root["spiffssize"] = fsinfo.totalBytes;
-	root["uptime"] = network_ntp.getDeviceUptimeString();
+	root["uptime"] = NTP.getUptimeString();
 
 	if (wifi_is_ap) {
 		wifi_get_ip_info(SOFTAP_IF, &info);
@@ -272,7 +272,7 @@ bool send_time(AsyncWebSocketClient *client)
 	JsonObject &root = json_buffer.createObject();
 	root["command"] = "gettime";
 	root["epoch"] = now();
-	root["timezone"] = network_ntp.timezone;
+	root["timezone"] = NTP.getTimeZone();
 	return web_handle_response(root, client);
 }
 

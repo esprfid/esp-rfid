@@ -24,6 +24,7 @@ char keypad_keymap[MPR121_KEYS] = {0};
 char *keypad_keypass = NULL;
 
 uint8_t keypad_mode = 0;
+uint8_t keypad_keypass_len = 0;
 uint8_t keypad_keypass_index = 0;
 uint8_t keypad_status = KEYPAD_IDLE;
 uint16_t keypad_last_keys_bitmask = 0;
@@ -32,25 +33,29 @@ uint32_t keypad_next_keypress = 0;
 
 void keypad_keypress(char key)
 {
-	log_d("Keypad keypress %c", key);
+	log_d("Keypad keypress: %c", key);
 	keypad_status = KEYPAD_PRESS;
 
 	keypad_next_keypress = millis() + KEYPAD_KEYPRESS_MS;
 
-	if (keypad_keypass[keypad_keypass_index] == key) {
-		keypad_keypass_index++;
-		if (strlen(keypad_keypass) == keypad_keypass_index) {
-			keypad_next_keypress = 0;
-			keypad_keypass_index = 0;
-			keypad_status = KEYPAD_VALID;
-            log_i("Keypad valid password recived");
-		}
+	if (keypad_keypass_index >= keypad_keypass_len)
+		return;
+	if (keypad_keypass[keypad_keypass_index] != key) {
+		keypad_keypass_index = keypad_keypass_len;
+		return;
+	}
+	keypad_keypass_index++;
+	if (keypad_keypass_index >= keypad_keypass_len) {
+		keypad_next_keypress = 0;
+		keypad_keypass_index = 0;
+		keypad_status = KEYPAD_VALID;
+		log_i("Keypad valid password recived");
 	}
 }
 
 void keypad_update(void)
 {
-    if (!keypad_mode)
+    if (!keypad_mode || Wire.status())
         return;
 	uint32_t cur_ms = millis();
 	uint16_t cur_keys_bitmask = keypad_mpr121.touched();
@@ -79,23 +84,22 @@ void keypad_update(void)
 
 void keypad_init(uint8_t mode, const char *keymap, const char *keypass, uint8_t sdapin, uint8_t sclpin)
 {
-    keypad_mode = mode;
-    if (!keypad_mode)
+    if (!mode)
         return;
 
 	Wire.begin(sdapin, sclpin);
 	if (!keypad_mpr121.begin()) {
 		log_w("MPR121 keypad sensor not found!");
-		keypad_mode = 0;
         return;
 	}
     if (!keymap || !keypass) {
         log_w("Empty keymap or keypass!");
-		keypad_mode = 0;
         return;
 	}
 
+	keypad_mode = mode;
     keypad_keypass = strdup(keypass);
+	keypad_keypass_len = strlen(keypad_keypass);
     memcpy(keypad_keymap, keymap, min(strlen(keymap), (size_t)sizeof(keypad_keymap)));
 }
 
