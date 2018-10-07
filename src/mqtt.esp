@@ -64,7 +64,7 @@ void mqtt_publish_heartbeat(time_t heartbeat) {
 	const char *topic = mqttTopic;
 	DynamicJsonBuffer jsonBuffer;
 	JsonObject &root = jsonBuffer.createObject();
-	root["type"] = "hearthbeat";
+	root["type"] = "heartbeat";
 	root["time"] = heartbeat;
 	String mqttBuffer4;
 	root.printTo(mqttBuffer4);

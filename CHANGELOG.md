@@ -6,6 +6,15 @@ All notable changes to this project will be documented in this file.
 - [firmware] Support for RDM6300 RFID readers (125kHz, UART) #163 @arduino12
 - [firmware] debug firmware for debugging purposes
 
+#### Fixed
+- [firmware] not able to connect MQTT server #157
+- [firmware] a MQTT message typo #157
+- [webui] some breaks on web pages
+- [webui] usage of !important CSS rule
+
+#### Changed
+- [webui] scrollbar on desktop screens (now hidden)
+- [webui] sidebar colors
 
 ## [0.8.2] 2018-09-05
 #### Added

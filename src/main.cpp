@@ -117,6 +117,8 @@ char *deviceHostname = NULL;
 int mqttenabled = 0;
 char *mqttTopic = NULL;
 char *mhs = NULL;
+char *muser = NULL;
+char *mpas = NULL;
 int mport;
 
 int relayType;

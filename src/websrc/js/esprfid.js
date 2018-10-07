@@ -1,4 +1,4 @@
-var version = "0.8.2";
+var version = "0.9.0";
 
 var websock = null;
 var wsUri = "ws://" + window.location.hostname + "/ws";

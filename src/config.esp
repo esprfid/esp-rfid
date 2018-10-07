@@ -112,25 +112,30 @@ bool ICACHE_FLASH_ATTR loadConfiguration() {
 #ifdef DEBUG
 	Serial.println("[ INFO ] Trying to setup NTP Server");
 #endif
+	/*
 	IPAddress timeserverip;
 	WiFi.hostByName(ntpserver, timeserverip);
 	String ip = printIP(timeserverip);
 	writeEvent("INFO", "ntp", "Connecting NTP Server", ip);
+	*/
 	NTP.Ntp(ntpserver, timeZone, ntpinter * 60);
-	mhs = strdup(mqtt["host"]);
-	mport = mqtt["port"];
-	const char *muser;
-	const char *mpas;
-	String muserString = mqtt["user"];
-	muser = strdup(muserString.c_str());
-	String mpasString = mqtt["pswd"];
-	mpas = strdup(mpasString.c_str());
 	mqttenabled = mqtt["enabled"];
 	if (mqttenabled == 1) {
 #ifdef DEBUG
 		Serial.println("[ INFO ] Trying to setup MQTT");
 #endif
-		mqttTopic = strdup(mqtt["topic"]);
+		String mhsString = mqtt["host"];
+		mhs = strdup(mhsString.c_str());
+
+		mport = mqtt["port"];
+		
+		String muserString = mqtt["user"];
+		muser = strdup(muserString.c_str());
+		String mpasString = mqtt["pswd"];
+		mpas = strdup(mpasString.c_str());
+		String mqttTopicString = mqtt["topic"];
+		mqttTopic = strdup(mqttTopicString.c_str());
+		
 		mqttClient.setServer(mhs, mport);
 		mqttClient.setCredentials(muser, mpas);
 		mqttClient.onDisconnect(onMqttDisconnect);
