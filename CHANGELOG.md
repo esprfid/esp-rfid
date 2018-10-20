@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 #### Added
 - [firmware] Support for RDM6300 RFID readers (125kHz, UART) #163 @arduino12
 - [firmware] debug firmware for debugging purposes
+- [tools] executables for tools (no longer need to have node js and gulp for web ui development)
 
 #### Fixed
 - [firmware] not able to connect MQTT server #157

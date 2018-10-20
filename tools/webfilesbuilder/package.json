@@ -4,7 +4,8 @@
   "description": "Combine all js and css files into one and gzip them for the ESP-RFID project",
   "main": "unglify.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+	"start": "gulp"
   },
   "author": "ESP-RFID Developers",
   "license": "UNLICENSED",
@@ -18,5 +19,6 @@
   "dependencies": {
     "gulp-htmlmin": "^4.0.0",
     "pump": "^3.0.0"
-  }
+  },
+  "bin": "node_modules\\gulp\\bin\\gulp.js"
 }
