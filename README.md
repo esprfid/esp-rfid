@@ -21,7 +21,7 @@ Access Control system using a cheap MFRC522, PN532 RFID, RDM6300 readers or Wieg
 * Records are Timestamped (Time synced from a NTP Server)
 * MQTT enabled
 * Bootstrap, jQuery, FooTables for beautiful Web Pages for both Mobile and Desktop Screens
-* Thanks to ESPAsyncWebServer Library communication is Asyncronous
+* Thanks to ESPAsyncWebServer Library communication is Asynchronous
 ### Official Hardware
 * Small size form factor, sometimes it is possible to glue it into existing readers.
 * Single power source to power 12V/2A powers ESP12 module, RFID Wiegand Reader and magnetic lock for opening doors.
@@ -33,8 +33,8 @@ Access Control system using a cheap MFRC522, PN532 RFID, RDM6300 readers or Wieg
 * Control reader’s status BUZZER sound *
 * Power reader, lock and the board through single 12V, 2A PSU
 * Optionally power magnetic lock through external AC/DC PSU
-* Possible to use any kind and any type of wiegand readers
-* Enables you to make IOT Access System with very litle wiring
+* Possible to use any kind and any type of Wiegand readers
+* Enables you to make IOT Access System with very little wiring
 * Fits in an universal enclosures with DIN mount
 * Open Source Hardware
 
@@ -67,7 +67,7 @@ On Windows you can use **"flash.bat"**, it will ask you which COM port that ESP 
 
 #### Building With PlatformIO
 ##### Backend
-The build enviroment is based on [PlatformIO](http://platformio.org). Follow the instructions found here: http://platformio.org/#!/get-started for installing it but skip the ```platform init``` step as this has already been done, modified and it is included in this repository. In summary:
+The build environment is based on [PlatformIO](http://platformio.org). Follow the instructions found here: http://platformio.org/#!/get-started for installing it but skip the ```platform init``` step as this has already been done, modified and it is included in this repository. In summary:
 
 ```
 sudo pip install -U pip setuptools
@@ -88,7 +88,7 @@ When you run ```platformio run``` for the first time, it will download the toolc
 The resulting (built) image(s) can be found in the directory ```/bin``` created during the build process.
 
 ##### Frontend
-You can not simply edit Web UI files because you will need to convert them to C arrays, which can be done automaticaly by a gulp script that can be found in tools directory.
+You can not simply edit Web UI files because you will need to convert them to C arrays, which can be done automatically by a gulp script that can be found in tools directory.
 
 If you want to edit esp-rfid's Web UI you will need:
 * NodeJS
@@ -129,7 +129,7 @@ For Wiegand based readers, you can configure D0 and D1 pins via settings page. B
 ### Steps
 * First, flash firmware (you can use /bin/flash.bat on Windows) to your ESP either using Arduino IDE or with your favourite flash tool
 * (optional) Fire up your serial monitor to get informed
-* Search for Wireless Network "esp-rfid-xxxxxx" and connect to it (It should be an open network and does not reqiure password)
+* Search for Wireless Network "esp-rfid-xxxxxx" and connect to it (It should be an open network and does not require password)
 * Open your browser and type either "http://192.168.4.1" or "http://esp-rfid.local" (.local needs Bonjour installed on your computer) on address bar.
 * Log on to ESP, default password is "admin"
 * Go to "Settings" page
@@ -148,8 +148,8 @@ For Wiegand based readers, you can configure D0 and D1 pins via settings page. B
 * Please also check [GitHub issues](https://github.com/esprfid/esp-rfid/issues).
 
 #### Time
-We are syncing time from a NTP Server (in Client -aka infrastructure- Mode). This will require ESP to have an Internet connection. Additionaly your ESP can also work without Internet connection too (Access Point -aka Ad-Hoc- Mode),  without giving up functionality.
-This will require you to do syncing manually. ESP can store and hold time for you approximately 51 days without a major issue, device time can drift from actual time depending on usage, temprature, etc.
+We are syncing time from a NTP Server (in Client -aka infrastructure- Mode). This will require ESP to have an Internet connection. Additionally your ESP can also work without Internet connection too (Access Point -aka Ad-Hoc- Mode),  without giving up functionality.
+This will require you to do syncing manually. ESP can store and hold time for you approximately 51 days without a major issue, device time can drift from actual time depending on usage, temperature, etc.
 So you have to login to settings page and sync it in a timely fashion.
 
 ## **Security**
@@ -171,7 +171,7 @@ Since we are limited on both flash and ram size things may get ugly at some poin
 #### 1) How many RFID Tag can be handled?
 Restore some randomly generated user data on File System worth:
 
-* 1000 seperate "userfile"
+* 1000 separate "userfile"
 * random 4 Bytes long UID and
 * random User Names and
 * 4 bytes random Unix Time Stamp
@@ -184,7 +184,7 @@ At least 1000 unique User (RFID Tag) can be handled, the test were performed on 
 #### Additional testing is needed:
 
 * Logging needs testing. How long should it need to log access? What if a Boss needs whole year log?
-* Realiability on Flash (these NOR Flash have limited write cycle on their cells). It depends on manufacturer choice of Flash Chip and usage.
+* Reliability on Flash (these NOR Flash have limited write cycle on their cells). It depends on manufacturer choice of Flash Chip and usage.
 
 ## Community
 * [![Chat at https://gitter.im/esp-rfid/Lobby](https://badges.gitter.im/esp-rfid.svg)](https://gitter.im/esp-rfid/Lobby) Join community chat on Gitter
