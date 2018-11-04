@@ -66,6 +66,7 @@ int wifiLED = 2;
 
 // these are from vendors
 #include "webh/glyphicons-halflings-regular.woff.gz.h"
+#include "webh/glyphicons-halflings-regular.woff2.gz.h"
 #include "webh/required.css.gz.h"
 #include "webh/required.js.gz.h"
 

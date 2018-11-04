@@ -54,6 +54,11 @@ void ICACHE_FLASH_ATTR setupWebServer() {
 		response->addHeader("Content-Encoding", "gzip");
 		request->send(response);
 	});
+	server.on("/fonts/glyphicons-halflings-regular.woff2", HTTP_GET, [](AsyncWebServerRequest *request) {
+		AsyncWebServerResponse *response = request->beginResponse_P(200, "font/woff2", glyphicons_halflings_regular_woff2_gz, glyphicons_halflings_regular_woff2_gz_len);
+		response->addHeader("Content-Encoding", "gzip");
+		request->send(response);
+	});
 	server.on("/css/required.css", HTTP_GET, [](AsyncWebServerRequest *request) {
 		AsyncWebServerResponse *response = request->beginResponse_P(200, "text/css", required_css_gz, required_css_gz_len);
 		response->addHeader("Content-Encoding", "gzip");
