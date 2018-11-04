@@ -3,6 +3,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.8.3] 2018-11-04
+#### Added
+- [firmware] LED_BUILTIN lights up while wifi connected and flashes when it waits for wifi
+- [firmware] RDM6300 suport
+- [webui] IP address choice option in AP mode
+- [webui] favicon.ico
+
 ## [0.8.2] 2018-09-05
 #### Added
 - [firmware] log for firmware update #152
