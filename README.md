@@ -100,7 +100,7 @@ Gulp script also minifies HTML and JS files and compresses (gzip) them.
 In order to test your changes without flashing the firmware you can launch websocket emulator which is included in tools directory.
 * You will need to Node JS for websocket emulator.
 * Run ```npm update``` to install dependencies
-* Run emulator  ```node wsemulator.js```
+* Run emulator  ```node wserver.js```
 * then you will need to launch your browser with CORS disabled:
 * ```chrome.exe --args --disable-web-security -–allow-file-access-from-files --user-data-dir="C:\Users\USERNAME```
 
