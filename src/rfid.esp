@@ -1,13 +1,17 @@
-void ICACHE_FLASH_ATTR rfidloop() {
+void ICACHE_FLASH_ATTR rfidloop()
+{
 	String uid = "";
 	String type = "";
 #ifndef OFFICIALBOARD
-	if (readerType == 0) {
-		if (!mfrc522.PICC_IsNewCardPresent()) {
+	if (readerType == 0)
+	{
+		if (!mfrc522.PICC_IsNewCardPresent())
+		{
 			delay(50);
 			return;
 		}
-		if (!mfrc522.PICC_ReadCardSerial()) {
+		if (!mfrc522.PICC_ReadCardSerial())
+		{
 			delay(50);
 			return;
 		}
@@ -16,7 +20,8 @@ void ICACHE_FLASH_ATTR rfidloop() {
 #ifdef DEBUG
 		Serial.print(F("[ INFO ] PICC's UID: "));
 #endif
-		for (int i = 0; i < mfrc522.uid.size; ++i) {
+		for (int i = 0; i < mfrc522.uid.size; ++i)
+		{
 			uid += String(mfrc522.uid.uidByte[i], HEX);
 		}
 #ifdef DEBUG
@@ -27,8 +32,11 @@ void ICACHE_FLASH_ATTR rfidloop() {
 #ifdef DEBUG
 		Serial.print(" " + type);
 #endif
-	} else if (readerType == 1) {
-		if (wg.available()) {
+	}
+	else if (readerType == 1)
+	{
+		if (wg.available())
+		{
 #ifdef DEBUG
 			Serial.print(F("[ INFO ] PICC's UID: "));
 			Serial.println(wg.getCode());
@@ -36,33 +44,44 @@ void ICACHE_FLASH_ATTR rfidloop() {
 			uid = String(wg.getCode(), DEC);
 			type = String(wg.getWiegandType(), DEC);
 			cooldown = millis() + 2000;
-		} else {
+		}
+		else
+		{
 			return;
 		}
-	} else if (readerType == 2) {
+	}
+	else if (readerType == 2)
+	{
 		bool found = false;
 		byte pnuid[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 		eCardType e_CardType;
 		byte u8_UidLength = 0x00; // UID = 4 or 7 bytes
 		found = pn532.ReadPassiveTargetID(pnuid, &u8_UidLength, &e_CardType);
-		if (found && u8_UidLength >= 4) {
+		if (found && u8_UidLength >= 4)
+		{
 #ifdef DEBUG
 			Serial.print(F("[ INFO ] PICC's UID: "));
 #endif
-			for (uint8_t i = 0; i < u8_UidLength; i++) {
+			for (uint8_t i = 0; i < u8_UidLength; i++)
+			{
 				uid += String(pnuid[i], HEX);
 			}
 #ifdef DEBUG
 			Serial.print(uid);
 #endif
 			cooldown = millis() + 2000;
-		} else {
+		}
+		else
+		{
 			delay(50);
 			return;
 		}
-	} else if (readerType == 3) {
+
+	}
+	else if (readerType == 3) {
 		if (rdm6300.update()) {
 			uid = String(rdm6300.get_tag_id(), HEX);
+			type = "EM4100";
 #ifdef DEBUG
 			Serial.print(F("[ INFO ] PICC's UID: "));
 			Serial.print(uid);
@@ -71,13 +90,12 @@ void ICACHE_FLASH_ATTR rfidloop() {
 			delay(50);
 			return;
 		}
-	} else {
-		delay(50);
-		return;
-	}
+	}	
 #endif
+
 #ifdef OFFICIALBOARD
-	if (wg.available()) {
+	if (wg.available())
+	{
 #ifdef DEBUG
 		Serial.print(F("[ INFO ] PICC's UID: "));
 		Serial.print(wg.getCode());
@@ -85,7 +103,10 @@ void ICACHE_FLASH_ATTR rfidloop() {
 		uid = String(wg.getCode(), DEC);
 		type = String(wg.getWiegandType(), HEX);
 		cooldown = millis() + 2000;
-	} else {
+	}
+	else
+	{
+		delay(50);
 		return;
 	}
 #endif
@@ -93,13 +114,15 @@ void ICACHE_FLASH_ATTR rfidloop() {
 	String filename = "/P/";
 	filename += uid;
 	File f = SPIFFS.open(filename, "r");
-	if (f) {
+	if (f)
+	{
 		size_t size = f.size();
 		std::unique_ptr<char[]> buf(new char[size]);
 		f.readBytes(buf.get(), size);
 		DynamicJsonBuffer jsonBuffer;
 		JsonObject &json = jsonBuffer.parseObject(buf.get());
-		if (json.success()) {
+		if (json.success())
+		{
 			String username = json["user"];
 			AccType = json["acctype"];
 #ifdef DEBUG
@@ -110,45 +133,56 @@ void ICACHE_FLASH_ATTR rfidloop() {
 			else
 				Serial.print(username);
 #endif
-			if (AccType == 1) {
+			if (AccType == 1)
+			{
 				unsigned long validL = json["validuntil"];
 				unsigned long nowL = now();
-				
-				if (validL > nowL ) {
+
+				if (validL > nowL)
+				{
 					activateRelay = true;
 					ws.textAll("{\"command\":\"giveAccess\"}");
 #ifdef DEBUG
 					Serial.println(" have access");
 #endif
-					if (mqttenabled == 1) {
+					if (mqttenabled == 1)
+					{
 						mqtt_publish_access(now(), "true", "Always", username, uid);
 					}
 				}
-				
-				else {
+
+				else
+				{
 #ifdef DEBUG
 					Serial.println(" expired");
 #endif
-					if (mqttenabled == 1) {
+					if (mqttenabled == 1)
+					{
 						mqtt_publish_access(now(), "true", "Expired", username, uid);
 					}
 					AccType = 2;
 				}
-			} else if (AccType == 99) {
+			}
+			else if (AccType == 99)
+			{
 				doEnableWifi = true;
 				activateRelay = true;
 				ws.textAll("{\"command\":\"giveAccess\"}");
 #ifdef DEBUG
 				Serial.println(" have admin access, enable wifi");
 #endif
-				if (mqttenabled == 1) {
+				if (mqttenabled == 1)
+				{
 					mqtt_publish_access(now(), "true", "Admin", username, uid);
 				}
-			} else {
+			}
+			else
+			{
 #ifdef DEBUG
 				Serial.println(" does not have access");
 #endif
-				if (mqttenabled == 1) {
+				if (mqttenabled == 1)
+				{
 					mqtt_publish_access(now(), "true", "Disabled", username, uid);
 				}
 			}
@@ -163,18 +197,23 @@ void ICACHE_FLASH_ATTR rfidloop() {
 			root["user"] = username;
 			size_t len = root.measureLength();
 			AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
-			if (buffer) {
+			if (buffer)
+			{
 				root.printTo((char *)buffer->get(), len + 1);
 				ws.textAll(buffer);
 			}
-		} else {
+		}
+		else
+		{
 #ifdef DEBUG
 			Serial.println("");
 			Serial.println(F("[ WARN ] Failed to parse User Data"));
 #endif
 		}
 		f.close();
-	} else {
+	}
+	else
+	{
 		String data = String(uid);
 		data += " " + String(type);
 		writeEvent("WARN", "rfid", "Unknown rfid tag is scanned", data);
@@ -190,11 +229,13 @@ void ICACHE_FLASH_ATTR rfidloop() {
 		root["known"] = 0;
 		size_t len = root.measureLength();
 		AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
-		if (buffer) {
+		if (buffer)
+		{
 			root.printTo((char *)buffer->get(), len + 1);
 			ws.textAll(buffer);
 		}
-		if (mqttenabled == 1) {
+		if (mqttenabled == 1)
+		{
 			mqtt_publish_access(now(), "false", "Denied", "Unknown", uid);
 		}
 	}
@@ -202,7 +243,8 @@ void ICACHE_FLASH_ATTR rfidloop() {
 
 #ifndef OFFICIALBOARD
 #ifdef DEBUG
-void ICACHE_FLASH_ATTR ShowMFRC522ReaderDetails() {
+void ICACHE_FLASH_ATTR ShowMFRC522ReaderDetails()
+{
 	// Get the MFRC522 software version
 	byte v = mfrc522.PCD_ReadRegister(mfrc522.VersionReg);
 	Serial.print(F("[ INFO ] MFRC522 Version: 0x"));
@@ -217,20 +259,23 @@ void ICACHE_FLASH_ATTR ShowMFRC522ReaderDetails() {
 		Serial.print(F(" (unknown)"));
 	Serial.println("");
 	// When 0x00 or 0xFF is returned, communication probably failed
-	if ((v == 0x00) || (v == 0xFF)) {
+	if ((v == 0x00) || (v == 0xFF))
+	{
 		Serial.println(F("[ WARN ] Communication failure, check if MFRC522 properly connected"));
 	}
 }
 #endif
 #endif
 
-void ICACHE_FLASH_ATTR setupWiegandReader(int d0, int d1) {
+void ICACHE_FLASH_ATTR setupWiegandReader(int d0, int d1)
+{
 	wg.begin(d0, d1);
 }
 
 #ifndef OFFICIALBOARD
-void ICACHE_FLASH_ATTR setupMFRC522Reader(int rfidss, int rfidgain) {
-	SPI.begin();                         // MFRC522 Hardware uses SPI protocol
+void ICACHE_FLASH_ATTR setupMFRC522Reader(int rfidss, int rfidgain)
+{
+	SPI.begin();						 // MFRC522 Hardware uses SPI protocol
 	mfrc522.PCD_Init(rfidss, UINT8_MAX); // Initialize MFRC522 Hardware
 	// Set RFID Hardware Antenna Gain
 	// This may not work with some boards
@@ -250,10 +295,12 @@ void ICACHE_FLASH_ATTR setupRdm6300Reader(int rx) {
 #endif
 
 #ifndef OFFICIALBOARD
-void ICACHE_FLASH_ATTR setupPN532Reader(int rfidss) {
+void ICACHE_FLASH_ATTR setupPN532Reader(int rfidss)
+{
 	// init controller
 	pn532.InitSoftwareSPI(14, 12, 13, rfidss, 0);
-	do { // pseudo loop (just used for aborting with break;)
+	do
+	{ // pseudo loop (just used for aborting with break;)
 		// Reset the PN532
 		pn532.begin(); // delay > 400 ms
 		byte IC, VersionHi, VersionLo, Flags;
@@ -264,17 +311,19 @@ void ICACHE_FLASH_ATTR setupPN532Reader(int rfidss) {
 		sprintf(Buf, "Chip: PN5%02X, Firmware version: %d.%d\r\n", IC, VersionHi, VersionLo);
 		Utils::Print(Buf);
 		sprintf(Buf, "Supports ISO 14443A:%s, ISO 14443B:%s, ISO 18092:%s\r\n", (Flags & 1) ? "Yes" : "No",
-		        (Flags & 2) ? "Yes" : "No",
-		        (Flags & 4) ? "Yes" : "No");
+				(Flags & 2) ? "Yes" : "No",
+				(Flags & 4) ? "Yes" : "No");
 		Utils::Print(Buf);
 #endif
 		// Set the max number of retry attempts to read from a card.
 		// This prevents us from waiting forever for a card, which is the default behaviour of the PN532.
-		if (!pn532.SetPassiveActivationRetries()) {
+		if (!pn532.SetPassiveActivationRetries())
+		{
 			break;
 		}
 		// configure the PN532 to read RFID tags
-		if (!pn532.SamConfig()) {
+		if (!pn532.SamConfig())
+		{
 			break;
 		}
 	} while (false);
