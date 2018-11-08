@@ -3,17 +3,17 @@ All notable changes to this project will be documented in this file.
 
 ## [0.9.0] Unreleased
 #### Added
-- [firmware] Support for RDM6300 RFID readers (125kHz, UART) #163 @arduino12
+- [firmware] Support for RDM6300 RFID readers (125kHz, UART) #163 @arduino12 / concurrently by @Pako2
 - [firmware] debug firmware for debugging purposes
-- [tools] executables for tools (no longer need to have node js and gulp for web ui development)
-- [firmware] LED_BUILTIN lights up while wifi connected and flashes when it waits for wifi
-- [webui] IP address choice option in AP mode
-- [webui] favicon.ico
+- [tools] executables for tools (no longer need to have node js and gulp for web ui development - **only lightly tested**) 
+- [firmware] LED_BUILTIN lights up while wifi connected and flashes when it waits for wifi @Pako2
+- [webui] IP address choice option in AP mode @Pako2
+- [webui] favicon.ico @Pako2
 
 #### Fixed
-- [firmware] not able to connect MQTT server #157
-- [firmware] a MQTT message typo #157
-- [webui] some breaks on web pages
+- [firmware] not able to connect MQTT server #157 @fivosg 
+- [firmware] a MQTT message typo #157 @wamboin23 
+- [webui] some breaks on web pages 
 - [webui] usage of !important CSS rule
 
 #### Changed
