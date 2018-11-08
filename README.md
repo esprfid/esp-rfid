@@ -209,6 +209,7 @@ If this project helps you in a way, you can buy us a beer. You can make a donati
 
 * 2017-10-03 [steinar-t](https://github.com/steinar-t)
 * 2017-12-10 [saschaludwig](https://github.com/saschaludwig)
+* 2018-10-02 Dennis Parsch
 
 Nothing says better thank you than a donation.
 
