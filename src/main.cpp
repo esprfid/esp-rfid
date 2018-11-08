@@ -59,9 +59,18 @@ PN532 pn532;
 WIEGAND wg;
 Rdm6300 rdm6300;
 
+unsigned long blink_ = millis();
+bool wifiFlag = false;
+//bool noAPfallback = false;
+bool configMode = false;
+int wmode;
+//int noFallbackPin = D2;
 int rfidss;
 int readerType;
 int relayPin;
+int wifiLED = 2;
+#define LEDoff HIGH
+#define LEDon LOW
 
 #endif
 
@@ -84,7 +93,7 @@ extern "C" {
 NtpClient NTP;
 AsyncMqttClient mqttClient;
 Ticker mqttReconnectTimer;
-WiFiEventHandler wifiDisconnectHandler;
+WiFiEventHandler wifiDisconnectHandler, wifiConnectHandler;
 
 AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
@@ -138,19 +147,26 @@ unsigned long interval = 1800;
 #include "websocket.esp"
 #include "webserver.esp"
 
-void ICACHE_FLASH_ATTR setup() {
+void ICACHE_FLASH_ATTR setup()
+{
 #ifdef OFFICIALBOARD
 	// Set relay pin to LOW signal as early as possible
 	pinMode(13, OUTPUT);
 	digitalWrite(13, LOW);
 	delay(200);
 #endif
+	pinMode(wifiLED, OUTPUT);
+	digitalWrite(wifiLED, LEDoff);
+
+	//pinMode(noFallbackPin, INPUT_PULLUP);
+	//noAPfallback = (digitalRead(noFallbackPin) == LOW);
 
 #ifdef DEBUG
-	Serial.begin(115200);
+	Serial.begin(9600);
 	Serial.println();
+
 	Serial.println(F("[ INFO ] ESP RFID v0.9"));
-	
+
 	uint32_t realSize = ESP.getFlashChipRealSize();
 	uint32_t ideSize = ESP.getFlashChipSize();
 	FlashMode_t ideMode = ESP.getFlashChipMode();
@@ -159,24 +175,31 @@ void ICACHE_FLASH_ATTR setup() {
 	Serial.printf("Flash ide  size: %u\n", ideSize);
 	Serial.printf("Flash ide speed: %u\n", ESP.getFlashChipSpeed());
 	Serial.printf("Flash ide mode:  %s\n", (ideMode == FM_QIO ? "QIO" : ideMode == FM_QOUT ? "QOUT" : ideMode == FM_DIO ? "DIO" : ideMode == FM_DOUT ? "DOUT" : "UNKNOWN"));
-	if (ideSize != realSize) {
+	if (ideSize != realSize)
+	{
 		Serial.println("Flash Chip configuration wrong!\n");
-	} else {
+	}
+	else
+	{
 		Serial.println("Flash Chip configuration ok.\n");
 	}
 #endif
 
-	if (!SPIFFS.begin()) {
+	if (!SPIFFS.begin())
+	{
 #ifdef DEBUG
 		Serial.print(F("[ WARN ] Formatting filesystem..."));
 #endif
-		if (SPIFFS.format()) {
+		if (SPIFFS.format())
+		{
 			writeEvent("WARN", "sys", "Filesystem formatted", "");
 
 #ifdef DEBUG
 			Serial.println(F(" completed!"));
 #endif
-		} else {
+		}
+		else
+		{
 #ifdef DEBUG
 			Serial.println(F(" failed!"));
 			Serial.println(F("[ WARN ] Could not format filesystem!"));
@@ -184,35 +207,59 @@ void ICACHE_FLASH_ATTR setup() {
 		}
 	}
 	wifiDisconnectHandler = WiFi.onStationModeDisconnected(onWifiDisconnect);
-	if (!loadConfiguration()) {
+	wifiConnectHandler = WiFi.onStationModeConnected(onWifiConnect);
+	configMode = loadConfiguration();
+	if (!configMode)
+	{
 		fallbacktoAPMode();
 	}
 	setupWebServer();
 	writeEvent("INFO", "sys", "System setup completed, running", "");
 }
 
-void ICACHE_RAM_ATTR loop() {
+void ICACHE_RAM_ATTR loop()
+{
 	currentMillis = millis();
 	deltaTime = currentMillis - previousLoopMillis;
 	uptime = NTP.getUptimeSec();
 	previousLoopMillis = currentMillis;
-	
-	if (currentMillis >= cooldown) {
+
+	if (configMode && !wmode)
+	{
+		if (!wifiFlag)
+		{
+			if ((currentMillis - blink_) > 500)
+			{
+				blink_ = currentMillis;
+				digitalWrite(wifiLED, !digitalRead(wifiLED));
+			}
+		}
+		else
+		{
+			if (!(digitalRead(wifiLED)==LEDon)) digitalWrite(wifiLED, LEDon);
+		}
+	}
+
+	if (currentMillis >= cooldown)
+	{
 		rfidloop();
 	}
-	
-	if (activateRelay) {
-		#ifdef DEBUG
+
+	if (activateRelay)
+	{
+#ifdef DEBUG
 		Serial.print("mili : ");
 		Serial.println(millis());
 		Serial.println("activating relay now");
-		#endif
+#endif
 		digitalWrite(relayPin, !relayType);
 		previousMillis = millis();
 		activateRelay = false;
 		deactivateRelay = true;
-	} else if((currentMillis - previousMillis >= activateTime) && (deactivateRelay)) {
-		#ifdef DEBUG
+	}
+	else if ((currentMillis - previousMillis >= activateTime) && (deactivateRelay))
+	{
+#ifdef DEBUG
 		Serial.println(currentMillis);
 		Serial.println(previousMillis);
 		Serial.println(activateTime);
@@ -220,12 +267,13 @@ void ICACHE_RAM_ATTR loop() {
 		Serial.println("deactivate relay after this");
 		Serial.print("mili : ");
 		Serial.println(millis());
-		#endif
+#endif
 		digitalWrite(relayPin, relayType);
 		deactivateRelay = false;
 	}
 
-	if (formatreq) {
+	if (formatreq)
+	{
 #ifdef DEBUG
 		Serial.println(F("[ WARN ] Factory reset initiated..."));
 #endif
@@ -234,53 +282,65 @@ void ICACHE_RAM_ATTR loop() {
 		SPIFFS.format();
 		ESP.restart();
 	}
-	
-	if (timerequest) {
+
+	if (timerequest)
+	{
 		timerequest = false;
 		sendTime();
 	}
 
-	if (autoRestartIntervalSeconds > 0 && uptime > autoRestartIntervalSeconds * 1000) {
+	if (autoRestartIntervalSeconds > 0 && uptime > autoRestartIntervalSeconds * 1000)
+	{
 		writeEvent("INFO", "sys", "System is going to reboot", "");
 #ifdef DEBUG
 		Serial.println(F("[ WARN ] Auto restarting..."));
 #endif
 		shouldReboot = true;
 	}
-	
-	if (shouldReboot) {
+
+	if (shouldReboot)
+	{
 		writeEvent("INFO", "sys", "System is going to reboot", "");
 #ifdef DEBUG
 		Serial.println(F("[ INFO ] Rebooting..."));
 #endif
 		ESP.restart();
 	}
-	
-	if (isWifiConnected) {
+
+	if (isWifiConnected)
+	{
 		wiFiUptimeMillis += deltaTime;
 	}
-	
-	if (wifiTimeout > 0 && wiFiUptimeMillis > (wifiTimeout * 1000) && isWifiConnected == true) {
+
+	if (wifiTimeout > 0 && wiFiUptimeMillis > (wifiTimeout * 1000) && isWifiConnected == true)
+	{
 		writeEvent("INFO", "wifi", "WiFi is going to be disabled", "");
 		doDisableWifi = true;
 	}
-	
-	if (doDisableWifi == true) {
+
+	if (doDisableWifi == true)
+	{
 		doDisableWifi = false;
 		wiFiUptimeMillis = 0;
 		disableWifi();
-	} else if (doEnableWifi == true) {
+	}
+	else if (doEnableWifi == true)
+	{
 		writeEvent("INFO", "wifi", "Enabling WiFi", "");
 		doEnableWifi = false;
-		if (!isWifiConnected) {
+		if (!isWifiConnected)
+		{
 			wiFiUptimeMillis = 0;
 			enableWifi();
 		}
 	}
-	
-	if (mqttenabled == 1) {
-		if (mqttClient.connected()) {
-				if ((unsigned)now() > nextbeat) {
+
+	if (mqttenabled == 1)
+	{
+		if (mqttClient.connected())
+		{
+			if ((unsigned)now() > nextbeat)
+			{
 				mqtt_publish_heartbeat(now());
 				nextbeat = (unsigned)now() + interval;
 #ifdef DEBUG
@@ -290,5 +350,4 @@ void ICACHE_RAM_ATTR loop() {
 			}
 		}
 	}
-	
 }

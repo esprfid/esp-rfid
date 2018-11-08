@@ -82,7 +82,7 @@
     <div class="row form-group">
         <label class="col-xs-3">Admin Password<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Log On password for the Administrator"></i></label>
         <span class="col-xs-9 col-md-5">
-              <input class="form-control input-sm" placeholder="Administrator Password" id="adminpwd" type="text">
+              <input class="form-control input-sm" placeholder="Administrator Password" id="adminpwd"  type="password">
               </span>
         <br>
     </div>
@@ -345,7 +345,7 @@
     <div class="row form-group">
         <label class="col-xs-3">Password<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="MQTT server password if any"></i></label>
         <span class="col-xs-9">
-    <input class="form-control input-sm" placeholder="" value="" style="display:inline;max-width:185px" id="mqttpwd" type="text">
+    <input class="form-control input-sm" placeholder="" value="" style="display:inline;max-width:185px" id="mqttpwd"  type="password">
   </span>
         <br>
     </div>
@@ -382,11 +382,11 @@
     </div>
     <div class="row form-group">
         <label class="col-xs-3">SSID<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Wi-Fi Network's Name"></i></label>
-        <span class="col-xs-6 col-md-5">
+        <span class="col-xs-7 col-md-5">
                 <input class="form-control input-sm" id="inputtohide" type="text" name="ap_ssid">
                 <select class="form-control input-sm" style="display:none;" id="ssid" onchange="listBSSID();"></select>
               </span>
-        <span class="col-xs-3">
+        <span class="col-xs-2">
                 <button id="scanb" type="button" class="btn btn-primary btn-xs" style="display:none;" onclick="scanWifi()">Scan</button>
               </span>
     </div>
@@ -399,7 +399,7 @@
     <div class="row form-group">
         <label class="col-xs-3">Password<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Wi-Fi Password"></i></label>
         <span class="col-xs-9 col-md-5">
-              <input id="wifipass" class="form-control input-sm" type="text" name="ap_passwd">
+              <input id="wifipass" class="form-control input-sm" name="ap_passwd" type="password">
               </span>
     </div>
     <br>
@@ -426,19 +426,21 @@
             </form>
         </div>
     </div>
-    <div id="staticip" style="display:none">
+    <div id="staticip1" style="display:none">
         <div class="row form-group">
-            <label class="col-xs-3">IP Address</label>
+            <label class="col-xs-3">IP Address<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-html="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Enter IP Address<BR>(for example 192.168.4.1)"></i></label>
             <span class="col-xs-9 col-md-5">
               <input id="ipaddress" class="form-control input-sm">
               </span>
         </div>
         <div class="row form-group">
-            <label class="col-xs-3">Subnet</label>
+            <label class="col-xs-3">Subnet Mask<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-html="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Enter Subnet Mask<BR>(for example 255.255.255.0)"></i></label>
             <span class="col-xs-9 col-md-5">
               <input id="subnet" class="form-control input-sm">
               </span>
         </div>
+    </div>
+    <div id="staticip2" style="display:none">
         <div class="row form-group">
             <label class="col-xs-3">DNS Server</label>
             <span class="col-xs-9 col-md-5">
@@ -658,7 +660,7 @@
         <h5>Please wait while fetching data... <span id="loadpages"></span></h5>
     </div>
     <br>
-    <div class="text-center">
+    <div class="text-center" id="usersbanner">
         <h5>You can add new users by either scanning a RFID Tag or by clicking on "New User" button.</h5>
     </div>
     <br>
@@ -689,7 +691,7 @@
                     </div>
                     <div class="form-group required">
                         <label for="uid" class="col-sm-3 control-label">UID</label>
-                        <div class="col-sm-9">
+                        <div class="col-sm-9" style="font-family:monospace">
                             <input type="text" class="form-control" id="uid" name="uid" placeholder="UID" required>
                         </div>
                     </div>
