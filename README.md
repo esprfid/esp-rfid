@@ -192,8 +192,7 @@ At least 1000 unique User (RFID Tag) can be handled, the test were performed on 
 ### Projects that is based on esp-rfid
 * [ESP-IO](https://github.com/Pako2/EventGhostPlugins/tree/master/ESP-IO)
 
-### Contributions
-Thanks to the community, ESP-RFID come to alive with their great effort:
+### Acknowledgements
 
 - @rneurink
 - @thunderace
@@ -201,6 +200,7 @@ Thanks to the community, ESP-RFID come to alive with their great effort:
 - @nardev
 - @romanzava
 - @arduino12
+- @Pako2
 
 See [ChangeLog](https://github.com/esprfid/esp-rfid/blob/dev/CHANGELOG.md)
 

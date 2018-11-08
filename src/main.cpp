@@ -59,18 +59,9 @@ PN532 pn532;
 WIEGAND wg;
 Rdm6300 rdm6300;
 
-unsigned long blink_ = millis();
-bool wifiFlag = false;
-//bool noAPfallback = false;
-bool configMode = false;
-int wmode;
-//int noFallbackPin = D2;
 int rfidss;
 int readerType;
 int relayPin;
-int wifiLED = 2;
-#define LEDoff HIGH
-#define LEDon LOW
 
 #endif
 
@@ -97,6 +88,16 @@ WiFiEventHandler wifiDisconnectHandler, wifiConnectHandler;
 
 AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
+
+unsigned long blink_ = millis();
+bool wifiFlag = false;
+//bool noAPfallback = false;
+bool configMode = false;
+int wmode;
+//int noFallbackPin = D2;
+int wifiLED = 2;
+#define LEDoff HIGH
+#define LEDon LOW
 
 // Variables for whole scope
 const char *http_username = "admin";
