@@ -78,21 +78,115 @@ void ICACHE_FLASH_ATTR rfidloop()
 		}
 
 	}
-	else if (readerType == 3) {
-		if (rdm6300.update()) {
-			uid = String(rdm6300.get_tag_id(), HEX);
+	else if (readerType > 2)
+	{
+		while (Serial.available() > 0)
+		{
+			RFIDr.rfidSerial(Serial.read());
+		}
+		if (RFIDr.Available())
+		{
+			uid = RFIDr.GetHexID();
 			type = "EM4100";
+			cooldown = millis() + 2000;
 #ifdef DEBUG
 			Serial.print(F("[ INFO ] PICC's UID: "));
+			Serial.println(uid);
+#endif
+		}
+		else
+		{
+			if (readerType == 3)
+			{
+				delay(50);
+				return;
+			}
+		}
+
+		if (readerType == 4 && uid.length() == 0)
+		{
+			if (!mfrc522.PICC_IsNewCardPresent())
+			{
+				delay(50);
+				return;
+			}
+			if (!mfrc522.PICC_ReadCardSerial())
+			{
+				delay(50);
+				return;
+			}
+			mfrc522.PICC_HaltA();
+			cooldown = millis() + 2000;
+#ifdef DEBUG
+			Serial.print(F("[ INFO ] PICC's UID: "));
+#endif
+			for (int i = 0; i < mfrc522.uid.size; ++i)
+			{
+				uid += String(mfrc522.uid.uidByte[i], HEX);
+			}
+#ifdef DEBUG
 			Serial.print(uid);
 #endif
-		} else {
-			delay(50);
-			return;
-		}
-	}	
+			MFRC522::PICC_Type piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
+			type = mfrc522.PICC_GetTypeName(piccType);
+#ifdef DEBUG
+			Serial.print(" " + type);
 #endif
+		}
 
+		else if (readerType == 5 && uid.length() == 0)
+		{
+			if (wg.available())
+			{
+#ifdef DEBUG
+				Serial.print(F("[ INFO ] PICC's UID: "));
+				Serial.println(wg.getCode());
+#endif
+				uid = String(wg.getCode(), DEC);
+				type = String(wg.getWiegandType(), DEC);
+				cooldown = millis() + 2000;
+			}
+			else
+			{
+				return;
+			}
+		}
+
+		else if (readerType == 6 && uid.length() == 0)
+		{
+			bool found = false;
+			byte pnuid[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+			eCardType e_CardType;
+			byte u8_UidLength = 0x00; // UID = 4 or 7 bytes
+			found = pn532.ReadPassiveTargetID(pnuid, &u8_UidLength, &e_CardType);
+			if (found && u8_UidLength >= 4)
+			{
+#ifdef DEBUG
+				Serial.print(F("[ INFO ] PICC's UID: "));
+#endif
+				for (uint8_t i = 0; i < u8_UidLength; i++)
+				{
+					uid += String(pnuid[i], HEX);
+				}
+#ifdef DEBUG
+				Serial.print(uid);
+#endif
+				cooldown = millis() + 2000;
+			}
+			else
+			{
+				delay(50);
+				return;
+			}
+		}
+	}
+
+	else //no reader selected
+	{
+		delay(50);
+		return;
+	}
+#endif
 #ifdef OFFICIALBOARD
 	if (wg.available())
 	{
@@ -287,10 +381,6 @@ void ICACHE_FLASH_ATTR setupMFRC522Reader(int rfidss, int rfidgain)
 #ifdef DEBUG
 	ShowMFRC522ReaderDetails(); // Show details of PCD - MFRC522 Card Reader details
 #endif
-}
-
-void ICACHE_FLASH_ATTR setupRdm6300Reader(int rx) {
-	rdm6300.begin(rx);
 }
 #endif
 
