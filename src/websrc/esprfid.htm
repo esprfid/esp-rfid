@@ -131,6 +131,9 @@
                 <option value="1">Wiegand</option>
                 <option value="2">PN532</option>
                 <option value="3">RDM6300</option>
+                <option value="4">MFRC522 + RDM6300</option>
+                <option value="5">Wiegand + RDM6300</option>
+                <option value="6">PN532 + RDM6300</option>
             </select>
         </div>
     </div>
@@ -194,25 +197,6 @@
                     <option selected="selected" value="32">Avg (33 db)</option>
                     <option value="16">23 db</option>
                     <option value="0">Min (18 db)</option>
-                  </select>
-                </span>
-        </div>
-    </div>
-    <div class="" id="rdm6300Form" style="display:none">
-        <div class="row form-group">
-            <label class="col-xs-3">RDM6300 RX<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Choose which ESP pin is connected to RFID Hardware RX pin"></i></label>
-            <span class="col-xs-9 col-md-5">
-                  <select class="form-control input-sm" id="rxpin">
-                    <option value="0">GPIO-0</option>
-                    <option value="1">GPIO-1</option>
-                    <option selected="selected" value="2">GPIO-2</option>
-                    <option value="4">GPIO-4</option>
-                    <option value="5">GPIO-5</option>
-                    <option value="12">GPIO-12</option>
-                    <option value="13">GPIO-13</option>
-                    <option value="14">GPIO-14</option>
-                    <option value="15">GPIO-15</option>
-                    <option value="16">GPIO-16</option>
                   </select>
                 </span>
         </div>
