@@ -121,10 +121,6 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 	}
 	else
 	{
-#ifdef DEBUG
-		Serial.print(F("[ INFO ] No AP Fallback Mode = "));
-		//Serial.println(noAPfallback ? F("True") : F("False"));
-#endif
 		if (network["dhcp"] == "0")
 		{
 			WiFi.mode(WIFI_STA);
