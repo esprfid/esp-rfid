@@ -91,11 +91,9 @@ AsyncWebSocket ws("/ws");
 
 unsigned long blink_ = millis();
 bool wifiFlag = false;
-//bool noAPfallback = false;
 bool configMode = false;
 int wmode;
-//int noFallbackPin = D2;
-int wifiLED = 2;
+uint8_t wifipin = 255;
 #define LEDoff HIGH
 #define LEDon LOW
 
@@ -156,11 +154,6 @@ void ICACHE_FLASH_ATTR setup()
 	digitalWrite(13, LOW);
 	delay(200);
 #endif
-	pinMode(wifiLED, OUTPUT);
-	digitalWrite(wifiLED, LEDoff);
-
-	//pinMode(noFallbackPin, INPUT_PULLUP);
-	//noAPfallback = (digitalRead(noFallbackPin) == LOW);
 
 #ifdef DEBUG
 	Serial.begin(9600);
@@ -225,19 +218,19 @@ void ICACHE_RAM_ATTR loop()
 	uptime = NTP.getUptimeSec();
 	previousLoopMillis = currentMillis;
 
-	if (configMode && !wmode)
+	if (wifipin != 255 && configMode && !wmode)
 	{
 		if (!wifiFlag)
 		{
 			if ((currentMillis - blink_) > 500)
 			{
 				blink_ = currentMillis;
-				digitalWrite(wifiLED, !digitalRead(wifiLED));
+				digitalWrite(wifipin, !digitalRead(wifipin));
 			}
 		}
 		else
 		{
-			if (!(digitalRead(wifiLED)==LEDon)) digitalWrite(wifiLED, LEDon);
+			if (!(digitalRead(wifipin)==LEDon)) digitalWrite(wifipin, LEDon);
 		}
 	}
 
