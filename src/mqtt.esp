@@ -36,6 +36,7 @@ void onMqttDisconnect(AsyncMqttClientDisconnectReason reason) {
 	writeEvent("WARN", "mqtt", "Disconnected from MQTT server", reasonstr);
 	
 	if (WiFi.isConnected()) {
+		//mqttClient.setServer(mhs, mport);
 		mqttReconnectTimer.once(60, connectToMqtt);
 	}
 }
