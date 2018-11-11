@@ -33,6 +33,15 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 #ifdef DEBUG
 	Serial.println(F("[ INFO ] Trying to setup RFID Hardware"));
 #endif
+	if (hardware.containsKey("wifipin"))
+	{
+		wifipin = hardware["wifipin"];
+		if (wifipin!=255)
+		{
+			pinMode(wifipin, OUTPUT);
+			digitalWrite(wifipin, LEDoff);
+		}
+	}
 #ifdef OFFICIALBOARD
 	setupWiegandReader(5, 4);
 #endif
