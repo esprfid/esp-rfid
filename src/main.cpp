@@ -246,7 +246,7 @@ void ICACHE_RAM_ATTR loop()
 		Serial.println(millis());
 		Serial.println("activating relay now");
 #endif
-		digitalWrite(relayPin, !relayType);
+		digitalWrite(relayPin, relayType);
 		previousMillis = millis();
 		activateRelay = false;
 		deactivateRelay = true;
@@ -262,7 +262,7 @@ void ICACHE_RAM_ATTR loop()
 		Serial.print("mili : ");
 		Serial.println(millis());
 #endif
-		digitalWrite(relayPin, relayType);
+		digitalWrite(relayPin, !relayType);
 		deactivateRelay = false;
 	}
 
