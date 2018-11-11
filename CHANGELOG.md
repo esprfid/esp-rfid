@@ -1,7 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [0.8.3] 2018-11-11
+#### Fixed
+- [firmware] not able to connect MQTT server #157 @fivosg 
 
 ## [0.8.2] 2018-09-05
 #### Added
