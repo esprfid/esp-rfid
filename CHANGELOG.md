@@ -2,7 +2,11 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.0] Unreleased
+
+### BREAKING CHANGES (These changes will break your data on device, please make sure made a backup, also you can not use your old settings but only can restore user data)
+
 #### Added
+- [firmware] #189 Flash layout changed to 2MB Firmware / 2MB SPIFFS Data @Pako2
 - [firmware] Support for RDM6300 RFID readers (125kHz, UART) #163 @arduino12 / concurrently by @Pako2
 - [firmware] debug firmware for debugging purposes
 - [tools] executables for tools (no longer need to have node js and gulp for web ui development - **only lightly tested**) 
@@ -15,6 +19,8 @@ All notable changes to this project will be documented in this file.
 - [firmware] a MQTT message typo #157 @wamboin23 
 - [webui] some breaks on web pages 
 - [webui] usage of !important CSS rule
+- [firmware] #191 relay type inversion @Pako2
+- [firmware] #190 Increase PN532::WaitReady debug level @Pako2
 
 #### Changed
 - [webui] scrollbar on desktop screens (now hidden)
