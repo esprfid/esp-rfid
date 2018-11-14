@@ -1,8 +1,31 @@
 /*
 RFID reader.
-Based on the "rfid_reader" library (https://github.com/travisfarmer) from Travis Farmer.
+Based on the "RFID_Readerer" library (https://github.com/travisfarmer) from Travis Farmer.
 
-Author: Lubos Ruckl
+==================================================================
+Copyright (c) 2018 Lubos Ruckl
+
+Permission is hereby granted, free of charge, to any person
+obtaining a copy of this software and associated documentation
+files (the "Software"), to deal in the Software without
+restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+==================================================================
 
 Hardware: RDM6300 or RF125-PS
 Uses 125KHz RFID tags.
@@ -11,7 +34,7 @@ Uses 125KHz RFID tags.
 #include "Arduino.h"
 #include "rfid125kHz.h"
 
-char *RFID_Read::ulltostr(unsigned long long value, char *ptr, int base)
+char *RFID_Reader::ulltostr(unsigned long long value, char *ptr, int base)
 {
   unsigned long long t = 0, res = 0;
   unsigned long long tmp = value;
@@ -50,7 +73,7 @@ char *RFID_Read::ulltostr(unsigned long long value, char *ptr, int base)
 this is to simply return true when there is RFID data available.
 it is a function to prevent external manipulation of the boolean variable.
 */
-bool RFID_Read::Available()
+bool RFID_Reader::Available()
 {
     return (data_available);
 }
@@ -58,7 +81,7 @@ bool RFID_Read::Available()
 /*
 Returns the ID hexadecimal representation, and resets the Available flag.
 */
-String RFID_Read::GetHexID()
+String RFID_Reader::GetHexID()
 {
     if (data_available)
     {
@@ -75,7 +98,7 @@ String RFID_Read::GetHexID()
 /*
 Returns the ID decimal representation, and resets the Available flag.
 */
-String RFID_Read::GetDecID()
+String RFID_Reader::GetDecID()
 {
     if (data_available)
     {
@@ -88,7 +111,7 @@ String RFID_Read::GetDecID()
 }
 
 
-void RFID_Read::rfidSerial(char x)
+void RFID_Reader::rfidSerial(char x)
 {
     if (x == StartByte)
     {
@@ -107,7 +130,7 @@ void RFID_Read::rfidSerial(char x)
 }
 
 
-uint8_t RFID_Read::get_checksum(unsigned long long data)
+uint8_t RFID_Reader::get_checksum(unsigned long long data)
   {
     uint8_t b[5];
     memcpy(b, &data, 5);
@@ -115,7 +138,7 @@ uint8_t RFID_Read::get_checksum(unsigned long long data)
   }
 
 
-uint8_t RFID_Read::char2int(char c)
+uint8_t RFID_Reader::char2int(char c)
   {
     c -= asciiNum_diff;
     if(c > 9) c -= asciiUpp_diff;
@@ -126,7 +149,7 @@ uint8_t RFID_Read::char2int(char c)
 /*
 the module spits out HEX values, we need to convert them to an unsigned long.
 */
-void RFID_Read::parse()
+void RFID_Reader::parse()
 {
     uint8_t lshift = 0;
     unsigned long long val = 0;

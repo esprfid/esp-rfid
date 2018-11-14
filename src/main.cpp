@@ -57,7 +57,7 @@ int relayPin = 13;
 MFRC522 mfrc522 = MFRC522();
 PN532 pn532;
 WIEGAND wg;
-RFID_Read RFIDr;
+RFID_Reader RFIDr;
 
 int rfidss;
 int readerType;
