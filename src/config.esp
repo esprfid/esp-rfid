@@ -92,7 +92,7 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 #ifndef OFFICIALBOARD
 	relayPin = hardware["rpin"];
 	pinMode(relayPin, OUTPUT);
-	digitalWrite(relayPin, relayType);
+	digitalWrite(relayPin, !relayType);
 #endif
 	const char *ssid = network["ssid"];
 	const char *password = network["pswd"];
