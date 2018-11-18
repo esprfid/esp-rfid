@@ -87,7 +87,7 @@ void ICACHE_FLASH_ATTR rfidloop()
 		if (RFIDr.Available())
 		{
 			uid = RFIDr.GetHexID();
-			type = "EM4100";
+			type = RFIDr.GetTagType();
 			cooldown = millis() + 2000;
 #ifdef DEBUG
 			Serial.print(F("[ INFO ] PICC's UID: "));

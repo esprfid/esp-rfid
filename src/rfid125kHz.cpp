@@ -27,7 +27,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 ==================================================================
 
-Hardware: RDM6300 or RF125-PS
+Hardware: RDM6300 or RF125-PS or Gwiot 7941E
 Uses 125KHz RFID tags.
 */
 
@@ -88,12 +88,26 @@ String RFID_Reader::GetHexID()
         uint8_t b[5];
         memcpy(b, &new_ID, 5);
         char buf[11];
-        sprintf(buf,"%02x%02x%02x%02x%02x\0",b[4],b[3],b[2],b[1],b[0]);
+        sprintf(buf,"%02x%02x%02x%02x%02x%c",b[4],b[3],b[2],b[1],b[0],'\0');
+        lasttagtype = tagtype;
         data_available = false;
         return String(buf);
     }
     return "None";
 }
+
+/*
+Returns Tag type.
+*/
+String RFID_Reader::GetTagType()
+{
+    for (uint8_t x = 0; x < 12; x++) {
+        if (typeDict[x].itype == lasttagtype) return String(typeDict[x].stype);
+    } 
+    return "Unknown";
+}
+
+
 
 /*
 Returns the ID decimal representation, and resets the Available flag.
@@ -104,6 +118,7 @@ String RFID_Reader::GetDecID()
     {
         char ptr[128];
         ulltostr(new_ID, ptr, 10);
+        lasttagtype = tagtype;
         data_available = false;
         return String(ptr);
     }
@@ -113,7 +128,8 @@ String RFID_Reader::GetDecID()
 
 void RFID_Reader::rfidSerial(char x)
 {
-    if (x == StartByte)
+    //if (x == StartByte && (ix==0 || ix > 1))
+    if (x == StartByte && ix != 1)
     {
         ix = 0;
     } else if (x == EndByte)
@@ -151,20 +167,42 @@ the module spits out HEX values, we need to convert them to an unsigned long.
 */
 void RFID_Reader::parse()
 {
-    uint8_t lshift = 0;
+    uint8_t lshift = 40;
     unsigned long long val = 0;
     unsigned long long tagIdValue = 0;
     uint8_t i;
-    for (i = 0; i < 10; i++) {
-        val = char2int(msg[i]);
-        lshift = 4 * (9 - i);
-        tagIdValue |= val << lshift;
-    }
-    uint8_t checksum = get_checksum(tagIdValue); 
+    uint8_t checksum = 0; 
     uint8_t recChecksum = 0;
-    new_ID = 0ULL;
-    if (msgLen == 12) {recChecksum = char2int(msg[i+1]) | char2int(msg[i]) << 4;}//RDM6300
-    else if (msgLen == 11) {recChecksum = (uint8_t)msg[i];}                      //RF125-PS
+    if ((msgLen + 2) == msg[0])//Gwiot 7941E
+    {
+        for (i = 0; i < msgLen - 1; i++)
+        {
+        val = msg[i];
+        checksum = checksum ^ val;
+        if (i > 1)
+            {
+            //lshift = 8 * (msgLen - 2 - i);
+            lshift = (msgLen - 2 - i) << 3;
+            tagIdValue |= val << lshift;
+            }
+        }
+        recChecksum = (uint8_t)msg[i];
+        tagtype = (uint8_t)msg[1];
+        }    
+    else
+    {
+        for (i = 0; i < 10; i++) {
+            val = char2int(msg[i]);
+            //lshift = 4 * (9 - i);
+            lshift -= 4;
+            tagIdValue |= val << lshift;
+        }
+        checksum = get_checksum(tagIdValue); 
+        new_ID = 0ULL;
+        if (msgLen == 12) {recChecksum = char2int(msg[i+1]) | char2int(msg[i]) << 4;}//RDM6300
+        else if (msgLen == 11) {recChecksum = (uint8_t)msg[i];}                      //RF125-PS
+        tagtype = 2;
+    }
     if (checksum != recChecksum) return;
     unsigned long _now = millis();
     if ((_now-LastRFID > 3000)||(tagIdValue != last_ID))
