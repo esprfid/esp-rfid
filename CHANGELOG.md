@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.9.1] Unreleased
+- [firmware] fix the loadconfiguration loop
+
 ## [0.9.0] 2018-11-13
 
 ### BREAKING CHANGES (These changes will break your data on device, please make sure made a backup, also you can not use your old settings on this release but only can restore user data)
