@@ -206,6 +206,10 @@ void ICACHE_FLASH_ATTR setup()
 	if (!configMode)
 	{
 		fallbacktoAPMode();
+		configMode = false;
+	}
+	else {
+		configMode = true;
 	}
 	setupWebServer();
 	writeEvent("INFO", "sys", "System setup completed, running", "");
