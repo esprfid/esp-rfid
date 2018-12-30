@@ -1,4 +1,4 @@
-var version = "0.9.0";
+var version = "0.9.3";
 
 var websock = null;
 var wsUri = "ws://" + window.location.hostname + "/ws";
@@ -325,7 +325,14 @@ function inProgress(callback) {
                     });
                     break;
                 case "commit":
-                    websock.send(JSON.stringify(config));
+                    $.ajax({
+                        type: "POST",
+                        url: "/commit",
+                        dataType: "json",
+                        contentType: "application/json",
+                        data: JSON.stringify(config)
+                        //timeout: 2000
+                    });
                     break;
                 case "destroy":
                     websock.send("{\"command\":\"destroy\"}");

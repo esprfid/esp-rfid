@@ -29,14 +29,6 @@ void ICACHE_FLASH_ATTR onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *c
 				String filename = "/P/";
 				filename += uid;
 				SPIFFS.remove(filename);
-			} else if (strcmp(command, "configfile") == 0) {
-				File f = SPIFFS.open("/config.json", "w+");
-				if (f) {
-					root.prettyPrintTo(f);
-					//f.print(msg);
-					f.close();
-					ESP.restart();
-				}
 			} else if (strcmp(command, "userlist") == 0) {
 				int page = root["page"];
 				sendUserList(page, client);
