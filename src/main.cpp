@@ -136,6 +136,7 @@ int timeZone;
 
 unsigned long nextbeat = 0;
 unsigned long interval = 1800;
+String wsbuf = "";
 
 #include "log.esp"
 #include "mqtt.esp"
