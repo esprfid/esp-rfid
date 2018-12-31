@@ -31,7 +31,6 @@ SOFTWARE.
 #include <FS.h>
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
-#include <AsyncJson.h>
 #include <TimeLib.h>
 #include <Ticker.h>
 #include "Ntp.h"
