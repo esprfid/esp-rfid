@@ -8,7 +8,7 @@ script:
 - pio run -e generic -e relayboard -e debug
 before_deploy:
 - cd ..
-- zip -r ${TRAVIS_BUILD_DIR}-${TRAVIS_TAG}.zip ${TRAVIS_BUILD_DIR}/bin
+- zip -r -j ${TRAVIS_BUILD_DIR}-${TRAVIS_TAG}.zip ${TRAVIS_BUILD_DIR}/bin
 deploy:
   provider: releases
   api_key:

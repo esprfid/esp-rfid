@@ -1,13 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [0.9.1] Unreleased
-- [firmware] fix the loadconfiguration loop
-
-## [0.9.0] 2018-11-13
+## [1.0.0] Unreleased
 
 ### BREAKING CHANGES (These changes will break your data on device, please make sure made a backup, also you can not use your old settings on this release but only can restore user data)
 
+#### Added
+- [firmware] fix the loadconfiguration loop @Pako2
 - [firmware] #189 Flash layout changed to 2MB Firmware / 2MB SPIFFS Data @Pako2
 - [firmware] Support for RDM6300 RFID readers (125kHz, UART) #163 @arduino12 / concurrently by @Pako2
 - [firmware] debug firmware for debugging purposes
@@ -16,6 +15,8 @@ All notable changes to this project will be documented in this file.
 - [webui] IP address choice option in AP mode @Pako2
 - [webui] favicon.ico @Pako2
 - [tools] websocket emulator can now store new configuration temporarly
+- [firmware] log for firmware update #152
+- [webui] Expired access attempts logged as "Expired"
 
 #### Fixed
 - [firmware] not able to connect MQTT server #157 @fivosg 
@@ -24,27 +25,14 @@ All notable changes to this project will be documented in this file.
 - [webui] usage of !important CSS rule
 - [firmware] #191 relay type inversion @Pako2
 - [firmware] #190 Increase PN532::WaitReady debug level @Pako2
-
-#### Changed
-- [webui] scrollbar on desktop screens (now hidden)
-- [webui] sidebar colors (i hope you like it, standart bootstrap color)
-
-## [0.8.3] 2018-11-11
-#### Fixed
-- [firmware] not able to connect MQTT server #157 @fivosg 
-
-## [0.8.2] 2018-09-05
-#### Added
-- [firmware] log for firmware update #152
-- [webui] Expired access attempts logged as "Expired"
-
-#### Fixed
 - [firmware] validuntil is being ignored #151
 - [firmware] the boot loop when ssid is empty on configuration file (actually more a workaround than a fix) #154 
 
 #### Changed
+- [build] Change release type to a zip file (was tar.gz before)
+- [webui] scrollbar on desktop screens (now hidden)
+- [webui] sidebar colors (i hope you like it, standart bootstrap color)
 - [webui] sanity check for firmware update file #152
-- [firmware] MQTT reconnect code (dirty hack) #149
 
 ## [0.8.1] 2018-09-01
 #### Added
