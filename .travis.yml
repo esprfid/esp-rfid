@@ -1,24 +1,19 @@
 language: python
-
 python:
 - '2.7'
-
 install:
 - pip install -U platformio
-
 script:
 - pio --version
 - pio run -e generic -e relayboard -e debug
-
 before_deploy:
 - cd ..
 - tar -zcf ${TRAVIS_BUILD_DIR}-${TRAVIS_TAG}.tar.gz -C ${TRAVIS_BUILD_DIR}/bin .
-
 deploy:
   provider: releases
   api_key:
-    secure: DVtDvBE9D2FiTxNkACdJoYrQ0ApV+3HwTMUyLOqZu9uJUtbDX1eqlcfaSoIEyTEyKlzDkWpIbkBN9YeHBQ69jAIxvvmnnwJ9iqc9S80BrGaPzGJ7lMPnHm+88OxXHrv7SDVZf9+0Lv59NNyl1vS9euBV2oBHBM7gMb3wz65thWkePsXT4HlksxMjd7F24dYeZ82nVAhUMYuV0vfOu6ySnQlRq5T9ZxLQcXcSLNg80MZOZI6L3Ptd1L7BYizJrV+yoqq2xpTrKiRLJM7YGIWRXIvohuwrIMpCd5GA/m2KySWEU8slXedlRWy5xSkdpWlGKLdIwCxRCaWWWCZDy6Eze4o+O0WVfNsgvXtg6dYOtwsneQrIuTOiZSuWCdjg7v03nKaiX/DkrdiPgyPHCK9dU9yynb4wKQ9kmXgiG/IDvxSltGLTQ2Y9kJtICY2Xqt+vBizr9HZ97es0dPXpopbaCds+zArxcfVu0oMr9e9c1Twwy3K5d941x5ncQ9hzK0JAkN/lbFvNs+uW88Oq//Xaz+FXamkkfydtBJ8LFCW64JVb4iZwWEXc44ihK3iTG1wubsGWma48DvirijtJrltZLyVzVr3fXF+moAw6kBMrHaQOLYKeR2Qbecx+FV4Alh/FY+zpiZ6FTW3ufZExolmLuGsUsGBWqMTNYOlT3hMsgnk=
-  file: ${TRAVIS_BUILD_DIR}-${TRAVIS_TAG}.tar.gz
+    secure: "x6aQFDa+61A2lyBC5eVOrRaXm/Y5d0y0rp8nU4n56iuI938qmrmwlM9wObazXCIbZy70/7a5UjRi+yYwG3+pXuguX6n15aAQO7ngQKeuaOOl+UFbDAw57ytud+vQReM4J8vwDh4hwJo8EATc8VH2Ua27DsrLp5AxszBu+HEiBLSEVoyHxxWsp9POnVWMV9VZzdGQmHYR9ZvafXYrONPLK3VrXyPRT0DhTtelpB+bICLqDVOOawilHNEXIRfUt0Chp3/I1ArFJyq0EkDrn4USawEKceu8eTkp3zShjcsT03XMkW41tNrdmJC6BdfeNhw4gkj67ZZN247voWdOMgadrixtMaM7u98HVVFXa/YioKHXYCpSxqAZumnzLe6kEfYl5aKraNAh/SEkFDXNULvCyDpfzLnJ3JyYRg6CSeY4EvRvCwz17nn8LoeqdAUjrHYja2tMxwcnRlxPirw5E5wIosJlxfgV5FiMz3MlTgKEOxsxQDFS1usZmFr2QWb45ayqCWDuGyeD5VLY1Yhe7QT6fxHGDW4cKnD1dDrngbuhCvz0juL+GpAfgDhn6DYJNC+ZNBnmMVY9dUSgDBeHMmOtdQOfz22TxlLfGFE2pzAQcqyR3kMHjdH5nRji56Lz9kuNasPpR8VZa5O/bah5N3Hho0X9EWIu2ZziFyVBqwUpSao="
+  file: "${TRAVIS_BUILD_DIR}-${TRAVIS_TAG}.tar.gz"
   skip_cleanup: true
   on:
     repo: esprfid/esp-rfid

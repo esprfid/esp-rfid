@@ -33,18 +33,27 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 #ifdef DEBUG
 	Serial.println(F("[ INFO ] Trying to setup RFID Hardware"));
 #endif
+	if (hardware.containsKey("wifipin"))
+	{
+		wifipin = hardware["wifipin"];
+		if (wifipin!=255)
+		{
+			pinMode(wifipin, OUTPUT);
+			digitalWrite(wifipin, LEDoff);
+		}
+	}
 #ifdef OFFICIALBOARD
 	setupWiegandReader(5, 4);
 #endif
 #ifndef OFFICIALBOARD
 	readerType = hardware["readerType"];
-	if (readerType == 1)
+	if (readerType == 1 || readerType == 5)
 	{
 		int wgd0pin = hardware["wgd0pin"];
 		int wgd1pin = hardware["wgd1pin"];
 		setupWiegandReader(wgd0pin, wgd1pin); // also some other settings like weather to use keypad or not, LED pin, BUZZER pin, Wiegand 26/34 version
 	}
-	else if (readerType == 0)
+	else if (readerType == 0 || readerType == 4)
 	{
 		rfidss = 15;
 		if (hardware.containsKey("sspin"))
@@ -54,14 +63,12 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 		int rfidgain = hardware["rfidgain"];
 		setupMFRC522Reader(rfidss, rfidgain);
 	}
-	else if (readerType == 2)
+	else if (readerType == 2 || readerType == 6)
 	{
 		rfidss = hardware["sspin"];
 		setupPN532Reader(rfidss);
-	} else if (readerType == 3) {
-		int rxpin = hardware["rxpin"];
-		setupRdm6300Reader(rxpin);
 	}
+	if (readerType>2) Serial.begin(9600);
 #endif
 	autoRestartIntervalSeconds = general["restart"];
 	wifiTimeout = network["offtime"];
@@ -85,7 +92,7 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 #ifndef OFFICIALBOARD
 	relayPin = hardware["rpin"];
 	pinMode(relayPin, OUTPUT);
-	digitalWrite(relayPin, relayType);
+	digitalWrite(relayPin, !relayType);
 #endif
 	const char *ssid = network["ssid"];
 	const char *password = network["pswd"];
@@ -124,10 +131,6 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 	}
 	else
 	{
-#ifdef DEBUG
-		Serial.print(F("[ INFO ] No AP Fallback Mode = "));
-		//Serial.println(noAPfallback ? F("True") : F("False"));
-#endif
 		if (network["dhcp"] == "0")
 		{
 			WiFi.mode(WIFI_STA);

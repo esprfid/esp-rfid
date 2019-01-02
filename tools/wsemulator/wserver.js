@@ -383,6 +383,7 @@ wss.on('connection', function connection(ws) {
             case "configfile":
                 configfile = obj;
                 console.log("[ INFO ] New configuration file is recieved");
+                configfile = obj;
                 break;
             case "userlist":
                 console.log("[ INFO ] Sending User List, page: " + obj.page);

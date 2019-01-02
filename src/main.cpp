@@ -52,12 +52,12 @@ int relayPin = 13;
 #include <MFRC522.h>
 #include "PN532.h"
 #include <Wiegand.h>
-#include <rdm6300.h>
+#include "rfid125kHz.h"
 
 MFRC522 mfrc522 = MFRC522();
 PN532 pn532;
 WIEGAND wg;
-Rdm6300 rdm6300;
+RFID_Reader RFIDr;
 
 int rfidss;
 int readerType;
@@ -91,11 +91,9 @@ AsyncWebSocket ws("/ws");
 
 unsigned long blink_ = millis();
 bool wifiFlag = false;
-//bool noAPfallback = false;
 bool configMode = false;
 int wmode;
-//int noFallbackPin = D2;
-int wifiLED = 2;
+uint8_t wifipin = 255;
 #define LEDoff HIGH
 #define LEDon LOW
 
@@ -156,11 +154,6 @@ void ICACHE_FLASH_ATTR setup()
 	digitalWrite(13, LOW);
 	delay(200);
 #endif
-	pinMode(wifiLED, OUTPUT);
-	digitalWrite(wifiLED, LEDoff);
-
-	//pinMode(noFallbackPin, INPUT_PULLUP);
-	//noAPfallback = (digitalRead(noFallbackPin) == LOW);
 
 #ifdef DEBUG
 	Serial.begin(9600);
@@ -213,6 +206,10 @@ void ICACHE_FLASH_ATTR setup()
 	if (!configMode)
 	{
 		fallbacktoAPMode();
+		configMode = false;
+	}
+	else {
+		configMode = true;
 	}
 	setupWebServer();
 	writeEvent("INFO", "sys", "System setup completed, running", "");
@@ -225,19 +222,19 @@ void ICACHE_RAM_ATTR loop()
 	uptime = NTP.getUptimeSec();
 	previousLoopMillis = currentMillis;
 
-	if (configMode && !wmode)
+	if (wifipin != 255 && configMode && !wmode)
 	{
 		if (!wifiFlag)
 		{
 			if ((currentMillis - blink_) > 500)
 			{
 				blink_ = currentMillis;
-				digitalWrite(wifiLED, !digitalRead(wifiLED));
+				digitalWrite(wifipin, !digitalRead(wifipin));
 			}
 		}
 		else
 		{
-			if (!(digitalRead(wifiLED)==LEDon)) digitalWrite(wifiLED, LEDon);
+			if (!(digitalRead(wifipin)==LEDon)) digitalWrite(wifipin, LEDon);
 		}
 	}
 
@@ -253,7 +250,7 @@ void ICACHE_RAM_ATTR loop()
 		Serial.println(millis());
 		Serial.println("activating relay now");
 #endif
-		digitalWrite(relayPin, !relayType);
+		digitalWrite(relayPin, relayType);
 		previousMillis = millis();
 		activateRelay = false;
 		deactivateRelay = true;
@@ -269,7 +266,7 @@ void ICACHE_RAM_ATTR loop()
 		Serial.print("mili : ");
 		Serial.println(millis());
 #endif
-		digitalWrite(relayPin, relayType);
+		digitalWrite(relayPin, !relayType);
 		deactivateRelay = false;
 	}
 
