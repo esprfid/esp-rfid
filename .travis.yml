@@ -3,11 +3,7 @@ python:
 - '2.7'
 install:
 - pip install -U platformio
-- sudo apt-get install zip unzip
 script:
-- cd tools/webfilesbuilder
-- ./builder
-- cd ../..
 - pio --version
 - pio run -e generic -e relayboard -e debug
 before_deploy:
