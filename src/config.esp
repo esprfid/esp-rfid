@@ -88,6 +88,7 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 	int ntpinter = ntp["interval"];
 	timeZone = ntp["timezone"];
 	activateTime = hardware["rtime"];
+	lockType = hardware["ltype"];
 	relayType = hardware["rtype"];
 #ifndef OFFICIALBOARD
 	relayPin = hardware["rpin"];
