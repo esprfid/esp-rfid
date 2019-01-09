@@ -1,13 +1,20 @@
-void ICACHE_FLASH_ATTR procMsg(String msg, AsyncWebSocketClient *client)
+void ICACHE_FLASH_ATTR procMsg(AsyncWebSocketClient *client, size_t sz)
 {
 	// We should always get a JSON object (stringfied) from browser, so parse it
 	DynamicJsonBuffer jsonBuffer;
-	JsonObject &root = jsonBuffer.parseObject(msg);
+	//JsonObject &root = jsonBuffer.parseObject(msg);
+	char json[sz + 1];
+	memcpy(json, (char *)(client->_tempObject), sz);
+	json[sz] = '\0';
+	JsonObject &root = jsonBuffer.parseObject(json);
 	if (!root.success())
 	{
 #ifdef DEBUG
 		Serial.println(F("[ WARN ] Couldn't parse WebSocket message"));
 #endif
+		free(client->_tempObject);
+		client->_tempObject = NULL;
+		//delete client->_tempObject;
 		return;
 	}
 	// Web Browser sends some commands, check which command is given
@@ -85,7 +92,8 @@ void ICACHE_FLASH_ATTR procMsg(String msg, AsyncWebSocketClient *client)
 		// Check if we created the file
 		if (f)
 		{
-			f.print(msg);
+			//f.print(msg);
+			root.printTo(f);
 		}
 		f.close();
 		ws.textAll("{\"command\":\"result\",\"resultof\":\"userfile\",\"result\": true}");
@@ -125,6 +133,8 @@ void ICACHE_FLASH_ATTR procMsg(String msg, AsyncWebSocketClient *client)
 			configFile.close();
 		}
 	}
+	free(client->_tempObject);
+	client->_tempObject = NULL;
 }
 
 // Handles WebSocket Events
@@ -139,36 +149,37 @@ void ICACHE_FLASH_ATTR onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *c
 	else if (type == WS_EVT_DATA)
 	{
 		AwsFrameInfo *info = (AwsFrameInfo *)arg;
-		String msg = "";
-		if (info->final && info->index == 0 && info->len == len)
+		uint64_t index = info->index;
+		uint64_t infolen = info->len;
+		if (info->final && info->index == 0 && infolen == len)
 		{
 			//the whole message is in a single frame and we got all of it's data
-			wsbuf = ""; //reset buffer
-			for (size_t i = 0; i < info->len; i++)
+			client->_tempObject = malloc(len);
+			if (client->_tempObject != NULL)
 			{
-				msg += (char)data[i];
+				memcpy((uint8_t *)(client->_tempObject), data, len);
 			}
-			procMsg(msg, client);
+			procMsg(client, infolen);
 		}
 		else
 		{
 			//message is comprised of multiple frames or the frame is split into multiple packets
-			if (info->index == 0)
+			if (index == 0)
 			{
-				if (info->num == 0)
+				if (info->num == 0 && client->_tempObject == NULL)
 				{
-					wsbuf = ""; //reset buffer
+					client->_tempObject = malloc(infolen);
 				}
 			}
-			for (size_t i = 0; i < len; i++)
+			if (client->_tempObject != NULL)
 			{
-				wsbuf += (char)data[i];
+				memcpy((uint8_t *)(client->_tempObject) + index, data, len);
 			}
-			if ((info->index + len) == info->len)
+			if ((index + len) == infolen)
 			{
 				if (info->final)
 				{
-					procMsg(wsbuf, client);
+					procMsg(client, infolen);
 				}
 			}
 		}

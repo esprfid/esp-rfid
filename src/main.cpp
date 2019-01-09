@@ -36,7 +36,7 @@ SOFTWARE.
 #include "Ntp.h"
 #include <AsyncMqttClient.h>
 
-// #define DEBUG
+ //#define DEBUG
 
 #ifdef OFFICIALBOARD
 
@@ -136,7 +136,6 @@ int timeZone;
 
 unsigned long nextbeat = 0;
 unsigned long interval = 1800;
-String wsbuf = "";
 
 #include "log.esp"
 #include "mqtt.esp"
