@@ -1,12 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [1.0.0] Unreleased
+## [1.0.0-rc1] 2019-01-09
 
 ### BREAKING CHANGES (These changes will break your data on device, please make sure made a backup, also you can not use your old settings on this release but only can restore user data)
 
 #### Added
-- [firmware] fix the loadconfiguration loop @Pako2
+- [firmware] #218 Added latching relay support @donatmarko
 - [firmware] #189 Flash layout changed to 2MB Firmware / 2MB SPIFFS Data @Pako2
 - [firmware] Support for RDM6300 RFID readers (125kHz, UART) #163 @arduino12 / concurrently by @Pako2
 - [firmware] debug firmware for debugging purposes
@@ -19,6 +19,7 @@ All notable changes to this project will be documented in this file.
 - [webui] Expired access attempts logged as "Expired"
 
 #### Fixed
+- [firmware] fix the loadconfiguration loop @Pako2
 - [firmware] not able to connect MQTT server #157 @fivosg 
 - [firmware] a MQTT message typo #157 @wamboin23 
 - [webui] some breaks on web pages 
@@ -29,6 +30,7 @@ All notable changes to this project will be documented in this file.
 - [firmware] the boot loop when ssid is empty on configuration file (actually more a workaround than a fix) #154 
 
 #### Changed
+- [firmware] Improve onWsEvent() function @Pako2
 - [build] Change release type to a zip file (was tar.gz before)
 - [webui] scrollbar on desktop screens (now hidden)
 - [webui] sidebar colors (i hope you like it, standart bootstrap color)
