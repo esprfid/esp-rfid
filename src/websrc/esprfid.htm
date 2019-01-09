@@ -246,14 +246,25 @@
                 </select>
               </span>
         <span class="col-xs-3">
-                <button id="testb" type="button" class="btn btn-primary btn-xs" onclick="testRelay()">Test</button><i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="left" data-content="Test previous relay setting. Keep in mind that this is actually triggers the relay."></i>
-              </span>
+            <button id="testb" type="button" class="btn btn-primary btn-xs" onclick="testRelay()">Test</button><i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="left" data-content="Test previous relay setting. Keep in mind that this is actually triggers the relay."></i>
+        </span>
     </div>
     <div class="row form-group">
+        <label class="col-xs-3">Lock Type<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Use momentary method for door lock counterparts, and the continuous one for electromagnetic locks."></i></label>
+        <span class="col-xs-9 col-md-5">
+            <select class="form-control input-sm" id="lockType" onchange="handleLock();">
+                <option selected="selected" value="0">Momentary</option>
+                <option value="1">Continuous</option>
+            </select>
+        </span>
+    </div>
+    <div class="row form-group" id="activateTimeForm">
         <label class="col-xs-3">Activate Time<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Relay Toggle time in Microseconds, usually 300ms is enough for the most electric door locks"></i></label>
         <span class="col-xs-9 col-md-5">
-              <input class="form-control input-sm" value="300" placeholder="in Microsecond" id="delay" type="text" name="hightime">
-    </span>
+            <input class="form-control input-sm" value="300" placeholder="in Microsecond" id="delay" type="text" name="hightime">
+        </span>
+    </div>
+    <div class="row form-group">
         <br>
         <br>
         <div class="col-xs-9 col-md-8">
