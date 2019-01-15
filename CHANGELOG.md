@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [Unreleased] 
+#### Fixed
+- [webui] Version typo
+- [webui] Refresh web headers
+
+#### Changed
+- [firmware] lock MFRC522 library to version 1.4.1
+
 ## [1.0.0-rc1] 2019-01-09
 
 ### BREAKING CHANGES (These changes will break your data on device, please make sure made a backup, also you can not use your old settings on this release but only can restore user data)
