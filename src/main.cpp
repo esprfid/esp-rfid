@@ -36,7 +36,7 @@ SOFTWARE.
 #include "Ntp.h"
 #include <AsyncMqttClient.h>
 
-// #define DEBUG
+ //#define DEBUG
 
 #ifdef OFFICIALBOARD
 
@@ -57,7 +57,7 @@ int relayPin = 13;
 MFRC522 mfrc522 = MFRC522();
 PN532 pn532;
 WIEGAND wg;
-RFID_Read RFIDr;
+RFID_Reader RFIDr;
 
 int rfidss;
 int readerType;
@@ -129,6 +129,7 @@ char *muser = NULL;
 char *mpas = NULL;
 int mport;
 
+int lockType;
 int relayType;
 unsigned long activateTime;
 int timeZone;
@@ -206,6 +207,10 @@ void ICACHE_FLASH_ATTR setup()
 	if (!configMode)
 	{
 		fallbacktoAPMode();
+		configMode = false;
+	}
+	else {
+		configMode = true;
 	}
 	setupWebServer();
 	writeEvent("INFO", "sys", "System setup completed, running", "");
@@ -239,31 +244,61 @@ void ICACHE_RAM_ATTR loop()
 		rfidloop();
 	}
 
-	if (activateRelay)
+	// Continuous relay mode
+	if (lockType == 1)
 	{
+		if (activateRelay)
+		{
+			// currently OFF, need to switch ON
+			if (digitalRead(relayPin) == !relayType)
+			{
 #ifdef DEBUG
-		Serial.print("mili : ");
-		Serial.println(millis());
-		Serial.println("activating relay now");
+				Serial.print("mili : ");
+				Serial.println(millis());
+				Serial.println("activating relay now");
 #endif
-		digitalWrite(relayPin, relayType);
-		previousMillis = millis();
-		activateRelay = false;
-		deactivateRelay = true;
+				digitalWrite(relayPin, relayType);
+			}
+			else	// currently ON, need to switch OFF
+			{
+#ifdef DEBUG
+				Serial.print("mili : ");
+				Serial.println(millis());
+				Serial.println("deactivating relay now");
+#endif				
+				digitalWrite(relayPin, !relayType);
+			}
+			activateRelay = false;
+		}
 	}
-	else if ((currentMillis - previousMillis >= activateTime) && (deactivateRelay))
+	else if (lockType == 0)	// momentary relay mode
 	{
+		if (activateRelay)
+		{
 #ifdef DEBUG
-		Serial.println(currentMillis);
-		Serial.println(previousMillis);
-		Serial.println(activateTime);
-		Serial.println(activateRelay);
-		Serial.println("deactivate relay after this");
-		Serial.print("mili : ");
-		Serial.println(millis());
+			Serial.print("mili : ");
+			Serial.println(millis());
+			Serial.println("activating relay now");
 #endif
-		digitalWrite(relayPin, !relayType);
-		deactivateRelay = false;
+			digitalWrite(relayPin, relayType);
+			previousMillis = millis();
+			activateRelay = false;
+			deactivateRelay = true;
+		}
+		else if ((currentMillis - previousMillis >= activateTime) && (deactivateRelay))
+		{
+#ifdef DEBUG
+			Serial.println(currentMillis);
+			Serial.println(previousMillis);
+			Serial.println(activateTime);
+			Serial.println(activateRelay);
+			Serial.println("deactivate relay after this");
+			Serial.print("mili : ");
+			Serial.println(millis());
+#endif
+			digitalWrite(relayPin, !relayType);
+			deactivateRelay = false;
+		}
 	}
 
 	if (formatreq)

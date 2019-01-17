@@ -1,4 +1,4 @@
-var version = "0.9.0";
+var version = "1.0.0-rc2";
 
 var websock = null;
 var wsUri = "ws://" + window.location.hostname + "/ws";
@@ -33,6 +33,7 @@ var config = {
         "rfidgain": 32,
         "wifipin": 255,
         "rtype": 1,
+        "ltype": 0,
         "rpin": 4,
         "rtime": 400
     },
@@ -113,7 +114,17 @@ function handleReader() {
     }
 }
 
+function handleLock() {
+    var lType = parseInt(document.getElementById("lockType").value);
+    if (lType === 0) {
+        document.getElementById("activateTimeForm").style.display = "block";
+    } else if (lType === 1) {
+        document.getElementById("activateTimeForm").style.display = "none";
+    }
+}
+
 function listhardware() {
+    document.getElementById("lockType").value = config.hardware.ltype;
     document.getElementById("typerly").value = config.hardware.rtype;
     document.getElementById("delay").value = config.hardware.rtime;
     document.getElementById("wifipin").value = config.hardware.wifipin;
@@ -128,14 +139,15 @@ function listhardware() {
 		document.getElementById("readerType").disabled = true;
 	}
 	else {
-    document.getElementById("readerType").value = config.hardware.readerType;
-    document.getElementById("wg0pin").value = config.hardware.wgd0pin;
-    document.getElementById("wg1pin").value = config.hardware.wgd1pin;
-    document.getElementById("gpioss").value = config.hardware.sspin;
-    document.getElementById("gain").value = config.hardware.rfidgain;
-    document.getElementById("gpiorly").value = config.hardware.rpin;
+        document.getElementById("readerType").value = config.hardware.readerType;
+        document.getElementById("wg0pin").value = config.hardware.wgd0pin;
+        document.getElementById("wg1pin").value = config.hardware.wgd1pin;
+        document.getElementById("gpioss").value = config.hardware.sspin;
+        document.getElementById("gain").value = config.hardware.rfidgain;
+        document.getElementById("gpiorly").value = config.hardware.rpin;
 	}
     handleReader();
+    handleLock();
 }
 
 
@@ -177,6 +189,7 @@ function savehardware() {
     config.hardware.sspin = parseInt(document.getElementById("gpioss").value);
     config.hardware.rfidgain = parseInt(document.getElementById("gain").value);
     config.hardware.rtype = parseInt(document.getElementById("typerly").value);
+    config.hardware.ltype = parseInt(document.getElementById("lockType").value);
     config.hardware.rpin = parseInt(document.getElementById("gpiorly").value);
     config.hardware.rtime = parseInt(document.getElementById("delay").value);
     config.hardware.wifipin = parseInt(document.getElementById("wifipin").value);
@@ -535,7 +548,7 @@ function listStats() {
     document.getElementById("heap").style.width = (ajaxobj.heap * 100) / 40960 + "%";
     colorStatusbar(document.getElementById("heap"));
     document.getElementById("flash").innerHTML = ajaxobj.availsize + " Bytes";
-    document.getElementById("flash").style.width = (ajaxobj.availsize * 100) / 1044464 + "%";
+    document.getElementById("flash").style.width = (ajaxobj.availsize * 100) / (ajaxobj.availsize+ajaxobj.sketchsize) + "%";
     colorStatusbar(document.getElementById("flash"));
     document.getElementById("spiffs").innerHTML = ajaxobj.availspiffs + " Bytes";
     document.getElementById("spiffs").style.width = (ajaxobj.availspiffs * 100) / ajaxobj.spiffssize + "%";

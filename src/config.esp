@@ -68,6 +68,7 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 		rfidss = hardware["sspin"];
 		setupPN532Reader(rfidss);
 	}
+	if (readerType>2) Serial.begin(9600);
 #endif
 	autoRestartIntervalSeconds = general["restart"];
 	wifiTimeout = network["offtime"];
@@ -87,11 +88,12 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 	int ntpinter = ntp["interval"];
 	timeZone = ntp["timezone"];
 	activateTime = hardware["rtime"];
+	lockType = hardware["ltype"];
 	relayType = hardware["rtype"];
 #ifndef OFFICIALBOARD
 	relayPin = hardware["rpin"];
 	pinMode(relayPin, OUTPUT);
-	digitalWrite(relayPin, relayType);
+	digitalWrite(relayPin, !relayType);
 #endif
 	const char *ssid = network["ssid"];
 	const char *password = network["pswd"];

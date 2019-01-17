@@ -190,7 +190,8 @@ At least 1000 unique User (RFID Tag) can be handled, the test were performed on 
 * [![Chat at https://gitter.im/esp-rfid/Lobby](https://badges.gitter.im/esp-rfid.svg)](https://gitter.im/esp-rfid/Lobby) Join community chat on Gitter
 
 ### Projects that is based on esp-rfid
-* [ESP-IO](https://github.com/Pako2/EventGhostPlugins/tree/master/ESP-IO)
+* [ESP-IO](https://github.com/Pako2/EventGhostPlugins/tree/master/ESP-IO) Project to manipulate GPIOs with EventGhost
+* [ESP-RCM](https://github.com/Pako2/esp-rcm) Room Climate Monitor with ESP8266, HTU21D, Si7021, AM2320
 
 ### Acknowledgements
 
@@ -210,6 +211,7 @@ If this project helps you in a way, you can buy us a beer. You can make a donati
 * 2017-10-03 [steinar-t](https://github.com/steinar-t)
 * 2017-12-10 [saschaludwig](https://github.com/saschaludwig)
 * 2018-10-02 Dennis Parsch
+* 2019-01-12 Chris-topher Slater
 
 Nothing says better thank you than a donation.
 
