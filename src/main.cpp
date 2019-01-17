@@ -59,7 +59,6 @@ MFRC522 mfrc522 = MFRC522();
 PN532 pn532;
 WIEGAND wg;
 RFID_Reader RFIDr;
-Bounce button;
 
 int rfidss;
 int readerType;
@@ -87,6 +86,7 @@ NtpClient NTP;
 AsyncMqttClient mqttClient;
 Ticker mqttReconnectTimer;
 WiFiEventHandler wifiDisconnectHandler, wifiConnectHandler;
+Bounce button;
 
 AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
