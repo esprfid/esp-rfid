@@ -232,7 +232,7 @@ void ICACHE_RAM_ATTR loop()
 #ifdef DEBUG
 		Serial.println("Button has been pressed");
 #endif
-
+		writeLatest("", "(used open/close button)", 1);
 		activateRelay = true;
 	}
 
