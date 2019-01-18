@@ -42,6 +42,17 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 			digitalWrite(wifipin, LEDoff);
 		}
 	}
+
+	if (hardware.containsKey("buttonpin"))
+	{
+		buttonPin = hardware["buttonpin"];
+		if (buttonPin != 255)
+		{
+			button = Bounce();
+			button.attach(buttonPin, INPUT_PULLUP);
+			button.interval(30);
+		}
+	}
 #ifdef OFFICIALBOARD
 	setupWiegandReader(5, 4);
 #endif

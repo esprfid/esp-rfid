@@ -35,6 +35,7 @@ SOFTWARE.
 #include <Ticker.h>
 #include "Ntp.h"
 #include <AsyncMqttClient.h>
+#include <Bounce2.h>
 
  //#define DEBUG
 
@@ -85,6 +86,7 @@ NtpClient NTP;
 AsyncMqttClient mqttClient;
 Ticker mqttReconnectTimer;
 WiFiEventHandler wifiDisconnectHandler, wifiConnectHandler;
+Bounce button;
 
 AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
@@ -94,6 +96,7 @@ bool wifiFlag = false;
 bool configMode = false;
 int wmode;
 uint8_t wifipin = 255;
+uint8_t buttonPin = 255;
 #define LEDoff HIGH
 #define LEDon LOW
 
@@ -223,6 +226,16 @@ void ICACHE_RAM_ATTR loop()
 	uptime = NTP.getUptimeSec();
 	previousLoopMillis = currentMillis;
 
+	button.update();
+	if (button.fell()) 
+	{
+#ifdef DEBUG
+		Serial.println("Button has been pressed");
+#endif
+		writeLatest("", "(used open/close button)", 1);
+		activateRelay = true;
+	}
+
 	if (wifipin != 255 && configMode && !wmode)
 	{
 		if (!wifiFlag)
@@ -268,7 +281,7 @@ void ICACHE_RAM_ATTR loop()
 #endif				
 				digitalWrite(relayPin, !relayType);
 			}
-			activateRelay = false;
+			activateRelay = false;	
 		}
 	}
 	else if (lockType == 0)	// momentary relay mode
