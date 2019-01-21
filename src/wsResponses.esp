@@ -68,6 +68,7 @@ void ICACHE_FLASH_ATTR sendStatus() {
 	root["availspiffs"] = fsinfo.totalBytes - fsinfo.usedBytes;
 	root["spiffssize"] = fsinfo.totalBytes;
 	root["uptime"] = NTP.getDeviceUptimeString();
+	root["version"] = VERSION;
 
 	if (inAPMode) {
 		wifi_get_ip_info(SOFTAP_IF, &info);
