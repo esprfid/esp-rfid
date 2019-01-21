@@ -88,7 +88,7 @@ String RFID_Reader::GetHexID()
         uint8_t b[5];
         memcpy(b, &new_ID, 5);
         char buf[11];
-        sprintf(buf,"%02x%02x%02x%02x%02x%c",b[4],b[3],b[2],b[1],b[0],'\0');
+        sprintf(buf,"%02x%02x%02x%02x%02x",b[4],b[3],b[2],b[1],b[0]);
         lasttagtype = tagtype;
         data_available = false;
         return String(buf);
