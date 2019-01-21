@@ -22,6 +22,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
+#define VERSION "1.0.0-rc3"
 
 #include "Arduino.h"
 #include <ESP8266WiFi.h>
@@ -163,7 +164,8 @@ void ICACHE_FLASH_ATTR setup()
 	Serial.begin(9600);
 	Serial.println();
 
-	Serial.println(F("[ INFO ] ESP RFID v0.9"));
+	Serial.print(F("[ INFO ] ESP RFID v"));
+	Serial.println(F(VERSION);
 
 	uint32_t realSize = ESP.getFlashChipRealSize();
 	uint32_t ideSize = ESP.getFlashChipSize();

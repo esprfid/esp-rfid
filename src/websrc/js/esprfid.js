@@ -1,4 +1,4 @@
-var version = "1.0.0-rc2";
+var version = "";
 
 var websock = null;
 var wsUri = "ws://" + window.location.hostname + "/ws";
@@ -544,6 +544,7 @@ function colorStatusbar(ref) {
 
 
 function listStats() {
+    version = ajaxobj.version;
     document.getElementById("chip").innerHTML = ajaxobj.chipid;
     document.getElementById("cpu").innerHTML = ajaxobj.cpu + " Mhz";
     document.getElementById("uptime").innerHTML = ajaxobj.uptime;
