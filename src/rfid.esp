@@ -91,7 +91,7 @@ void ICACHE_FLASH_ATTR rfidloop()
 			cooldown = millis() + 2000;
 #ifdef DEBUG
 			Serial.print(F("[ INFO ] PICC's UID: "));
-			Serial.println(uid);
+			Serial.print(uid);
 #endif
 		}
 		else
