@@ -79,7 +79,9 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 		rfidss = hardware["sspin"];
 		setupPN532Reader(rfidss);
 	}
+	#ifndef DEBUG
 	if (readerType>2) Serial.begin(9600);
+	#endif
 #endif
 	autoRestartIntervalSeconds = general["restart"];
 	wifiTimeout = network["offtime"];
