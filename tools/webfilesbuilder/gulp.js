@@ -17,3 +17,5 @@ require('path');
 require('gulp-htmlmin');
 require('gulp-uglify');
 require('pump');
+require('readar')
+require('gulp-replace');

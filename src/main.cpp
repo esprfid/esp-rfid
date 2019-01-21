@@ -36,6 +36,7 @@ SOFTWARE.
 #include "Ntp.h"
 #include <AsyncMqttClient.h>
 #include <Bounce2.h>
+#include "version.h"
 
  //#define DEBUG
 
@@ -163,7 +164,8 @@ void ICACHE_FLASH_ATTR setup()
 	Serial.begin(9600);
 	Serial.println();
 
-	Serial.println(F("[ INFO ] ESP RFID v0.9"));
+	Serial.print(F("[ INFO ] ESP RFID "));
+	Serial.println(VERSION);
 
 	uint32_t realSize = ESP.getFlashChipRealSize();
 	uint32_t ideSize = ESP.getFlashChipSize();

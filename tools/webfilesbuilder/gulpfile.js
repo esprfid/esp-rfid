@@ -7,10 +7,17 @@ var path = require('path');
 var htmlmin = require('gulp-htmlmin');
 var uglify = require('gulp-uglify');
 var pump = require('pump');
+var replace = require('gulp-replace');
+const readar = require('readar'); 
+var version = readar('../../src/version.h')[0];
+version = version.replace('#define VERSION "','');
+version = version.replace('"','');
+
 
 gulp.task('esprfidjsminify', function (cb) {
   pump([
-        gulp.src('../../src/websrc/js/esprfid.js'),
+        gulp.src('../../src/websrc/gzipped/js/esprfid.js'),
+        replace("VERSION", version),
         uglify(),
         gulp.dest('../../src/websrc/gzipped/js/'),
     ],
