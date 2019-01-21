@@ -165,7 +165,7 @@ void ICACHE_FLASH_ATTR setup()
 	Serial.println();
 
 	Serial.print(F("[ INFO ] ESP RFID v"));
-	Serial.println(F(VERSION);
+	Serial.println(VERSION);
 
 	uint32_t realSize = ESP.getFlashChipRealSize();
 	uint32_t ideSize = ESP.getFlashChipSize();
