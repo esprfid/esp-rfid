@@ -49,7 +49,7 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 		if (buttonPin != 255)
 		{
 			button = Bounce();
-			button.attach(buttonPin, INPUT_PULLUP);
+			button.attach(buttonPin, buttonPin == 16 ? INPUT_PULLDOWN_16 : INPUT_PULLUP);
 			button.interval(30);
 		}
 	}
