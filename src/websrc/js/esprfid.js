@@ -695,6 +695,7 @@ function restore1by1(i, len, data) {
         document.getElementById("dynamic").style.width = "100%";
         restorestarted = false;
         completed = true;
+		slot = 0;
         document.getElementById("restoreclose").style.display = "block";
     }
 }
