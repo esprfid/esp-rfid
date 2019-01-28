@@ -22,6 +22,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
+#define VERSION "1.0.2"
 
 #include "Arduino.h"
 #include <ESP8266WiFi.h>
@@ -35,6 +36,7 @@ SOFTWARE.
 #include <Ticker.h>
 #include "Ntp.h"
 #include <AsyncMqttClient.h>
+#include <Bounce2.h>
 
  //#define DEBUG
 
@@ -85,6 +87,7 @@ NtpClient NTP;
 AsyncMqttClient mqttClient;
 Ticker mqttReconnectTimer;
 WiFiEventHandler wifiDisconnectHandler, wifiConnectHandler;
+Bounce button;
 
 AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
@@ -94,6 +97,7 @@ bool wifiFlag = false;
 bool configMode = false;
 int wmode;
 uint8_t wifipin = 255;
+uint8_t buttonPin = 255;
 #define LEDoff HIGH
 #define LEDon LOW
 
@@ -160,7 +164,8 @@ void ICACHE_FLASH_ATTR setup()
 	Serial.begin(9600);
 	Serial.println();
 
-	Serial.println(F("[ INFO ] ESP RFID v0.9"));
+	Serial.print(F("[ INFO ] ESP RFID v"));
+	Serial.println(VERSION);
 
 	uint32_t realSize = ESP.getFlashChipRealSize();
 	uint32_t ideSize = ESP.getFlashChipSize();
@@ -223,6 +228,16 @@ void ICACHE_RAM_ATTR loop()
 	uptime = NTP.getUptimeSec();
 	previousLoopMillis = currentMillis;
 
+	button.update();
+	if (button.fell()) 
+	{
+#ifdef DEBUG
+		Serial.println("Button has been pressed");
+#endif
+		writeLatest("", "(used open/close button)", 1);
+		activateRelay = true;
+	}
+
 	if (wifipin != 255 && configMode && !wmode)
 	{
 		if (!wifiFlag)
@@ -268,7 +283,7 @@ void ICACHE_RAM_ATTR loop()
 #endif				
 				digitalWrite(relayPin, !relayType);
 			}
-			activateRelay = false;
+			activateRelay = false;	
 		}
 	}
 	else if (lockType == 0)	// momentary relay mode

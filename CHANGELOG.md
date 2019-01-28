@@ -1,19 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [Unreleased] 
-#### Fixed
-- [webui] Version typo
-- [webui] Refresh web headers
-
-#### Changed
-- [firmware] lock MFRC522 library to version 1.4.1
-
-## [1.0.0-rc1] 2019-01-09
+## [1.0.2] 2019-01-28
 
 ### BREAKING CHANGES (These changes will break your data on device, please make sure made a backup, also you can not use your old settings on this release but only can restore user data)
 
 #### Added
+- [firmware] Open/Close Button support @donatmarko
+- [firmware] Logging Open/Close Button @donatmarko
+- [firmware] the VERSION string is now defined at the beginning of main.cpp @Pako2
 - [firmware] #218 Added latching relay support @donatmarko
 - [firmware] #189 Flash layout changed to 2MB Firmware / 2MB SPIFFS Data @Pako2
 - [firmware] Support for RDM6300 RFID readers (125kHz, UART) #163 @arduino12 / concurrently by @Pako2
@@ -27,6 +22,9 @@ All notable changes to this project will be documented in this file.
 - [webui] Expired access attempts logged as "Expired"
 
 #### Fixed
+- [firmware] UART Monitor speed @donatmarko
+- [firmware] avoid double Serial.begin @Pako2
+- [firmware] removing redundant terminating null character  @Pako2
 - [firmware] fix the loadconfiguration loop @Pako2
 - [firmware] not able to connect MQTT server #157 @fivosg 
 - [firmware] a MQTT message typo #157 @wamboin23 
@@ -38,11 +36,13 @@ All notable changes to this project will be documented in this file.
 - [firmware] the boot loop when ssid is empty on configuration file (actually more a workaround than a fix) #154 
 
 #### Changed
+- [firmware] unify output format debug print of PICC @Pako2
 - [firmware] Improve onWsEvent() function @Pako2
 - [build] Change release type to a zip file (was tar.gz before)
 - [webui] scrollbar on desktop screens (now hidden)
 - [webui] sidebar colors (i hope you like it, standart bootstrap color)
 - [webui] sanity check for firmware update file #152
+- [firmware] lock MFRC522 library to version 1.4.1
 
 ## [0.8.1] 2018-09-01
 #### Added

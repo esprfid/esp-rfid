@@ -1,4 +1,4 @@
-var version = "1.0.0-rc2";
+var version = "";
 
 var websock = null;
 var wsUri = "ws://" + window.location.hostname + "/ws";
@@ -35,7 +35,8 @@ var config = {
         "rtype": 1,
         "ltype": 0,
         "rpin": 4,
-        "rtime": 400
+        "rtime": 400,
+        "buttonpin": 255
     },
     "general": {
         "hostnm": "esp-rfid",
@@ -128,6 +129,7 @@ function listhardware() {
     document.getElementById("typerly").value = config.hardware.rtype;
     document.getElementById("delay").value = config.hardware.rtime;
     document.getElementById("wifipin").value = config.hardware.wifipin;
+    document.getElementById("buttonPin").value = config.hardware.buttonpin;
     if (isOfficialBoard) {
 		document.getElementById("readerType").value = 1;
 		document.getElementById("wg0pin").value = 5;
@@ -193,6 +195,7 @@ function savehardware() {
     config.hardware.rpin = parseInt(document.getElementById("gpiorly").value);
     config.hardware.rtime = parseInt(document.getElementById("delay").value);
     config.hardware.wifipin = parseInt(document.getElementById("wifipin").value);
+    config.hardware.buttonpin = parseInt(document.getElementById("buttonPin").value);
     uncommited();
 }
 
@@ -541,6 +544,7 @@ function colorStatusbar(ref) {
 
 
 function listStats() {
+    version = ajaxobj.version;
     document.getElementById("chip").innerHTML = ajaxobj.chipid;
     document.getElementById("cpu").innerHTML = ajaxobj.cpu + " Mhz";
     document.getElementById("uptime").innerHTML = ajaxobj.uptime;
@@ -691,6 +695,7 @@ function restore1by1(i, len, data) {
         document.getElementById("dynamic").style.width = "100%";
         restorestarted = false;
         completed = true;
+		slot = 0;
         document.getElementById("restoreclose").style.display = "block";
     }
 }
