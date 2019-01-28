@@ -1,7 +1,7 @@
 var version = "";
 
 var websock = null;
-var wsUri = "ws://" + window.location.hostname + "/ws";
+var wsUri = "ws://" + window.location.hostname + ":" + window.location.port + "/ws";
 var utcSeconds;
 var timezone;
 var data = [];
@@ -1337,7 +1337,7 @@ function logout() {
 
 function connectWS() {
     if (window.location.protocol === "https:") {
-        wsUri = "wss://" + window.location.hostname + "/ws";
+        wsUri = "wss://" + window.location.hostname + ":" + window.location.port + "/ws";
     } else if (window.location.protocol === "file:") {
         wsUri = "ws://" + "localhost" + "/ws";
     }
