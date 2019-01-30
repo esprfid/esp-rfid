@@ -1,7 +1,7 @@
 var version = "";
 
 var websock = null;
-var wsUri = "ws://" + window.location.hostname + "/ws";
+var wsUri = "ws://" + window.location.host + "/ws";
 var utcSeconds;
 var timezone;
 var data = [];
