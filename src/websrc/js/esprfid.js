@@ -1337,7 +1337,7 @@ function logout() {
 
 function connectWS() {
     if (window.location.protocol === "https:") {
-        wsUri = "wss://" + window.location.hostname + "/ws";
+        wsUri = "wss://" + window.location.hostname + ":" + window.location.port + "/ws";
     } else if (window.location.protocol === "file:") {
         wsUri = "ws://" + "localhost" + "/ws";
     }
