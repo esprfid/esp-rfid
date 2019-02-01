@@ -116,9 +116,10 @@ The following table shows the typical pin layout used for connecting readers har
 | GPIO-15 | D8            |         | SS    | SDA/SS  |         |
 | GPIO-13 | D7            | D0      | MOSI  | MOSI    |         |
 | GPIO-12 | D6            | D1      | MISO  | MISO    |         |
-| GPIO-14 | D5            |         | SCK   | SCK     | TX      |
+| GPIO-14 | D5            |         | SCK   | SCK     |         |
 | GPIO-04 | D2            |         |       |         |         |
 | GPIO-05 | D1            |         |       |         |         |
+| GPIO-03 | RX            |         |       |         | TX      |
 
 For Wiegand based readers, you can configure D0 and D1 pins via settings page. By default, D0 is GPIO-4 and D1 is GPIO-5
 
