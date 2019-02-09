@@ -1,11 +1,17 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [1.0.3] 2019-02-09
+## [Unreleased] 
+#### Added
 - [firmware] Support for Door Status tracking with log and mqtt options @nardev
-- [firmware] Renaming some variable names @nardev
 - [firmware] adding mqtt_publish_info, generateUid functions @nardev
+
+#### Changed
+- [firmware] Renaming some variable names @nardev
 - [firmware] order of settings in web and hr lines @nardev
+
+#### Fixed
+- [webui] Make possible to connect WebUI behind NAT-ed network @Pako2 @abdulhanananwari
 
 ## [1.0.2] 2019-01-28
 
