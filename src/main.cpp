@@ -38,7 +38,7 @@ SOFTWARE.
 #include <AsyncMqttClient.h>
 #include <Bounce2.h>
 
- #define DEBUG
+ // #define DEBUG
 
 #ifdef OFFICIALBOARD
 
