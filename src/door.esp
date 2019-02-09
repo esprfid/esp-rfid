@@ -1,0 +1,35 @@
+// door lock
+// nardev -> functions in relation to opening doors with card or with door opening button, should be moved here
+
+
+// door status
+void doorStatus(/* arguments */) {
+
+  // if this changes and if mqtt is active, push the message, also to a web socket!
+  if (digitalRead(doorstatpin) == HIGH && lastDoorState == 0)
+  {
+          writeEvent("INFO", "door", "Door Closed", "");
+          if (mqttenabled == 1)
+					{
+            mqtt_publish_info(now(), "door","Door Closed","0");
+					}
+          #ifdef DEBUG
+                Serial.println("[ INFO ] Your Door is Closed");
+          #endif
+          lastDoorState = 1;
+  }
+
+  if (digitalRead(doorstatpin) == LOW && lastDoorState == 1)
+  {
+          writeEvent("INFO", "door", "Door Open", "");
+          if (mqttenabled == 1)
+					{
+            mqtt_publish_info(now(), "door","Door Open","1");
+					}
+          #ifdef DEBUG
+                Serial.println("[ INFO ] Your Door is Open");
+          #endif
+          lastDoorState = 0;
+  }
+
+}
