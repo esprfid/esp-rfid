@@ -614,6 +614,7 @@ function getContent(contentname) {
 }
 
 function backupuser() {
+  page = 1;
   backupstarted = true;
   data = [];
   var commandtosend = {};

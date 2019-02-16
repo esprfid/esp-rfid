@@ -1,7 +1,7 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [Unreleased] 
+## [Unreleased]
 #### Added
 - [firmware] Support for Door Status tracking with log and mqtt options @nardev
 - [firmware] adding mqtt_publish_info, generateUid functions @nardev
@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 
 #### Fixed
 - [webui] Make possible to connect WebUI behind NAT-ed network @Pako2 @abdulhanananwari
+- [firmware] Issue #240 "Backup User Data only returns some users" @nardev
 
 ## [1.0.2] 2019-01-28
 
