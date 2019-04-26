@@ -220,6 +220,8 @@ If this project helps you in a way, you can buy us a beer. You can make a donati
 * 2017-12-10 [saschaludwig](https://github.com/saschaludwig)
 * 2018-10-02 Dennis Parsch
 * 2019-01-12 Chris-topher Slater
+* 2019-04-23 Klaus Blum
+* 2019-04-25 Andre Dieteich
 
 ## License
 The code parts written by ESP-RFID project's authors are licensed under [MIT License](https://github.com/esprfid/esp-rfid/blob/stable/LICENSE), 3rd party libraries that are used by this project are licensed under different license schemes, please check them out as well.
