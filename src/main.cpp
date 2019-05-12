@@ -22,7 +22,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
-#define VERSION "1.0.2"
+#define VERSION "1.1.0"
 
 #include "Arduino.h"
 #include <ESP8266WiFi.h>
@@ -139,7 +139,10 @@ unsigned long activateTime;
 int timeZone;
 
 unsigned long nextbeat = 0;
-unsigned long interval = 1800;
+
+// Add to html mqtt to control the sync
+unsigned long interval = 1800;  // 30 min
+
 
 #include "log.esp"
 #include "mqtt.esp"

@@ -60,15 +60,25 @@ void mqtt_publish_boot(time_t boot_time, String const &wifi, String const &ip) {
 #endif
 }
 
+
+
 void mqtt_publish_heartbeat(time_t heartbeat) {
-	const char *topic = mqttTopic;
+//	const char *topic = mqttTopic;
+ String stopic (mqttTopic);
+ stopic = stopic + "/sync";
+ //char *ptopic = const_cast<char*>(stopic.c_str());
+
 	DynamicJsonBuffer jsonBuffer;
 	JsonObject &root = jsonBuffer.createObject();
-	root["type"] = "heartbeat";
-	root["time"] = heartbeat;
+	root["type"] 		 = "heartbeat";
+	root["time"] 		 = heartbeat;
+    root["ip"]   		 = WiFi.localIP().toString();
+	root["door"] 		 = deviceHostname;
+	//root["hostname"]     = deviceHostname;
 	String mqttBuffer4;
 	root.printTo(mqttBuffer4);
-	mqttClient.publish(topic, 0, false, mqttBuffer4.c_str());
+	//mqttClient.publish(topic, 0, false, mqttBuffer4.c_str());
+	mqttClient.publish(stopic.c_str(), 0, false, mqttBuffer4.c_str());
 #ifdef DEBUG
 	Serial.print("[ INFO ] Mqtt Publish:");
 	Serial.println(mqttBuffer4);
@@ -77,7 +87,10 @@ void mqtt_publish_heartbeat(time_t heartbeat) {
 
 void mqtt_publish_access(time_t accesstime, String const &isknown, String const &type, String const &user, String const &uid) {
 	if (mqttClient.connected()) {
-		const char *topic = mqttTopic;
+		//String toppic_path = "" + mqttTopic+"/send";
+		String stopic (mqttTopic);
+ 		stopic = stopic + "/send";
+	
 		DynamicJsonBuffer jsonBuffer;
 		JsonObject &root = jsonBuffer.createObject();
 		root["type"] = "access";
@@ -86,9 +99,10 @@ void mqtt_publish_access(time_t accesstime, String const &isknown, String const 
 		root["access"] = type;
 		root["username"] = user;
 		root["uid"] = uid;
+		root["door"] = deviceHostname;
 		String mqttBuffer;
 		root.printTo(mqttBuffer);
-		mqttClient.publish(topic, 0, false, mqttBuffer.c_str());
+		mqttClient.publish(stopic.c_str(), 0, false, mqttBuffer.c_str());
 #ifdef DEBUG
 		Serial.print("[ INFO ] Mqtt Publish:");
 		Serial.println(mqttBuffer);
@@ -100,15 +114,199 @@ void onMqttPublish(uint16_t packetId) {
 	writeEvent("INFO", "mqtt", "MQTT publish acknowledged", String(packetId));
 }
 
+
+void ICACHE_FLASH_ATTR getUserList(int todo) {
+	String stopic (mqttTopic);
+	if (todo == 0)  // Userlist to add to DB
+ 		stopic = stopic + "/accesslist";
+	else if (todo == 1) // Just for List
+		stopic = stopic + "/send";
+	DynamicJsonBuffer jsonBuffer;
+	JsonObject &root = jsonBuffer.createObject();
+	JsonArray &users = root.createNestedArray("list");
+	Dir dir = SPIFFS.openDir("/P/");
+	Serial.println("[ MARE ] getUserList");
+	while (dir.next()) {
+			JsonObject &item = users.createNestedObject();
+			String uid = dir.fileName();
+			uid.remove(0, 3);
+			item["uid"] = uid;
+			File f = SPIFFS.open(dir.fileName(), "r");
+			size_t size = f.size();
+			std::unique_ptr<char[]> buf(new char[size]);
+			f.readBytes(buf.get(), size);
+			DynamicJsonBuffer jsonBuffer2;
+			JsonObject &json = jsonBuffer2.parseObject(buf.get());
+			if (json.success()) {
+			
+				if (mqttClient.connected()) {
+					String mqttBuffer;
+					json.printTo(mqttBuffer);
+					mqttClient.publish(stopic.c_str(), 0, false, mqttBuffer.c_str());
+					#ifdef DEBUG
+						Serial.print("[ MARE ] Mqtt Publish:");
+						Serial.println(mqttBuffer);
+					#endif
+				}
+			}
+	}
+}
+
+void DeleteAllUserFiles(){
+	Dir dir = SPIFFS.openDir("/P/");
+	while (dir.next()) {
+			String uid = dir.fileName();
+			uid.remove(0, 3);
+			SPIFFS.remove(dir.fileName());
+	}
+}
+
+void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total) {
+
+// JSON PARSING
+	
+	
+	char jjson[total + 1] ;
+	//strlcpy (jjson , payload, total);
+	memcpy(jjson,payload,total);
+    jjson[total+1]='\0';
+	String espIp =  WiFi.localIP().toString();
+	Serial.println(espIp);
+	//JsonBuffer jsonBuffer;
+	StaticJsonBuffer<255> jsonBuffer;
+	#ifdef DEBUG
+		Serial.print("[ MARE ] JSON msg :");
+		Serial.println(jjson);
+		//Serial.println(payload);
+	#endif
+
+	JsonObject &root = jsonBuffer.parseObject(jjson);
+	if (!root.success())
+	{
+		#ifdef DEBUG
+			Serial.print("[ MARE ] Failed parse MQTT message :");
+			Serial.println(jjson);
+		#endif
+		return;
+	}
+
+	// Check if IP was send with command
+	if (root.containsKey("doorip"))
+	{
+	const char *ipadr = root["doorip"];
+	if (!((strcmp(ipadr, espIp.c_str())==0) && (ipadr != NULL)))
+	{
+		#ifdef DEBUG
+			Serial.print("[ MARE ] ESP  IP: ");
+			Serial.println(espIp);
+			Serial.print("[ MARE ] recv IP: ");
+			Serial.println(ipadr);
+		#endif
+		return;
+	}
+	}else
+	{
+		return;
+	}
+	
+	////////////////////////////////////////////////////////////
+  	// CASE FOR MQTT 
+  	////////////////////////////////////////////////////////////
+	const char *command = root["cmd"];
+	// Check whatever the command is and act accordingly
+	if (strcmp(command, "getuser") == 0)
+	{
+		#ifdef DEBUG
+			Serial.println("[ MARE ] Get User List");
+		#endif
+		getUserList(0);
+		return;
+	}
+
+	else if (strcmp(command, "listusr") == 0)
+	{
+		#ifdef DEBUG
+			Serial.println("[ MARE ] List usees");
+		#endif
+		getUserList(1);
+		return;
+	}
+
+	else if (strcmp(command, "opendoor") == 0)
+	{
+		#ifdef DEBUG
+			Serial.println("[ MARE ] Door open");
+		#endif
+		activateRelay = true;
+		previousMillis = millis();
+		return;
+	}
+
+
+	else if (strcmp(command, "deletusers") == 0)
+	{
+		#ifdef DEBUG
+			Serial.println("[ MARE ] Delete all users");
+		#endif
+		DeleteAllUserFiles();
+		return;
+	}
+
+	else if (strcmp(command, "adduser") == 0)
+	{
+
+		#ifdef DEBUG
+			Serial.print("[ MARE ] Add Users :");
+			const char *name = root["user"];
+			Serial.println(name);
+		#endif
+
+		const char *uid = root["uid"];
+		String filename = "/P/";
+		filename += uid;
+		File f = SPIFFS.open(filename, "w+");
+		// Check if we created the file
+		if (f)
+		{
+			root.printTo(f);
+		}
+		f.close();
+		return;
+	}
+	return;
+}
+
+
+
+
+void onMqttSubscribe(uint16_t packetId, uint8_t qos) {
+	#ifdef DEBUG
+  		Serial.println("[ MARE ] Subscribe acknowledged.");
+  		Serial.print("[ MARE ]packetId: ");
+  		Serial.println(packetId);
+  		Serial.print("[ MARE ]  qos: ");
+  		Serial.println(qos);
+	#endif
+}
+
 void onMqttConnect(bool sessionPresent) {
-#ifdef DEBUG
-	Serial.println("[ INFO ] MQTT Connected session");
-#endif
+	#ifdef DEBUG
+		Serial.println("[ INFO ] MQTT Connected session");
+	#endif
 	if (sessionPresent == true) {
-#ifdef DEBUG
-		Serial.println("[ INFO ]MQTT session Present: True");
-#endif
+		#ifdef DEBUG
+			Serial.println("[ INFO ]MQTT session Present: True");
+		#endif
 		writeEvent("INFO", "mqtt", "Connected to MQTT Server", "Session Present");
 	}
 	mqtt_publish_boot(now(), WiFi.SSID(), WiFi.localIP().toString());
+
+	uint16_t packetIdSub = mqttClient.subscribe(mqttTopic, 2);
+	
+	#ifdef DEBUG
+		Serial.print("[ MARE ] Subscribing at QoS 2, packetId: ");
+  		Serial.println(packetIdSub);
+	#endif
+  	
+
 }

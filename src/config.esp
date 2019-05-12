@@ -194,12 +194,16 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 		mpas = strdup(mpasString.c_str());
 		String mqttTopicString = mqtt["topic"];
 		mqttTopic = strdup(mqttTopicString.c_str());
+
+		interval = mqtt["syncrate"];
 		
 		mqttClient.setServer(mhs, mport);
 		mqttClient.setCredentials(muser, mpas);
 		mqttClient.onDisconnect(onMqttDisconnect);
 		mqttClient.onPublish(onMqttPublish);
+		mqttClient.onSubscribe(onMqttSubscribe);
 		mqttClient.onConnect(onMqttConnect);
+		mqttClient.onMessage(onMqttMessage);
 #ifdef DEBUG
 		Serial.println("[ INFO ] try to call mqttconnect ");
 #endif

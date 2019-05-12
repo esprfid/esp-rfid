@@ -49,7 +49,8 @@ var config = {
         "port": 1883,
         "topic": "",
         "user": "",
-        "pswd": ""
+        "pswd": "",
+        "syncrate": 1800
     },
     "ntp": {
         "server": "pool.ntp.org",
@@ -224,11 +225,12 @@ function savemqtt() {
     if (parseInt($("input[name=\"mqttenabled\"]:checked").val()) === 1) {
         config.mqtt.enabled = 1;
     }
-    config.mqtt.host = document.getElementById("mqtthost").value;
-    config.mqtt.port = parseInt(document.getElementById("mqttport").value);
-    config.mqtt.topic = document.getElementById("mqtttopic").value;
-    config.mqtt.user = document.getElementById("mqttuser").value;
-    config.mqtt.pswd = document.getElementById("mqttpwd").value;
+    config.mqtt.host     = document.getElementById("mqtthost").value;
+    config.mqtt.port     = parseInt(document.getElementById("mqttport").value);
+    config.mqtt.topic    = document.getElementById("mqtttopic").value;
+    config.mqtt.user     = document.getElementById("mqttuser").value;
+    config.mqtt.pswd     = document.getElementById("mqttpwd").value;
+    config.mqtt.syncrate = document.getElementById("syncrate").value;
     uncommited();
 }
 
@@ -445,6 +447,7 @@ function listmqtt() {
     document.getElementById("mqtttopic").value = config.mqtt.topic;
     document.getElementById("mqttuser").value = config.mqtt.user;
     document.getElementById("mqttpwd").value = config.mqtt.pswd;
+    document.getElementById("syncrate").value = config.mqtt.syncrate;
 }
 
 
