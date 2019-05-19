@@ -38,38 +38,53 @@ For the MQTT communication some additional TOPICs have been internaly added. The
 The message format is JSON it has to include the IP of the device & the command for a message recv by the ESP-RFID firmware. These messages can be received:
 
 ### getuser
-Sends all useres back over the <TOPIC>/accesslist 
-```
+Sends all useres back over the (TOPIC)/accesslist 
 Json Command Format:
-{cmd:'opendoor',doorip:'(The ESP-RFID IP of the door to open as String)'}
+```
+{
+   cmd    :'getuser',
+   doorip :'(The ESP-RFID IP of the door to open as String)'
+}
 ```
 
 ### listusr
-Sends all useres back over <TOPIC>/send 
-```
+Sends all useres back over (TOPIC)/send 
 Json Command Format:
-{cmd:'opendoor',doorip:'(The ESP-RFID IP of the door to open as String)'}
+```
+{
+    cmd:'listusr',
+    doorip:'(The ESP-RFID IP of the door to open as String)'
+}
 ```
 
 ### opendoor
 Opens the Door / Magnetic Lock
-```
 Json Command Format:
-{cmd:'opendoor',doorip:'(The ESP-RFID IP of the door to open as String)'}
+```
+{
+    cmd:'opendoor',
+    doorip:'(The ESP-RFID IP of the door to open as String)'
+}
 ```
 
 ### deletusers
 Delete all users. It deletes all User SPIF files. 
-```
 Json Command Format:
-{cmd:'opendoor',doorip:'(The ESP-RFID IP of the door to open as String)'}
+```
+{
+     cmd:'deletusers',
+     doorip:'(The ESP-RFID IP of the door to open as String)'
+}
 ```
 
 ### adduser
 Adds a User as SPIF File to the device. That can be shown/edit over the WebGUI
-```
 Json Command Format:
-{cmd:'opendoor',doorip:'(The ESP-RFID IP of the door to open as String)'}
+```
+{
+     cmd:'adduser',
+     doorip:'(The ESP-RFID IP of the door to open as String)'
+}
 ```
 
 
