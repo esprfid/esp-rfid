@@ -1,3 +1,17 @@
+# This is a fork of the  ESP RFID Project with extended MQTT Functions
+First the extended functions are documented here followed by the find original descrition. The original ESP-RFID solution is already a great piece of Software, but I wanted extended functinality to integrate the my RIFID-DOOR into a home automatisation over MQTT. This has been added so far to this fork:
+
+* Reading all user data over MQTT
+* Sending User data to RFID-DOOR/ESP-RFID over MQTT
+* Sending door open command over MQTT
+* Sending Sync of a RFID-DOOR (IP/Hostname) over MQTT
+* Configure Sync interval over ESP-RFID GUI
+* Deleting all User of a ESP-RFID device over MQTT
+* NODE-RED flow & GUI to centralize managment of ESP-RFID devices & users
+
+
+
+# Orginal RFID Description
 # ESP RFID - Access Control with ESP8266, RC522 PN532 Wiegand RDM6300
 
 [![Chat at https://gitter.im/esp-rfid/Lobby](https://badges.gitter.im/esp-rfid.svg)](https://gitter.im/esp-rfid/Lobby) [![Build Status](https://travis-ci.org/esprfid/esp-rfid.svg?branch=stable)](https://travis-ci.org/esprfid/esp-rfid) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/d475052a09bd4865bc2654f524614cba)](https://www.codacy.com/app/omersiar/esp-rfid?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=esprfid/esp-rfid&amp;utm_campaign=Badge_Grade) [![BCH compliance](https://bettercodehub.com/edge/badge/esprfid/esp-rfid?branch=stable)](https://bettercodehub.com/) [![Bountysource](https://api.bountysource.com/badge/team?team_id=242217)](https://salt.bountysource.com/checkout/amount?team=esp-rfid)
