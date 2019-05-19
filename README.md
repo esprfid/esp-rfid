@@ -1,4 +1,4 @@
-# Fork of the  ESP RFID Project with extended MQTT Functions
+# Fork of ESP RFID with extended MQTT Functions
 First the extended functions are documented here followed by the original descrition. The original ESP-RFID solution is already a great piece of Software, but I wanted extended functinality to integrate my RIFID-DOOR into a home automatisation over MQTT. 
 
 The full marelab solution depends on three projects:
