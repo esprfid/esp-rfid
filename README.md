@@ -1,6 +1,14 @@
-# This is a fork of the  ESP RFID Project with extended MQTT Functions
-First the extended functions are documented here followed by the find original descrition. The original ESP-RFID solution is already a great piece of Software, but I wanted extended functinality to integrate the my RIFID-DOOR into a home automatisation over MQTT. This has been added so far to this fork:
+# Fork of the  ESP RFID Project with extended MQTT Functions
+First the extended functions are documented here followed by the original descrition. The original ESP-RFID solution is already a great piece of Software, but I wanted extended functinality to integrate my RIFID-DOOR into a home automatisation over MQTT. 
 
+The full marelab solution depends on three projects:
+
+Hardware:
+* marelab ESP-DOOR or esp-rfid-relay-board  (see differences here)
+* marelab fork ESP-RFID (firmware)
+* marelab NODE-RED ESP-RFID integration (needs the marelab fork of ESP-RFID as firmware)
+
+This has been added so far to this fork:
 * Reading all user data over MQTT
 * Sending User data to RFID-DOOR/ESP-RFID over MQTT
 * Sending door open command over MQTT
@@ -8,6 +16,8 @@ First the extended functions are documented here followed by the find original d
 * Configure Sync interval over ESP-RFID GUI
 * Deleting all User of a ESP-RFID device over MQTT
 * NODE-RED flow & GUI to centralize managment of ESP-RFID devices & users
+
+
 
 
 
