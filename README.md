@@ -39,14 +39,38 @@ The message format is JSON it has to include the IP of the device & the command 
 
 ### getuser
 Sends all useres back over the <TOPIC>/accesslist 
+```
+Json Command Format:
+{cmd:'opendoor',doorip:'(The ESP-RFID IP of the door to open as String)'}
+```
+
 ### listusr
 Sends all useres back over <TOPIC>/send 
+```
+Json Command Format:
+{cmd:'opendoor',doorip:'(The ESP-RFID IP of the door to open as String)'}
+```
+
 ### opendoor
 Opens the Door / Magnetic Lock
+```
+Json Command Format:
+{cmd:'opendoor',doorip:'(The ESP-RFID IP of the door to open as String)'}
+```
+
 ### deletusers
 Delete all users. It deletes all User SPIF files. 
+```
+Json Command Format:
+{cmd:'opendoor',doorip:'(The ESP-RFID IP of the door to open as String)'}
+```
+
 ### adduser
 Adds a User as SPIF File to the device. That can be shown/edit over the WebGUI
+```
+Json Command Format:
+{cmd:'opendoor',doorip:'(The ESP-RFID IP of the door to open as String)'}
+```
 
 
 
