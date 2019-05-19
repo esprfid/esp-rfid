@@ -19,14 +19,16 @@ This has been added so far to this fork:
 
 ## Using MQTT Topics
 For the MQTT communication some additional TOPICs have been internaly added. The default Topic is still configured over the WebGui. If you use more then one device all used devices should have the same <TOPIC> name configured by the WebGui. This is the used Topic hirachy:
-
-<TOPIC>---+---/sync
+          
+```
+(TOPIC)---+---/sync
           |
           +---/send
           |
           +---/accesslist
+```
   
-  If you configured over the WebGui for example <TOPIC> = "/rfid" these topic queues can be used:
+  If you configured over the WebGui for example (TOPIC) = "/rfid" these topic queues can be used:
   * /rfid
   * /rfid/sync
   * /rfid/send
