@@ -1,3 +1,24 @@
+# Announcement
+
+We are rising funds for next version (2.0) of ESP-RFID.
+
+<p align="center">
+  <img src="https://opencollective.com/esp-rfid/tiers/esp-rfid-user.svg?avatarHeight=56">
+</p>
+
+What to expect from version 2.0:
+
+* Better Wi-Fi connection handling
+* MQTT Subscribing (activate relay on MQTT event)
+* Better handling of hardware state (like health checks)
+* Time Based One Time Password access (keypad abstraction layer)
+* More polished WebUI
+* Yet still Open Source (MIT License)
+* Optional Goal --> NFC NDEF transactions from mobile phone to esp-rfid and vice versa
+
+---
+
+
 # ESP RFID - Access Control with ESP8266, RC522 PN532 Wiegand RDM6300
 
 [![Backers on Open Collective](https://opencollective.com/esp-rfid/backers/badge.svg)](#backers) [![Sponsors on Open Collective](https://opencollective.com/esp-rfid/sponsors/badge.svg)](#sponsors) [![Chat at https://gitter.im/esp-rfid/Lobby](https://badges.gitter.im/esp-rfid.svg)](https://gitter.im/esp-rfid/Lobby) [![Build Status](https://travis-ci.org/esprfid/esp-rfid.svg?branch=stable)](https://travis-ci.org/esprfid/esp-rfid) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/d475052a09bd4865bc2654f524614cba)](https://www.codacy.com/app/omersiar/esp-rfid?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=esprfid/esp-rfid&amp;utm_campaign=Badge_Grade) [![BCH compliance](https://bettercodehub.com/edge/badge/esprfid/esp-rfid?branch=stable)](https://bettercodehub.com/) [![Bountysource](https://api.bountysource.com/badge/team?team_id=242217)](https://salt.bountysource.com/checkout/amount?team=esp-rfid)
@@ -127,9 +148,10 @@ The following table shows the typical pin layout used for connecting readers har
 | GPIO-15 | D8            |         | SS    | SDA/SS  |         |
 | GPIO-13 | D7            | D0      | MOSI  | MOSI    |         |
 | GPIO-12 | D6            | D1      | MISO  | MISO    |         |
-| GPIO-14 | D5            |         | SCK   | SCK     | TX      |
+| GPIO-14 | D5            |         | SCK   | SCK     |         |
 | GPIO-04 | D2            |         |       |         |         |
 | GPIO-05 | D1            |         |       |         |         |
+| GPIO-03 | RX            |         |       |         | TX      |
 
 For Wiegand based readers, you can configure D0 and D1 pins via settings page. By default, D0 is GPIO-4 and D1 is GPIO-5
 
@@ -213,12 +235,18 @@ At least 1000 unique User (RFID Tag) can be handled, the test were performed on 
 See [ChangeLog](https://github.com/esprfid/esp-rfid/blob/dev/CHANGELOG.md)
 
 ## Donations
-If this project helps you in a way, you can buy us a beer. You can make a donation to the ESP-RFID community with [Bountysource](https://salt.bountysource.com/teams/esp-rfid)
+[![OC](https://opencollective.com/esp-rfid/tiers/esp-rfid-user.svg?avatarHeight=56)](https://opencollective.com/esp-rfid)
+
+Developing fully open, extensively tested embedded software is hard and time consuming work. Please consider making donations to support developers behind this beautiful software.
+
+Donations **transparently** processed by **[Open Collective](https://opencollective.com/how-it-works)** and expenses are being made public by OC's open ledger.
 
 * 2017-10-03 [steinar-t](https://github.com/steinar-t)
 * 2017-12-10 [saschaludwig](https://github.com/saschaludwig)
 * 2018-10-02 Dennis Parsch
 * 2019-01-12 Chris-topher Slater
+* 2019-04-23 Klaus Blum
+* 2019-04-25 Andre Dieteich
 
 ## Contributors
 
@@ -247,8 +275,6 @@ Support this project by becoming a sponsor. Your logo will show up here with a l
 <a href="https://opencollective.com/esp-rfid/sponsor/7/website" target="_blank"><img src="https://opencollective.com/esp-rfid/sponsor/7/avatar.svg"></a>
 <a href="https://opencollective.com/esp-rfid/sponsor/8/website" target="_blank"><img src="https://opencollective.com/esp-rfid/sponsor/8/avatar.svg"></a>
 <a href="https://opencollective.com/esp-rfid/sponsor/9/website" target="_blank"><img src="https://opencollective.com/esp-rfid/sponsor/9/avatar.svg"></a>
-
-
 
 ## License
 The code parts written by ESP-RFID project's authors are licensed under [MIT License](https://github.com/esprfid/esp-rfid/blob/stable/LICENSE), 3rd party libraries that are used by this project are licensed under different license schemes, please check them out as well.

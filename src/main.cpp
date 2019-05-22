@@ -22,7 +22,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
-#define VERSION "1.0.2"
+#define VERSION "1.0.3"
 
 #include "Arduino.h"
 #include <ESP8266WiFi.h>
@@ -38,7 +38,7 @@ SOFTWARE.
 #include <AsyncMqttClient.h>
 #include <Bounce2.h>
 
- //#define DEBUG
+ // #define DEBUG
 
 #ifdef OFFICIALBOARD
 
@@ -62,7 +62,7 @@ WIEGAND wg;
 RFID_Reader RFIDr;
 
 int rfidss;
-int readerType;
+int readertype;
 int relayPin;
 
 #endif
@@ -87,7 +87,7 @@ NtpClient NTP;
 AsyncMqttClient mqttClient;
 Ticker mqttReconnectTimer;
 WiFiEventHandler wifiDisconnectHandler, wifiConnectHandler;
-Bounce button;
+Bounce openLockButton;
 
 AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
@@ -97,7 +97,11 @@ bool wifiFlag = false;
 bool configMode = false;
 int wmode;
 uint8_t wifipin = 255;
-uint8_t buttonPin = 255;
+
+uint8_t doorstatpin = 255;
+uint8_t lastDoorState = 0;
+
+uint8_t openlockpin = 255;
 #define LEDoff HIGH
 #define LEDon LOW
 
@@ -150,6 +154,7 @@ unsigned long interval = 1800;
 #include "config.esp"
 #include "websocket.esp"
 #include "webserver.esp"
+#include "door.esp"
 
 void ICACHE_FLASH_ATTR setup()
 {
@@ -228,8 +233,8 @@ void ICACHE_RAM_ATTR loop()
 	uptime = NTP.getUptimeSec();
 	previousLoopMillis = currentMillis;
 
-	button.update();
-	if (button.fell()) 
+	openLockButton.update();
+	if (openLockButton.fell())
 	{
 #ifdef DEBUG
 		Serial.println("Button has been pressed");
@@ -252,6 +257,12 @@ void ICACHE_RAM_ATTR loop()
 		{
 			if (!(digitalRead(wifipin)==LEDon)) digitalWrite(wifipin, LEDon);
 		}
+	}
+
+	if (doorstatpin != 255)
+	{
+    doorStatus();
+    delay(1);
 	}
 
 	if (currentMillis >= cooldown)
@@ -280,10 +291,10 @@ void ICACHE_RAM_ATTR loop()
 				Serial.print("mili : ");
 				Serial.println(millis());
 				Serial.println("deactivating relay now");
-#endif				
+#endif
 				digitalWrite(relayPin, !relayType);
 			}
-			activateRelay = false;	
+			activateRelay = false;
 		}
 	}
 	else if (lockType == 0)	// momentary relay mode
