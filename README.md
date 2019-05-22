@@ -21,7 +21,7 @@ What to expect from version 2.0:
 
 # ESP RFID - Access Control with ESP8266, RC522 PN532 Wiegand RDM6300
 
-[![Chat at https://gitter.im/esp-rfid/Lobby](https://badges.gitter.im/esp-rfid.svg)](https://gitter.im/esp-rfid/Lobby) [![Build Status](https://travis-ci.org/esprfid/esp-rfid.svg?branch=stable)](https://travis-ci.org/esprfid/esp-rfid) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/d475052a09bd4865bc2654f524614cba)](https://www.codacy.com/app/omersiar/esp-rfid?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=esprfid/esp-rfid&amp;utm_campaign=Badge_Grade) [![BCH compliance](https://bettercodehub.com/edge/badge/esprfid/esp-rfid?branch=stable)](https://bettercodehub.com/) [![Bountysource](https://api.bountysource.com/badge/team?team_id=242217)](https://salt.bountysource.com/checkout/amount?team=esp-rfid)
+[![Backers on Open Collective](https://opencollective.com/esp-rfid/backers/badge.svg)](#backers) [![Sponsors on Open Collective](https://opencollective.com/esp-rfid/sponsors/badge.svg)](#sponsors) [![Chat at https://gitter.im/esp-rfid/Lobby](https://badges.gitter.im/esp-rfid.svg)](https://gitter.im/esp-rfid/Lobby) [![Build Status](https://travis-ci.org/esprfid/esp-rfid.svg?branch=stable)](https://travis-ci.org/esprfid/esp-rfid) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/d475052a09bd4865bc2654f524614cba)](https://www.codacy.com/app/omersiar/esp-rfid?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=esprfid/esp-rfid&amp;utm_campaign=Badge_Grade) [![BCH compliance](https://bettercodehub.com/edge/badge/esprfid/esp-rfid?branch=stable)](https://bettercodehub.com/) [![Bountysource](https://api.bountysource.com/badge/team?team_id=242217)](https://salt.bountysource.com/checkout/amount?team=esp-rfid)
 
 Access Control system using a cheap MFRC522, PN532 RFID, RDM6300 readers or Wiegand RFID readers and Espressif's ESP8266 Microcontroller. 
 
@@ -247,6 +247,34 @@ Donations **transparently** processed by **[Open Collective](https://opencollect
 * 2019-01-12 Chris-topher Slater
 * 2019-04-23 Klaus Blum
 * 2019-04-25 Andre Dieteich
+
+## Contributors
+
+This project exists thanks to all the people who contribute. 
+<a href="https://github.com/esprfid/esp-rfid/graphs/contributors"><img src="https://opencollective.com/esp-rfid/contributors.svg?width=890&button=false" /></a>
+
+
+## Backers
+
+Thank you to all our backers! 🙏 [[Become a backer](https://opencollective.com/esp-rfid#backer)]
+
+<a href="https://opencollective.com/esp-rfid#backers" target="_blank"><img src="https://opencollective.com/esp-rfid/backers.svg?width=890"></a>
+
+
+## Sponsors
+
+Support this project by becoming a sponsor. Your logo will show up here with a link to your website. [[Become a sponsor](https://opencollective.com/esp-rfid#sponsor)]
+
+<a href="https://opencollective.com/esp-rfid/sponsor/0/website" target="_blank"><img src="https://opencollective.com/esp-rfid/sponsor/0/avatar.svg"></a>
+<a href="https://opencollective.com/esp-rfid/sponsor/1/website" target="_blank"><img src="https://opencollective.com/esp-rfid/sponsor/1/avatar.svg"></a>
+<a href="https://opencollective.com/esp-rfid/sponsor/2/website" target="_blank"><img src="https://opencollective.com/esp-rfid/sponsor/2/avatar.svg"></a>
+<a href="https://opencollective.com/esp-rfid/sponsor/3/website" target="_blank"><img src="https://opencollective.com/esp-rfid/sponsor/3/avatar.svg"></a>
+<a href="https://opencollective.com/esp-rfid/sponsor/4/website" target="_blank"><img src="https://opencollective.com/esp-rfid/sponsor/4/avatar.svg"></a>
+<a href="https://opencollective.com/esp-rfid/sponsor/5/website" target="_blank"><img src="https://opencollective.com/esp-rfid/sponsor/5/avatar.svg"></a>
+<a href="https://opencollective.com/esp-rfid/sponsor/6/website" target="_blank"><img src="https://opencollective.com/esp-rfid/sponsor/6/avatar.svg"></a>
+<a href="https://opencollective.com/esp-rfid/sponsor/7/website" target="_blank"><img src="https://opencollective.com/esp-rfid/sponsor/7/avatar.svg"></a>
+<a href="https://opencollective.com/esp-rfid/sponsor/8/website" target="_blank"><img src="https://opencollective.com/esp-rfid/sponsor/8/avatar.svg"></a>
+<a href="https://opencollective.com/esp-rfid/sponsor/9/website" target="_blank"><img src="https://opencollective.com/esp-rfid/sponsor/9/avatar.svg"></a>
 
 ## License
 The code parts written by ESP-RFID project's authors are licensed under [MIT License](https://github.com/esprfid/esp-rfid/blob/stable/LICENSE), 3rd party libraries that are used by this project are licensed under different license schemes, please check them out as well.
