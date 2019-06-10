@@ -93,6 +93,9 @@ void mqtt_publish_access(time_t accesstime, String const &isknown, String const 
 	
 		DynamicJsonBuffer jsonBuffer;
 		JsonObject &root = jsonBuffer.createObject();
+		if (mqttEvents){  // log to MQTT
+        	root["cmd"] = "log";
+		}
 		root["type"] = "access";
 		root["time"] = accesstime;
 		root["isKnown"] = isknown;
@@ -107,6 +110,16 @@ void mqtt_publish_access(time_t accesstime, String const &isknown, String const 
 		Serial.print("[ INFO ] Mqtt Publish:");
 		Serial.println(mqttBuffer);
 #endif
+	}
+}
+
+void mqtt_publish_event(JsonObject *root) {
+	if (mqttClient.connected()) {
+		String stopic (mqttTopic);
+ 		stopic = stopic + "/send";
+		String mqttBuffer;
+		root->printTo(mqttBuffer);
+		mqttClient.publish(stopic.c_str(), 0, false, mqttBuffer.c_str());
 	}
 }
 

@@ -388,6 +388,18 @@
         <span class="col-xs-9">
             <input class="form-control input-sm" placeholder="Sync rate" value="" style="display:inline;max-width:185px" id="syncrate" type="text">
         </span>
+        <br>
+        <div class="row form-group">
+            <label class="col-xs-3">MQTT logging<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Enable MQTT logging disables logging on device"></i></label>
+            <div class="col-xs-9">
+                <form>
+                    <label class="radio-inline">
+                        <input type="radio" value="1" name="mqttlog">Enabled</label>
+                    <label class="radio-inline">
+                        <input type="radio" value="0" name="mqttlog" checked>Disabled</label>
+                </form>
+            </div>
+        </div>
         <br> 
         <br>    
         <div class="col-xs-9 col-md-8">

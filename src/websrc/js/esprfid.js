@@ -50,7 +50,8 @@ var config = {
         "topic": "",
         "user": "",
         "pswd": "",
-        "syncrate": 1800
+        "syncrate": 180,
+        "mqttlog": 0
     },
     "ntp": {
         "server": "pool.ntp.org",
@@ -231,6 +232,10 @@ function savemqtt() {
     config.mqtt.user     = document.getElementById("mqttuser").value;
     config.mqtt.pswd     = document.getElementById("mqttpwd").value;
     config.mqtt.syncrate = document.getElementById("syncrate").value;
+    config.mqtt.mqttlog = 0;
+    if (parseInt($("input[name=\"mqttlog\"]:checked").val()) === 1) {
+        config.mqtt.mqttlog = 1;
+    }
     uncommited();
 }
 

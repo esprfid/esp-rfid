@@ -196,6 +196,13 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 		mqttTopic = strdup(mqttTopicString.c_str());
 
 		interval = mqtt["syncrate"];
+
+		if (mqtt["mqttlog"]==1)
+			mqttEvents = true;
+		else
+			mqttEvents = false;
+
+
 		
 		mqttClient.setServer(mhs, mport);
 		mqttClient.setCredentials(muser, mpas);
