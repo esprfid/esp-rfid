@@ -453,6 +453,9 @@ function listmqtt() {
     document.getElementById("mqttuser").value = config.mqtt.user;
     document.getElementById("mqttpwd").value = config.mqtt.pswd;
     document.getElementById("syncrate").value = config.mqtt.syncrate;
+    if (config.mqtt.mqttlog === 1) {
+        $("input[name=\"mqttlog\"][value=\"1\"]").prop("checked", true);
+    }
 }
 
 
