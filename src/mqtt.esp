@@ -64,10 +64,10 @@ void mqtt_publish_boot(time_t boot_time, String const &wifi, String const &ip) {
 
 void mqtt_publish_heartbeat(time_t heartbeat) {
 	String stopic (mqttTopic);
- 	
-	stopic = stopic + "/sync"
-	DynamicJsonBuffer jsonBuffer;
-	JsonObject &root = jsonBuffer.createObject();
+ 	DynamicJsonBuffer jsonBuffer;
+	
+	stopic = stopic + "/sync";
+	JsonObject &root 	 = jsonBuffer.createObject();
 	root["type"] 		 = "heartbeat";
 	root["time"] 		 = heartbeat;
     root["ip"]   		 = WiFi.localIP().toString();

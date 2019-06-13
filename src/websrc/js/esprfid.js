@@ -1393,7 +1393,7 @@ function login() {
 
 
 function getLatestReleaseInfo() {
-    $.getJSON("https://api.github.com/repos/marelab/esp-rfid/releases/latest").done(function(release) {
+    $.getJSON("https://api.github.com/repos/esprfid/esp-rfid/releases/latest").done(function(release) {
         var asset = release.assets[0];
         var downloadCount = 0;
         for (var i = 0; i < release.assets.length; i++) {
