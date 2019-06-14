@@ -11,12 +11,15 @@
   "license": "UNLICENSED",
   "dependencies": {
     "gulp": "^3.9.1",
-    "gulp-concat": "^2.6.1",
     "gulp-flatmap": "^1.0.2",
     "gulp-gzip": "^1.4.2",
     "gulp-htmlmin": "^4.0.0",
     "gulp-uglify": "^3.0.1",
+    "npm": "^6.7.0",
     "pump": "^3.0.0"
   },
-  "bin": "node_modules\\gulp\\bin\\gulp.js"
+  "bin": "node_modules\\gulp\\bin\\gulp.js",
+  "devDependencies": {
+    "gulp-concat": "^2.6.1"
+  }
 }

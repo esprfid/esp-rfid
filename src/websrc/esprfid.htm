@@ -126,7 +126,7 @@
     <div class="row form-group">
         <label class="col-xs-3">Reader Type<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Choose RFID reader type."></i></label>
         <div class="col-xs-9 col-md-5">
-            <select class="form-control input-sm" id="readerType" onchange="handleReader();">
+            <select class="form-control input-sm" id="readertype" onchange="handleReader();">
                 <option selected="selected" value="0">MFRC522</option>
                 <option value="1">Wiegand</option>
                 <option value="2">PN532</option>
@@ -201,7 +201,7 @@
                 </span>
         </div>
     </div>
-    <br>
+    <hr>
     <div class="row form-group">
         <label class="col-xs-3">WiFi LED<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Choose &quot;WiFi LED&quot; pin"></i></label>
         <span class="col-xs-9 col-md-5">
@@ -220,6 +220,38 @@
               </select>
         </span>
     </div>
+    <div class="row form-group">
+        <label class="col-xs-3">Door Status<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Choose &quot;Door Status&quot; pin"></i></label>
+        <span class="col-xs-9 col-md-5">
+              <select class="form-control input-sm" id="doorstatpin">
+                <option selected="selected" value="255">None</option>
+                <option value="0">GPIO-0</option>
+                <option value="1">GPIO-1</option>
+                <option value="2">GPIO-2</option>
+                <option value="4">GPIO-4</option>
+                <option value="5">GPIO-5</option>
+                <option value="12">GPIO-12</option>
+                <option value="13">GPIO-13</option>
+                <option value="14">GPIO-14</option>
+                <option value="15">GPIO-15</option>
+                <option value="16">GPIO-16 (OFFICIAL_BOARD)</option>
+              </select>
+        </span>
+    </div>
+    <div class="row form-group">
+        <label class="col-xs-3">Open Lock Pin<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Choose a pin to have a button with equivalent behaviour to scan a valid card (open/close button)."></i></label>
+        <span class="col-xs-9 col-md-5">
+            <select class="form-control input-sm" id="openlockpin">
+                <option selected="selected" value="255">None</option>
+                <option value="4">GPIO-4</option>
+                <option value="5">GPIO-5</option>
+                <option value="12">GPIO-12</option>
+                <option value="13">GPIO-13</option>
+                <option value="14">GPIO-14</option>
+            </select>
+        </span>
+    </div>
+    <hr>
     <div class="row form-group">
         <label class="col-xs-3">Relay Type<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Depending on your electrical setup, you can choose the relay type"></i></label>
         <span class="col-xs-9 col-md-5">
@@ -262,20 +294,6 @@
         <label class="col-xs-3">Activate Time<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Relay Toggle time in Microseconds, usually 300ms is enough for the most electric door locks"></i></label>
         <span class="col-xs-9 col-md-5">
             <input class="form-control input-sm" value="300" placeholder="in Microsecond" id="delay" type="text" name="hightime">
-        </span>
-    </div>
-    <br>
-    <div class="row form-group">
-        <label class="col-xs-3">Button Pin<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Choose a pin to have a button with equivalent behaviour to scan a valid card (open/close button)."></i></label>
-        <span class="col-xs-9 col-md-5">
-            <select class="form-control input-sm" id="buttonPin">
-                <option selected="selected" value="255">None</option>
-                <option value="4">GPIO-4</option>
-                <option value="5">GPIO-5</option>
-                <option value="12">GPIO-12</option>
-                <option value="13">GPIO-13</option>
-                <option value="14">GPIO-14</option>
-            </select>
         </span>
     </div>
     <div class="row form-group">

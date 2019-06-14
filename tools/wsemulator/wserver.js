@@ -257,7 +257,7 @@ var configfile = {
         "offtime": "180"
     },
     "hardware": {
-        "readerType": "0",
+        "readertype": "0",
         "wgd0pin": "4",
         "wgd1pin": "5",
         "sspin": "15",
