@@ -302,7 +302,7 @@ void onMqttConnect(bool sessionPresent) {
 	uint16_t packetIdSub = mqttClient.subscribe(mqttTopic, 2);
 	
 	#ifdef DEBUG
-		Serial.print("[ MARE ] Subscribing at QoS 2, packetId: ");
+		Serial.print("[ INFO ] Subscribing at QoS 2, packetId: ");
   		Serial.println(packetIdSub);
 	#endif
   	
