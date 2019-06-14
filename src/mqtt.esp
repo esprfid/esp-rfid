@@ -34,12 +34,13 @@ void onMqttDisconnect(AsyncMqttClientDisconnectReason reason) {
 		break;
 	}
 	writeEvent("WARN", "mqtt", "Disconnected from MQTT server", reasonstr);
-
+	
 	if (WiFi.isConnected()) {
 		//mqttClient.setServer(mhs, mport);
 		mqttReconnectTimer.once(60, connectToMqtt);
 	}
 }
+
 
 
 void mqtt_publish_boot(time_t boot_time, String const &wifi, String const &ip) {
@@ -116,26 +117,6 @@ void mqtt_publish_event(JsonObject *root) {
 		String mqttBuffer;
 		root->printTo(mqttBuffer);
 		mqttClient.publish(stopic.c_str(), 0, false, mqttBuffer.c_str());
-	}
-}
-
-void mqtt_publish_info(time_t accesstime, String type = "log", String value = "", String message = "") {
-	if (mqttClient.connected()) {
-		const char *topic = mqttTopic;
-		DynamicJsonBuffer jsonBuffer;
-		JsonObject &root = jsonBuffer.createObject();
-		root["time"] = accesstime;
-		root["type"] = type;
-		// purpose of this is to be able to pass distinguishing value for further software processing.
-		root[type] = value;
-		root["message"] = message;
-		String mqttBuffer;
-		root.printTo(mqttBuffer);
-		mqttClient.publish(topic, 0, false, mqttBuffer.c_str());
-#ifdef DEBUG
-		Serial.print("[ INFO ] Mqtt Publish:");
-		Serial.println(mqttBuffer);
-#endif
 	}
 }
 
@@ -317,4 +298,13 @@ void onMqttConnect(bool sessionPresent) {
 		writeEvent("INFO", "mqtt", "Connected to MQTT Server", "Session Present");
 	}
 	mqtt_publish_boot(now(), WiFi.SSID(), WiFi.localIP().toString());
+
+	uint16_t packetIdSub = mqttClient.subscribe(mqttTopic, 2);
+	
+	#ifdef DEBUG
+		Serial.print("[ MARE ] Subscribing at QoS 2, packetId: ");
+  		Serial.println(packetIdSub);
+	#endif
+  	
+
 }
