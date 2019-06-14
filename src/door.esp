@@ -5,8 +5,8 @@
 // door status
 void doorStatus(/* arguments */) {
 
-  // if this changes and if mqtt is active, push the message, also to a web socket!
-  if (digitalRead(doorstatpin) == HIGH && lastDoorState == 0)
+  // if this changes and if mqtt and mqtt logging enabled, push the message, also to a web socket!
+  if (/digitalRead(doorstatpin) == HIGH) && (lastDoorState == 0))
   {
           writeEvent("INFO", "door", "Door Closed", "");
           #ifdef DEBUG
@@ -15,7 +15,7 @@ void doorStatus(/* arguments */) {
           lastDoorState = 1;
   }
 
-  if (digitalRead(doorstatpin) == LOW && lastDoorState == 1)
+  if ((digitalRead(doorstatpin)== LOW) && (lastDoorState == 1))
   {
           writeEvent("INFO", "door", "Door Open", "");
           #ifdef DEBUG
