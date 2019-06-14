@@ -7,6 +7,7 @@ This has been added so far:
 * Reading all user data over MQTT
 * Sending User data to RFID-DOOR/ESP-RFID over MQTT
 * Sending door open command over MQTT
+* Sending door status over MQTT as event
 * Sending Sync of a RFID-DOOR (IP/Hostname) over MQTT
 * Configure Sync interval over ESP-RFID GUI
 * Deleting all User of a ESP-RFID device over MQTT
