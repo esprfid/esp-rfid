@@ -225,6 +225,9 @@ function savemqtt() {
     if (parseInt($("input[name=\"mqttenabled\"]:checked").val()) === 1) {
         config.mqtt.enabled = 1;
     }
+    else{
+      config.mqtt.enabled = 0;
+    } 
     config.mqtt.host     = document.getElementById("mqtthost").value;
     config.mqtt.port     = parseInt(document.getElementById("mqttport").value);
     config.mqtt.topic    = document.getElementById("mqtttopic").value;
@@ -235,6 +238,9 @@ function savemqtt() {
     if (parseInt($("input[name=\"mqttlog\"]:checked").val()) === 1) {
         config.mqtt.mqttlog = 1;
     }
+    else{
+        config.mqtt.mqttlog = 0;
+    } 
     uncommited();
 }
 
@@ -441,7 +447,6 @@ function listgeneral() {
 function listmqtt() {
     if (config.mqtt.enabled === 1) {
         $("input[name=\"mqttenabled\"][value=\"1\"]").prop("checked", true);
-        //$("input[name=mqttenabled][value=\"1\"]").attr("checked", "checked");
     }
     document.getElementById("mqtthost").value = config.mqtt.host;
     document.getElementById("mqttport").value = config.mqtt.port;
@@ -452,9 +457,7 @@ function listmqtt() {
     if (config.mqtt.mqttlog === 1) {
         $("input[name=\"mqttlog\"][value=\"1\"]").prop("checked", true);
     }
-   if (config.mqtt.enabled === 1) {
-    $("input[name=\"mqttenabled\"][value=\"1\"]").prop("checked", true);
-   }
+   
 }
 
 function listBSSID() {
