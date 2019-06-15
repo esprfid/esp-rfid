@@ -1,10 +1,11 @@
 # Fork of ESP RFID with extended MQTT Functions
 First the extended functions are documented here followed by the original descrition. The original ESP-RFID solution is already a great piece of Software, but I wanted extended functinality to integrate my RIFID-DOOR into a home automatisation over MQTT. 
 
-The full marelab solution depends on three projects:
 
-Hardware:
-* marelab ESP-DOOR or esp-rfid-relay-board  (see differences here)
+Hardware you need:
+* Do it on your own the openhardware schematic & gerbers files and KiCad Project can be found at [marelab RFID-DOOR](https://github.com/marelab/rfid-door)
+* Or a ready to use marelab RFID-DOOR board or a pcb can be ordered here at the [marlab.org](https://www.marelab.org/smart-home-diy/rfid-door-system) webside.
+* Or the [ESP-RFID-RELAY BOARD](https://github.com/esprfid/esp-rfid-relay-board)  (see differences to the marelab board [marlab.org](https://www.marelab.org/smart-home-diy/rfid-door-system))
 * marelab fork ESP-RFID (firmware)
 * marelab NODE-RED ESP-RFID integration (needs the marelab fork of ESP-RFID as firmware)
 
@@ -15,7 +16,7 @@ This has been added so far to this fork:
 * Sending Sync of a RFID-DOOR (IP/Hostname) over MQTT
 * Configure Sync interval over ESP-RFID GUI
 * Deleting all User of a ESP-RFID device over MQTT
-* NODE-RED flow & GUI to centralize managment of ESP-RFID devices & users
+* [NODE-RED flow & GUI to centralize managment of ESP-RFID devices & users](https://flows.nodered.org/flow/b9860e96b4df2c1a94a864b6343b067b)
 
 ## Using MQTT Topics
 For the MQTT communication some additional TOPICs have been internaly added. The default Topic is still configured over the WebGui. If you use more then one device all used devices should have the same <TOPIC> name configured by the WebGui. This is the used Topic hirachy:
