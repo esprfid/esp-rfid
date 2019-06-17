@@ -143,7 +143,10 @@ unsigned long activateTime;
 int timeZone;
 
 unsigned long nextbeat = 0;
-unsigned long interval = 1800;
+
+unsigned long interval 	= 1800;  // Add to GUI & json config
+bool mqttEvents 		= false; // Sends events over MQTT disables SPIFFS file logging
+
 
 #include "log.esp"
 #include "mqtt.esp"

@@ -9,54 +9,55 @@ var ajaxobj;
 var isOfficialBoard = false;
 
 var config = {
-  "command": "configfile",
-  "network": {
-    "bssid": "",
-    "ssid": "esp-rfid",
-    "wmode": 1,
-    "hide": 0,
-    "pswd": "",
-    "offtime": 0,
-    "dhcp": 1,
-    "ip": "",
-    "subnet": "",
-    "gateway": "",
-    "dns": "",
-    "apip": "192.168.4.1",
-    "apsubnet": "255.255.255.0"
-  },
-  "hardware": {
-    "readertype": 1,
-    "wgd0pin": 4,
-    "wgd1pin": 5,
-    "sspin": 0,
-    "rfidgain": 32,
-    "wifipin": 255,
-    "doorstatpin": 255,
-    "rtype": 1,
-    "ltype": 0,
-    "rpin": 4,
-    "rtime": 400,
-    "openlockpin": 255
-  },
-  "general": {
-    "hostnm": "esp-rfid",
-    "restart": 0,
-    "pswd": "admin"
-  },
-  "mqtt": {
-    "enabled": 0,
-    "host": "",
-    "port": 1883,
-    "topic": "",
-    "user": "",
-    "pswd": ""
-  },
-  "ntp": {
-    "server": "pool.ntp.org",
-    "interval": 30,
-    "timezone": 0
-  }
+    "command": "configfile",
+    "network": {
+        "bssid": "",
+        "ssid": "esp-rfid",
+        "wmode": 1,
+        "hide": 0,
+        "pswd": "",
+        "offtime": 0,
+        "dhcp": 1,
+        "ip": "",
+        "subnet": "",
+        "gateway": "",
+        "dns": "",
+        "apip": "192.168.4.1",
+        "apsubnet": "255.255.255.0"
+    },
+    "hardware": {
+        "readertype": 1,
+        "wgd0pin": 4,
+        "wgd1pin": 5,
+        "sspin": 0,
+        "rfidgain": 32,
+        "wifipin": 255,
+        "rtype": 1,
+        "ltype": 0,
+        "rpin": 4,
+        "rtime": 400,
+        "buttonpin": 255
+    },
+    "general": {
+        "hostnm": "esp-rfid",
+        "restart": 0,
+        "pswd": "admin"
+    },
+    "mqtt": {
+        "enabled": 0,
+        "host": "",
+        "port": 1883,
+        "topic": "",
+        "user": "",
+        "pswd": "",
+        "syncrate": 180,
+        "mqttlog": 0
+    },
+    "ntp": {
+        "server": "pool.ntp.org",
+        "interval": 30,
+        "timezone": 0
+    }
 };
 
 var page = 1;
@@ -220,16 +221,27 @@ function savegeneral() {
 }
 
 function savemqtt() {
-  config.mqtt.enabled = 0;
-  if (parseInt($("input[name=\"mqttenabled\"]:checked").val()) === 1) {
-    config.mqtt.enabled = 1;
-  }
-  config.mqtt.host = document.getElementById("mqtthost").value;
-  config.mqtt.port = parseInt(document.getElementById("mqttport").value);
-  config.mqtt.topic = document.getElementById("mqtttopic").value;
-  config.mqtt.user = document.getElementById("mqttuser").value;
-  config.mqtt.pswd = document.getElementById("mqttpwd").value;
-  uncommited();
+    config.mqtt.enabled = 0;
+    if (parseInt($("input[name=\"mqttenabled\"]:checked").val()) === 1) {
+        config.mqtt.enabled = 1;
+    }
+    else{
+      config.mqtt.enabled = 0;
+    } 
+    config.mqtt.host     = document.getElementById("mqtthost").value;
+    config.mqtt.port     = parseInt(document.getElementById("mqttport").value);
+    config.mqtt.topic    = document.getElementById("mqtttopic").value;
+    config.mqtt.user     = document.getElementById("mqttuser").value;
+    config.mqtt.pswd     = document.getElementById("mqttpwd").value;
+    config.mqtt.syncrate = document.getElementById("syncrate").value;
+    config.mqtt.mqttlog = 0;
+    if (parseInt($("input[name=\"mqttlog\"]:checked").val()) === 1) {
+        config.mqtt.mqttlog = 1;
+    }
+    else{
+        config.mqtt.mqttlog = 0;
+    } 
+    uncommited();
 }
 
 function checkOctects(input) {
@@ -433,15 +445,19 @@ function listgeneral() {
 }
 
 function listmqtt() {
-  if (config.mqtt.enabled === 1) {
-    $("input[name=\"mqttenabled\"][value=\"1\"]").prop("checked", true);
-    //$("input[name=mqttenabled][value=\"1\"]").attr("checked", "checked");
-  }
-  document.getElementById("mqtthost").value = config.mqtt.host;
-  document.getElementById("mqttport").value = config.mqtt.port;
-  document.getElementById("mqtttopic").value = config.mqtt.topic;
-  document.getElementById("mqttuser").value = config.mqtt.user;
-  document.getElementById("mqttpwd").value = config.mqtt.pswd;
+    if (config.mqtt.enabled === 1) {
+        $("input[name=\"mqttenabled\"][value=\"1\"]").prop("checked", true);
+    }
+    document.getElementById("mqtthost").value = config.mqtt.host;
+    document.getElementById("mqttport").value = config.mqtt.port;
+    document.getElementById("mqtttopic").value = config.mqtt.topic;
+    document.getElementById("mqttuser").value = config.mqtt.user;
+    document.getElementById("mqttpwd").value = config.mqtt.pswd;
+    document.getElementById("syncrate").value = config.mqtt.syncrate;
+    if (config.mqtt.mqttlog === 1) {
+        $("input[name=\"mqttlog\"][value=\"1\"]").prop("checked", true);
+    }
+   
 }
 
 function listBSSID() {
