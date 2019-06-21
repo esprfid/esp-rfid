@@ -1,10 +1,21 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [1.3.1] Test-Release 2019-06-21
 #### Added
 - [firmware] Support for Door Status tracking with log and mqtt options @nardev
 - [firmware] adding mqtt_publish_info, generateUid functions @nardev
+
+- [firmware] MQTT functionality is greatly improved thanks to @marelab 
+
+Reading all user data over MQTT
+Sending User data to RFID-DOOR/ESP-RFID over MQTT
+Sending door open command over MQTT
+Sending door status over MQTT as event
+Sending Sync of a RFID-DOOR (IP/Hostname) over MQTT
+Configure Sync interval over ESP-RFID GUI
+Deleting all User of a ESP-RFID device over MQTT
+Sending log event & access data over MQTT
 
 #### Changed
 - [firmware] Renaming some variable names @nardev

@@ -222,6 +222,8 @@ At least 1000 unique User (RFID Tag) can be handled, the test were performed on 
 * [ESP-IO](https://github.com/Pako2/EventGhostPlugins/tree/master/ESP-IO) Project to manipulate GPIOs with EventGhost
 * [ESP-RCM](https://github.com/Pako2/esp-rcm) Room Climate Monitor with ESP8266, HTU21D, Si7021, AM2320
 
+[ESP-RFID-PY](https://github.com/esprfid/esp-rfid-py) Micro-Python implementation of esp-rfid is also made available by @iBobik
+
 ### Acknowledgements
 
 - @rneurink
@@ -231,6 +233,7 @@ At least 1000 unique User (RFID Tag) can be handled, the test were performed on 
 - @romanzava
 - @arduino12
 - @Pako2
+- @marelab
 
 See [ChangeLog](https://github.com/esprfid/esp-rfid/blob/dev/CHANGELOG.md)
 
