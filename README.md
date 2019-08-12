@@ -137,7 +137,7 @@ For Wiegand based readers, you can configure D0 and D1 pins via settings page. B
 * First, flash firmware (you can use /bin/flash.bat on Windows) to your ESP either using Arduino IDE or with your favourite flash tool
 * (optional) Fire up your serial monitor to get informed
 * Search for Wireless Network "esp-rfid-xxxxxx" and connect to it (It should be an open network and does not require password)
-* Open your browser and type either "http://192.168.4.1" or "http://esp-rfid.local" (.local needs Bonjour installed on your computer) on address bar.
+* Open your browser and type either "http://192.168.4.1" or "http://esp-rfid.local" (.local needs Bonjour installed on your computer) on address bar. (Don't use safari or mobile devices. Unfortantley, errors may occur after saving the configuration.)
 * Log on to ESP, default password is "admin"
 * Go to "Settings" page
 * Configure your amazing access control device. Push "Scan" button to join your wireless network, configure RFID hardware, Relay Module.
