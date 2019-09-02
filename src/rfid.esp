@@ -220,10 +220,10 @@ void ICACHE_FLASH_ATTR rfidloop()
 #endif
 	if (keyTimer >0) // we are still waiting for keycode to build up
 	{
-		return;
 #ifdef DEBUG
 		Serial.println("[ INFO ] still waiting for keypress");
 #endif
+		return;
 	}
 #ifdef OFFICIALBOARD
 	if (wg.available())
