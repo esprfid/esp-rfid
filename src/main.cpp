@@ -37,6 +37,7 @@ SOFTWARE.
 #include "Ntp.h"
 #include <AsyncMqttClient.h>
 #include <Bounce2.h>
+#include "magicnumbers.h"
 
  // #define DEBUG
 
