@@ -22,6 +22,8 @@ void ICACHE_FLASH_ATTR writeEvent(String type, String src, String desc, String d
 	}
 }
 
+size_t lastPos;   // position counter for fast seek
+
 void ICACHE_FLASH_ATTR writeLatest(String uid, String username, int acctype) {
 	DynamicJsonBuffer jsonBuffer;
 	JsonObject &root = jsonBuffer.createObject();
@@ -42,26 +44,52 @@ void ICACHE_FLASH_ATTR writeLatest(String uid, String username, int acctype) {
 	}
 }
 
+
+
 void ICACHE_FLASH_ATTR sendEventLog(int page) {
+
+	// if we are reading the first page then we reset
+	// the position counter 
+
+	if (page ==1) lastPos=0;
+	float pages;
 	DynamicJsonBuffer jsonBuffer;
 	JsonObject &root = jsonBuffer.createObject();
 	root["command"] = "eventlist";
 	root["page"] = page;
 	JsonArray &items = root.createNestedArray("list");
 	File eventlog = SPIFFS.open("/eventlog.json", "r");
-	int first = (page - 1) * 10;
-	int last = page * 10;
-	int i = 0;
-	while (eventlog.available()) {
+
+	// move the file pointer to the last known position
+
+	eventlog.seek(lastPos);
+	int numLines=0;
+
+	// read in 10 lines or until EOF whatever happens first 
+
+	while (eventlog.available() && (numLines < 10))
+	{
 		String item = String();
 		item = eventlog.readStringUntil('\n');
-		if (i >= first && i < last) {
-			items.add(item);
-		}
-		i++;
+		items.add(item);
+		numLines++;
 	}
+
+	// remember the last position
+
+	lastPos = eventlog.position();
+
+	// calculate the number of remaining pages
+
+	if (eventlog.available()) // tell bootstrap footable on the client side that there are more pages to come
+	{
+		float bytesPerPageRoughly = (lastPos / page);
+		float totalPagesRoughly = eventlog.size () / bytesPerPageRoughly;
+		pages= totalPagesRoughly < page ? page + 1 : totalPagesRoughly ; 
+	}
+	else pages=page; // this was the last page
+
 	eventlog.close();
-	float pages = i / 10.0;
 	root["haspages"] = ceil(pages);
 	size_t len = root.measureLength();
 	AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
