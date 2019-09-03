@@ -93,8 +93,9 @@ void ICACHE_FLASH_ATTR fallbacktoAPMode()
 // Try to connect Wi-Fi
 bool ICACHE_FLASH_ATTR connectSTA(const char *ssid, const char *password, byte bssid[6])
 {
+	WiFi.persistent(false);
 	WiFi.mode(WIFI_STA);
-	WiFi.begin(ssid, password, 0, bssid);
+	WiFi.begin(ssid, password);
 #ifdef DEBUG
 	Serial.print(F("[ INFO ] Trying to connect WiFi: "));
 	Serial.print(ssid);
