@@ -88,7 +88,7 @@ void ICACHE_FLASH_ATTR sendLogFile(int page,String fileName,int logFileType) {
 	{
 		float bytesPerPageRoughly = (lastPos / page);
 		float totalPagesRoughly = logFile.size () / bytesPerPageRoughly;
-		pages= totalPagesRoughly < page ? page + 1 : totalPagesRoughly ; 
+		pages= totalPagesRoughly <= page ? page + 1 : totalPagesRoughly ; 
 	}
 	else pages=page; // this was the last page
 
