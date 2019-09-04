@@ -95,8 +95,8 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 	autoRestartIntervalSeconds = general["restart"];
 	wifiTimeout = network["offtime"];
 	const char *bssidmac = network["bssid"];
-	byte bssid[6];
-	parseBytes(bssidmac, ':', bssid, 6, 16);
+	byte bssid[6]={0,0,0,0,0,0};
+	if (strlen(bssidmac) > 0 ) parseBytes(bssidmac, ':', bssid, 6, 16);
 	deviceHostname = strdup(general["hostnm"]);
 	WiFi.hostname(deviceHostname);
 	if (!MDNS.begin(deviceHostname))
