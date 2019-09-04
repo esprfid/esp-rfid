@@ -1,11 +1,23 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+#### Added
+- [firmware] Initial support for Wiegand Keypads @frenchie71
+- [firmware] Initial support for OTP (TOTP) @frenchie71
+
+#### Changed
+- [firmware] Wi-Fi connection routine is now improved @frenchie71
+- [firmware] Log file operations are now more robust @frenchie71
+
+## [1.3.3] Test-Release 2019-06-22
+#### Fixed
+* PlatformIO **ISR not in IRAM!** Hotfix
+
 ## [1.3.1] Test-Release 2019-06-21
 #### Added
 - [firmware] Support for Door Status tracking with log and mqtt options @nardev
 - [firmware] adding mqtt_publish_info, generateUid functions @nardev
-
 - [firmware] MQTT functionality is greatly improved thanks to @marelab 
 
 Reading all user data over MQTT
