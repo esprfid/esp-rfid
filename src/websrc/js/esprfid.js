@@ -640,19 +640,11 @@ function backupuser() {
 }
 
 function backupset() {
-  var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(config, null, 2));
-  var dlAnchorElem = document.getElementById("downloadSet");
-  dlAnchorElem.setAttribute("href", dataStr);
-  dlAnchorElem.setAttribute("download", "esp-rfid-settings.json");
-  dlAnchorElem.click();
+  saveLogfile(config,"downloadSet","esp-rfid-settings.json")
 }
 
 function piccBackup(obj) {
-  var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(obj, null, 2));
-  var dlAnchorElem = document.getElementById("downloadUser");
-  dlAnchorElem.setAttribute("href", dataStr);
-  dlAnchorElem.setAttribute("download", "esp-rfid-users.json");
-  dlAnchorElem.click();
+  saveLogfile(obj,"downloadUser","esp-rfid-users.json")
   backupstarted = false;
 }
 
@@ -1137,18 +1129,23 @@ function socketMessageListener(evt) {
         }
         break;
       case "eventlist":
+        document.getElementById("saveeventlogbtn").disabled=true; 
+        $('saveeventlogbtn').disabled=true;
         if (page < haspages && obj.result === true) {
           getnextpage("geteventlog");
         } else if (page === haspages) {
           initEventTable();
+          document.getElementById("saveeventlogbtn").disabled=false; 
           document.getElementById("loading-img").style.display = "none";
         }
         break;
       case "latestlist":
+        document.getElementById("savelatestlogbtn").disabled=true; 
         if (page < haspages && obj.result === true) {
           getnextpage("getlatestlog");
         } else if (page === haspages) {
           initLatestLogTable();
+          document.getElementById("savelatestlogbtn").disabled=false; 
           document.getElementById("loading-img").style.display = "none";
         }
         break;
@@ -1169,13 +1166,37 @@ function socketMessageListener(evt) {
 }
 
 function clearevent() {
-  websock.send("{\"command\":\"clearevent\"}");
-  $("#eventlog").click();
+  if (confirm('Deleting the Event log file can not be undone - delete ?')) {
+    websock.send("{\"command\":\"clearevent\"}");
+    $("#eventlog").click();
+  }
+}
+
+function saveLogfile(obj,anchorElement,filename) {
+  var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(obj, null, 2));
+  var dlAnchorElem = document.getElementById(anchorElement);
+  dlAnchorElem.setAttribute("href", dataStr);
+  dlAnchorElem.setAttribute("download", filename);
+  dlAnchorElem.click();
+}
+
+function saveevent() {
+  file.type = "esp-rfid-eventlog";
+  file.list = data;
+  saveLogfile(file,"downloadEvent","esp-rfid-eventlog.json");
+}
+
+function savelatest() {
+  file.type = "esp-rfid-accesslog";
+  file.list = data;
+  saveLogfile(file,"downloadLatest","esp-rfid-accesslog.json");
 }
 
 function clearlatest() {
-  websock.send("{\"command\":\"clearlatest\"}");
-  $("#latestlog").click();
+  if (confirm('Deleting the Access log file can not be undone - delete ?')) {
+    websock.send("{\"command\":\"clearlatest\"}");
+    $("#latestlog").click();
+  }
 }
 
 function compareDestroy() {
