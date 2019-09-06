@@ -354,6 +354,72 @@
         </div>
     </div>
 </div>
+<div id="logmaintenancecontent">
+    <br>
+    <br>
+    <div class="text-center" id="loading-img">
+        <h5>Please wait while fetching data...<span id="loadpages"></span></h5>
+        <br>
+    </div>
+    <div>
+        <legend>Log Maintenance</legend>
+        <div class="panel panel-default">
+            <div>
+                <table id="spifftable" class="table" data-paging="true" data-filtering="true" data-sorting="true" data-editing="false" data-state="true"></table>
+            </div>
+        </div>
+        <div style="clear:both;">
+            <br>
+            <br>
+        </div>
+    </div>
+</div>
+<div id="logsettingscontent">
+    <br>
+    <br>
+    <legend>Logfile Settings</legend>
+	    <br>
+    <div class="row form-group">
+        <label class="col-xs-3">Auto-Maintenance<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Please choose if you want to enable automatic maintenance"></i></label>
+        <div class="col-xs-9">
+            <form>
+                <label class="radio-inline">
+                    <input type="radio" value="1" name="logmaintenanceenabled">Enabled</label>
+                <label class="radio-inline">
+                    <input type="radio" value="0" name="logmaintenanceenabled" checked>Disabled</label>
+            </form>
+        </div>
+    </div>
+    <div class="row form-group">
+        <label class="col-xs-3">Rollover after KB<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="automatically roll over log files once they reach the given size"></i></label>
+        <span class="col-xs-9">
+    <input class="form-control input-sm" placeholder="10" style="display:inline;max-width:185px" id="rolloverkb" type="text">
+  </span>
+        <br>
+    </div>
+    <div class="row form-group">
+        <label class="col-xs-3">Max Files to keep<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Enter the number of rolled over logfiles you want to keep. If you do not want to automatically delete then enter 0"></i></label>
+        <span class="col-xs-9">
+    <input class="form-control input-sm" placeholder="4" value="" style="display:inline;max-width:185px" id="maxlogfilesnumber" type="text">
+  </span>
+        <br>
+    </div>
+    <div class="row form-group">
+        <label class="col-xs-3">Check SPIFF space<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="If you enable this and the flash memory is full then the oldest log file will be deleted automatically."></i></label>
+        <div class="col-xs-9">
+            <form>
+                <label class="radio-inline"><input type="radio" value="1" name="spiffwatch">Enabled</label>
+                <label class="radio-inline"><input type="radio" value="0" name="spiffwatch" checked>Disabled</label>
+            </form>
+        </div>
+        <br> 
+    </div>
+    <div class="row form-group">    
+        <div class="col-xs-9">
+            <button onclick="savelogsettings()" class="btn btn-primary btn-sm pull-left">Save</button>
+        </div>
+    </div>
+</div>
 <div id="mqttcontent">
     <br>
     <br>

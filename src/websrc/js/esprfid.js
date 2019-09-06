@@ -53,6 +53,12 @@ var config = {
         "syncrate": 180,
         "mqttlog": 0
     },
+    "logmaintenance": {
+      "enabled": 0,
+      "rolloverkb": "10",
+      "maxlogfilesnumber": 4,
+      "spiffwatch": 0
+    },
     "ntp": {
         "server": "pool.ntp.org",
         "interval": 30,
@@ -460,6 +466,60 @@ function listmqtt() {
    
 }
 
+function savelogsettings() {
+  config.logmaintenance.enabled = 0;
+  if (parseInt($("input[name=\"logmaintenanceenabled\"]:checked").val()) === 1) {
+      config.logmaintenance.enabled = 1;
+  }
+  else{
+    config.logmaintenance.enabled = 0;
+  } 
+  config.logmaintenance.rolloverkb     = document.getElementById("rolloverkb").value;
+  config.logmaintenance.maxlogfilesnumber     = parseInt(document.getElementById("maxlogfilesnumber").value);
+  config.logmaintenance.spiffwatch = 0;
+  if (parseInt($("input[name=\"spiffwatch\"]:checked").val()) === 1) {
+      config.logmaintenance.spiffwatch = 1;
+  }
+  else{
+      config.logmaintenance.spiffwatch = 0;
+  } 
+  uncommited();
+}
+
+function listlogsettings() {
+
+  // downstream compatibility
+
+ if (!(config.hasOwnProperty("logmaintenance"))) 
+  {
+    logmaintenanceJson =
+    { 
+      "enabled": 0,
+      "rolloverkb": "10",
+      "maxlogfilesnumber": 5,
+      "spiffwatch": 0
+    };
+
+    config["logmaintenance"] = logmaintenanceJson; 
+  }
+
+
+  if (config.logmaintenance.enabled === 1) {
+      $("input[name=\"logmaintenanceenabled\"][value=\"1\"]").prop("checked", true);
+  }
+  document.getElementById("rolloverkb").value = config.logmaintenance.rolloverkb;
+  document.getElementById("maxlogfilesnumber").value = config.logmaintenance.maxlogfilesnumber;
+  if (config.logmaintenance.spiffwatch === 1) {
+      $("input[name=\"spiffwatch\"][value=\"1\"]").prop("checked", true);
+  }
+ 
+}
+function getFileList() {
+
+}
+
+
+
 function listBSSID() {
   var select = document.getElementById("ssid");
   document.getElementById("wifibssid").value = select.options[select.selectedIndex].bssidvalue;
@@ -599,6 +659,14 @@ function getContent(contentname) {
           break;
         case "#hardwarecontent":
           listhardware();
+          break;
+        case "#logsettingscontent":
+          listlogsettings();
+          break;
+        case "#logmaintenancecontent":
+          page = 1;
+          data = [];
+          getFileList();
           break;
         case "#networkcontent":
           listnetwork();
@@ -1130,7 +1198,6 @@ function socketMessageListener(evt) {
         break;
       case "eventlist":
         document.getElementById("saveeventlogbtn").disabled=true; 
-        $('saveeventlogbtn').disabled=true;
         if (page < haspages && obj.result === true) {
           getnextpage("geteventlog");
         } else if (page === haspages) {
@@ -1265,6 +1332,14 @@ $("#reset").click(function() {
 });
 $("#eventlog").click(function() {
   getContent("#eventcontent");
+  return false;
+});
+$("#logsettings").click(function() {
+  getContent("#logsettingscontent");
+  return false;
+});
+$("#logmaintenance").click(function() {
+  getContent("#logmaintenancecontent");
   return false;
 });
 $(".noimp").on("click", function() {
