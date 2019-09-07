@@ -47,6 +47,8 @@ size_t lastPos;   // position counter for fast seek
 #define LOGTYPE_LATESTLOG 0
 #define LOGTYPE_EVENTLOG  1
 #define ITEMS_PER_PAGE 10
+#define FILES_PER_PAGE 10.0
+#define MIN_SPIFF_BYTES 4096 
 
 void ICACHE_FLASH_ATTR sendLogFile(int page,String fileName,int logFileType) {
 
@@ -105,12 +107,154 @@ void ICACHE_FLASH_ATTR sendLogFile(int page,String fileName,int logFileType) {
 	}
 }
 
-void ICACHE_FLASH_ATTR sendEventLog(int page) {
+void ICACHE_FLASH_ATTR logMaintenance(String action, String filename)
+{
+	#ifdef DEBUG
+		Serial.print("Log Maintenance Action: ");
+		Serial.print(action);
+		Serial.print(" ");
+		Serial.println(filename);
+	#endif
 
-	sendLogFile(page,"/eventlog.json",LOGTYPE_EVENTLOG);
+
+	// delete a file
+
+	if (action == "delete") 
+	{
+		SPIFFS.remove (filename);
+	}
+
+	// rollover a file, i.e. rename 
+
+	if (action == "rollover")
+	{
+  		size_t rolloverExtension = 1;
+		while (SPIFFS.exists (filename + "." + rolloverExtension)) rolloverExtension++;
+		SPIFFS.rename(filename,filename + "." + rolloverExtension);
+	}
+
+	// split a file, i.e. create two new files of roughly the same size
+	// or at least as big as SPIFFS free space allows
+
+	if (action == "split")
+	{
+		size_t rolloverExtension1 = 1;
+		while (SPIFFS.exists (filename + ".split." + rolloverExtension1)) rolloverExtension1++;
+		size_t rolloverExtension2 = rolloverExtension1+1;
+		while (SPIFFS.exists (filename + ".split." + rolloverExtension2)) rolloverExtension2++;
+
+		File logFile = SPIFFS.open(filename, "r");
+		File newFile1 = SPIFFS.open(filename + ".split." + rolloverExtension1, "w");
+		File newFile2 = SPIFFS.open(filename + ".split." + rolloverExtension2, "w");
+
+		FSInfo fs_info;
+		SPIFFS.info(fs_info);
+
+		size_t truncatePosition = logFile.size() / 2;
+		logFile.seek(truncatePosition);
+		logFile.readStringUntil('\n');
+		truncatePosition = logFile.position();
+		logFile.seek(0);
+
+		// check if we have enough space for the split operation
+
+		if ((fs_info.totalBytes - fs_info.usedBytes) < (logFile.size() + MIN_SPIFF_BYTES))
+		{
+			ws.textAll("{\"command\":\"result\",\"resultof\":\"logfileMaintenance\",\"result\": false,\"message\":\"Not enough space on SPIFF Filesystem\"}");
+		}
+		else
+		{
+
+			// mind the watchdog timer - this may take a couple of seconds...
+
+			ESP.wdtDisable();
+			ESP.wdtEnable(1500);
+
+			// read the first half of the file
+
+			while (logFile.available() && logFile.position() < truncatePosition)
+			{	
+				String item = String();
+				item = logFile.readStringUntil('\n');
+				newFile1.println(item);
+				ESP.wdtFeed(); // tell the watchdog we're still doing stuff
+			}
+
+			// read the rest
+
+			while (logFile.available() )
+			{	
+				String item = String();
+				item = logFile.readStringUntil('\n');
+				newFile2.println(item);
+				ESP.wdtFeed(); // no reset please ;-)
+			}
+
+			logFile.close();
+			newFile1.close();
+			newFile2.close();
+		}
+
+	}
+
+	ESP.wdtEnable(5000);
+	ws.textAll("{\"command\":\"result\",\"resultof\":\"logfileMaintenance\",\"result\": true}");
+
 }
 
-void ICACHE_FLASH_ATTR sendLatestLog(int page) {
+void ICACHE_FLASH_ATTR sendFileList(int page) {
 
-	sendLogFile(page,"/latestlog.json",LOGTYPE_LATESTLOG);
+	DynamicJsonBuffer jsonBuffer;
+	JsonObject &root = jsonBuffer.createObject();
+	root["command"] = "listfiles";
+	root["page"] = page;
+	JsonArray &items = root.createNestedArray("list");
+
+	size_t first = (page - 1) * FILES_PER_PAGE;
+	size_t last = page * FILES_PER_PAGE;
+	size_t numFiles=0;
+
+	Dir dir = SPIFFS.openDir("/");
+	while (dir.next()) {
+
+	//	if (dir.isFile()) // isFile is implemented in Arduino Core 2.5.1 - We'll have to wait for the ISR not in IRAM fix
+
+		String thisFileName = dir.fileName();
+		if ( (thisFileName.indexOf("latestlog") >= 0) || (thisFileName.indexOf("eventlog") >= 0) ) // for the time being we just check filenames 
+		{
+			if (numFiles >= first && numFiles < last)
+			{ 
+				JsonObject &item = items.createNestedObject();
+				item["filename"] = dir.fileName();
+				item["filesize"] = dir.fileSize();
+			}  // first, last
+			numFiles++;
+		}	// isFile
+	} // dir next
+
+	float pages = numFiles / FILES_PER_PAGE;
+	root["haspages"] = ceil(pages);
+
+	size_t len = root.measureLength();
+	AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
+	if (buffer) 
+	{
+		root.printTo((char *)buffer->get(), len + 1);
+		ws.textAll(buffer);
+		ws.textAll("{\"command\":\"result\",\"resultof\":\"listfiles\",\"result\": true}");
+	}
+}
+
+void ICACHE_FLASH_ATTR sendEventLog(int page,String fileName) {
+#ifdef DEBUG
+  Serial.printf("DEBUG sendEventLog %d file ",page);
+  Serial.println(fileName);
+#endif
+	if (fileName.length() == 0 ) fileName = "/eventlog.json";
+	sendLogFile(page,fileName,LOGTYPE_EVENTLOG);
+}
+
+void ICACHE_FLASH_ATTR sendLatestLog(int page, String fileName) {
+	if (fileName.length() == 0 ) fileName = "/latestlog.json";
+	sendLogFile(page,fileName,LOGTYPE_LATESTLOG);
 }
