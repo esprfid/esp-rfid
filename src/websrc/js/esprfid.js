@@ -8,6 +8,8 @@ var data = [];
 var ajaxobj;
 var isOfficialBoard = false;
 
+var theCurrentLogFile ="";
+
 var config = {
     "command": "configfile",
     "network": {
@@ -52,6 +54,12 @@ var config = {
         "pswd": "",
         "syncrate": 180,
         "mqttlog": 0
+    },
+    "logmaintenance": {
+      "enabled": 0,
+      "rolloverkb": "10",
+      "maxlogfilesnumber": 4,
+      "spiffwatch": 0
     },
     "ntp": {
         "server": "pool.ntp.org",
@@ -155,7 +163,8 @@ function listhardware() {
 }
 
 function listlog() {
-  websock.send("{\"command\":\"getlatestlog\", \"page\":" + page + "}");
+//  websock.send("{\"command\":\"getlatestlog\", \"page\":" + page + "}");
+  websock.send("{\"command\":\"getlatestlog\", \"page\":" + page + ", \"filename\":\"" + theCurrentLogFile +"\"}");
 }
 
 function listntp() {
@@ -460,6 +469,60 @@ function listmqtt() {
    
 }
 
+function savelogsettings() {
+  config.logmaintenance.enabled = 0;
+  if (parseInt($("input[name=\"logmaintenanceenabled\"]:checked").val()) === 1) {
+      config.logmaintenance.enabled = 1;
+  }
+  else{
+    config.logmaintenance.enabled = 0;
+  } 
+  config.logmaintenance.rolloverkb     = document.getElementById("rolloverkb").value;
+  config.logmaintenance.maxlogfilesnumber     = parseInt(document.getElementById("maxlogfilesnumber").value);
+  config.logmaintenance.spiffwatch = 0;
+  if (parseInt($("input[name=\"spiffwatch\"]:checked").val()) === 1) {
+      config.logmaintenance.spiffwatch = 1;
+  }
+  else{
+      config.logmaintenance.spiffwatch = 0;
+  } 
+  uncommited();
+}
+
+function listlogsettings() {
+
+  // downstream compatibility
+
+ if (!(config.hasOwnProperty("logmaintenance"))) 
+  {
+    logmaintenanceJson =
+    { 
+      "enabled": 0,
+      "rolloverkb": "10",
+      "maxlogfilesnumber": 5,
+      "spiffwatch": 0
+    };
+
+    config["logmaintenance"] = logmaintenanceJson; 
+  }
+
+
+  if (config.logmaintenance.enabled === 1) {
+      $("input[name=\"logmaintenanceenabled\"][value=\"1\"]").prop("checked", true);
+  }
+  document.getElementById("rolloverkb").value = config.logmaintenance.rolloverkb;
+  document.getElementById("maxlogfilesnumber").value = config.logmaintenance.maxlogfilesnumber;
+  if (config.logmaintenance.spiffwatch === 1) {
+      $("input[name=\"spiffwatch\"][value=\"1\"]").prop("checked", true);
+  }
+ 
+}
+function getFileList() {
+    websock.send("{\"command\":\"listfiles\", \"page\":" + page + "}");
+}
+
+
+
 function listBSSID() {
   var select = document.getElementById("ssid");
   document.getElementById("wifibssid").value = select.options[select.selectedIndex].bssidvalue;
@@ -496,7 +559,7 @@ function getUsers() {
 }
 
 function getEvents() {
-  websock.send("{\"command\":\"geteventlog\", \"page\":" + page + "}");
+  websock.send("{\"command\":\"geteventlog\", \"page\":" + page + ", \"filename\":\"" + theCurrentLogFile +"\"}");
 }
 
 function isVisible(e) {
@@ -530,6 +593,9 @@ function getnextpage(mode) {
     var commandtosend = {};
     commandtosend.command = mode;
     commandtosend.page = page;
+    if ((mode === "geteventlog") || (mode === "getlatestlog")) { 
+      commandtosend.filename = theCurrentLogFile;
+    }
     websock.send(JSON.stringify(commandtosend));
   }
 }
@@ -600,6 +666,14 @@ function getContent(contentname) {
         case "#hardwarecontent":
           listhardware();
           break;
+        case "#logsettingscontent":
+          listlogsettings();
+          break;
+        case "#logmaintenancecontent":
+          page = 1;
+          data = [];
+          getFileList();
+          break;
         case "#networkcontent":
           listnetwork();
           break;
@@ -640,19 +714,11 @@ function backupuser() {
 }
 
 function backupset() {
-  var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(config, null, 2));
-  var dlAnchorElem = document.getElementById("downloadSet");
-  dlAnchorElem.setAttribute("href", dataStr);
-  dlAnchorElem.setAttribute("download", "esp-rfid-settings.json");
-  dlAnchorElem.click();
+  saveLogfile(config,"downloadSet","esp-rfid-settings.json")
 }
 
 function piccBackup(obj) {
-  var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(obj, null, 2));
-  var dlAnchorElem = document.getElementById("downloadUser");
-  dlAnchorElem.setAttribute("href", dataStr);
-  dlAnchorElem.setAttribute("download", "esp-rfid-users.json");
-  dlAnchorElem.click();
+  saveLogfile(obj,"downloadUser","esp-rfid-users.json")
   backupstarted = false;
 }
 
@@ -750,6 +816,135 @@ function twoDigits(value) {
     return "0" + value;
   }
   return value;
+}
+
+function initFileListTable() {
+//  var newlist = [];
+//  for (var i = 0; i < data.length; i++) {
+//    var dup = JSON.parse(data[i]);
+//    newlist[i] = {};
+//    newlist[i].options = {};
+//    newlist[i].value = {};
+//    newlist[i].value = dup;
+//  }
+  jQuery(function($) {
+    window.FooTable.init("#spifftable", {
+      columns: [{
+          "name": "filename",
+          "title": "File Name",
+          "type": "text",
+          "sorted": true,
+          "direction": "ASC"
+        },
+        {
+          "name": "filename",
+          "title": "File Type",
+          "parser": function(value) 
+          {
+            if (value === "/latestlog.json") 
+            {
+              return("Main Access Log");
+            }
+            if (value === "/eventlog.json") 
+            {
+              return("Main Event Log");
+            }
+            if (value.indexOf("latestlog") >= 0)
+            {
+              return("Access Log");
+            }
+            if (value.indexOf("eventlog") >= 0)
+            {
+              return("Event Log");
+            }
+            return("Log file");
+          }
+        },
+        {
+          "name": "filesize",
+          "title": "Size (KB)",
+          "breakpoints": "xs sm",
+          "parser": function(value) {
+              value = value / 1024;
+              return (
+                value
+                  .toFixed(2) // always two decimal digits
+                  .replace('.', ',') // replace decimal point character with ,
+                  .replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.') + ' KB'
+              ) // use . as a separator
+
+            }
+        },
+        {
+          "name":"filename",
+          "title":"Action",
+          "type":"text",
+          "formatter": function (value) 
+          {
+            var actions = $('<div/>')
+
+            var user_button = ($('<a/>', {'class':'btn btn-sm btn-default','filename':value})
+                .append($('<span/>', {'class': 'glyphicon glyphicon-trash'}))
+                .on("click", this, deletefile))
+                .appendTo(actions); 
+            var user_button = ($('<a/>', {'class':'btn btn-sm btn-default','filename':value})
+                .append($('<span/>', {'class': 'glyphicon glyphicon-search'}))
+                .on("click", this, viewfile))
+                .appendTo(actions);
+            var user_button = ($('<a/>', {'class':'btn btn-sm btn-default','filename':value})
+                .append($('<span/>', {'class': 'glyphicon glyphicon-resize-full'}))
+                .on("click", this, splitfile))
+                .appendTo(actions);
+            
+            if ( (value === "/latestlog.json") || (value === "/eventlog.json") )
+            {
+              var user_button = ($('<a/>', {'class':'btn btn-sm btn-default','filename':value})
+              .append($('<span/>', {'class': 'glyphicon glyphicon-refresh'}))
+              .on("click", this, rollover))
+              .appendTo(actions);
+            } 
+            
+
+
+            return actions;
+              //'<span class="glyphicon glyphicon-chevron-up" aria-hidden="true"></span></a>'
+          }
+      }
+
+      ],
+      rows: data
+    });
+    function rollover(e)
+    { 
+      websock.send("{\"command\":\"logMaintenance\" , \"action\":\"rollover\", \"filename\":\"" + this.getAttribute('filename') + "\"}");
+    }
+    function splitfile(e)
+    { 
+      websock.send("{\"command\":\"logMaintenance\" , \"action\":\"split\", \"filename\":\"" + this.getAttribute('filename') + "\"}");
+    }
+    function viewfile(e)
+    { 
+      theCurrentLogFile = this.getAttribute('filename');
+      if (theCurrentLogFile.indexOf("latestlog") >= 0)
+      {
+        getContent("#logcontent");
+      }
+      if (theCurrentLogFile.indexOf("eventlog") >= 0)
+      {
+        getContent("#eventcontent");
+      }
+
+    }
+    function deletefile(e)
+    { 
+      if (confirm("Really delete " + this.getAttribute('filename') + " ? This can not be undone!"))
+      {
+        websock.send("{\"command\":\"logMaintenance\" , \"action\":\"delete\", \"filename\":\"" + this.getAttribute('filename') + "\"}");
+      }
+    }
+  });
+
+
 }
 
 function initEventTable() {
@@ -1086,7 +1281,16 @@ function socketMessageListener(evt) {
         }
         builddata(obj);
         break;
-      case "gettime":
+      case "listfiles":
+        haspages = obj.haspages;
+        if (haspages === 0) {
+            document.getElementById("loading-img").style.display = "none";
+            initFileListTable();
+            break;
+          }
+          builddata(obj);
+          break;
+        case "gettime":
         utcSeconds = obj.epoch;
         timezone = obj.timezone;
         deviceTime();
@@ -1137,22 +1341,61 @@ function socketMessageListener(evt) {
         }
         break;
       case "eventlist":
+        document.getElementById("saveeventlogbtn").disabled=true; 
+        document.getElementById("cleareventlogbtn").disabled=true; 
         if (page < haspages && obj.result === true) {
           getnextpage("geteventlog");
         } else if (page === haspages) {
           initEventTable();
+          document.getElementById("saveeventlogbtn").disabled=false;
+          // only enable delete button for main event log
+          // others need to be done from the maintenance section
+          if (theCurrentLogFile === "/eventlog.json")
+          {
+            document.getElementById("cleareventlogbtn").disabled=false; 
+          } 
           document.getElementById("loading-img").style.display = "none";
         }
         break;
       case "latestlist":
+        document.getElementById("savelatestlogbtn").disabled=true; 
+        document.getElementById("clearlatestlogbtn").disabled=true; 
         if (page < haspages && obj.result === true) {
           getnextpage("getlatestlog");
         } else if (page === haspages) {
           initLatestLogTable();
+          document.getElementById("savelatestlogbtn").disabled=false; 
+          if (theCurrentLogFile === "/latestlog.json")
+          {
+            document.getElementById("clearlatestlogbtn").disabled=false; 
+          } 
           document.getElementById("loading-img").style.display = "none";
         }
         break;
-      case "userfile":
+        case "listfiles":
+          if (page < haspages && obj.result === true) {
+            getnextpage("listfiles");
+          } else if (page === haspages) {
+            initFileListTable();
+            document.getElementById("loading-img").style.display = "none";
+          }
+          break;
+        case "logfileMaintenance":
+          if (obj.result === false) 
+          {
+            if (obj.hasOwnProperty("message"))
+            {
+              alert (obj.message);
+            } else 
+            {
+              alert ("Operation failed")
+            }
+          } else
+          {
+            $("#logmaintenance").click();
+          }
+          break;
+        case "userfile":
         if (restorestarted) {
           if (!completed && obj.result === true) {
             restore1by1(slot, recordstorestore, data);
@@ -1169,13 +1412,37 @@ function socketMessageListener(evt) {
 }
 
 function clearevent() {
-  websock.send("{\"command\":\"clearevent\"}");
-  $("#eventlog").click();
+  if (confirm('Deleting the Event log file can not be undone - delete ?')) {
+    websock.send("{\"command\":\"clearevent\"}");
+    $("#eventlog").click();
+  }
+}
+
+function saveLogfile(obj,anchorElement,filename) {
+  var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(obj, null, 2));
+  var dlAnchorElem = document.getElementById(anchorElement);
+  dlAnchorElem.setAttribute("href", dataStr);
+  dlAnchorElem.setAttribute("download", filename);
+  dlAnchorElem.click();
+}
+
+function saveevent() {
+  file.type = "esp-rfid-eventlog";
+  file.list = data;
+  saveLogfile(file,"downloadEvent","esp-rfid-eventlog.json");
+}
+
+function savelatest() {
+  file.type = "esp-rfid-accesslog";
+  file.list = data;
+  saveLogfile(file,"downloadLatest","esp-rfid-accesslog.json");
 }
 
 function clearlatest() {
-  websock.send("{\"command\":\"clearlatest\"}");
-  $("#latestlog").click();
+  if (confirm('Deleting the Access log file can not be undone - delete ?')) {
+    websock.send("{\"command\":\"clearlatest\"}");
+    $("#latestlog").click();
+  }
 }
 
 function compareDestroy() {
@@ -1231,6 +1498,7 @@ $("#users").click(function() {
   getContent("#userscontent");
 });
 $("#latestlog").click(function() {
+  theCurrentLogFile="/latestlog.json";
   getContent("#logcontent");
   return false;
 });
@@ -1243,7 +1511,16 @@ $("#reset").click(function() {
   return false;
 });
 $("#eventlog").click(function() {
+  theCurrentLogFile = "/eventlog.json";
   getContent("#eventcontent");
+  return false;
+});
+$("#logsettings").click(function() {
+  getContent("#logsettingscontent");
+  return false;
+});
+$("#logmaintenance").click(function() {
+  getContent("#logmaintenancecontent");
   return false;
 });
 $(".noimp").on("click", function() {

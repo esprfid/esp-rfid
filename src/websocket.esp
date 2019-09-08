@@ -66,12 +66,23 @@ void ICACHE_FLASH_ATTR procMsg(AsyncWebSocketClient *client, size_t sz)
 	else if (strcmp(command, "geteventlog") == 0)
 	{
 		int page = root["page"];
-		sendEventLog(page);
+		const char *xfileName = root["filename"];
+		sendEventLog(page,xfileName);
 	}
 	else if (strcmp(command, "getlatestlog") == 0)
 	{
 		int page = root["page"];
-		sendLatestLog(page);
+		const char *xfileName = root["filename"];
+		sendLatestLog(page,xfileName);
+	}
+	else if (strcmp(command, "listfiles") == 0)
+	{
+		int page = root["page"];
+		sendFileList(page);
+	}
+	else if (strcmp(command, "logMaintenance") == 0)
+	{
+		logMaintenance(root["action"],root["filename"]);
 	}
 	else if (strcmp(command, "clearevent") == 0)
 	{
