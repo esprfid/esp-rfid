@@ -67,13 +67,13 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 #endif
 #ifndef OFFICIALBOARD
 	readertype = hardware["readertype"];
-	if (readertype == 1 || readertype == 5)
+	if (readertype == READER_WIEGAND || readertype == READER_WIEGAND_RDM6300)
 	{
 		int wgd0pin = hardware["wgd0pin"];
 		int wgd1pin = hardware["wgd1pin"];
 		setupWiegandReader(wgd0pin, wgd1pin); // also some other settings like weather to use keypad or not, LED pin, BUZZER pin, Wiegand 26/34 version
 	}
-	else if (readertype == 0 || readertype == 4)
+	else if (readertype == READER_MFRC522 || readertype == READER_MFRC522_RDM6300)
 	{
 		rfidss = 15;
 		if (hardware.containsKey("sspin"))
@@ -83,7 +83,7 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 		int rfidgain = hardware["rfidgain"];
 		setupMFRC522Reader(rfidss, rfidgain);
 	}
-	else if (readertype == 2 || readertype == 6)
+	else if (readertype == READER_PN532 || readertype == READER_PN532_RDM6300)
 	{
 		rfidss = hardware["sspin"];
 		setupPN532Reader(rfidss);
