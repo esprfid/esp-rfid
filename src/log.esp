@@ -63,7 +63,16 @@ void ICACHE_FLASH_ATTR sendLogFile(int page,String fileName,int logFileType) {
 	if (logFileType == LOGTYPE_LATESTLOG) root["command"] = "latestlist";
 	root["page"] = page;
 	JsonArray &items = root.createNestedArray("list");
-	File logFile = SPIFFS.open(fileName, "r");
+
+	File logFile;
+
+	if (!SPIFFS.exists(fileName))
+	{
+		logFile = SPIFFS.open(fileName, "w");
+		logFile.close();
+	}
+
+	logFile = SPIFFS.open(fileName, "r");
 
 	// move the file pointer to the last known position
 
@@ -110,10 +119,7 @@ void ICACHE_FLASH_ATTR sendLogFile(int page,String fileName,int logFileType) {
 void ICACHE_FLASH_ATTR logMaintenance(String action, String filename)
 {
 	#ifdef DEBUG
-		Serial.print("Log Maintenance Action: ");
-		Serial.print(action);
-		Serial.print(" ");
-		Serial.println(filename);
+		Serial.printf("[DEBUG] Log Maintenance Action: %s on %s\n",action.c_str(),filename.c_str());
 	#endif
 
 
@@ -246,10 +252,6 @@ void ICACHE_FLASH_ATTR sendFileList(int page) {
 }
 
 void ICACHE_FLASH_ATTR sendEventLog(int page,String fileName) {
-#ifdef DEBUG
-  Serial.printf("DEBUG sendEventLog %d file ",page);
-  Serial.println(fileName);
-#endif
 	if (fileName.length() == 0 ) fileName = "/eventlog.json";
 	sendLogFile(page,fileName,LOGTYPE_EVENTLOG);
 }
