@@ -9,7 +9,7 @@ var ajaxobj;
 var isOfficialBoard = false;
 
 var maxNumRelays=4;
-var numRelays=3;
+var numRelays=1;
 
 var theCurrentLogFile ="";
 
@@ -128,12 +128,14 @@ function handleReader() {
   }
 }
 
-function handleLock() {
-  var lType = parseInt(document.getElementById("lockType").value);
+function handleLock(xnum) {
+  var xstr="";
+  if (xnum>1) {xstr="" + xnum}
+  var lType = parseInt(document.getElementById("lockType"+xstr).value);
   if (lType === 0) {
-    document.getElementById("activateTimeForm").style.display = "block";
+    document.getElementById("activateTimeForm"+xstr).style.display = "block";
   } else if (lType === 1) {
-    document.getElementById("activateTimeForm").style.display = "none";
+    document.getElementById("activateTimeForm"+xstr).style.display = "none";
   }
 }
 
@@ -165,9 +167,12 @@ function listhardware() {
 
     for (var i = 2; i<=numRelays; i++)
     {
-      // read the other relays 
-      // downstream compat - add node if not there
-    }
+
+      document.getElementById("gpiorly"+i).value = config.hardware["relay"+i].rpin;
+      document.getElementById("lockType"+i).value = config.hardware["relay"+i].ltype;
+      document.getElementById("typerly"+i).value = config.hardware["relay"+i].rtype;
+      document.getElementById("delay"+i).value = config.hardware["relay"+i].rtime;
+    }  
   }
   handleReader();
   handleLock();
@@ -217,6 +222,15 @@ function savehardware() {
   config.hardware.wifipin = parseInt(document.getElementById("wifipin").value);
   config.hardware.doorstatpin = parseInt(document.getElementById("doorstatpin").value);
   config.hardware.openlockpin = parseInt(document.getElementById("openlockpin").value);
+  config.hardware["numrelays"] = numRelays; 
+
+  for (var i = 2; i<=numRelays; i++)
+  {
+    config.hardware["relay"+i].rpin = document.getElementById("gpiorly"+i).value;
+    config.hardware["relay"+i].ltype = document.getElementById("lockType"+i).value;
+    config.hardware["relay"+i].rtype = document.getElementById("typerly"+i).value;
+    config.hardware["relay"+i].rtime = document.getElementById("delay"+i).value;
+  }  
   uncommited();
 }
 
@@ -1296,8 +1310,6 @@ function initUserTable() {
 
   for (var i=2; i<= maxNumRelays; i++)
   {
-    var relayForm = $("#relayform");
-    var relayparent= $("#relayformparent");
     if (i<= numRelays) 
     {
       //FooTable.get('#usertable').draw();
@@ -1525,6 +1537,13 @@ function clearlatest() {
 
 function changeRelayNumber(){
   numRelays = $("#numrlys :selected").val();
+
+  // downstream config compatibility
+
+  config.hardware["numrelays"] = numRelays; 
+
+  // add the missing form elements
+
   updateRelayForm();
 }
 
@@ -1533,6 +1552,21 @@ function updateRelayForm(){
   var i;
   for (i=2; i<= maxNumRelays; i++)
   {
+
+    // downstream compatibility
+    if (!(config.hardware.hasOwnProperty("relay"+i))) 
+    {
+      var relayJson =
+      { 
+        "rtype": 1,
+        "ltype": 0,
+        "rpin": 4,
+        "rtime": 400,
+      };
+      config.hardware["relay"+i] = relayJson; 
+    }
+    
+
     var relayForm = $("#relayform");
     var relayparent= $("#relayformparent");
     if (i<= numRelays) 
@@ -1541,12 +1575,19 @@ function updateRelayForm(){
       if (!(existingRelayForm))
       {
         var relayFormClone = relayForm.clone(true);
+        var cloneObj = relayFormClone[0];
         relayFormClone.attr('id', 'relayform' + i);
-        var cloneTitle = relayFormClone[0].children[0];
-        cloneTitle.innerText = 'Relay ' + i + " settings";
-        //cloneTitle.innerHTML = 'relayform' + i;
-        // add class duplicate
+
+        var str = cloneObj.innerHTML;
+        str=str.replace("Relay 1 Settings","Relay "+i + " settings");
+        str=str.replace ("gpiorly","gpiorly" +i);
+        str=str.replace ("lockType","lockType" +i);
+        str=str.replace ("typerly","typerly" +i);
+        str=str.replace ("handleLock(1)","handleLock(" +i+")");
+        str=str.replace ("activateTimeForm","activateTimeForm"+i);
+        cloneObj.innerHTML=str.replace ("delay","delay" +i);
         relayparent[0].appendChild(relayFormClone[0]);
+        handleLock(i);
       }
     } else {
       var removeRelayForm = document.getElementById("relayform" + i);
