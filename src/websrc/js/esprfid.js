@@ -164,6 +164,8 @@ function listhardware() {
     document.getElementById("gpiorly").value = config.hardware.rpin;
     document.getElementById("numrlys").value = numRelays;
     updateRelayForm();
+    updateUserModalForm();
+
 
     for (var i = 2; i<=numRelays; i++)
     {
@@ -1545,6 +1547,7 @@ function changeRelayNumber(){
   // add the missing form elements
 
   updateRelayForm();
+  updateUserModalForm();
 }
 
 function updateRelayForm(){
@@ -1595,6 +1598,37 @@ function updateRelayForm(){
       if (removeRelayForm)
       {
         relayparent[0].removeChild(removeRelayForm);
+      }
+    }
+  }
+}
+
+function updateUserModalForm(){
+  var i;
+  for (i=2; i<= maxNumRelays; i++)
+  {
+    var accTypeForm = $("#useracctype");
+    var accParent= $("#usermodalbody");
+    if (i<= numRelays) 
+    {
+      var existingaccTypeForm = document.getElementById("useracctype" + i);
+      if (!(existingaccTypeForm))
+      {
+        var accTypeFormClone = accTypeForm.clone(true);
+        var cloneObj = accTypeFormClone[0];
+        accTypeFormClone.attr('id', 'useracctype' + i);
+
+        var str = cloneObj.innerHTML;
+        str=str.replace(/acctype/g,"acctype"+i);
+        str=str.replace("Access Type","Access Relay "+i);
+        cloneObj.innerHTML=str;
+        accParent[0].appendChild(cloneObj);
+      }
+    } else {
+      var removeAccForm = document.getElementById("useracctype" + i);
+      if (removeAccForm)
+      {
+        accParent[0].removeChild(removeAccForm);
       }
     }
   }
