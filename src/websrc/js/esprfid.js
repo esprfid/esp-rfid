@@ -8,6 +8,9 @@ var data = [];
 var ajaxobj;
 var isOfficialBoard = false;
 
+var maxNumRelays=4;
+var numRelays=1;
+
 var theCurrentLogFile ="";
 
 var config = {
@@ -1442,6 +1445,41 @@ function clearlatest() {
   if (confirm('Deleting the Access log file can not be undone - delete ?')) {
     websock.send("{\"command\":\"clearlatest\"}");
     $("#latestlog").click();
+  }
+}
+
+function changeRelayNumber(){
+  numRelays = $("#numrlys :selected").val();
+  updateRelayForm();
+}
+
+function updateRelayForm(){
+  //alert (numRelays);
+  var i;
+  for (i=2; i<= maxNumRelays; i++)
+  {
+    var relayForm = $("#relayform");
+    var relayparent= $("#relayformparent");
+    if (i<= numRelays) 
+    {
+      var existingRelayForm = document.getElementById("relayform" + i);
+      if (!(existingRelayForm))
+      {
+        var relayFormClone = relayForm.clone(true);
+        relayFormClone.attr('id', 'relayform' + i);
+        var cloneTitle = relayFormClone[0].children[0];
+        cloneTitle.innerText = 'Relay ' + i + " settings";
+        //cloneTitle.innerHTML = 'relayform' + i;
+        // add class duplicate
+        relayparent[0].appendChild(relayFormClone[0]);
+      }
+    } else {
+      var removeRelayForm = document.getElementById("relayform" + i);
+      if (removeRelayForm)
+      {
+        relayparent[0].removeChild(removeRelayForm);
+      }
+    }
   }
 }
 

@@ -253,6 +253,24 @@
     </div>
     <hr>
     <div class="row form-group">
+        <label class="col-xs-3">Number of relays<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Choose how many relays your board has"></i></label>
+        <span class="col-xs-6 col-md-5">
+                <select class="form-control input-sm" id="numrlys">
+                    <option selected="selected" value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                </select>
+              </span>
+        <span class="col-xs-3">
+            <button id="changenumrly" type="button" class="btn btn-primary btn-xs" onclick="changeRelayNumber()">update</button><i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="left" data-content="Click here to display the right number of forms"></i>
+        </span>
+    </div>
+
+    <div id=relayformparent >
+     <div id=relayform>
+        <div id=relaytitle>Relay 1 Settings</div><br><br>
+        <div class="row form-group">
         <label class="col-xs-3">Relay Type<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Depending on your electrical setup, you can choose the relay type"></i></label>
         <span class="col-xs-9 col-md-5">
             <select class="form-control input-sm" id="typerly">
@@ -260,8 +278,8 @@
               <option value="0">Active Low</option>
             </select>
             </span>
-    </div>
-    <div class="row form-group">
+      </div>
+      <div class="row form-group">
         <label class="col-xs-3">Relay Pin<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Choose which ESP port is connected to your relay"></i></label>
         <span class="col-xs-6 col-md-5">
                 <select class="form-control input-sm" id="gpiorly">
@@ -280,8 +298,8 @@
         <span class="col-xs-3">
             <button id="testb" type="button" class="btn btn-primary btn-xs" onclick="testRelay()">Test</button><i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="left" data-content="Test previous relay setting. Keep in mind that this is actually triggers the relay."></i>
         </span>
-    </div>
-    <div class="row form-group">
+      </div>
+      <div class="row form-group">
         <label class="col-xs-3">Lock Type<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Use momentary method for door lock counterparts, and the continuous one for electromagnetic locks."></i></label>
         <span class="col-xs-9 col-md-5">
             <select class="form-control input-sm" id="lockType" onchange="handleLock();">
@@ -289,12 +307,14 @@
                 <option value="1">Continuous</option>
             </select>
         </span>
-    </div>
-    <div class="row form-group" id="activateTimeForm">
+      </div>
+      <div class="row form-group" id="activateTimeForm">
         <label class="col-xs-3">Activate Time<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Relay Toggle time in Microseconds, usually 300ms is enough for the most electric door locks"></i></label>
         <span class="col-xs-9 col-md-5">
             <input class="form-control input-sm" value="300" placeholder="in Microsecond" id="delay" type="text" name="hightime">
         </span>
+      </div>
+     </div> 
     </div>
     <div class="row form-group">
         <br>
@@ -832,7 +852,7 @@
                             <input type="text" class="form-control" id="username" name="username" placeholder="User Name or Label" required>
                         </div>
                     </div>
-                    <div class="form-group required">
+                    <div id=useracctype class="form-group required">
                         <label for="acctype" class="col-sm-3 control-label">Access Type</label>
                         <div class="col-sm-9">
                             <select class="form-control" id="acctype" required>
