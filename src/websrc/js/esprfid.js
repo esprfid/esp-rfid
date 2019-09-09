@@ -629,8 +629,8 @@ function builddata(obj) {
   data = data.concat(obj.list);
 }
 
-function testRelay() {
-  websock.send("{\"command\":\"testrelay\"}");
+function testRelay(xnum) {
+  websock.send("{\"command\":\"testrelay" + xnum + "\"}");
 }
 
 function colorStatusbar(ref) {
@@ -1584,6 +1584,7 @@ function updateRelayForm(){
         str=str.replace ("lockType","lockType" +i);
         str=str.replace ("typerly","typerly" +i);
         str=str.replace ("handleLock(1)","handleLock(" +i+")");
+        str=str.replace ("testRelay(1)","testRelay(" +i+")");
         str=str.replace ("activateTimeForm","activateTimeForm"+i);
         cloneObj.innerHTML=str.replace ("delay","delay" +i);
         relayparent[0].appendChild(relayFormClone[0]);

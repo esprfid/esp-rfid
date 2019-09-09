@@ -242,7 +242,6 @@ void ICACHE_FLASH_ATTR rfidloop()
 		return;
 	}
 #endif
-	int AccType = 0;
 	String filename = "/P/";
 	filename += uid;
 	File f = SPIFFS.open(filename, "r");
@@ -255,8 +254,18 @@ void ICACHE_FLASH_ATTR rfidloop()
 		JsonObject &json = jsonBuffer.parseObject(buf.get());
 		if (json.success())
 		{
+
+		  for (int currentRelay = 0; currentRelay < numRelays ; currentRelay++){
+
+			int AccType = ACCCESS_DENIED;
+  
+
 			String username = json["user"];
-			AccType = json["acctype"];
+			if (currentRelay == 0)
+			   AccType = json["acctype"];
+			else
+			   AccType = json["acctype"+(currentRelay+1)];
+			
 #ifdef DEBUG
 			Serial.println(" = known PICC");
 			Serial.print("[ INFO ] User Name: ");
@@ -265,17 +274,17 @@ void ICACHE_FLASH_ATTR rfidloop()
 			else
 				Serial.print(username);
 #endif
-			if (AccType == 1)
+			if (AccType == ACCESS_GRANTED)
 			{
 				unsigned long validL = json["validuntil"];
 				unsigned long nowL = now();
 
 				if (validL > nowL)
 				{
-					activateRelay = true;
+					activateRelay[currentRelay] = true;
 					ws.textAll("{\"command\":\"giveAccess\"}");
 #ifdef DEBUG
-					Serial.println(" have access");
+					Serial.printf(" has access relay %d\n",currentRelay);
 #endif
 					if (mqttenabled == 1)
 					{
@@ -292,16 +301,15 @@ void ICACHE_FLASH_ATTR rfidloop()
 					{
 						mqtt_publish_access(now(), "true", "Expired", username, uid);
 					}
-					AccType = 2;
 				}
 			}
-			else if (AccType == 99)
+			else if (AccType == ACCESS_ADMIN)
 			{
 				doEnableWifi = true;
-				activateRelay = true;
+				activateRelay[currentRelay] = true;
 				ws.textAll("{\"command\":\"giveAccess\"}");
 #ifdef DEBUG
-				Serial.println(" have admin access, enable wifi");
+				Serial.println(" has admin access, enable wifi");
 #endif
 				if (mqttenabled == 1)
 				{
@@ -334,6 +342,7 @@ void ICACHE_FLASH_ATTR rfidloop()
 				root.printTo((char *)buffer->get(), len + 1);
 				ws.textAll(buffer);
 			}
+		  }
 		}
 		else
 		{

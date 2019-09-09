@@ -109,9 +109,27 @@ void ICACHE_FLASH_ATTR procMsg(AsyncWebSocketClient *client, size_t sz)
 		f.close();
 		ws.textAll("{\"command\":\"result\",\"resultof\":\"userfile\",\"result\": true}");
 	}
-	else if (strcmp(command, "testrelay") == 0)
+	else if (strcmp(command, "testrelay1") == 0)
 	{
-		activateRelay = true;
+		activateRelay[0] = true;
+		previousMillis = millis();
+		ws.textAll("{\"command\":\"giveAccess\"}");
+	}
+	else if (strcmp(command, "testrelay2") == 0)
+	{
+		activateRelay[1] = true;
+		previousMillis = millis();
+		ws.textAll("{\"command\":\"giveAccess\"}");
+	}
+	else if (strcmp(command, "testrelay3") == 0)
+	{
+		activateRelay[2] = true;
+		previousMillis = millis();
+		ws.textAll("{\"command\":\"giveAccess\"}");
+	}
+	else if (strcmp(command, "testrelay4") == 0)
+	{
+		activateRelay[3] = true;
 		previousMillis = millis();
 		ws.textAll("{\"command\":\"giveAccess\"}");
 	}

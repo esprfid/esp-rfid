@@ -62,6 +62,14 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 			openLockButton.interval(30);
 		}
 	}
+
+	if (hardware.containsKey("numrelays"))
+	{
+		numRelays = hardware["numrelays"];
+	}
+	else numRelays=1;
+
+
 #ifdef OFFICIALBOARD
 	setupWiegandReader(5, 4);
 #endif
@@ -110,12 +118,22 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 	int ntpinter = ntp["interval"];
 	timeZone = ntp["timezone"];
 	activateTime = hardware["rtime"];
-	lockType = hardware["ltype"];
-	relayType = hardware["rtype"];
+	lockType[0]= hardware["ltype"];
+	relayType[0] = hardware["rtype"];
+
 #ifndef OFFICIALBOARD
-	relayPin = hardware["rpin"];
-	pinMode(relayPin, OUTPUT);
-	digitalWrite(relayPin, !relayType);
+	relayPin[0] = hardware["rpin"];
+	pinMode(relayPin[0], OUTPUT);
+	digitalWrite(relayPin[0], !relayType[0]);
+
+	for (int i = 1; i <numRelays ; i++){
+		lockType[i]= hardware["ltype"+(i+1)];
+		relayType[i] = hardware["rtype"+(i+1)];
+		relayPin[i] = hardware["rpin"+(i+1)];
+		pinMode(relayPin[i], OUTPUT);
+		digitalWrite(relayPin[i], !relayType[i]);
+	}
+
 #endif
 	const char *ssid = network["ssid"];
 	const char *password = network["pswd"];
