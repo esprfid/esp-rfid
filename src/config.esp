@@ -127,10 +127,11 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 	digitalWrite(relayPin[0], !relayType[0]);
 
 	for (int i = 1; i <numRelays ; i++){
-  		activateTime[i] = hardware["rtime"+(i+1)];
-		lockType[i]= hardware["ltype"+(i+1)];
-		relayType[i] = hardware["rtype"+(i+1)];
-		relayPin[i] = hardware["rpin"+(i+1)];
+		JsonObject &relay = hardware["relay"+(i+1)];
+ 		activateTime[i] = relay["rtime"];
+		lockType[i]= relay["ltype"];
+		relayType[i] = relay["rtype"];
+		relayPin[i] = relay["rpin"];
 		pinMode(relayPin[i], OUTPUT);
 		digitalWrite(relayPin[i], !relayType[i]);
 	}
