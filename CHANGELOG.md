@@ -5,6 +5,9 @@ All notable changes to this project will be documented in this file.
 #### Added
 - [firmware] Initial support for Wiegand Keypads @frenchie71
 - [firmware] Initial support for OTP (TOTP) @frenchie71
+- [webui] Added Download function for log files @frenchie71
+- [webui] Log file options on WebUI @frenchie71
+- [firmware] Log Maintenance Split, Rollover, View, Delete @frenchie7
 
 #### Changed
 - [firmware] Wi-Fi connection routine is now improved @frenchie71
