@@ -9,7 +9,7 @@ var ajaxobj;
 var isOfficialBoard = false;
 
 var maxNumRelays=4;
-var numRelays=1;
+var numRelays=3;
 
 var theCurrentLogFile ="";
 
@@ -160,6 +160,14 @@ function listhardware() {
     document.getElementById("gpioss").value = config.hardware.sspin;
     document.getElementById("gain").value = config.hardware.rfidgain;
     document.getElementById("gpiorly").value = config.hardware.rpin;
+    document.getElementById("numrlys").value = numRelays;
+    updateRelayForm();
+
+    for (var i = 2; i<=numRelays; i++)
+    {
+      // read the other relays 
+      // downstream compat - add node if not there
+    }
   }
   handleReader();
   handleLock();
@@ -1132,8 +1140,56 @@ function initUserTable() {
           },
           {
             "name": "acctype",
-            "title": "Access Type",
+            "title": "Access Rl1",
             "breakpoints": "xs",
+            "parser": function(value) {
+              if (value === 1) {
+                return "Always";
+              } else if (value === 99) {
+                return "Admin";
+              } else if (value === 0) {
+                return "Disabled";
+              }
+              return value;
+            },
+          },
+          {
+            "name": "acctype2",
+            "title": "Access Rl2",
+            "breakpoints": "xs",
+            "visible": false,
+            "parser": function(value) {
+              if (value === 1) {
+                return "Always";
+              } else if (value === 99) {
+                return "Admin";
+              } else if (value === 0) {
+                return "Disabled";
+              }
+              return value;
+            },
+          },
+          {
+            "name": "acctype3",
+            "title": "Access Rl3",
+            "breakpoints": "xs",
+            "visible": false,
+            "parser": function(value) {
+              if (value === 1) {
+                return "Always";
+              } else if (value === 99) {
+                return "Admin";
+              } else if (value === 0) {
+                return "Disabled";
+              }
+              return value;
+            },
+          },
+          {
+            "name": "acctype4",
+            "title": "Access Rl4",
+            "breakpoints": "xs",
+            "visible": false,
             "parser": function(value) {
               if (value === 1) {
                 return "Always";
@@ -1234,6 +1290,25 @@ function initUserTable() {
       $modal.modal("hide");
     });
   });
+
+  ft=FooTable.get('#usertable');
+  
+
+  for (var i=2; i<= maxNumRelays; i++)
+  {
+    var relayForm = $("#relayform");
+    var relayparent= $("#relayformparent");
+    if (i<= numRelays) 
+    {
+      //FooTable.get('#usertable').draw();
+      ft.columns.get("acctype"+i).visible=true;
+    }
+    else
+    {
+      ft.columns.get("acctype"+i).visible=false;
+    }  
+    ft.draw();
+  }
 }
 
 function restartESP() {
