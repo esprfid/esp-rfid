@@ -117,7 +117,7 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 	const char *ntpserver = ntp["server"];
 	int ntpinter = ntp["interval"];
 	timeZone = ntp["timezone"];
-	activateTime = hardware["rtime"];
+	activateTime[0] = hardware["rtime"];
 	lockType[0]= hardware["ltype"];
 	relayType[0] = hardware["rtype"];
 
@@ -127,6 +127,7 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 	digitalWrite(relayPin[0], !relayType[0]);
 
 	for (int i = 1; i <numRelays ; i++){
+  		activateTime[i] = hardware["rtime"+(i+1)];
 		lockType[i]= hardware["ltype"+(i+1)];
 		relayType[i] = hardware["rtype"+(i+1)];
 		relayPin[i] = hardware["rpin"+(i+1)];

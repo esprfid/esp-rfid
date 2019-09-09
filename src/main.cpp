@@ -73,6 +73,8 @@ int lockType[MAX_NUM_RELAYS];
 int relayType[MAX_NUM_RELAYS];
 bool activateRelay [MAX_NUM_RELAYS]= {false,false,false,false};
 bool deactivateRelay [MAX_NUM_RELAYS]= {false,false,false,false};
+unsigned long activateTime[MAX_NUM_RELAYS];
+
 
 #endif
 
@@ -146,7 +148,6 @@ char *muser = NULL;
 char *mpas = NULL;
 int mport;
 
-unsigned long activateTime;
 int timeZone;
 
 unsigned long nextbeat = 0;
@@ -309,7 +310,7 @@ void ICACHE_RAM_ATTR loop()
 			activateRelay[currentRelay] = false;
 		}
 	  }
-	  else if (lockType[currentRelay] == 0)	// momentary relay mode
+	  else if (lockType[currentRelay] == LOCKTYPE_MOMENTARY)	// momentary relay mode
 	  {
 		if (activateRelay[currentRelay])
 		{
@@ -323,7 +324,7 @@ void ICACHE_RAM_ATTR loop()
 			activateRelay[currentRelay] = false;
 			deactivateRelay[currentRelay] = true;
 		}
-		else if ((currentMillis - previousMillis >= activateTime) && (deactivateRelay[currentRelay]))
+		else if ((currentMillis - previousMillis >= activateTime[currentRelay]) && (deactivateRelay[currentRelay]))
 		{
 #ifdef DEBUG
 			Serial.println(currentMillis);
