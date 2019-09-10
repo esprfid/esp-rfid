@@ -127,7 +127,7 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 	digitalWrite(relayPin[0], !relayType[0]);
 
 	for (int i = 1; i <numRelays ; i++){
-		JsonObject &relay = hardware["relay"+(i+1)];
+		JsonObject &relay = hardware["relay"+String((i+1))];
  		activateTime[i] = relay["rtime"];
 		lockType[i]= relay["ltype"];
 		relayType[i] = relay["rtype"];
