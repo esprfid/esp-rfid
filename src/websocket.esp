@@ -96,6 +96,12 @@ void ICACHE_FLASH_ATTR procMsg(AsyncWebSocketClient *client, size_t sz)
 	}
 	else if (strcmp(command, "userfile") == 0)
 	{
+#ifdef DEBUG
+		Serial.println(F("[ DEBUG ] userfile received"));
+		String st = String();
+		root.printTo(st);
+		Serial.println(st);
+#endif
 		const char *uid = root["uid"];
 		String filename = "/P/";
 		filename += uid;
@@ -105,6 +111,9 @@ void ICACHE_FLASH_ATTR procMsg(AsyncWebSocketClient *client, size_t sz)
 		{
 			//f.print(msg);
 			root.printTo(f);
+#ifdef DEBUG
+		Serial.println(F("[ DEBUG ] userfile saved"));
+#endif
 		}
 		f.close();
 		ws.textAll("{\"command\":\"result\",\"resultof\":\"userfile\",\"result\": true}");

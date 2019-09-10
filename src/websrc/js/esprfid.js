@@ -1139,6 +1139,7 @@ function initLatestLogTable() {
 }
 
 function initUserTable() {
+  updateUserModalForm();
   jQuery(function($) {
     var $modal = $("#editor-modal"),
       $editor = $("#editor"),
@@ -1309,6 +1310,9 @@ function initUserTable() {
       datatosend.uid = $editor.find("#uid").val();
       datatosend.user = $editor.find("#username").val();
       datatosend.acctype = parseInt($editor.find("#acctype").val());
+      datatosend.acctype2 = parseInt($editor.find("#acctype2").val());
+      datatosend.acctype3 = parseInt($editor.find("#acctype3").val());
+      datatosend.acctype4 = parseInt($editor.find("#acctype4").val());
       var validuntil = $editor.find("#validuntil").val();
       var vuepoch = (new Date(validuntil).getTime() / 1000);
       datatosend.validuntil = vuepoch;
@@ -1407,6 +1411,7 @@ function socketMessageListener(evt) {
         config = obj;
         if (!('wifipin' in config.hardware)) config.hardware.wifipin = 255;
         if (!('doorstatpin' in config.hardware)) config.hardware.doorstatpin = 255;
+        if ('numrelays' in config.hardware) numRelays = config.hardware["numrelays"]; else config.hardware["numrelays"] = numRelays;
         break;
       default:
         break;
@@ -1601,8 +1606,8 @@ function updateRelayForm(){
         str=str.replace ("activateTimeForm","activateTimeForm"+i);
         cloneObj.innerHTML=str.replace ("delay","delay" +i);
         relayparent[0].appendChild(relayFormClone[0]);
-        handleLock(i);
       }
+      handleLock(i);
     } else {
       var removeRelayForm = document.getElementById("relayform" + i);
       if (removeRelayForm)

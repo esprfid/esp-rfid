@@ -22,10 +22,18 @@ void ICACHE_FLASH_ATTR sendUserList(int page, AsyncWebSocketClient *client) {
 			JsonObject &json = jsonBuffer2.parseObject(buf.get());
 			if (json.success()) {
 				String username = json["user"];
-				int AccType = json["acctype"];
+				for (int x=1; x<=MAX_NUM_RELAYS; x++)
+				{
+					String theKey=String();
+					if (x==1) theKey = "acctype"; else theKey = "acctype" + String(x);
+					int AccType = json[theKey];
+#ifdef DEBUG
+ // Serial.printf ("[ DEBUG ] User uid %s Acctype %d %d key %s\n", uid.c_str()  , x ,AccType,theKey.c_str());
+#endif
+					item[theKey] = AccType;
+				}
 				unsigned long validuntil = json["validuntil"];
 				item["username"] = username;
-				item["acctype"] = AccType;
 				item["validuntil"] = validuntil;
 			}
 		}
