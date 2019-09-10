@@ -1244,16 +1244,23 @@ function initUserTable() {
           editRow: function(row) {
             var acctypefinder;
             var values = row.val();
-            if (values.acctype === "Always") {
-              acctypefinder = 1;
-            } else if (values.acctype === "Admin") {
-              acctypefinder = 99;
-            } else if (values.acctype === "Disabled") {
-              acctypefinder = 0;
+
+            function giveAccType(xnum){
+              var xval;
+              if (xnum===1) xval = values.acctype;
+              if (xnum===2) xval = values.acctype2;
+              if (xnum===3) xval = values.acctype3;
+              if (xnum===4) xval = values.acctype4;
+              if (xval === "Always")  return 1;
+              if (xval === "Admin")  return 99;
+              if (xval === "Disabled") return 0;
             }
             $editor.find("#uid").val(values.uid);
             $editor.find("#username").val(values.username);
-            $editor.find("#acctype").val(acctypefinder);
+            $editor.find("#acctype").val(giveAccType(1));
+            $editor.find("#acctype2").val(giveAccType(2));
+            $editor.find("#acctype3").val(giveAccType(3));
+            $editor.find("#acctype4").val(giveAccType(4));
             $editor.find("#validuntil").val(values.validuntil);
             $modal.data("row", row);
             $editorTitle.text("Edit User # " + values.username);
@@ -1284,6 +1291,9 @@ function initUserTable() {
           uid: $editor.find("#uid").val(),
           username: $editor.find("#username").val(),
           acctype: parseInt($editor.find("#acctype").val()),
+          acctype2: parseInt($editor.find("#acctype2").val()),
+          acctype3: parseInt($editor.find("#acctype3").val()),
+          acctype4: parseInt($editor.find("#acctype4").val()),
           validuntil: (new Date($editor.find("#validuntil").val()).getTime() / 1000)
         };
       if (row instanceof window.FooTable.Row) {

@@ -41,12 +41,16 @@ SOFTWARE.
 
  // #define DEBUG
 
+int numRelays=1;
+
 #ifdef OFFICIALBOARD
 
 #include <Wiegand.h>
 
 WIEGAND wg;
-int relayPin[MAX_NUM_RELAYS] = {13,13,13,13};
+int relayPin[MAX_NUM_RELAYS] = {13};
+bool activateRelay [MAX_NUM_RELAYS]= {false};
+bool deactivateRelay [MAX_NUM_RELAYS]= {false};
 
 #endif
 
@@ -67,16 +71,16 @@ int readertype;
 
 // relay specific variables
 
-int numRelays=1;
 int relayPin[MAX_NUM_RELAYS];
-int lockType[MAX_NUM_RELAYS];
-int relayType[MAX_NUM_RELAYS];
 bool activateRelay [MAX_NUM_RELAYS]= {false,false,false,false};
 bool deactivateRelay [MAX_NUM_RELAYS]= {false,false,false,false};
-unsigned long activateTime[MAX_NUM_RELAYS];
-
 
 #endif
+
+int lockType[MAX_NUM_RELAYS];
+int relayType[MAX_NUM_RELAYS];
+unsigned long activateTime[MAX_NUM_RELAYS];
+
 
 // these are from vendors
 #include "webh/glyphicons-halflings-regular.woff.gz.h"
