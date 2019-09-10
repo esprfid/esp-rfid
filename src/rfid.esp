@@ -264,7 +264,7 @@ void ICACHE_FLASH_ATTR rfidloop()
 			if (currentRelay == 0)
 			   AccType = json["acctype"];
 			else
-			   AccType = json["acctype"+(currentRelay+1)];
+			   AccType = json["acctype"+String(currentRelay+1)];
 			
 #ifdef DEBUG
 			Serial.println(" = known PICC");
