@@ -238,7 +238,7 @@ void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties 
 		#ifdef DEBUG
 			Serial.println("[ INFO ] Door open");
 		#endif
-		activateRelay = true;
+		activateRelay[0] = true;
 		previousMillis = millis();
 		return;
 	}

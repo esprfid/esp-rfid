@@ -8,6 +8,9 @@ var data = [];
 var ajaxobj;
 var isOfficialBoard = false;
 
+var maxNumRelays=4;
+var numRelays=1;
+
 var theCurrentLogFile ="";
 
 var config = {
@@ -125,12 +128,14 @@ function handleReader() {
   }
 }
 
-function handleLock() {
-  var lType = parseInt(document.getElementById("lockType").value);
+function handleLock(xnum) {
+  var xstr="";
+  if (xnum>1) {xstr="" + xnum}
+  var lType = parseInt(document.getElementById("lockType"+xstr).value);
   if (lType === 0) {
-    document.getElementById("activateTimeForm").style.display = "block";
+    document.getElementById("activateTimeForm"+xstr).style.display = "block";
   } else if (lType === 1) {
-    document.getElementById("activateTimeForm").style.display = "none";
+    document.getElementById("activateTimeForm"+xstr).style.display = "none";
   }
 }
 
@@ -157,6 +162,19 @@ function listhardware() {
     document.getElementById("gpioss").value = config.hardware.sspin;
     document.getElementById("gain").value = config.hardware.rfidgain;
     document.getElementById("gpiorly").value = config.hardware.rpin;
+    document.getElementById("numrlys").value = numRelays;
+    updateRelayForm();
+    updateUserModalForm();
+
+
+    for (var i = 2; i<=numRelays; i++)
+    {
+
+      document.getElementById("gpiorly"+i).value = config.hardware["relay"+i].rpin;
+      document.getElementById("lockType"+i).value = config.hardware["relay"+i].ltype;
+      document.getElementById("typerly"+i).value = config.hardware["relay"+i].rtype;
+      document.getElementById("delay"+i).value = config.hardware["relay"+i].rtime;
+    }  
   }
   handleReader();
   handleLock();
@@ -206,6 +224,15 @@ function savehardware() {
   config.hardware.wifipin = parseInt(document.getElementById("wifipin").value);
   config.hardware.doorstatpin = parseInt(document.getElementById("doorstatpin").value);
   config.hardware.openlockpin = parseInt(document.getElementById("openlockpin").value);
+  config.hardware["numrelays"] = numRelays; 
+
+  for (var i = 2; i<=numRelays; i++)
+  {
+    config.hardware["relay"+i].rpin = document.getElementById("gpiorly"+i).value;
+    config.hardware["relay"+i].ltype = document.getElementById("lockType"+i).value;
+    config.hardware["relay"+i].rtype = document.getElementById("typerly"+i).value;
+    config.hardware["relay"+i].rtime = document.getElementById("delay"+i).value;
+  }  
   uncommited();
 }
 
@@ -604,8 +631,8 @@ function builddata(obj) {
   data = data.concat(obj.list);
 }
 
-function testRelay() {
-  websock.send("{\"command\":\"testrelay\"}");
+function testRelay(xnum) {
+  websock.send("{\"command\":\"testrelay" + xnum + "\"}");
 }
 
 function colorStatusbar(ref) {
@@ -1122,6 +1149,7 @@ function initLatestLogTable() {
 }
 
 function initUserTable() {
+  updateUserModalForm();
   jQuery(function($) {
     var $modal = $("#editor-modal"),
       $editor = $("#editor"),
@@ -1139,8 +1167,56 @@ function initUserTable() {
           },
           {
             "name": "acctype",
-            "title": "Access Type",
+            "title": "Access Rl1",
             "breakpoints": "xs",
+            "parser": function(value) {
+              if (value === 1) {
+                return "Always";
+              } else if (value === 99) {
+                return "Admin";
+              } else if (value === 0) {
+                return "Disabled";
+              }
+              return value;
+            },
+          },
+          {
+            "name": "acctype2",
+            "title": "Access Rl2",
+            "breakpoints": "xs",
+            "visible": false,
+            "parser": function(value) {
+              if (value === 1) {
+                return "Always";
+              } else if (value === 99) {
+                return "Admin";
+              } else if (value === 0) {
+                return "Disabled";
+              }
+              return value;
+            },
+          },
+          {
+            "name": "acctype3",
+            "title": "Access Rl3",
+            "breakpoints": "xs",
+            "visible": false,
+            "parser": function(value) {
+              if (value === 1) {
+                return "Always";
+              } else if (value === 99) {
+                return "Admin";
+              } else if (value === 0) {
+                return "Disabled";
+              }
+              return value;
+            },
+          },
+          {
+            "name": "acctype4",
+            "title": "Access Rl4",
+            "breakpoints": "xs",
+            "visible": false,
             "parser": function(value) {
               if (value === 1) {
                 return "Always";
@@ -1179,16 +1255,23 @@ function initUserTable() {
           editRow: function(row) {
             var acctypefinder;
             var values = row.val();
-            if (values.acctype === "Always") {
-              acctypefinder = 1;
-            } else if (values.acctype === "Admin") {
-              acctypefinder = 99;
-            } else if (values.acctype === "Disabled") {
-              acctypefinder = 0;
+
+            function giveAccType(xnum){
+              var xval;
+              if (xnum===1) xval = values.acctype;
+              if (xnum===2) xval = values.acctype2;
+              if (xnum===3) xval = values.acctype3;
+              if (xnum===4) xval = values.acctype4;
+              if (xval === "Always")  return 1;
+              if (xval === "Admin")  return 99;
+              if (xval === "Disabled") return 0;
             }
             $editor.find("#uid").val(values.uid);
             $editor.find("#username").val(values.username);
-            $editor.find("#acctype").val(acctypefinder);
+            $editor.find("#acctype").val(giveAccType(1));
+            $editor.find("#acctype2").val(giveAccType(2));
+            $editor.find("#acctype3").val(giveAccType(3));
+            $editor.find("#acctype4").val(giveAccType(4));
             $editor.find("#validuntil").val(values.validuntil);
             $modal.data("row", row);
             $editorTitle.text("Edit User # " + values.username);
@@ -1219,6 +1302,9 @@ function initUserTable() {
           uid: $editor.find("#uid").val(),
           username: $editor.find("#username").val(),
           acctype: parseInt($editor.find("#acctype").val()),
+          acctype2: parseInt($editor.find("#acctype2").val()),
+          acctype3: parseInt($editor.find("#acctype3").val()),
+          acctype4: parseInt($editor.find("#acctype4").val()),
           validuntil: (new Date($editor.find("#validuntil").val()).getTime() / 1000)
         };
       if (row instanceof window.FooTable.Row) {
@@ -1234,6 +1320,9 @@ function initUserTable() {
       datatosend.uid = $editor.find("#uid").val();
       datatosend.user = $editor.find("#username").val();
       datatosend.acctype = parseInt($editor.find("#acctype").val());
+      datatosend.acctype2 = parseInt($editor.find("#acctype2").val());
+      datatosend.acctype3 = parseInt($editor.find("#acctype3").val());
+      datatosend.acctype4 = parseInt($editor.find("#acctype4").val());
       var validuntil = $editor.find("#validuntil").val();
       var vuepoch = (new Date(validuntil).getTime() / 1000);
       datatosend.validuntil = vuepoch;
@@ -1241,6 +1330,23 @@ function initUserTable() {
       $modal.modal("hide");
     });
   });
+
+  ft=FooTable.get('#usertable');
+  
+
+  for (var i=2; i<= maxNumRelays; i++)
+  {
+    if (i<= numRelays) 
+    {
+      //FooTable.get('#usertable').draw();
+      ft.columns.get("acctype"+i).visible=true;
+    }
+    else
+    {
+      ft.columns.get("acctype"+i).visible=false;
+    }  
+    ft.draw();
+  }
 }
 
 function restartESP() {
@@ -1315,6 +1421,7 @@ function socketMessageListener(evt) {
         config = obj;
         if (!('wifipin' in config.hardware)) config.hardware.wifipin = 255;
         if (!('doorstatpin' in config.hardware)) config.hardware.doorstatpin = 255;
+        if ('numrelays' in config.hardware) numRelays = config.hardware["numrelays"]; else config.hardware["numrelays"] = numRelays;
         break;
       default:
         break;
@@ -1452,6 +1559,103 @@ function clearlatest() {
   if (confirm('Deleting the Access log file can not be undone - delete ?')) {
     websock.send("{\"command\":\"clearlatest\"}");
     $("#latestlog").click();
+  }
+}
+
+function changeRelayNumber(){
+  numRelays = $("#numrlys :selected").val();
+
+  // downstream config compatibility
+
+  config.hardware["numrelays"] = numRelays; 
+
+  // add the missing form elements
+
+  updateRelayForm();
+  updateUserModalForm();
+}
+
+function updateRelayForm(){
+  //alert (numRelays);
+  var i;
+  for (i=2; i<= maxNumRelays; i++)
+  {
+
+    // downstream compatibility
+    if (!(config.hardware.hasOwnProperty("relay"+i))) 
+    {
+      var relayJson =
+      { 
+        "rtype": 1,
+        "ltype": 0,
+        "rpin": 4,
+        "rtime": 400,
+      };
+      config.hardware["relay"+i] = relayJson; 
+    }
+    
+
+    var relayForm = $("#relayform");
+    var relayparent= $("#relayformparent");
+    if (i<= numRelays) 
+    {
+      var existingRelayForm = document.getElementById("relayform" + i);
+      if (!(existingRelayForm))
+      {
+        var relayFormClone = relayForm.clone(true);
+        var cloneObj = relayFormClone[0];
+        relayFormClone.attr('id', 'relayform' + i);
+
+        var str = cloneObj.innerHTML;
+        str=str.replace("Relay 1 Settings","Relay "+i + " settings");
+        str=str.replace ("gpiorly","gpiorly" +i);
+        str=str.replace ("lockType","lockType" +i);
+        str=str.replace ("typerly","typerly" +i);
+        str=str.replace ("handleLock(1)","handleLock(" +i+")");
+        str=str.replace ("testRelay(1)","testRelay(" +i+")");
+        str=str.replace ("activateTimeForm","activateTimeForm"+i);
+        cloneObj.innerHTML=str.replace ("delay","delay" +i);
+        relayparent[0].appendChild(relayFormClone[0]);
+      }
+      handleLock(i);
+    } else {
+      var removeRelayForm = document.getElementById("relayform" + i);
+      if (removeRelayForm)
+      {
+        relayparent[0].removeChild(removeRelayForm);
+      }
+    }
+  }
+}
+
+function updateUserModalForm(){
+  var i;
+  for (i=2; i<= maxNumRelays; i++)
+  {
+    var accTypeForm = $("#useracctype");
+    var accParent= $("#usermodalbody");
+    if (i<= numRelays) 
+    {
+      var existingaccTypeForm = document.getElementById("useracctype" + i);
+      if (!(existingaccTypeForm))
+      {
+        var accTypeFormClone = accTypeForm.clone(true);
+        var cloneObj = accTypeFormClone[0];
+        accTypeFormClone.attr('id', 'useracctype' + i);
+
+        var str = cloneObj.innerHTML;
+        str=str.replace(/acctype/g,"acctype"+i);
+        str=str.replace("Access Type","Access Relay "+i);
+        cloneObj.innerHTML=str;
+        accParent[0].appendChild(cloneObj);
+      }
+    } else {
+      var removeAccForm = document.getElementById("useracctype" + i);
+      if (removeAccForm)
+      {
+        accParent[0].removeChild(removeAccForm);
+      }
+    }
   }
 }
 

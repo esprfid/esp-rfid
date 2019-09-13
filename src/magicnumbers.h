@@ -16,9 +16,22 @@
 // user related numbers
 
 #define ACCESS_GRANTED 1
+#define ACCESS_ADMIN 99
+#define ACCCESS_DENIED 0
 
 // Reader defines
 
 #define WIEGANDTYPE_KEYPRESS 4
 #define WIEGANDTYPE_PICC26 26
 #define WIEGANDTYPE_PICC34 34
+
+// hardware defines
+
+#ifdef OFFICIALBOARD
+    #define MAX_NUM_RELAYS 1
+#else
+    #define MAX_NUM_RELAYS 4
+#endif
+
+#define LOCKTYPE_MOMENTARY 0
+#define LOCKTYPE_CONTINUOUS 1

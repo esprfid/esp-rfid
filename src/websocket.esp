@@ -96,6 +96,12 @@ void ICACHE_FLASH_ATTR procMsg(AsyncWebSocketClient *client, size_t sz)
 	}
 	else if (strcmp(command, "userfile") == 0)
 	{
+#ifdef DEBUG
+		Serial.println(F("[ DEBUG ] userfile received"));
+		String st = String();
+		root.printTo(st);
+		Serial.println(st);
+#endif
 		const char *uid = root["uid"];
 		String filename = "/P/";
 		filename += uid;
@@ -105,16 +111,39 @@ void ICACHE_FLASH_ATTR procMsg(AsyncWebSocketClient *client, size_t sz)
 		{
 			//f.print(msg);
 			root.printTo(f);
+#ifdef DEBUG
+		Serial.println(F("[ DEBUG ] userfile saved"));
+#endif
 		}
 		f.close();
 		ws.textAll("{\"command\":\"result\",\"resultof\":\"userfile\",\"result\": true}");
 	}
-	else if (strcmp(command, "testrelay") == 0)
+	else if (strcmp(command, "testrelay1") == 0)
 	{
-		activateRelay = true;
+		activateRelay[0] = true;
 		previousMillis = millis();
 		ws.textAll("{\"command\":\"giveAccess\"}");
 	}
+#ifndef OFFICIALBOARD	
+	else if (strcmp(command, "testrelay2") == 0)
+	{
+		activateRelay[1] = true;
+		previousMillis = millis();
+		ws.textAll("{\"command\":\"giveAccess\"}");
+	}
+	else if (strcmp(command, "testrelay3") == 0)
+	{
+		activateRelay[2] = true;
+		previousMillis = millis();
+		ws.textAll("{\"command\":\"giveAccess\"}");
+	}
+	else if (strcmp(command, "testrelay4") == 0)
+	{
+		activateRelay[3] = true;
+		previousMillis = millis();
+		ws.textAll("{\"command\":\"giveAccess\"}");
+	}
+#endif
 	else if (strcmp(command, "scan") == 0)
 	{
 		WiFi.scanNetworksAsync(printScanResult, true);
