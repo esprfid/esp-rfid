@@ -950,12 +950,17 @@ function initFileListTable() {
 function initEventTable() {
   var newlist = [];
   for (var i = 0; i < data.length; i++) {
-    var dup = JSON.parse(data[i]);
-    dup.uid = i;
     newlist[i] = {};
     newlist[i].options = {};
     newlist[i].value = {};
     newlist[i].value = dup;
+    try {
+      var dup = JSON.parse(data[i]);
+      dup.uid = i;
+    } catch(e)
+    {
+      var dup = {"uid":i,"type":"ERRO","src":"WEBIF","desc":"Error in logfile entry","data":data[i],"time":1}
+    }
     var c = dup.type;
     switch (c) {
       case "WARN":
@@ -1030,10 +1035,15 @@ function initEventTable() {
 function initLatestLogTable() {
   var newlist = [];
   for (var i = 0; i < data.length; i++) {
-    var dup = JSON.parse(data[i]);
     newlist[i] = {};
     newlist[i].options = {};
     newlist[i].value = {};
+    try {
+      var dup = JSON.parse(data[i]);
+    } catch(e)
+    {
+      var dup = {"uid":0,"acctype":99,"timestamp":0,"username":"Error in logfile entry"}
+    }
     newlist[i].value = dup;
     var c = dup.acctype;
     switch (c) {
