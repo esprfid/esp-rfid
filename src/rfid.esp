@@ -223,18 +223,50 @@ void ICACHE_FLASH_ATTR rfidloop()
 #ifdef DEBUG
 		Serial.println("[ INFO ] still waiting for keypress");
 #endif
-		return;
+		//return;
 	}
 #ifdef OFFICIALBOARD
 	if (wg.available())
 	{
+		
+		// if we get 26 or 34 bit burst then we have a scanned PICC
+		if ((wg.getWiegandType() == WIEGANDTYPE_PICC26) || (wg.getWiegandType() == WIEGANDTYPE_PICC34))
+		{
 #ifdef DEBUG
-		Serial.print(F("[ INFO ] PICC's UID: "));
-		Serial.print(wg.getCode());
+			Serial.print(F("[ INFO ] PICC's UID: "));
+			Serial.println(wg.getCode());
 #endif
-		uid = String(wg.getCode(), DEC);
-		type = String(wg.getWiegandType(), HEX);
-		cooldown = millis() + COOLDOWN_MILIS;
+			uid = String(wg.getCode(), DEC);
+			type = String(wg.getWiegandType(), DEC);
+			cooldown = millis() + 2000;
+		}
+		// if we get a 4 bit burst then a key has been pressed
+		// add the key to the current input and reset the Waiting time
+		// for the next key unless * or # have been pressed
+		// we do not require * as the first character because some
+		// readers use this as special admin code and would hence require *#PIN#
+		if ((wg.getWiegandType() == WIEGANDTYPE_KEYPRESS) /*  && keyTimer > 0 */ && (String(wg.getCode(), HEX) != "d")  && (String(wg.getCode(), HEX) != "1b"))
+		{
+#ifdef DEBUG
+			Serial.println("Keycode captured. . .");
+#endif
+			currentInput = currentInput + String(wg.getCode());
+			keyTimer = millis();
+		}
+		// When # is pressed stop keytimer to capture code
+		if ((wg.getWiegandType() ==  WIEGANDTYPE_KEYPRESS) && (keyTimer > 0) && (String(wg.getCode(), HEX) == "d"))
+		{
+#ifdef DEBUG
+			Serial.println("Stop capture keycode . . .");
+			Serial.print(F("[ INFO ] PICC's UID: "));
+			Serial.println(currentInput);
+#endif
+			uid = currentInput;
+			type = "PIN";
+			currentInput = "";
+			keyTimer = 0;
+			cooldown = millis() + COOLDOWN_MILIS;
+		}
 	}
 	else
 	{
