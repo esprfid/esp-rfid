@@ -22,7 +22,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
-#define VERSION "1.3.1"
+#define VERSION "1.3.3"
 
 #include "Arduino.h"
 #include <ESP8266WiFi.h>
@@ -101,7 +101,7 @@ extern "C" {
 NtpClient NTP;
 AsyncMqttClient mqttClient;
 Ticker mqttReconnectTimer;
-WiFiEventHandler wifiDisconnectHandler, wifiConnectHandler;
+WiFiEventHandler wifiDisconnectHandler, wifiConnectHandler, wifiOnStationModeGotIPHandler;
 Bounce openLockButton;
 
 AsyncWebServer server(80);
@@ -228,6 +228,8 @@ void ICACHE_FLASH_ATTR setup()
 	}
 	wifiDisconnectHandler = WiFi.onStationModeDisconnected(onWifiDisconnect);
 	wifiConnectHandler = WiFi.onStationModeConnected(onWifiConnect);
+	wifiOnStationModeGotIPHandler = WiFi.onStationModeGotIP(onWifiGotIP);
+	
 	configMode = loadConfiguration();
 	if (!configMode)
 	{
