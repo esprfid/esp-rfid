@@ -30,6 +30,17 @@ void onWifiDisconnect(const WiFiEventStationModeDisconnected &event)
 	}
 }
 
+void onWifiGotIP(const WiFiEventStationModeGotIP &event)
+{
+	wifiFlag = true;
+	wifiLedOn();
+#ifdef DEBUG
+	Serial.println(F("\n[ INFO ] WiFi IP Connected"));
+#endif
+	connectToMqtt();
+	//writeEvent("INFO", "wifi", "Connected with IP", "onWifiGotIP");
+}
+
 bool ICACHE_FLASH_ATTR startAP(IPAddress apip, IPAddress apsubnet, int hid, const char *ssid, const char *password = NULL)
 {
 	inAPMode = true;
