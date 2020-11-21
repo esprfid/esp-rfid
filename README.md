@@ -172,6 +172,9 @@ For Wiegand based readers, you can configure D0 and D1 pins via settings page. B
 * Click "Add"
 * Congratulations, everything went well, if you encounter any issue feel free to ask help on GitHub.
 
+### MQTT
+You can integrate ESP-RFID with other systems using MQTT. Read the [additional documentation](./README-ADDON.md) for all the details.
+
 ### Known Issues
 * You need to connect your MFRC522 reader to your ESP properly or you will end up with a boot loop
 * Please also check [GitHub issues](https://github.com/esprfid/esp-rfid/issues).
