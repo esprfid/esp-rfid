@@ -117,6 +117,10 @@ uint8_t doorstatpin = 255;
 uint8_t lastDoorState = 0;
 
 uint8_t openlockpin = 255;
+
+uint8_t doorbellpin = 255;
+uint8_t lastDoorbellState = 0;
+
 #define LEDoff HIGH
 #define LEDon LOW
 
@@ -170,6 +174,7 @@ bool mqttEvents 		= false; // Sends events over MQTT disables SPIFFS file loggin
 #include "websocket.esp"
 #include "webserver.esp"
 #include "door.esp"
+#include "doorbell.esp"
 
 void ICACHE_FLASH_ATTR setup()
 {
@@ -278,8 +283,14 @@ void ICACHE_RAM_ATTR loop()
 
 	if (doorstatpin != 255)
 	{
-    doorStatus();
-    delay(1);
+		doorStatus();
+		delayMicroseconds(500);
+	}
+
+	if (doorbellpin != 255)
+	{
+		doorbellStatus();
+		delayMicroseconds(500);
 	}
 
 	if (currentMillis >= cooldown)

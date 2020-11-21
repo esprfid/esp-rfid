@@ -52,6 +52,15 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 		}
 	}
 
+	if (hardware.containsKey("doorbellpin"))
+	{
+		doorbellpin = hardware["doorbellpin"];
+		if (doorbellpin!=255)
+		{
+			pinMode(doorbellpin, INPUT);
+		}
+	}
+
 	if (hardware.containsKey("openlockpin"))
 	{
 		openlockpin = hardware["openlockpin"];
