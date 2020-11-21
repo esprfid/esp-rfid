@@ -228,7 +228,7 @@ void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties 
 
 	else if (strcmp(command, "listusr") == 0){
 		#ifdef DEBUG
-			Serial.println("[ INFO ] List usees");
+			Serial.println("[ INFO ] List users");
 		#endif
 		getUserList(1);
 		return;
@@ -279,11 +279,11 @@ void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties 
 
 void onMqttSubscribe(uint16_t packetId, uint8_t qos) {
 	#ifdef DEBUG
-  		Serial.println("[ INFO ] Subscribe acknowledged.");
-  		Serial.print("[ INFO ]packetId: ");
-  		Serial.println(packetId);
-  		Serial.print("[ INFO ]  qos: ");
-  		Serial.println(qos);
+		Serial.println("[ INFO ] Subscribe acknowledged.");
+		Serial.print("[ INFO ] packetId: ");
+		Serial.println(packetId);
+		Serial.print("[ INFO ] qos: ");
+		Serial.println(qos);
 	#endif
 }
 
