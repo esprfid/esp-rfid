@@ -1858,18 +1858,19 @@ function logout() {
 }
 
 function connectWS() {
-    if (window.location.protocol === "https:") {
-        wsUri = "wss://" + window.location.hostname + ":" + window.location.port + "/ws";
-    } else if (window.location.protocol === "file:") {
-        wsUri = "ws://" + "localhost" + "/ws";
-    }
-    websock = new WebSocket(wsUri);
-    websock.addEventListener("message", socketMessageListener);
+  if (window.location.protocol === "https:") {
+    wsUri = "wss://" + window.location.hostname + ":" + window.location.port + "/ws";
+  } else if (window.location.protocol === "file:" ||
+      ["0.0.0.0", "localhost", "127.0.0.1"].includes(window.location.hostname)) {
+    wsUri = "ws://localhost:8080/ws";
+  }
+  websock = new WebSocket(wsUri);
+  websock.addEventListener("message", socketMessageListener);
 
-    websock.onopen = function(evt) {
-        websock.send("{\"command\":\"getconf\"}");
-        websock.send("{\"command\":\"status\"}");
-    };
+  websock.onopen = function(evt) {
+    websock.send("{\"command\":\"getconf\"}");
+    websock.send("{\"command\":\"status\"}");
+  };
 }
 
 function upload() {

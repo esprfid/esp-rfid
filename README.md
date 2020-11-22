@@ -127,16 +127,26 @@ If you want to edit esp-rfid's Web UI you will need (unless using compiled execu
 * npm (comes with NodeJS installer)
 * Gulp (can be installed with npm)
 
-Gulp script also minifies HTML and JS files and compresses (gzip) them. 
+Gulp script also minifies HTML and JS files and compresses (gzip) them.
+
+To minify and compress the frontend, enter the folder ```tools/webfilesbuilder``` and:
+* Run ```npm install``` to install dependencies
+* Run ```npx gulp``` to compress the web UI to make it ready for the ESP
 
 In order to test your changes without flashing the firmware you can launch websocket emulator which is included in tools directory.
 * You will need to Node JS for websocket emulator.
-* Run ```npm update``` to install dependencies
+* Run ```npm install``` to install dependencies
 * Run emulator  ```node wserver.js```
-* then you will need to launch your browser with CORS disabled:
-* ```chrome.exe --args --disable-web-security -–allow-file-access-from-files --user-data-dir="C:\Users\USERNAME"```
 
-Get more information here: https://stackoverflow.com/questions/3102819/disable-same-origin-policy-in-chrome
+There are two alternative ways to test the UI
+1. you can launch your browser with CORS disabled:
+  ```chrome.exe --args --disable-web-security -–allow-file-access-from-files --user-data-dir="C:\Users\USERNAME"```
+  and then open the HTML files directly (Get more information [here](https://stackoverflow.com/questions/3102819/disable-same-origin-policy-in-chrome))
+2. alternatively, you can launch a web server from the ```src/websrc``` folder, for example with Python, like this:
+  ```python3 -m http.server```
+  and then visit ```http://0.0.0.0:8000/```
+
+When testing locally, use the password ```neo``` for admin capabilities.
 
 
 ### Pin Layout
@@ -171,6 +181,9 @@ For Wiegand based readers, you can configure D0 and D1 pins via settings page. B
 * Choose "Allow Access" if you want to
 * Click "Add"
 * Congratulations, everything went well, if you encounter any issue feel free to ask help on GitHub.
+
+### MQTT
+You can integrate ESP-RFID with other systems using MQTT. Read the [additional documentation](./README-ADDON.md) for all the details.
 
 ### Known Issues
 * You need to connect your MFRC522 reader to your ESP properly or you will end up with a boot loop
