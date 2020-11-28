@@ -145,6 +145,7 @@ function listhardware() {
   document.getElementById("delay").value = config.hardware.rtime;
   document.getElementById("wifipin").value = config.hardware.wifipin;
   document.getElementById("doorstatpin").value = config.hardware.doorstatpin;
+  document.getElementById("doorbellpin").value = config.hardware.doorbellpin;
   document.getElementById("openlockpin").value = config.hardware.openlockpin;
   if (isOfficialBoard) {
     document.getElementById("readertype").value = 1;
@@ -223,6 +224,7 @@ function savehardware() {
   config.hardware.rtime = parseInt(document.getElementById("delay").value);
   config.hardware.wifipin = parseInt(document.getElementById("wifipin").value);
   config.hardware.doorstatpin = parseInt(document.getElementById("doorstatpin").value);
+  config.hardware.doorbellpin = parseInt(document.getElementById("doorbellpin").value);
   config.hardware.openlockpin = parseInt(document.getElementById("openlockpin").value);
   config.hardware["numrelays"] = numRelays; 
 
@@ -1421,6 +1423,7 @@ function socketMessageListener(evt) {
         config = obj;
         if (!('wifipin' in config.hardware)) config.hardware.wifipin = 255;
         if (!('doorstatpin' in config.hardware)) config.hardware.doorstatpin = 255;
+        if (!('doorbellpin' in config.hardware)) config.hardware.doorbellpin = 255;
         if ('numrelays' in config.hardware) numRelays = config.hardware["numrelays"]; else config.hardware["numrelays"] = numRelays;
         break;
       default:
@@ -1855,18 +1858,19 @@ function logout() {
 }
 
 function connectWS() {
-    if (window.location.protocol === "https:") {
-        wsUri = "wss://" + window.location.hostname + ":" + window.location.port + "/ws";
-    } else if (window.location.protocol === "file:") {
-        wsUri = "ws://" + "localhost" + "/ws";
-    }
-    websock = new WebSocket(wsUri);
-    websock.addEventListener("message", socketMessageListener);
+  if (window.location.protocol === "https:") {
+    wsUri = "wss://" + window.location.hostname + ":" + window.location.port + "/ws";
+  } else if (window.location.protocol === "file:" ||
+      ["0.0.0.0", "localhost", "127.0.0.1"].includes(window.location.hostname)) {
+    wsUri = "ws://localhost:8080/ws";
+  }
+  websock = new WebSocket(wsUri);
+  websock.addEventListener("message", socketMessageListener);
 
-    websock.onopen = function(evt) {
-        websock.send("{\"command\":\"getconf\"}");
-        websock.send("{\"command\":\"status\"}");
-    };
+  websock.onopen = function(evt) {
+    websock.send("{\"command\":\"getconf\"}");
+    websock.send("{\"command\":\"status\"}");
+  };
 }
 
 function upload() {
