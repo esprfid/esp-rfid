@@ -1,7 +1,7 @@
 # ESP RFID with extended MQTT Functions
 
 Hardware:
-* Any esp-rfid board like esp-rfid-relay-board, marelab ESP-DOOR 
+* Any esp-rfid board like esp-rfid-relay-board, marelab ESP-DOOR
 
 This has been added so far:
 * Reading all user data over MQTT
@@ -23,7 +23,7 @@ You can add all the broker details in the web UI:
 For the MQTT communication some additional TOPICs have been added internally. The default Topic is configured in the web UI. If you use more then one device, every device should have the same `TOPIC` name configured. All MQTT communication is done with JSON Payload as MQTT Message.
 
 This is the used Topic hierarchy:
-          
+
 ```
 TOPIC---+---/sync
           |
@@ -31,7 +31,7 @@ TOPIC---+---/sync
           |
           +---/accesslist
 ```
-  
+
   e.g. if you configure in the web UI `TOPIC` = "/rfid" these topic queues can be used:
   * /rfid
   * /rfid/sync
@@ -50,7 +50,7 @@ Json Command Format:
 ```
 {
    cmd:'getuser',
-   doorip:'(The ESP-RFID IP of the door to open as String)'
+   doorip:'(The ESP-RFID IP address as String)'
 }
 ```
 
@@ -61,7 +61,7 @@ Json Command Format:
 ```
 {
     cmd:'listusr',
-    doorip:'(The ESP-RFID IP of the door to open as String)'
+    doorip:'(The ESP-RFID IP address as String)'
 }
 ```
 
@@ -77,26 +77,36 @@ Json Command Format:
 ```
 
 ### deletusers
-Delete all users. It deletes all User SPIF files.
+Delete all User SPIF files over `TOPIC`.
 
 Json Command Format:
 ```
 {
      cmd:'deletusers',
-     doorip:'(The ESP-RFID IP of the door to open as String)'
+     doorip:'(The ESP-RFID IP address as String)'
 }
 ```
 
 ### adduser
-Adds a User as SPIF File to the device. That can be shown/edit over the web UI.
+Adds a User as SPIF File to the device over `TOPIC`.
 
 Json Command Format:
 ```
 {
      cmd:'adduser',
-     doorip:'(The ESP-RFID IP of the door to open as String)'
+     doorip:'(The ESP-RFID IP address as String)'
+     uid: '(The PIN as String)',
+     user: '(User Name as String)',
+     acctype: 1,
+     validuntil: 1608466200
 }
 ```
+###acctype###
+1 = Always
+99 = Admin
+
+###validuntil###
+Expiration date/time as Unix epoch timestamp
 
 ## Messages sent by ESP-RFID
 ESP-RFID sends a set of MQTT messages for the most significant actions that it does, plus can be configured to send all the logs over MQTT, instead of keeping them locally.
