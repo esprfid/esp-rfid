@@ -132,6 +132,8 @@ JSON command format:
 
 * _validuntil_
   * Expiration date/time as Unix epoch timestamp
+  * Can send caculations based on now:
+    * ```validuntil: {{ (as_timestamp(now()) + (2*24*3600)) }}```
 
 ## Messages sent by ESP-RFID
 ESP-RFID sends a set of MQTT messages for the most significant actions that it does, plus can be configured to send all the logs over MQTT, instead of keeping them locally.
