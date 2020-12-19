@@ -44,31 +44,55 @@ The message format is JSON.
 The message has to include the IP of the device together with one of the supported commands:
 
 ### getuser
-Sends all users back over the `TOPIC/accesslist`.
-
-Json Command Format:
+Receive a list of all users over `TOPIC/accesslist`
+JSON command format:
 ```
 {
    cmd:'getuser',
    doorip:'(The ESP-RFID IP address as String)'
 }
 ```
+JSON return format:
+```
+{
+    "command": "userfile",
+    "uid": "1234",
+    "user": "User Name",
+    "acctype": 1,
+    "acctype2": null,
+    "acctype3": null,
+    "acctype4": null,
+    "validuntil": 1608336000
+}
+```
 
 ### listusr
-Sends all users back over `TOPIC/send`.
-
-Json Command Format:
+Receive a list of all users over `TOPIC/send`
+JSON command format:
 ```
 {
     cmd:'listusr',
     doorip:'(The ESP-RFID IP address as String)'
 }
 ```
+JSON return format:
+```
+{
+    "command": "userfile",
+    "uid": "1234",
+    "user": "User Name",
+    "acctype": 1,
+    "acctype2": null,
+    "acctype3": null,
+    "acctype4": null,
+    "validuntil": 1608336000
+}
+```
 
 ### opendoor
-Opens the Door / Magnetic Lock.
+Opens the Door/Magnetic Lock.
 
-Json Command Format:
+JSON command format:
 ```
 {
     cmd:'opendoor',
@@ -79,7 +103,7 @@ Json Command Format:
 ### deletusers
 Delete all User SPIF files over `TOPIC`.
 
-Json Command Format:
+JSON command format:
 ```
 {
      cmd:'deletusers',
@@ -90,7 +114,7 @@ Json Command Format:
 ### adduser
 Adds a User as SPIF File to the device over `TOPIC`.
 
-Json Command Format:
+JSON command format:
 ```
 {
      cmd:'adduser',
@@ -102,6 +126,7 @@ Json Command Format:
 }
 ```
 * _acctype_
+  * 0 = Disabled
   * 1 = Always
   * 99 = Admin
 
