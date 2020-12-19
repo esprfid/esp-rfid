@@ -101,12 +101,12 @@ Json Command Format:
      validuntil: 1608466200
 }
 ```
-###acctype###
-1 = Always
-99 = Admin
+* _acctype_
+  * 1 = Always
+  * 99 = Admin
 
-###validuntil###
-Expiration date/time as Unix epoch timestamp
+* _validuntil_
+  * Expiration date/time as Unix epoch timestamp
 
 ## Messages sent by ESP-RFID
 ESP-RFID sends a set of MQTT messages for the most significant actions that it does, plus can be configured to send all the logs over MQTT, instead of keeping them locally.
