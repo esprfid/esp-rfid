@@ -1,7 +1,7 @@
 # ESP RFID with extended MQTT Functions
 
 Hardware:
-* Any esp-rfid board like esp-rfid-relay-board, marelab ESP-DOOR 
+* Any esp-rfid board like esp-rfid-relay-board, marelab ESP-DOOR
 
 This has been added so far:
 * Reading all user data over MQTT
@@ -23,7 +23,7 @@ You can add all the broker details in the web UI:
 For the MQTT communication some additional TOPICs have been added internally. The default Topic is configured in the web UI. If you use more then one device, every device should have the same `TOPIC` name configured. All MQTT communication is done with JSON Payload as MQTT Message.
 
 This is the used Topic hierarchy:
-          
+
 ```
 TOPIC---+---/sync
           |
@@ -31,7 +31,7 @@ TOPIC---+---/sync
           |
           +---/accesslist
 ```
-  
+
   e.g. if you configure in the web UI `TOPIC` = "/rfid" these topic queues can be used:
   * /rfid
   * /rfid/sync
@@ -44,31 +44,55 @@ The message format is JSON.
 The message has to include the IP of the device together with one of the supported commands:
 
 ### getuser
-Sends all users back over the `TOPIC/accesslist`.
-
-Json Command Format:
+Receive a list of all users over `TOPIC/accesslist`
+JSON command format:
 ```
 {
    cmd:'getuser',
-   doorip:'(The ESP-RFID IP of the door to open as String)'
+   doorip:'(The ESP-RFID IP address as String)'
+}
+```
+JSON return format:
+```
+{
+    "command": "userfile",
+    "uid": "1234",
+    "user": "User Name",
+    "acctype": 1,
+    "acctype2": null,
+    "acctype3": null,
+    "acctype4": null,
+    "validuntil": 1608336000
 }
 ```
 
 ### listusr
-Sends all users back over `TOPIC/send`.
-
-Json Command Format:
+Receive a list of all users over `TOPIC/send`
+JSON command format:
 ```
 {
     cmd:'listusr',
-    doorip:'(The ESP-RFID IP of the door to open as String)'
+    doorip:'(The ESP-RFID IP address as String)'
+}
+```
+JSON return format:
+```
+{
+    "command": "userfile",
+    "uid": "1234",
+    "user": "User Name",
+    "acctype": 1,
+    "acctype2": null,
+    "acctype3": null,
+    "acctype4": null,
+    "validuntil": 1608336000
 }
 ```
 
 ### opendoor
-Opens the Door / Magnetic Lock.
+Opens the Door/Magnetic Lock.
 
-Json Command Format:
+JSON command format:
 ```
 {
     cmd:'opendoor',
@@ -77,26 +101,39 @@ Json Command Format:
 ```
 
 ### deletusers
-Delete all users. It deletes all User SPIF files.
+Delete all User SPIF files over `TOPIC`.
 
-Json Command Format:
+JSON command format:
 ```
 {
      cmd:'deletusers',
-     doorip:'(The ESP-RFID IP of the door to open as String)'
+     doorip:'(The ESP-RFID IP address as String)'
 }
 ```
 
 ### adduser
-Adds a User as SPIF File to the device. That can be shown/edit over the web UI.
+Adds a User as SPIF File to the device over `TOPIC`.
 
-Json Command Format:
+JSON command format:
 ```
 {
      cmd:'adduser',
-     doorip:'(The ESP-RFID IP of the door to open as String)'
+     doorip:'(The ESP-RFID IP address as String)'
+     uid: '(The PIN as String)',
+     user: '(User Name as String)',
+     acctype: 1,
+     validuntil: 1608466200
 }
 ```
+* _acctype_
+  * 0 = Disabled
+  * 1 = Always
+  * 99 = Admin
+
+* _validuntil_
+  * Expiration date/time as Unix epoch timestamp
+  * Can send caculations based on now:
+    * ```validuntil: {{ (as_timestamp(now()) + (2*24*3600)) }}```
 
 ## Messages sent by ESP-RFID
 ESP-RFID sends a set of MQTT messages for the most significant actions that it does, plus can be configured to send all the logs over MQTT, instead of keeping them locally.
