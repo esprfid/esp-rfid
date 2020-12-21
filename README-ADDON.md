@@ -130,7 +130,7 @@ JSON command format:
 ```
 {
      cmd:'adduser',
-     doorip:'(The ESP-RFID IP address as String)'
+     doorip:'(The ESP-RFID IP address as String)',
      uid: '(The PIN as String)',
      user: '(User Name as String)',
      acctype: 1,
