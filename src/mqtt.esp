@@ -34,7 +34,7 @@ void onMqttDisconnect(AsyncMqttClientDisconnectReason reason) {
 		break;
 	}
 	writeEvent("WARN", "mqtt", "Disconnected from MQTT server", reasonstr);
-	
+
 	if (WiFi.isConnected()) {
 		//mqttClient.setServer(mhs, mport);
 		mqttReconnectTimer.once(60, connectToMqtt);
@@ -65,14 +65,14 @@ void mqtt_publish_boot(time_t boot_time, String const &wifi, String const &ip) {
 void mqtt_publish_heartbeat(time_t heartbeat) {
 	String stopic (mqttTopic);
  	DynamicJsonBuffer jsonBuffer;
-	
+
 	stopic = stopic + "/sync";
-	JsonObject &root 	 = jsonBuffer.createObject();
+	JsonObject &root = jsonBuffer.createObject();
 	root["type"] 		 = "heartbeat";
 	root["time"] 		 = heartbeat;
-    root["ip"]   		 = WiFi.localIP().toString();
+    root["ip"]   	 = WiFi.localIP().toString();
 	root["door"] 		 = deviceHostname;
-	
+
 	String mqttBuffer4;
 	root.printTo(mqttBuffer4);
 	mqttClient.publish(stopic.c_str(), 0, false, mqttBuffer4.c_str());
@@ -86,11 +86,11 @@ void mqtt_publish_access(time_t accesstime, String const &isknown, String const 
 	if (mqttClient.connected()) {
 		String stopic (mqttTopic);
  		stopic = stopic + "/send";
-	
+
 		DynamicJsonBuffer jsonBuffer;
 		JsonObject &root = jsonBuffer.createObject();
 		// log to MQTT adding cmd command
-		if (mqttEvents){  
+		if (mqttEvents){
         	root["cmd"] = "log";
 		}
 		root["type"] = "access";
@@ -150,7 +150,7 @@ void ICACHE_FLASH_ATTR getUserList(int todo) {
 			DynamicJsonBuffer jsonBuffer2;
 			JsonObject &json = jsonBuffer2.parseObject(buf.get());
 			if (json.success()) {
-			
+
 				if (mqttClient.connected()) {
 					String mqttBuffer;
 					json.printTo(mqttBuffer);
@@ -170,6 +170,21 @@ void DeleteAllUserFiles(){
 			String uid = dir.fileName();
 			uid.remove(0, 3);
 			SPIFFS.remove(dir.fileName());
+	}
+}
+
+void DeleteUserID(const char *uid){
+	// only do this if a user id has been provided
+	if ( uid ){
+		Dir dir = SPIFFS.openDir("/P/");
+		while (dir.next()) {
+				String user_id = dir.fileName();
+				String myuid = uid;
+				user_id.remove(0, 3);
+				if (myuid == user_id){
+					SPIFFS.remove(dir.fileName());
+				}
+		}
 	}
 }
 
@@ -194,8 +209,8 @@ void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties 
 		return;
 	}
 
-	// Check if IP was send with command because we only 
-	// accept commands for this where sended IP is equal to device IP
+	// Check if IP was send with command because we only
+	// accept commands for this where sent IP is equal to device IP
 	if (root.containsKey("doorip")){
 		const char *ipadr = root["doorip"];
 
@@ -212,9 +227,9 @@ void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties 
 	else{
 		return;
 	}
-	
+
 	////////////////////////////////////////////////////////////
-  	// CASE FOR MQTT 
+  	// CASE FOR MQTT
   	////////////////////////////////////////////////////////////
 	const char *command = root["cmd"];
 	// Check whatever the command is and act accordingly
@@ -252,6 +267,15 @@ void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties 
 		return;
 	}
 
+	else if (strcmp(command, "deletuid") == 0){
+		#ifdef DEBUG
+			Serial.println("[ INFO ] Delete a single user by uid");
+		#endif
+		const char *uid = root["uid"];
+		DeleteUserID(uid);
+		return;
+	}
+
 	else if (strcmp(command, "adduser") == 0){
 
 		#ifdef DEBUG
@@ -273,8 +297,6 @@ void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties 
 	}
 	return;
 }
-
-
 
 
 void onMqttSubscribe(uint16_t packetId, uint8_t qos) {
@@ -300,11 +322,11 @@ void onMqttConnect(bool sessionPresent) {
 	mqtt_publish_boot(now(), WiFi.SSID(), WiFi.localIP().toString());
 
 	uint16_t packetIdSub = mqttClient.subscribe(mqttTopic, 2);
-	
+
 	#ifdef DEBUG
 		Serial.print("[ INFO ] Subscribing at QoS 2, packetId: ");
   		Serial.println(packetIdSub);
 	#endif
-  	
+
 
 }

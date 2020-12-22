@@ -100,6 +100,18 @@ JSON command format:
 }
 ```
 
+### deletuid
+Delete a single User by UID over `TOPIC`.
+
+JSON command format:
+```
+{
+     cmd:'deletuid',
+     doorip:'(The ESP-RFID IP address as String)',
+     uid:'(The UID of the user to delete as String)'
+}
+```
+
 ### deletusers
 Delete all User SPIF files over `TOPIC`.
 
@@ -118,7 +130,7 @@ JSON command format:
 ```
 {
      cmd:'adduser',
-     doorip:'(The ESP-RFID IP address as String)'
+     doorip:'(The ESP-RFID IP address as String)',
      uid: '(The PIN as String)',
      user: '(User Name as String)',
      acctype: 1,
