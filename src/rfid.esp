@@ -357,6 +357,11 @@ void ICACHE_FLASH_ATTR rfidloop()
 				{
 					mqtt_publish_access(now(), "true", "Disabled", username, uid);
 				}
+				if (accessdeniedpin != 255)
+				{
+					accessdeniedOffTime = currentMillis + 1000;
+					digitalWrite(accessdeniedpin, HIGH);
+				}
 			}
 			writeLatest(uid, username, AccType);
 			DynamicJsonBuffer jsonBuffer2;
@@ -410,6 +415,11 @@ void ICACHE_FLASH_ATTR rfidloop()
 		if (mqttenabled == 1)
 		{
 			mqtt_publish_access(now(), "false", "Denied", "Unknown", uid);
+		}
+		if (accessdeniedpin != 255)
+		{
+			accessdeniedOffTime = currentMillis + 1000;
+			digitalWrite(accessdeniedpin, HIGH);
 		}
 	}
 }
