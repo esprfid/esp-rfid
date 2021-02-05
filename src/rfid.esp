@@ -312,7 +312,9 @@ void ICACHE_FLASH_ATTR rfidloop()
 				else
 					Serial.print(username);
 #endif
-				if (AccType == ACCESS_GRANTED)
+				int hourTz = hour() + timeZone;
+				bool officeHour = hourTz >= 16 && hourTz < 20 && weekday() != 1  && weekday() != 7;
+				if (AccType == ACCESS_GRANTED && officeHour)
 				{
 					unsigned long validL = json["validuntil"];
 					unsigned long nowL = now();
