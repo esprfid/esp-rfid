@@ -195,7 +195,7 @@ JSON format:
 {
   "type":"access",
   "time":1605991375,
-  "isknown":"true",
+  "isKnown":"true",
   "access":"the access state",
   "username":"username",
   "uid":"token UID",
@@ -209,7 +209,7 @@ JSON format:
 {
   "type":"access",
   "time":1605991375,
-  "isknown":"false",
+  "isKnown":"false",
   "access":"Denied",
   "username":"Unknown",
   "uid":"token UID",
