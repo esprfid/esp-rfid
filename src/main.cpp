@@ -121,6 +121,9 @@ uint8_t openlockpin = 255;
 uint8_t doorbellpin = 255;
 uint8_t lastDoorbellState = 0;
 
+uint8_t accessdeniedpin = 255;
+unsigned long accessdeniedOffTime = 0;
+
 #define LEDoff HIGH
 #define LEDon LOW
 
@@ -279,6 +282,11 @@ void ICACHE_RAM_ATTR loop()
 		{
 			if (!(digitalRead(wifipin)==LEDon)) digitalWrite(wifipin, LEDon);
 		}
+	}
+
+	if (accessdeniedpin != 255 && digitalRead(accessdeniedpin)==HIGH && currentMillis > accessdeniedOffTime)
+	{
+		digitalWrite(accessdeniedpin, LOW);
 	}
 
 	if (doorstatpin != 255)

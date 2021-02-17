@@ -147,6 +147,7 @@ function listhardware() {
   document.getElementById("doorstatpin").value = config.hardware.doorstatpin;
   document.getElementById("doorbellpin").value = config.hardware.doorbellpin;
   document.getElementById("openlockpin").value = config.hardware.openlockpin;
+  document.getElementById("accessdeniedpin").value = config.hardware.accessdeniedpin;
   if (isOfficialBoard) {
     document.getElementById("readertype").value = 1;
     document.getElementById("wg0pin").value = 5;
@@ -226,6 +227,7 @@ function savehardware() {
   config.hardware.doorstatpin = parseInt(document.getElementById("doorstatpin").value);
   config.hardware.doorbellpin = parseInt(document.getElementById("doorbellpin").value);
   config.hardware.openlockpin = parseInt(document.getElementById("openlockpin").value);
+  config.hardware.accessdeniedpin = parseInt(document.getElementById("accessdeniedpin").value);
   config.hardware["numrelays"] = numRelays; 
 
   for (var i = 2; i<=numRelays; i++)
@@ -1424,6 +1426,7 @@ function socketMessageListener(evt) {
         if (!('wifipin' in config.hardware)) config.hardware.wifipin = 255;
         if (!('doorstatpin' in config.hardware)) config.hardware.doorstatpin = 255;
         if (!('doorbellpin' in config.hardware)) config.hardware.doorbellpin = 255;
+        if (!('accessdeniedpin' in config.hardware)) config.hardware.accessdeniedpin = 255;
         if ('numrelays' in config.hardware) numRelays = config.hardware["numrelays"]; else config.hardware["numrelays"] = numRelays;
         break;
       default:

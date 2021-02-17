@@ -61,6 +61,16 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 		}
 	}
 
+	if (hardware.containsKey("accessdeniedpin"))
+	{
+		accessdeniedpin = hardware["accessdeniedpin"];
+		if (accessdeniedpin!=255)
+		{
+			pinMode(accessdeniedpin, OUTPUT);
+			digitalWrite(accessdeniedpin, LOW);
+		}
+	}
+
 	if (hardware.containsKey("openlockpin"))
 	{
 		openlockpin = hardware["openlockpin"];
