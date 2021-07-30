@@ -1,6 +1,7 @@
 void extern mqtt_publish_event(JsonObject *root);
 
-void ICACHE_FLASH_ATTR writeEvent(String type, String src, String desc, String data) {
+void ICACHE_FLASH_ATTR writeEvent(String type, String src, String desc, String data)
+{
 	DynamicJsonBuffer jsonBuffer;
 	JsonObject &root = jsonBuffer.createObject();
 	root["type"] = type;
@@ -8,33 +9,38 @@ void ICACHE_FLASH_ATTR writeEvent(String type, String src, String desc, String d
 	root["desc"] = desc;
 	root["data"] = data;
 	root["time"] = now();
-	if ((mqttEvents) && (mqttEnabled==1)){  // log to MQTT
+	if ((mqttEvents) && (mqttEnabled == 1)) // log to MQTT
+	{
 		root["cmd"] = "event";
-		root["door"] = deviceHostname;																																																																					
+		root["door"] = deviceHostname;
 		mqtt_publish_event(&root);
 	}
-	else  // log to file
+	else // log to file
 	{
 		File eventlog = SPIFFS.open("/eventlog.json", "a");
 		root.printTo(eventlog);
 		eventlog.print("\n");
 		eventlog.close();
 	}
+#ifdef DEBUG
+	Serial.println("[ " + type + " ] " + src + " | " + desc);
+#endif
 }
 
-
-void ICACHE_FLASH_ATTR writeLatest(String uid, String username, int acctype) {
+void ICACHE_FLASH_ATTR writeLatest(String uid, String username, int acctype)
+{
 	DynamicJsonBuffer jsonBuffer;
 	JsonObject &root = jsonBuffer.createObject();
 	root["uid"] = uid;
 	root["username"] = username;
 	root["acctype"] = acctype;
 	root["timestamp"] = now();
-	if ((mqttEvents) && (mqttEnabled==1)){  // log to MQTT
-        //root["cmd"] = "access";
+	if ((mqttEvents) && (mqttEnabled == 1))
+	{	// log to MQTT
+		//root["cmd"] = "access";
 		//mqtt_publish_event(&root);
 	}
-	else  // log to file
+	else // log to file
 	{
 		File latestlog = SPIFFS.open("/latestlog.json", "a");
 		root.printTo(latestlog);
@@ -43,24 +49,28 @@ void ICACHE_FLASH_ATTR writeLatest(String uid, String username, int acctype) {
 	}
 }
 
-size_t lastPos;   // position counter for fast seek
+size_t lastPos; // position counter for fast seek
 #define LOGTYPE_LATESTLOG 0
-#define LOGTYPE_EVENTLOG  1
+#define LOGTYPE_EVENTLOG 1
 #define ITEMS_PER_PAGE 10
 #define FILES_PER_PAGE 10.0
-#define MIN_SPIFF_BYTES 4096 
+#define MIN_SPIFF_BYTES 4096
 
-void ICACHE_FLASH_ATTR sendLogFile(int page,String fileName,int logFileType) {
+void ICACHE_FLASH_ATTR sendLogFile(int page, String fileName, int logFileType)
+{
 
 	// if we are reading the first page then we reset
-	// the position counter 
+	// the position counter
 
-	if (page ==1) lastPos=0;
+	if (page == 1)
+		lastPos = 0;
 	float pages;
 	DynamicJsonBuffer jsonBuffer;
 	JsonObject &root = jsonBuffer.createObject();
-	if (logFileType == LOGTYPE_EVENTLOG) root["command"] = "eventlist";
-	if (logFileType == LOGTYPE_LATESTLOG) root["command"] = "latestlist";
+	if (logFileType == LOGTYPE_EVENTLOG)
+		root["command"] = "eventlist";
+	if (logFileType == LOGTYPE_LATESTLOG)
+		root["command"] = "latestlist";
 	root["page"] = page;
 	JsonArray &items = root.createNestedArray("list");
 
@@ -77,9 +87,9 @@ void ICACHE_FLASH_ATTR sendLogFile(int page,String fileName,int logFileType) {
 	// move the file pointer to the last known position
 
 	logFile.seek(lastPos);
-	int numLines=0;
+	int numLines = 0;
 
-	// read in 10 lines or until EOF whatever happens first 
+	// read in 10 lines or until EOF whatever happens first
 
 	while (logFile.available() && (numLines < ITEMS_PER_PAGE))
 	{
@@ -98,45 +108,48 @@ void ICACHE_FLASH_ATTR sendLogFile(int page,String fileName,int logFileType) {
 	if (logFile.available()) // tell bootstrap footable on the client side that there are more pages to come
 	{
 		float bytesPerPageRoughly = (lastPos / page);
-		float totalPagesRoughly = logFile.size () / bytesPerPageRoughly;
-		pages= totalPagesRoughly <= page ? page + 1 : totalPagesRoughly ; 
+		float totalPagesRoughly = logFile.size() / bytesPerPageRoughly;
+		pages = totalPagesRoughly <= page ? page + 1 : totalPagesRoughly;
 	}
-	else pages=page; // this was the last page
+	else
+		pages = page; // this was the last page
 
 	logFile.close();
 	root["haspages"] = ceil(pages);
 	size_t len = root.measureLength();
 	AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
-	if (buffer) {
+	if (buffer)
+	{
 		root.printTo((char *)buffer->get(), len + 1);
 		ws.textAll(buffer);
-		if (logFileType == LOGTYPE_EVENTLOG) ws.textAll("{\"command\":\"result\",\"resultof\":\"eventlist\",\"result\": true}");
-		if (logFileType == LOGTYPE_LATESTLOG) ws.textAll("{\"command\":\"result\",\"resultof\":\"latestlist\",\"result\": true}");
-		
+		if (logFileType == LOGTYPE_EVENTLOG)
+			ws.textAll("{\"command\":\"result\",\"resultof\":\"eventlist\",\"result\": true}");
+		if (logFileType == LOGTYPE_LATESTLOG)
+			ws.textAll("{\"command\":\"result\",\"resultof\":\"latestlist\",\"result\": true}");
 	}
 }
 
 void ICACHE_FLASH_ATTR logMaintenance(String action, String filename)
 {
-	#ifdef DEBUG
-		Serial.printf("[DEBUG] Log Maintenance Action: %s on %s\n",action.c_str(),filename.c_str());
-	#endif
-
+#ifdef DEBUG
+	Serial.printf("[DEBUG] Log Maintenance Action: %s on %s\n", action.c_str(), filename.c_str());
+#endif
 
 	// delete a file
 
-	if (action == "delete") 
+	if (action == "delete")
 	{
-		SPIFFS.remove (filename);
+		SPIFFS.remove(filename);
 	}
 
-	// rollover a file, i.e. rename 
+	// rollover a file, i.e. rename
 
 	if (action == "rollover")
 	{
-  		size_t rolloverExtension = 1;
-		while (SPIFFS.exists (filename + "." + rolloverExtension)) rolloverExtension++;
-		SPIFFS.rename(filename,filename + "." + rolloverExtension);
+		size_t rolloverExtension = 1;
+		while (SPIFFS.exists(filename + "." + rolloverExtension))
+			rolloverExtension++;
+		SPIFFS.rename(filename, filename + "." + rolloverExtension);
 	}
 
 	// split a file, i.e. create two new files of roughly the same size
@@ -145,9 +158,11 @@ void ICACHE_FLASH_ATTR logMaintenance(String action, String filename)
 	if (action == "split")
 	{
 		size_t rolloverExtension1 = 1;
-		while (SPIFFS.exists (filename + ".split." + rolloverExtension1)) rolloverExtension1++;
-		size_t rolloverExtension2 = rolloverExtension1+1;
-		while (SPIFFS.exists (filename + ".split." + rolloverExtension2)) rolloverExtension2++;
+		while (SPIFFS.exists(filename + ".split." + rolloverExtension1))
+			rolloverExtension1++;
+		size_t rolloverExtension2 = rolloverExtension1 + 1;
+		while (SPIFFS.exists(filename + ".split." + rolloverExtension2))
+			rolloverExtension2++;
 
 		File logFile = SPIFFS.open(filename, "r");
 		File newFile1 = SPIFFS.open(filename + ".split." + rolloverExtension1, "w");
@@ -179,7 +194,7 @@ void ICACHE_FLASH_ATTR logMaintenance(String action, String filename)
 			// read the first half of the file
 
 			while (logFile.available() && logFile.position() < truncatePosition)
-			{	
+			{
 				String item = String();
 				item = logFile.readStringUntil('\n');
 				newFile1.println(item);
@@ -188,8 +203,8 @@ void ICACHE_FLASH_ATTR logMaintenance(String action, String filename)
 
 			// read the rest
 
-			while (logFile.available() )
-			{	
+			while (logFile.available())
+			{
 				String item = String();
 				item = logFile.readStringUntil('\n');
 				newFile2.println(item);
@@ -200,15 +215,14 @@ void ICACHE_FLASH_ATTR logMaintenance(String action, String filename)
 			newFile1.close();
 			newFile2.close();
 		}
-
 	}
 
 	ESP.wdtEnable(5000);
 	ws.textAll("{\"command\":\"result\",\"resultof\":\"logfileMaintenance\",\"result\": true}");
-
 }
 
-void ICACHE_FLASH_ATTR sendFileList(int page) {
+void ICACHE_FLASH_ATTR sendFileList(int page)
+{
 
 	DynamicJsonBuffer jsonBuffer;
 	JsonObject &root = jsonBuffer.createObject();
@@ -218,32 +232,33 @@ void ICACHE_FLASH_ATTR sendFileList(int page) {
 
 	size_t first = (page - 1) * FILES_PER_PAGE;
 	size_t last = page * FILES_PER_PAGE;
-	size_t numFiles=0;
+	size_t numFiles = 0;
 
 	Dir dir = SPIFFS.openDir("/");
-	while (dir.next()) {
+	while (dir.next())
+	{
 
-	//	if (dir.isFile()) // isFile is implemented in Arduino Core 2.5.1 - We'll have to wait for the ISR not in IRAM fix
+		//	if (dir.isFile()) // isFile is implemented in Arduino Core 2.5.1 - We'll have to wait for the ISR not in IRAM fix
 
 		String thisFileName = dir.fileName();
-		if ( (thisFileName.indexOf("latestlog") >= 0) || (thisFileName.indexOf("eventlog") >= 0) ) // for the time being we just check filenames 
+		if ((thisFileName.indexOf("latestlog") >= 0) || (thisFileName.indexOf("eventlog") >= 0)) // for the time being we just check filenames
 		{
 			if (numFiles >= first && numFiles < last)
-			{ 
+			{
 				JsonObject &item = items.createNestedObject();
 				item["filename"] = dir.fileName();
 				item["filesize"] = dir.fileSize();
-			}  // first, last
+			} // first, last
 			numFiles++;
-		}	// isFile
-	} // dir next
+		} // isFile
+	}	  // dir next
 
 	float pages = numFiles / FILES_PER_PAGE;
 	root["haspages"] = ceil(pages);
 
 	size_t len = root.measureLength();
 	AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
-	if (buffer) 
+	if (buffer)
 	{
 		root.printTo((char *)buffer->get(), len + 1);
 		ws.textAll(buffer);
@@ -251,12 +266,16 @@ void ICACHE_FLASH_ATTR sendFileList(int page) {
 	}
 }
 
-void ICACHE_FLASH_ATTR sendEventLog(int page,String fileName) {
-	if (fileName.length() == 0 ) fileName = "/eventlog.json";
-	sendLogFile(page,fileName,LOGTYPE_EVENTLOG);
+void ICACHE_FLASH_ATTR sendEventLog(int page, String fileName)
+{
+	if (fileName.length() == 0)
+		fileName = "/eventlog.json";
+	sendLogFile(page, fileName, LOGTYPE_EVENTLOG);
 }
 
-void ICACHE_FLASH_ATTR sendLatestLog(int page, String fileName) {
-	if (fileName.length() == 0 ) fileName = "/latestlog.json";
-	sendLogFile(page,fileName,LOGTYPE_LATESTLOG);
+void ICACHE_FLASH_ATTR sendLatestLog(int page, String fileName)
+{
+	if (fileName.length() == 0)
+		fileName = "/latestlog.json";
+	sendLogFile(page, fileName, LOGTYPE_LATESTLOG);
 }

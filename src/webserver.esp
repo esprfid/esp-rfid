@@ -15,9 +15,6 @@ void ICACHE_FLASH_ATTR setupWebServer() {
 		}
 		if (!index) {
 			writeEvent("INFO", "updt", "Firmware update started", filename.c_str());
-#ifdef DEBUG
-			Serial.printf("[ UPDT ] Firmware update started: %s\n", filename.c_str());
-#endif
 			Update.runAsync(true);
 			if (!Update.begin((ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000)) {
 				writeEvent("ERRO", "updt", "Not enough space to update","");

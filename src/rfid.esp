@@ -53,7 +53,7 @@ void ICACHE_FLASH_ATTR rfidloop()
 			// for the next key unless * or # have been pressed
 			// we do not require * as the first character because some
 			// readers use this as special admin code and would hence require *#PIN#
-			if (wg.getWiegandType() == WIEGANDTYPE_KEYPRESS /*  && keyTimer > 0 */ && String(wg.getCode(), HEX) != "d"  && String(wg.getCode(), HEX) != "1b")
+			if (wg.getWiegandType() == WIEGANDTYPE_KEYPRESS /*  && keyTimer > 0 */ && String(wg.getCode(), HEX) != "d" && String(wg.getCode(), HEX) != "1b")
 			{
 #ifdef DEBUG
 				Serial.println("Keycode captured. . .");
@@ -62,7 +62,7 @@ void ICACHE_FLASH_ATTR rfidloop()
 				keyTimer = millis();
 			}
 			// When # is pressed stop keytimer to capture code
- 			if (wg.getWiegandType() ==  WIEGANDTYPE_KEYPRESS && keyTimer > 0 && String(wg.getCode(), HEX) == "d")
+			if (wg.getWiegandType() == WIEGANDTYPE_KEYPRESS && keyTimer > 0 && String(wg.getCode(), HEX) == "d")
 			{
 #ifdef DEBUG
 				Serial.println("Stop capture keycode . . .");
@@ -107,7 +107,6 @@ void ICACHE_FLASH_ATTR rfidloop()
 			delay(50);
 			return;
 		}
-
 	}
 	else if (readertype > READER_PN532)
 	{
@@ -218,7 +217,7 @@ void ICACHE_FLASH_ATTR rfidloop()
 		return;
 	}
 #endif
-	if (keyTimer >0) // we are still waiting for keycode to build up
+	if (keyTimer > 0) // we are still waiting for keycode to build up
 	{
 #ifdef DEBUG
 		Serial.println("[ INFO ] still waiting for keypress");
@@ -228,7 +227,7 @@ void ICACHE_FLASH_ATTR rfidloop()
 #ifdef OFFICIALBOARD
 	if (wg.available())
 	{
-		
+
 		// if we get 26 or 34 bit burst then we have a scanned PICC
 		if ((wg.getWiegandType() == WIEGANDTYPE_PICC26) || (wg.getWiegandType() == WIEGANDTYPE_PICC34))
 		{
@@ -245,7 +244,7 @@ void ICACHE_FLASH_ATTR rfidloop()
 		// for the next key unless * or # have been pressed
 		// we do not require * as the first character because some
 		// readers use this as special admin code and would hence require *#PIN#
-		if ((wg.getWiegandType() == WIEGANDTYPE_KEYPRESS) /*  && keyTimer > 0 */ && (String(wg.getCode(), HEX) != "d")  && (String(wg.getCode(), HEX) != "1b"))
+		if ((wg.getWiegandType() == WIEGANDTYPE_KEYPRESS) /*  && keyTimer > 0 */ && (String(wg.getCode(), HEX) != "d") && (String(wg.getCode(), HEX) != "1b"))
 		{
 #ifdef DEBUG
 			Serial.println("Keycode captured. . .");
@@ -254,7 +253,7 @@ void ICACHE_FLASH_ATTR rfidloop()
 			keyTimer = millis();
 		}
 		// When # is pressed stop keytimer to capture code
-		if ((wg.getWiegandType() ==  WIEGANDTYPE_KEYPRESS) && (keyTimer > 0) && (String(wg.getCode(), HEX) == "d"))
+		if ((wg.getWiegandType() == WIEGANDTYPE_KEYPRESS) && (keyTimer > 0) && (String(wg.getCode(), HEX) == "d"))
 		{
 #ifdef DEBUG
 			Serial.println("Stop capture keycode . . .");
@@ -287,99 +286,99 @@ void ICACHE_FLASH_ATTR rfidloop()
 		if (json.success())
 		{
 
-		  for (int currentRelay = 0; currentRelay < numRelays ; currentRelay++){
-
-			int AccType = ACCCESS_DENIED;
-  
-
-			String username = json["user"];
-			if (currentRelay == 0)
-			   AccType = json["acctype"];
-			else
-			   AccType = json["acctype"+String(currentRelay+1)];
-			
-#ifdef DEBUG
-			Serial.println(" = known PICC");
-			Serial.print("[ INFO ] User Name: ");
-			if (username == "undefined")
-				Serial.print(uid);
-			else
-				Serial.print(username);
-#endif
-			if (AccType == ACCESS_GRANTED)
+			for (int currentRelay = 0; currentRelay < numRelays; currentRelay++)
 			{
-				unsigned long validL = json["validuntil"];
-				unsigned long nowL = now();
 
-				if (validL > nowL)
+				int AccType = ACCCESS_DENIED;
+
+				String username = json["user"];
+				if (currentRelay == 0)
+					AccType = json["acctype"];
+				else
+					AccType = json["acctype" + String(currentRelay + 1)];
+
+#ifdef DEBUG
+				Serial.println(" = known PICC");
+				Serial.print("[ INFO ] User Name: ");
+				if (username == "undefined")
+					Serial.print(uid);
+				else
+					Serial.print(username);
+#endif
+				if (AccType == ACCESS_GRANTED)
 				{
+					unsigned long validL = json["validuntil"];
+					unsigned long nowL = now();
+
+					if (validL > nowL)
+					{
+						activateRelay[currentRelay] = true;
+						ws.textAll("{\"command\":\"giveAccess\"}");
+#ifdef DEBUG
+						Serial.printf(" has access relay %d\n", currentRelay);
+#endif
+						if (mqttEnabled)
+						{
+							mqtt_publish_access(now(), "true", "Always", username, uid);
+						}
+					}
+
+					else
+					{
+#ifdef DEBUG
+						Serial.println(" expired");
+#endif
+						if (mqttEnabled)
+						{
+							mqtt_publish_access(now(), "true", "Expired", username, uid);
+						}
+					}
+				}
+				else if (AccType == ACCESS_ADMIN)
+				{
+					doEnableWifi = true;
 					activateRelay[currentRelay] = true;
 					ws.textAll("{\"command\":\"giveAccess\"}");
 #ifdef DEBUG
-					Serial.printf(" has access relay %d\n",currentRelay);
+					Serial.println(" has admin access, enable wifi");
 #endif
 					if (mqttEnabled)
 					{
-						mqtt_publish_access(now(), "true", "Always", username, uid);
+						mqtt_publish_access(now(), "true", "Admin", username, uid);
 					}
 				}
-
 				else
 				{
 #ifdef DEBUG
-					Serial.println(" expired");
+					Serial.println(" does not have access");
 #endif
 					if (mqttEnabled)
 					{
-						mqtt_publish_access(now(), "true", "Expired", username, uid);
+						mqtt_publish_access(now(), "true", "Disabled", username, uid);
+					}
+					if (accessdeniedpin != 255)
+					{
+						accessdeniedOffTime = currentMillis + 1000;
+						digitalWrite(accessdeniedpin, HIGH);
 					}
 				}
-			}
-			else if (AccType == ACCESS_ADMIN)
-			{
-				doEnableWifi = true;
-				activateRelay[currentRelay] = true;
-				ws.textAll("{\"command\":\"giveAccess\"}");
-#ifdef DEBUG
-				Serial.println(" has admin access, enable wifi");
-#endif
-				if (mqttEnabled)
+				writeLatest(uid, username, AccType);
+				DynamicJsonBuffer jsonBuffer2;
+				JsonObject &root = jsonBuffer2.createObject();
+				root["command"] = "piccscan";
+				root["uid"] = uid;
+				root["type"] = type;
+				root["known"] = 1;
+				root["acctype"] = AccType;
+				root["user"] = username;
+				size_t len = root.measureLength();
+				AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
+				if (buffer)
 				{
-					mqtt_publish_access(now(), "true", "Admin", username, uid);
+					root.printTo((char *)buffer->get(), len + 1);
+					ws.textAll(buffer);
 				}
 			}
-			else
-			{
-#ifdef DEBUG
-				Serial.println(" does not have access");
-#endif
-				if (mqttEnabled)
-				{
-					mqtt_publish_access(now(), "true", "Disabled", username, uid);
-				}
-				if (accessdeniedpin != 255)
-				{
-					accessdeniedOffTime = currentMillis + 1000;
-					digitalWrite(accessdeniedpin, HIGH);
-				}
-			}
-			writeLatest(uid, username, AccType);
-			DynamicJsonBuffer jsonBuffer2;
-			JsonObject &root = jsonBuffer2.createObject();
-			root["command"] = "piccscan";
-			root["uid"] = uid;
-			root["type"] = type;
-			root["known"] = 1;
-			root["acctype"] = AccType;
-			root["user"] = username;
-			size_t len = root.measureLength();
-			AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
-			if (buffer)
-			{
-				root.printTo((char *)buffer->get(), len + 1);
-				ws.textAll(buffer);
-			}
-		  }
 		}
 		else
 		{
@@ -396,9 +395,6 @@ void ICACHE_FLASH_ATTR rfidloop()
 		data += " " + String(type);
 		writeEvent("WARN", "rfid", "Unknown rfid tag is scanned", data);
 		writeLatest(uid, "Unknown", 98);
-#ifdef DEBUG
-		Serial.println(" = unknown PICC");
-#endif
 		DynamicJsonBuffer jsonBuffer;
 		JsonObject &root = jsonBuffer.createObject();
 		root["command"] = "piccscan";

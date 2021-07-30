@@ -39,11 +39,6 @@ void ICACHE_FLASH_ATTR procMsg(AsyncWebSocketClient *client, size_t sz)
 			shouldReboot = true;
 			//ESP.restart();
 			writeEvent("INFO", "sys", "Config stored in the SPIFFS", String(len) + " bytes");
-#ifdef DEBUG
-			Serial.print(F("[ INFO ] Config stored in the SPIFFS ("));
-			Serial.print(len);
-			Serial.println(F(" bytes)"));
-#endif
 		}
 	}
 	else if (strcmp(command, "userlist") == 0)

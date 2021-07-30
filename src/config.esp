@@ -36,7 +36,7 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 	if (hardware.containsKey("wifipin"))
 	{
 		wifipin = hardware["wifipin"];
-		if (wifipin!=255)
+		if (wifipin != 255)
 		{
 			pinMode(wifipin, OUTPUT);
 			digitalWrite(wifipin, LEDoff);
@@ -46,7 +46,7 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 	if (hardware.containsKey("doorstatpin"))
 	{
 		doorstatpin = hardware["doorstatpin"];
-		if (doorstatpin!=255)
+		if (doorstatpin != 255)
 		{
 			pinMode(doorstatpin, INPUT);
 		}
@@ -55,7 +55,7 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 	if (hardware.containsKey("doorbellpin"))
 	{
 		doorbellpin = hardware["doorbellpin"];
-		if (doorbellpin!=255)
+		if (doorbellpin != 255)
 		{
 			pinMode(doorbellpin, INPUT);
 		}
@@ -64,7 +64,7 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 	if (hardware.containsKey("accessdeniedpin"))
 	{
 		accessdeniedpin = hardware["accessdeniedpin"];
-		if (accessdeniedpin!=255)
+		if (accessdeniedpin != 255)
 		{
 			pinMode(accessdeniedpin, OUTPUT);
 			digitalWrite(accessdeniedpin, LOW);
@@ -86,8 +86,8 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 	{
 		numRelays = hardware["numrelays"];
 	}
-	else numRelays=1;
-
+	else
+		numRelays = 1;
 
 #ifdef OFFICIALBOARD
 	setupWiegandReader(5, 4);
@@ -115,15 +115,17 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 		rfidss = hardware["sspin"];
 		setupPN532Reader(rfidss);
 	}
-	#ifndef DEBUG
-	if (readertype>2) Serial.begin(9600);
-	#endif
+#ifndef DEBUG
+	if (readertype > 2)
+		Serial.begin(9600);
+#endif
 #endif
 	autoRestartIntervalSeconds = general["restart"];
 	wifiTimeout = network["offtime"];
 	const char *bssidmac = network["bssid"];
-	byte bssid[6]={0,0,0,0,0,0};
-	if (strlen(bssidmac) > 0 ) parseBytes(bssidmac, ':', bssid, 6, 16);
+	byte bssid[6] = {0, 0, 0, 0, 0, 0};
+	if (strlen(bssidmac) > 0)
+		parseBytes(bssidmac, ':', bssid, 6, 16);
 	deviceHostname = strdup(general["hostnm"]);
 	WiFi.hostname(deviceHostname);
 	if (!MDNS.begin(deviceHostname))
@@ -137,7 +139,7 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 	int ntpinter = ntp["interval"];
 	timeZone = ntp["timezone"];
 	activateTime[0] = hardware["rtime"];
-	lockType[0]= hardware["ltype"];
+	lockType[0] = hardware["ltype"];
 	relayType[0] = hardware["rtype"];
 
 #ifndef OFFICIALBOARD
@@ -145,10 +147,11 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 	pinMode(relayPin[0], OUTPUT);
 	digitalWrite(relayPin[0], !relayType[0]);
 
-	for (int i = 1; i <numRelays ; i++){
-		JsonObject &relay = hardware["relay"+String((i+1))];
- 		activateTime[i] = relay["rtime"];
-		lockType[i]= relay["ltype"];
+	for (int i = 1; i < numRelays; i++)
+	{
+		JsonObject &relay = hardware["relay" + String((i + 1))];
+		activateTime[i] = relay["rtime"];
+		lockType[i] = relay["ltype"];
 		relayType[i] = relay["rtype"];
 		relayPin[i] = relay["rpin"];
 		pinMode(relayPin[i], OUTPUT);
@@ -225,7 +228,7 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 	writeEvent("INFO", "ntp", "Connecting NTP Server", ip);
 	*/
 	NTP.Ntp(ntpserver, timeZone, ntpinter * 60);
-	if (mqtt["enabled"]==1)
+	if (mqtt["enabled"] == 1)
 		mqttEnabled = true;
 	else
 		mqttEnabled = false;
@@ -248,25 +251,25 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 
 		interval = mqtt["syncrate"];
 
-		if (mqtt["mqttlog"]==1)
+		if (mqtt["mqttlog"] == 1)
 			mqttEvents = true;
 		else
 			mqttEvents = false;
 
-		if (mqtt["mqttha"]==1)
+		if (mqtt["mqttha"] == 1)
 			mqttHA = true;
 		else
 			mqttHA = false;
 
-		if (mqttHA) 
-		{	
-			String mtopic (mqttTopic);
+		if (mqttHA)
+		{
+			String mtopic(mqttTopic);
 			String topicString = mtopic + "/avty";
 			String payloadString = "offline";
 			topicLWT = strdup(topicString.c_str());
 			payloadLWT = strdup(payloadString.c_str());
 			mqttClient.setWill(topicLWT, 2, true, payloadLWT);
-		}		
+		}
 		mqttClient.setServer(mhs, mport);
 		mqttClient.setCredentials(muser, mpas);
 		mqttClient.onDisconnect(onMqttDisconnect);

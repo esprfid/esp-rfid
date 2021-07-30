@@ -44,6 +44,7 @@ public:
     String GetHexID();
     String GetDecID();
     String GetTagType();
+
 private:
     char *ulltostr(unsigned long long value, char *ptr, int base);
     void parse();
@@ -62,24 +63,24 @@ private:
     byte ix = 0;
     byte StartByte = 0x02;
     byte EndByte = 0x03;
-    typedef struct { 
+    typedef struct
+    {
         uint8_t itype;
-        char* stype;
+        char *stype;
     } typeDictionary;
 
-    const typeDictionary typeDict[12] {
-        {0x01, (char*)"MIFARE 1K"},
-        {0x02, (char*)"EM4100"},
-        {0x03, (char*)"MIFARE 4K"},
-        {0x10, (char*)"HID card"},
-        {0x11, (char*)"T5567"},
-        {0x20, (char*)"2G certificate"},
-        {0x21, (char*)"IS014443B"},
-        {0x22, (char*)"FELICA"},
-        {0x30, (char*)"15693 tag"},
-        {0x50, (char*)"CPU card"},
-        {0x51, (char*)"sector information"},
-        {0xFF, (char*)"keyboard data"}
-    };   
+    const typeDictionary typeDict[12]{
+        {0x01, (char *)"MIFARE 1K"},
+        {0x02, (char *)"EM4100"},
+        {0x03, (char *)"MIFARE 4K"},
+        {0x10, (char *)"HID card"},
+        {0x11, (char *)"T5567"},
+        {0x20, (char *)"2G certificate"},
+        {0x21, (char *)"IS014443B"},
+        {0x22, (char *)"FELICA"},
+        {0x30, (char *)"15693 tag"},
+        {0x50, (char *)"CPU card"},
+        {0x51, (char *)"sector information"},
+        {0xFF, (char *)"keyboard data"}};
 };
 #endif

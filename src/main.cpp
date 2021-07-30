@@ -39,9 +39,9 @@ SOFTWARE.
 #include <Bounce2.h>
 #include "magicnumbers.h"
 
- // #define DEBUG
+// #define DEBUG
 
-int numRelays=1;
+int numRelays = 1;
 
 #ifdef OFFICIALBOARD
 
@@ -49,8 +49,8 @@ int numRelays=1;
 
 WIEGAND wg;
 int relayPin[MAX_NUM_RELAYS] = {13};
-bool activateRelay [MAX_NUM_RELAYS]= {false};
-bool deactivateRelay [MAX_NUM_RELAYS]= {false};
+bool activateRelay[MAX_NUM_RELAYS] = {false};
+bool deactivateRelay[MAX_NUM_RELAYS] = {false};
 
 #endif
 
@@ -72,15 +72,14 @@ int readertype;
 // relay specific variables
 
 int relayPin[MAX_NUM_RELAYS];
-bool activateRelay [MAX_NUM_RELAYS]= {false,false,false,false};
-bool deactivateRelay [MAX_NUM_RELAYS]= {false,false,false,false};
+bool activateRelay[MAX_NUM_RELAYS] = {false, false, false, false};
+bool deactivateRelay[MAX_NUM_RELAYS] = {false, false, false, false};
 
 #endif
 
 int lockType[MAX_NUM_RELAYS];
 int relayType[MAX_NUM_RELAYS];
 unsigned long activateTime[MAX_NUM_RELAYS];
-
 
 // these are from vendors
 #include "webh/glyphicons-halflings-regular.woff.gz.h"
@@ -93,8 +92,9 @@ unsigned long activateTime[MAX_NUM_RELAYS];
 #include "webh/index.html.gz.h"
 
 #ifdef ESP8266
-extern "C" {
-	#include "user_interface.h"
+extern "C"
+{
+#include "user_interface.h"
 }
 #endif
 
@@ -123,6 +123,8 @@ uint8_t lastDoorbellState = 0;
 
 uint8_t accessdeniedpin = 255;
 unsigned long accessdeniedOffTime = 0;
+
+uint8_t lastTamperState = 0;
 
 #define LEDoff HIGH
 #define LEDon LOW
@@ -165,10 +167,10 @@ int timeZone;
 
 unsigned long nextbeat = 0;
 
-unsigned long interval 	= 180;  // Add to GUI & json config
-bool mqttEvents 		= false; // Sends events over MQTT disables SPIFFS file logging
+unsigned long interval = 180; // Add to GUI & json config
+bool mqttEvents = false;	  // Sends events over MQTT disables SPIFFS file logging
 
-bool mqttHA 			= false; // Sends events over simple MQTT topics and AutoDiscovery
+bool mqttHA = false; // Sends events over simple MQTT topics and AutoDiscovery
 
 #include "log.esp"
 #include "mqtt.esp"
@@ -205,7 +207,10 @@ void ICACHE_FLASH_ATTR setup()
 	Serial.printf("Flash real size: %u\n\n", realSize);
 	Serial.printf("Flash ide  size: %u\n", ideSize);
 	Serial.printf("Flash ide speed: %u\n", ESP.getFlashChipSpeed());
-	Serial.printf("Flash ide mode:  %s\n", (ideMode == FM_QIO ? "QIO" : ideMode == FM_QOUT ? "QOUT" : ideMode == FM_DIO ? "DIO" : ideMode == FM_DOUT ? "DOUT" : "UNKNOWN"));
+	Serial.printf("Flash ide mode:  %s\n", (ideMode == FM_QIO ? "QIO" : ideMode == FM_QOUT ? "QOUT"
+																	: ideMode == FM_DIO	   ? "DIO"
+																	: ideMode == FM_DOUT   ? "DOUT"
+																						   : "UNKNOWN"));
 	if (ideSize != realSize)
 	{
 		Serial.println("Flash Chip configuration wrong!\n");
@@ -218,16 +223,9 @@ void ICACHE_FLASH_ATTR setup()
 
 	if (!SPIFFS.begin())
 	{
-#ifdef DEBUG
-		Serial.print(F("[ WARN ] Formatting filesystem..."));
-#endif
 		if (SPIFFS.format())
 		{
 			writeEvent("WARN", "sys", "Filesystem formatted", "");
-
-#ifdef DEBUG
-			Serial.println(F(" completed!"));
-#endif
 		}
 		else
 		{
@@ -240,31 +238,35 @@ void ICACHE_FLASH_ATTR setup()
 	wifiDisconnectHandler = WiFi.onStationModeDisconnected(onWifiDisconnect);
 	wifiConnectHandler = WiFi.onStationModeConnected(onWifiConnect);
 	wifiOnStationModeGotIPHandler = WiFi.onStationModeGotIP(onWifiGotIP);
-	
+
 	configMode = loadConfiguration();
 	if (!configMode)
 	{
 		fallbacktoAPMode();
 		configMode = false;
 	}
-	else {
+	else
+	{
 		configMode = true;
 	}
 	setupWebServer();
 	writeEvent("INFO", "sys", "System setup completed, running", "");
-#ifdef DEBUG
-	Serial.print(F("[ INFO ] System setup completed, running"));
-#endif
-	if (mqttEnabled==1)
+	if (mqttEnabled == 1)
 	{
 		delay(1000);
-		 mqtt_publish_io("door", "OFF");
+		if (digitalRead(doorstatpin) == HIGH)
+			mqtt_publish_io("door", "OFF");
+		else
+			mqtt_publish_io("door", "ON");
 		delay(500);
-		 mqtt_publish_io("doorbell", "OFF");
+		if (digitalRead(doorbellpin) == HIGH)
+			mqtt_publish_io("doorbell", "ON");
+		else
+			mqtt_publish_io("doorbell", "OFF");
 		delay(500);
-		 mqtt_publish_io("lock", "LOCKED");
+		mqtt_publish_io("lock", "LOCKED");
 		delay(500);
-		if (mqttHA) 
+		if (mqttHA)
 		{
 			mqtt_publish_discovery();
 			mqtt_publish_avty();
@@ -282,9 +284,6 @@ void ICACHE_RAM_ATTR loop()
 	openLockButton.update();
 	if (openLockButton.fell())
 	{
-#ifdef DEBUG
-		Serial.println("Button has been pressed");
-#endif
 		writeLatest(" ", "Button", 1);
 		if (mqttEnabled)
 		{
@@ -305,11 +304,12 @@ void ICACHE_RAM_ATTR loop()
 		}
 		else
 		{
-			if (!(digitalRead(wifipin)==LEDon)) digitalWrite(wifipin, LEDon);
+			if (!(digitalRead(wifipin) == LEDon))
+				digitalWrite(wifipin, LEDon);
 		}
 	}
 
-	if (accessdeniedpin != 255 && digitalRead(accessdeniedpin)==HIGH && currentMillis > accessdeniedOffTime)
+	if (accessdeniedpin != 255 && digitalRead(accessdeniedpin) == HIGH && currentMillis > accessdeniedOffTime)
 	{
 		digitalWrite(accessdeniedpin, LOW);
 	}
@@ -331,80 +331,79 @@ void ICACHE_RAM_ATTR loop()
 		rfidloop();
 	}
 
-	// Continuous relay mode
-
-	for (int currentRelay = 0; currentRelay < numRelays ; currentRelay++){
-	  if (lockType[currentRelay] == LOCKTYPE_CONTINUOUS)
+	
+	for (int currentRelay = 0; currentRelay < numRelays; currentRelay++)
+	{
+		if (lockType[currentRelay] == LOCKTYPE_CONTINUOUS) // Continuous relay mode
 		{
-		if (activateRelay[currentRelay])
-		{
-			// currently OFF, need to switch ON
-			if (digitalRead(relayPin[currentRelay]) == !relayType[currentRelay])
+			if (activateRelay[currentRelay])
 			{
-			if ((mqttHA) && (mqttEnabled==1))
-			{
-				 mqtt_publish_io("lock", "LOCKED");
+				if (digitalRead(relayPin[currentRelay]) == !relayType[currentRelay]) // currently OFF, need to switch ON
+				{
+					if ((mqttHA) && (mqttEnabled == 1))
+					{
+						mqtt_publish_io("lock", "LOCKED");
+					}
+#ifdef DEBUG
+					Serial.print("mili : ");
+					Serial.println(millis());
+					Serial.printf("activating relay %d now\n", currentRelay);
+#endif
+					digitalWrite(relayPin[currentRelay], relayType[currentRelay]);
+				}
+				else // currently ON, need to switch OFF
+				{
+					if ((mqttHA) && (mqttEnabled == 1))
+					{
+						mqtt_publish_io("lock", "UNLOCKED");
+					}
+#ifdef DEBUG
+					Serial.print("mili : ");
+					Serial.println(millis());
+					Serial.printf("deactivating relay %d now\n", currentRelay);
+#endif
+					digitalWrite(relayPin[currentRelay], !relayType[currentRelay]);
+				}
+				activateRelay[currentRelay] = false;
 			}
+		}
+		else if (lockType[currentRelay] == LOCKTYPE_MOMENTARY) // Momentary relay mode
+		{
+			if (activateRelay[currentRelay])
+			{
+				if ((mqttHA) && (mqttEnabled == 1))
+				{
+					mqtt_publish_io("lock", "UNLOCKED");
+				}
 #ifdef DEBUG
 				Serial.print("mili : ");
 				Serial.println(millis());
-				Serial.printf("activating relay %d now\n",currentRelay);
+				Serial.printf("activating relay %d now\n", currentRelay);
 #endif
 				digitalWrite(relayPin[currentRelay], relayType[currentRelay]);
+				previousMillis = millis();
+				activateRelay[currentRelay] = false;
+				deactivateRelay[currentRelay] = true;
 			}
-			else	// currently ON, need to switch OFF
+			else if ((currentMillis - previousMillis >= activateTime[currentRelay]) && (deactivateRelay[currentRelay]))
 			{
-			if ((mqttHA) && (mqttEnabled==1))
-			{
-				 mqtt_publish_io("lock", "UNLOCKED");
-			}
+				if ((mqttHA) && (mqttEnabled == 1))
+				{
+					mqtt_publish_io("lock", "LOCKED");
+				}
 #ifdef DEBUG
+				Serial.println(currentMillis);
+				Serial.println(previousMillis);
+				Serial.println(activateTime[currentRelay]);
+				Serial.println(activateRelay[currentRelay]);
+				Serial.println("deactivate relay after this");
 				Serial.print("mili : ");
 				Serial.println(millis());
-				Serial.printf("deactivating relay %d now\n",currentRelay);
 #endif
 				digitalWrite(relayPin[currentRelay], !relayType[currentRelay]);
+				deactivateRelay[currentRelay] = false;
 			}
-			activateRelay[currentRelay] = false;
 		}
-	  }
-	  else if (lockType[currentRelay] == LOCKTYPE_MOMENTARY)	// momentary relay mode
-	  	{
-		if (activateRelay[currentRelay])
-		{
-		if ((mqttHA) && (mqttEnabled==1))
-		{
-			 mqtt_publish_io("lock", "UNLOCKED");
-		}
-#ifdef DEBUG
-			Serial.print("mili : ");
-			Serial.println(millis());
-			Serial.printf("activating relay %d now\n",currentRelay);
-#endif
-			digitalWrite(relayPin[currentRelay], relayType[currentRelay]);
-			previousMillis = millis();
-			activateRelay[currentRelay] = false;
-			deactivateRelay[currentRelay] = true;
-		}
-		else if ((currentMillis - previousMillis >= activateTime[currentRelay]) && (deactivateRelay[currentRelay]))
-		{
-		if ((mqttHA) && (mqttEnabled==1))
-		{
-			 mqtt_publish_io("lock", "LOCKED");
-		}
-#ifdef DEBUG
-			Serial.println(currentMillis);
-			Serial.println(previousMillis);
-			Serial.println(activateTime[currentRelay]);
-			Serial.println(activateRelay[currentRelay]);
-			Serial.println("deactivate relay after this");
-			Serial.print("mili : ");
-			Serial.println(millis());
-#endif
-			digitalWrite(relayPin[currentRelay], !relayType[currentRelay]);
-			deactivateRelay[currentRelay] = false;
-		}
-	  }
 	}
 	if (formatreq)
 	{
@@ -425,19 +424,13 @@ void ICACHE_RAM_ATTR loop()
 
 	if (autoRestartIntervalSeconds > 0 && uptime > autoRestartIntervalSeconds * 1000)
 	{
-		writeEvent("INFO", "sys", "System is going to reboot", "");
-#ifdef DEBUG
-		Serial.println(F("[ WARN ] Auto restarting..."));
-#endif
+		writeEvent("WARN", "sys", "Auto restarting...", "");
 		shouldReboot = true;
 	}
 
 	if (shouldReboot)
 	{
 		writeEvent("INFO", "sys", "System is going to reboot", "");
-#ifdef DEBUG
-		Serial.println(F("[ INFO ] Rebooting..."));
-#endif
 		ESP.restart();
 	}
 
@@ -494,5 +487,4 @@ void ICACHE_RAM_ATTR loop()
 		keyTimer = 0;
 		currentInput = "";
 	}
-
 }

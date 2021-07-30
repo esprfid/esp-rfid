@@ -1,11 +1,13 @@
 void wifiLedOn()
 {
-	if (wifipin!=255) digitalWrite(wifipin, LEDon);
+	if (wifipin != 255)
+		digitalWrite(wifipin, LEDon);
 }
 
 void wifiLedOff()
 {
-	if (wifipin!=255) digitalWrite(wifipin, LEDoff);
+	if (wifipin != 255)
+		digitalWrite(wifipin, LEDoff);
 }
 
 void onWifiConnect(const WiFiEventStationModeConnected &event)
@@ -25,8 +27,8 @@ void onWifiDisconnect(const WiFiEventStationModeDisconnected &event)
 #ifdef DEBUG
 		Serial.println(F("[ INFO ] WiFi STA Disconnected"));
 #endif
-	wifiFlag = false;
-	wifiLedOff();
+		wifiFlag = false;
+		wifiLedOff();
 	}
 }
 
@@ -49,7 +51,7 @@ bool ICACHE_FLASH_ATTR startAP(IPAddress apip, IPAddress apsubnet, int hid, cons
 	Serial.print(F("[ INFO ] Configuring access point... "));
 #endif
 
-  	WiFi.softAPConfig(apip, apip, apsubnet);
+	WiFi.softAPConfig(apip, apip, apsubnet);
 
 	bool success;
 	if (hid == 1)
@@ -68,7 +70,8 @@ bool ICACHE_FLASH_ATTR startAP(IPAddress apip, IPAddress apsubnet, int hid, cons
 	{
 		ESP.restart();
 	}
-	else wifiLedOn();
+	else
+		wifiLedOn();
 
 #ifdef DEBUG
 	IPAddress myIP = WiFi.softAPIP();
@@ -96,39 +99,45 @@ void ICACHE_FLASH_ATTR fallbacktoAPMode()
 	bool success;
 	success = WiFi.softAP(ssid);
 	isWifiConnected = success;
-	if (success){
-	wifiLedOn();
+	if (success)
+	{
+		wifiLedOn();
 	}
 }
 
 // Try to connect Wi-Fi
 bool ICACHE_FLASH_ATTR connectSTA(const char *ssid, const char *password, byte bssid[6])
 {
-	bool useSSID=false;
+	bool useSSID = false;
 #ifdef DEBUG
 	Serial.print(F("[ INFO ] Trying to connect WiFi: "));
 	Serial.println(ssid);
 	Serial.print(F("[ INFO ] WiFi BSSID: "));
 #endif
-	for (int i=0; i<6; i++) 
+	for (int i = 0; i < 6; i++)
 	{
 #ifdef DEBUG
 		Serial.print(bssid[i]);
-		if (i < 5 ) Serial.print(F(":")); else Serial.println();
+		if (i < 5)
+			Serial.print(F(":"));
+		else
+			Serial.println();
 #endif
-		if (bssid[i] != 0 ) useSSID = true;
+		if (bssid[i] != 0)
+			useSSID = true;
 	}
 	if (useSSID == true)
 	{
 #ifdef DEBUG
-	Serial.println(F("[ INFO ] BSSID locked"));
+		Serial.println(F("[ INFO ] BSSID locked"));
 #endif
 		WiFi.mode(WIFI_STA);
-		WiFi.begin(ssid, password,0,bssid);
-	} else 
+		WiFi.begin(ssid, password, 0, bssid);
+	}
+	else
 	{
 #ifdef DEBUG
-	Serial.println(F("[ INFO ] any BSSID"));
+		Serial.println(F("[ INFO ] any BSSID"));
 #endif
 		WiFi.persistent(false);
 		WiFi.mode(WIFI_STA);
@@ -144,9 +153,11 @@ bool ICACHE_FLASH_ATTR connectSTA(const char *ssid, const char *password, byte b
 			break;
 		}
 		delay(500);
-		if (wifipin!=255) digitalWrite(wifipin, !digitalRead(wifipin));
+		if (wifipin != 255)
+			digitalWrite(wifipin, !digitalRead(wifipin));
 #ifdef DEBUG
-		if (!wifiFlag) Serial.print(F("."));
+		if (!wifiFlag)
+			Serial.print(F("."));
 #endif
 	} while (millis() - now < timeout * 1000);
 	//} while ((millis() - now < timeout * 1000)||noAPfallback);
