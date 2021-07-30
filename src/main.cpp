@@ -22,7 +22,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
-#define VERSION "1.3.3"
+#define VERSION "1.3.5"
 
 #include "Arduino.h"
 #include <ESP8266WiFi.h>
@@ -152,11 +152,13 @@ unsigned long wifiTimeout = 0;
 unsigned long wiFiUptimeMillis = 0;
 char *deviceHostname = NULL;
 
-int mqttenabled = 0;
+int mqttEnabled = 0;
 char *mqttTopic = NULL;
 char *mhs = NULL;
 char *muser = NULL;
 char *mpas = NULL;
+char *topicLWT = NULL;
+char *payloadLWT = NULL;
 int mport;
 
 int timeZone;
@@ -166,6 +168,7 @@ unsigned long nextbeat = 0;
 unsigned long interval 	= 180;  // Add to GUI & json config
 bool mqttEvents 		= false; // Sends events over MQTT disables SPIFFS file logging
 
+bool mqttHA 			= false; // Sends events over simple MQTT topics and AutoDiscovery
 
 #include "log.esp"
 #include "mqtt.esp"
@@ -249,6 +252,24 @@ void ICACHE_FLASH_ATTR setup()
 	}
 	setupWebServer();
 	writeEvent("INFO", "sys", "System setup completed, running", "");
+#ifdef DEBUG
+	Serial.print(F("[ INFO ] System setup completed, running"));
+#endif
+	if (mqttEnabled==1)
+	{
+		delay(1000);
+		 mqtt_publish_io("door", "OFF");
+		delay(500);
+		 mqtt_publish_io("doorbell", "OFF");
+		delay(500);
+		 mqtt_publish_io("lock", "LOCKED");
+		delay(500);
+		if (mqttHA) 
+		{
+			mqtt_publish_discovery();
+			mqtt_publish_avty();
+		}
+	}
 }
 
 void ICACHE_RAM_ATTR loop()
@@ -264,7 +285,11 @@ void ICACHE_RAM_ATTR loop()
 #ifdef DEBUG
 		Serial.println("Button has been pressed");
 #endif
-		writeLatest("", "(used open/close button)", 1);
+		writeLatest(" ", "Button", 1);
+		if (mqttEnabled)
+		{
+			mqtt_publish_access(now(), "true", "Always", "Button", " ");
+		}
 		activateRelay[0] = true;
 	}
 
@@ -316,6 +341,10 @@ void ICACHE_RAM_ATTR loop()
 			// currently OFF, need to switch ON
 			if (digitalRead(relayPin[currentRelay]) == !relayType[currentRelay])
 			{
+			if ((mqttHA) && (mqttEnabled==1))
+			{
+				 mqtt_publish_io("lock", "LOCKED");
+			}
 #ifdef DEBUG
 				Serial.print("mili : ");
 				Serial.println(millis());
@@ -325,6 +354,10 @@ void ICACHE_RAM_ATTR loop()
 			}
 			else	// currently ON, need to switch OFF
 			{
+			if ((mqttHA) && (mqttEnabled==1))
+			{
+				 mqtt_publish_io("lock", "UNLOCKED");
+			}
 #ifdef DEBUG
 				Serial.print("mili : ");
 				Serial.println(millis());
@@ -336,9 +369,13 @@ void ICACHE_RAM_ATTR loop()
 		}
 	  }
 	  else if (lockType[currentRelay] == LOCKTYPE_MOMENTARY)	// momentary relay mode
-	  {
+	  	{
 		if (activateRelay[currentRelay])
 		{
+		if ((mqttHA) && (mqttEnabled==1))
+		{
+			 mqtt_publish_io("lock", "UNLOCKED");
+		}
 #ifdef DEBUG
 			Serial.print("mili : ");
 			Serial.println(millis());
@@ -351,6 +388,10 @@ void ICACHE_RAM_ATTR loop()
 		}
 		else if ((currentMillis - previousMillis >= activateTime[currentRelay]) && (deactivateRelay[currentRelay]))
 		{
+		if ((mqttHA) && (mqttEnabled==1))
+		{
+			 mqtt_publish_io("lock", "LOCKED");
+		}
 #ifdef DEBUG
 			Serial.println(currentMillis);
 			Serial.println(previousMillis);
@@ -428,13 +469,13 @@ void ICACHE_RAM_ATTR loop()
 		}
 	}
 
-	if (mqttenabled == 1)
+	if (mqttEnabled)
 	{
 		if (mqttClient.connected())
 		{
 			if ((unsigned)now() > nextbeat)
 			{
-				mqtt_publish_heartbeat(now());
+				mqtt_publish_heartbeat(now(), uptime);
 				nextbeat = (unsigned)now() + interval;
 #ifdef DEBUG
 				Serial.print("[ INFO ] Nextbeat=");

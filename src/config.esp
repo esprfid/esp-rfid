@@ -129,7 +129,7 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 	if (!MDNS.begin(deviceHostname))
 	{
 #ifdef DEBUG
-		Serial.println("[ WARN ]Error setting up MDNS responder!");
+		Serial.println("[ WARN ] Error setting up MDNS responder!");
 #endif
 	}
 	MDNS.addService("http", "tcp", 80);
@@ -225,8 +225,11 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 	writeEvent("INFO", "ntp", "Connecting NTP Server", ip);
 	*/
 	NTP.Ntp(ntpserver, timeZone, ntpinter * 60);
-	mqttenabled = mqtt["enabled"];
-	if (mqttenabled == 1)
+	if (mqtt["enabled"]==1)
+		mqttEnabled = true;
+	else
+		mqttEnabled = false;
+	if (mqttEnabled)
 	{
 #ifdef DEBUG
 		Serial.println("[ INFO ] Trying to setup MQTT");
@@ -250,8 +253,20 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 		else
 			mqttEvents = false;
 
+		if (mqtt["mqttha"]==1)
+			mqttHA = true;
+		else
+			mqttHA = false;
 
-		
+		if (mqttHA) 
+		{	
+			String mtopic (mqttTopic);
+			String topicString = mtopic + "/avty";
+			String payloadString = "offline";
+			topicLWT = strdup(topicString.c_str());
+			payloadLWT = strdup(payloadString.c_str());
+			mqttClient.setWill(topicLWT, 2, true, payloadLWT);
+		}		
 		mqttClient.setServer(mhs, mport);
 		mqttClient.setCredentials(muser, mpas);
 		mqttClient.onDisconnect(onMqttDisconnect);
@@ -259,6 +274,7 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 		mqttClient.onSubscribe(onMqttSubscribe);
 		mqttClient.onConnect(onMqttConnect);
 		mqttClient.onMessage(onMqttMessage);
+
 #ifdef DEBUG
 		Serial.println("[ INFO ] try to call mqttconnect ");
 #endif

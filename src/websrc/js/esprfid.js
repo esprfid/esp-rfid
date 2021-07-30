@@ -262,7 +262,7 @@ function savegeneral() {
 
 function savemqtt() {
     config.mqtt.enabled = 0;
-    if (parseInt($("input[name=\"mqttenabled\"]:checked").val()) === 1) {
+    if (parseInt($("input[name=\"mqttEnabled\"]:checked").val()) === 1) {
         config.mqtt.enabled = 1;
     }
     else{
@@ -280,6 +280,13 @@ function savemqtt() {
     }
     else{
         config.mqtt.mqttlog = 0;
+    } 
+    config.mqtt.mqttha = 0;
+    if (parseInt($("input[name=\"mqttha\"]:checked").val()) === 1) {
+        config.mqtt.mqttha = 1;
+    }
+    else{
+        config.mqtt.mqttha = 0;
     } 
     uncommited();
 }
@@ -486,7 +493,7 @@ function listgeneral() {
 
 function listmqtt() {
     if (config.mqtt.enabled === 1) {
-        $("input[name=\"mqttenabled\"][value=\"1\"]").prop("checked", true);
+        $("input[name=\"mqttEnabled\"][value=\"1\"]").prop("checked", true);
     }
     document.getElementById("mqtthost").value = config.mqtt.host;
     document.getElementById("mqttport").value = config.mqtt.port;
@@ -497,7 +504,10 @@ function listmqtt() {
     if (config.mqtt.mqttlog === 1) {
         $("input[name=\"mqttlog\"][value=\"1\"]").prop("checked", true);
     }
-   
+    if (config.mqtt.mqttha === 1) {
+      $("input[name=\"mqttha\"][value=\"1\"]").prop("checked", true);
+    }
+    
 }
 
 function savelogsettings() {

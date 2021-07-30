@@ -486,9 +486,9 @@
         <div class="col-xs-9">
             <form>
                 <label class="radio-inline">
-                    <input type="radio" value="1" name="mqttenabled">Enabled</label>
+                    <input type="radio" value="1" name="mqttEnabled">Enabled</label>
                 <label class="radio-inline">
-                    <input type="radio" value="0" name="mqttenabled" checked>Disabled</label>
+                    <input type="radio" value="0" name="mqttEnabled" checked>Disabled</label>
             </form>
         </div>
     </div>
@@ -540,6 +540,16 @@
             <form>
                 <label class="radio-inline"><input type="radio" value="1" name="mqttlog">Enabled</label>
                 <label class="radio-inline"><input type="radio" value="0" name="mqttlog" checked>Disabled</label>
+            </form>
+        </div>
+        <br> 
+    </div>
+    <div class="row form-group">    
+        <label class="col-xs-3">MQTT for Home Assistant<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Enable MQTT topics and discovery for Home Assistant"></i></label>
+        <div class="col-xs-9">
+            <form>
+                <label class="radio-inline"><input type="radio" value="1" name="mqttha">Enabled</label>
+                <label class="radio-inline"><input type="radio" value="0" name="mqttha" checked>Disabled</label>
             </form>
         </div>
         <br> 

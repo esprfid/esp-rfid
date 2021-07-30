@@ -9,6 +9,10 @@ void doorStatus(/* arguments */) {
   if ((digitalRead(doorstatpin) == HIGH) && (lastDoorState == 0))
   {
           writeEvent("INFO", "door", "Door Closed", "");
+          if ((mqttHA) && (mqttEnabled==1))
+          {
+             mqtt_publish_io("door", "OFF");
+          }
           #ifdef DEBUG
                 Serial.println("[ INFO ] Your Door is Closed");
           #endif
@@ -18,6 +22,10 @@ void doorStatus(/* arguments */) {
   if ((digitalRead(doorstatpin)== LOW) && (lastDoorState == 1))
   {
           writeEvent("INFO", "door", "Door Open", "");
+          if ((mqttHA) && (mqttEnabled==1))
+          {
+             mqtt_publish_io("door", "ON");
+          }
           #ifdef DEBUG
                 Serial.println("[ INFO ] Your Door is Open");
           #endif

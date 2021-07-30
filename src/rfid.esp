@@ -318,7 +318,7 @@ void ICACHE_FLASH_ATTR rfidloop()
 #ifdef DEBUG
 					Serial.printf(" has access relay %d\n",currentRelay);
 #endif
-					if (mqttenabled == 1)
+					if (mqttEnabled)
 					{
 						mqtt_publish_access(now(), "true", "Always", username, uid);
 					}
@@ -329,7 +329,7 @@ void ICACHE_FLASH_ATTR rfidloop()
 #ifdef DEBUG
 					Serial.println(" expired");
 #endif
-					if (mqttenabled == 1)
+					if (mqttEnabled)
 					{
 						mqtt_publish_access(now(), "true", "Expired", username, uid);
 					}
@@ -343,7 +343,7 @@ void ICACHE_FLASH_ATTR rfidloop()
 #ifdef DEBUG
 				Serial.println(" has admin access, enable wifi");
 #endif
-				if (mqttenabled == 1)
+				if (mqttEnabled)
 				{
 					mqtt_publish_access(now(), "true", "Admin", username, uid);
 				}
@@ -353,7 +353,7 @@ void ICACHE_FLASH_ATTR rfidloop()
 #ifdef DEBUG
 				Serial.println(" does not have access");
 #endif
-				if (mqttenabled == 1)
+				if (mqttEnabled)
 				{
 					mqtt_publish_access(now(), "true", "Disabled", username, uid);
 				}
@@ -412,7 +412,7 @@ void ICACHE_FLASH_ATTR rfidloop()
 			root.printTo((char *)buffer->get(), len + 1);
 			ws.textAll(buffer);
 		}
-		if (mqttenabled == 1)
+		if (mqttEnabled)
 		{
 			mqtt_publish_access(now(), "false", "Denied", "Unknown", uid);
 		}

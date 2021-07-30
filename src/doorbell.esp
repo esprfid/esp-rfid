@@ -5,6 +5,10 @@ void doorbellStatus() {
   if ((digitalRead(doorbellpin) == HIGH) && (lastDoorbellState == 0))
   {
           writeEvent("INFO", "doorbell", "Doorbell ringing", "");
+          if ((mqttHA) && (mqttEnabled==1)) 
+          {
+             mqtt_publish_io("doorbell", "ON");
+          }
           #ifdef DEBUG
                 Serial.println("[ INFO ] Your Doorbell is ringing");
           #endif
@@ -13,6 +17,10 @@ void doorbellStatus() {
 
   if ((digitalRead(doorbellpin)== LOW) && (lastDoorbellState == 1))
   {
+          if ((mqttHA) && (mqttEnabled==1)) 
+          {
+             mqtt_publish_io("doorbell", "OFF");
+          }
           #ifdef DEBUG
                 Serial.println("[ INFO ] Your Doorbell stopped ringing");
           #endif
