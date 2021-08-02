@@ -52,6 +52,17 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 		}
 	}
 
+	if (hardware.containsKey("maxOpenDoorTime"))
+	{
+		maxOpenDoorTime = hardware["maxOpenDoorTime"];
+		Serial.print("maxOpenDoorTime = ");
+		Serial.println(maxOpenDoorTime);
+		//if (doorstatpin != 255)
+		//{
+		//	pinMode(doorstatpin, INPUT);
+		//}
+	}
+
 	if (hardware.containsKey("doorbellpin"))
 	{
 		doorbellpin = hardware["doorbellpin"];

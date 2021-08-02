@@ -78,7 +78,7 @@ void mqtt_publish_discovery()
 	JsonObject &via = jsonBufferVia.createObject();
 	via["ids"] = WiFi.macAddress();
 
-	for (int i = 0; i < 5; i++)
+	for (int i = 0; i < 6; i++)
 	{
 		jsonBuffer.clear();
 		mqttBuffer = "";
@@ -160,6 +160,20 @@ void mqtt_publish_discovery()
 			user["icon"] = "mdi:human";
 			user["dev"] = via;
 			user.printTo(mqttBuffer);
+			break;
+		}
+		case 5:
+		{
+			JsonObject &tamper = jsonBuffer.createObject();
+			topic = "homeassistant/binary_sensor/" + deviceName + "/tamper/config";
+			tamper["name"] = "Door tamper";
+			tamper["uniq_id"] = deviceName + "/tamper";
+			tamper["stat_t"] = mtopic + "/io/tamper";
+			tamper["avty_t"] = mtopic + "/avty";
+			tamper["dev_cla"] = "safety";
+			//tamper["icon"] = "mdi:bell";
+			tamper["dev"] = via;
+			tamper.printTo(mqttBuffer);
 			break;
 		}
 		}

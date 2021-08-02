@@ -221,7 +221,7 @@
         </span>
     </div>
     <div class="row form-group">
-        <label class="col-xs-3">Door Status<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Choose &quot;Door Status&quot; pin"></i></label>
+        <label class="col-xs-3">Door Status Pin<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Choose &quot;Door Status&quot; pin"></i></label>
         <span class="col-xs-9 col-md-5">
               <select class="form-control input-sm" id="doorstatpin">
                 <option selected="selected" value="255">None</option>
@@ -239,7 +239,13 @@
         </span>
     </div>
     <div class="row form-group">
-        <label class="col-xs-3">Doorbell<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Choose &quot;Doorbell&quot; pin"></i></label>
+        <label class="col-xs-3">Max open time<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="If exceeded - the tamper is triggered. If set to zero - does not apply."></i></label>
+        <span class="col-xs-9 col-md-5">
+            <input class="form-control input-sm" value="0" placeholder="in seconds" id="maxOpenDoorTime" type="number" min="0" max="600">
+        </span>
+    </div>
+    <div class="row form-group">
+        <label class="col-xs-3">Doorbell Pin<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Choose &quot;Doorbell&quot; pin"></i></label>
         <span class="col-xs-9 col-md-5">
               <select class="form-control input-sm" id="doorbellpin">
                 <option selected="selected" value="255">None</option>

@@ -115,6 +115,7 @@ uint8_t wifipin = 255;
 
 uint8_t doorstatpin = 255;
 uint8_t lastDoorState = 0;
+uint8_t maxOpenDoorTime = 0;
 
 uint8_t openlockpin = 255;
 
@@ -133,6 +134,7 @@ uint8_t lastTamperState = 0;
 const char *http_username = "admin";
 char *http_pass = NULL;
 unsigned long previousMillis = 0;
+unsigned long openDoorMillis = 0;
 unsigned long previousLoopMillis = 0;
 unsigned long currentMillis = 0;
 unsigned long cooldown = 0;
@@ -331,7 +333,6 @@ void ICACHE_RAM_ATTR loop()
 		rfidloop();
 	}
 
-	
 	for (int currentRelay = 0; currentRelay < numRelays; currentRelay++)
 	{
 		if (lockType[currentRelay] == LOCKTYPE_CONTINUOUS) // Continuous relay mode
@@ -342,7 +343,7 @@ void ICACHE_RAM_ATTR loop()
 				{
 					if ((mqttHA) && (mqttEnabled == 1))
 					{
-						mqtt_publish_io("lock", "LOCKED");
+						mqtt_publish_io("lock", "UNLOCKED");
 					}
 #ifdef DEBUG
 					Serial.print("mili : ");
@@ -355,7 +356,7 @@ void ICACHE_RAM_ATTR loop()
 				{
 					if ((mqttHA) && (mqttEnabled == 1))
 					{
-						mqtt_publish_io("lock", "UNLOCKED");
+						mqtt_publish_io("lock", "LOCKED");
 					}
 #ifdef DEBUG
 					Serial.print("mili : ");

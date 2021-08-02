@@ -9,14 +9,17 @@ void doorStatus(/* arguments */)
   if ((digitalRead(doorstatpin) == HIGH) && (lastDoorState == 0))
   {
     writeEvent("INFO", "door", "Door Closed", "");
+    if (lastTamperState == 1)
+    {
+      lastTamperState = 0;
+      if ((mqttHA) && (mqttEnabled == 1))
+      {
+        mqtt_publish_io("tamper", "OFF");
+      }
+    }
     if ((mqttHA) && (mqttEnabled == 1))
     {
       mqtt_publish_io("door", "OFF");
-      if (lastTamperState == 1)
-      {
-        mqtt_publish_io("tamper", "OFF");
-        lastTamperState = 0;
-      }
     }
     lastDoorState = 1;
   }
@@ -27,11 +30,19 @@ void doorStatus(/* arguments */)
     if (digitalRead(relayPin[0]) == !relayType[0])
     {
       writeEvent("WARN", "tamper", "Door was tampered!", "");
+      lastTamperState = 1;
       if ((mqttHA) && (mqttEnabled == 1))
       {
-        lastTamperState = 1;
         mqtt_publish_io("tamper", "ON");
       }
+    }
+    else
+    {
+      openDoorMillis = currentMillis;
+#ifdef DEBUG
+      Serial.print("openDoorMillis : ");
+      Serial.println(openDoorMillis);
+#endif
     }
     if ((mqttHA) && (mqttEnabled == 1))
     {
@@ -39,4 +50,23 @@ void doorStatus(/* arguments */)
     }
     lastDoorState = 0;
   }
+  if ((lastDoorState == 0) && (lastTamperState == 0))
+	{
+		if (currentMillis - openDoorMillis >= maxOpenDoorTime*1000)
+		{
+#ifdef DEBUG
+      Serial.print("currentMillis : ");
+      Serial.println(currentMillis);
+      Serial.print("delta millis : ");
+      Serial.println(currentMillis - openDoorMillis);
+#endif
+
+			writeEvent("WARN", "tamper", "Door wasn't closed within max open time!", "");
+			lastTamperState = 1;
+			if ((mqttHA) && (mqttEnabled == 1))
+			{
+				mqtt_publish_io("tamper", "ON");
+			}
+		}
+	}
 }
