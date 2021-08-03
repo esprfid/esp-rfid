@@ -41,7 +41,11 @@ var config = {
         "ltype": 0,
         "rpin": 4,
         "rtime": 400,
-        "buttonpin": 255
+        "openlockpin": 255,
+        "doorbellpin": 255,
+        "accessdeniedpin": 255,
+        "doorstatpin": 255,
+        "maxOpenDoorTime": 0
     },
     "general": {
         "hostnm": "esp-rfid",
@@ -145,6 +149,7 @@ function listhardware() {
   document.getElementById("delay").value = config.hardware.rtime;
   document.getElementById("wifipin").value = config.hardware.wifipin;
   document.getElementById("doorstatpin").value = config.hardware.doorstatpin;
+  document.getElementById("maxOpenDoorTime").value = config.hardware.maxOpenDoorTime;
   document.getElementById("doorbellpin").value = config.hardware.doorbellpin;
   document.getElementById("openlockpin").value = config.hardware.openlockpin;
   document.getElementById("accessdeniedpin").value = config.hardware.accessdeniedpin;
@@ -225,6 +230,7 @@ function savehardware() {
   config.hardware.rtime = parseInt(document.getElementById("delay").value);
   config.hardware.wifipin = parseInt(document.getElementById("wifipin").value);
   config.hardware.doorstatpin = parseInt(document.getElementById("doorstatpin").value);
+  config.hardware.maxOpenDoorTime = parseInt(document.getElementById("maxOpenDoorTime").value);
   config.hardware.doorbellpin = parseInt(document.getElementById("doorbellpin").value);
   config.hardware.openlockpin = parseInt(document.getElementById("openlockpin").value);
   config.hardware.accessdeniedpin = parseInt(document.getElementById("accessdeniedpin").value);
@@ -262,7 +268,7 @@ function savegeneral() {
 
 function savemqtt() {
     config.mqtt.enabled = 0;
-    if (parseInt($("input[name=\"mqttenabled\"]:checked").val()) === 1) {
+    if (parseInt($("input[name=\"mqttEnabled\"]:checked").val()) === 1) {
         config.mqtt.enabled = 1;
     }
     else{
@@ -280,6 +286,13 @@ function savemqtt() {
     }
     else{
         config.mqtt.mqttlog = 0;
+    } 
+    config.mqtt.mqttha = 0;
+    if (parseInt($("input[name=\"mqttha\"]:checked").val()) === 1) {
+        config.mqtt.mqttha = 1;
+    }
+    else{
+        config.mqtt.mqttha = 0;
     } 
     uncommited();
 }
@@ -486,7 +499,7 @@ function listgeneral() {
 
 function listmqtt() {
     if (config.mqtt.enabled === 1) {
-        $("input[name=\"mqttenabled\"][value=\"1\"]").prop("checked", true);
+        $("input[name=\"mqttEnabled\"][value=\"1\"]").prop("checked", true);
     }
     document.getElementById("mqtthost").value = config.mqtt.host;
     document.getElementById("mqttport").value = config.mqtt.port;
@@ -497,7 +510,10 @@ function listmqtt() {
     if (config.mqtt.mqttlog === 1) {
         $("input[name=\"mqttlog\"][value=\"1\"]").prop("checked", true);
     }
-   
+    if (config.mqtt.mqttha === 1) {
+      $("input[name=\"mqttha\"][value=\"1\"]").prop("checked", true);
+    }
+    
 }
 
 function savelogsettings() {
@@ -1425,6 +1441,7 @@ function socketMessageListener(evt) {
         config = obj;
         if (!('wifipin' in config.hardware)) config.hardware.wifipin = 255;
         if (!('doorstatpin' in config.hardware)) config.hardware.doorstatpin = 255;
+        if (!('maxOpenDoorTime' in config.hardware)) config.hardware.maxOpenDoorTime = 0;
         if (!('doorbellpin' in config.hardware)) config.hardware.doorbellpin = 255;
         if (!('accessdeniedpin' in config.hardware)) config.hardware.accessdeniedpin = 255;
         if ('numrelays' in config.hardware) numRelays = config.hardware["numrelays"]; else config.hardware["numrelays"] = numRelays;

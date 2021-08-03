@@ -14,20 +14,21 @@
 
 #define NTP_PACKET_SIZE 48 // NTP time is in the first 48 bytes of message
 
-struct deviceUptime {
+struct deviceUptime
+{
 	long days;
 	long hours;
 	long mins;
 	long secs;
 };
 
-class NtpClient {
+class NtpClient
+{
 public:
-
-	void ICACHE_FLASH_ATTR Ntp(const char * server, int8_t tz, time_t syncSecs);
+	void ICACHE_FLASH_ATTR Ntp(const char *server, int8_t tz, time_t syncSecs);
 	ICACHE_FLASH_ATTR virtual ~NtpClient();
 
-	static char * TimeServerName;
+	static char *TimeServerName;
 	static IPAddress timeServer;
 	static int8_t timezone;
 	static time_t syncInterval;
