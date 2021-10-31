@@ -1,4 +1,3 @@
-#ifndef OFFICIALBOARD
 /**************************************************************************
     @file     PN532.cpp
     @author   Adafruit Industries, Elmü
@@ -1019,5 +1018,3 @@ byte PN532::SpiRead(void)
     }
     #endif
 }
-
-#endif

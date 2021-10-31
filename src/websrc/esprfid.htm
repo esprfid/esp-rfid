@@ -169,6 +169,7 @@
                     <option value="14">GPIO-14</option>
                     <option value="15">GPIO-15</option>
                     <option value="16">GPIO-16</option>
+                    <option value="21">GPIO-21</option>
                   </select>
                 </span>
         </div>
@@ -184,6 +185,7 @@
                     <option value="5">GPIO-5</option>
                     <option selected="selected" value="15">GPIO-15</option>
                     <option value="16">GPIO-16</option>
+                    <option value="21">GPIO-21</option>
                   </select>
                 </span>
         </div>
@@ -193,10 +195,10 @@
                   <select class="form-control input-sm" id="gain">
                     <option value="112">Max (48 db)</option>
                     <option value="96">43 db</option>
-                    <option value="48">38 db</option>
-                    <option selected="selected" value="32">Avg (33 db)</option>
-                    <option value="16">23 db</option>
-                    <option value="0">Min (18 db)</option>
+                    <option value="80">38 db</option>
+                    <option selected="selected" value="64">Avg (33 db)</option>
+                    <option value="48">23 db</option>
+                    <option value="32">Min (18 db)</option>
                   </select>
                 </span>
         </div>
@@ -244,12 +246,7 @@
                     <option value="15">GPIO-15</option>
                     <option value="16">GPIO-16</option>
                 </select>
-              </span>
-        <span class="col-xs-3">
-            <button id="testb" type="button" class="btn btn-primary btn-xs" onclick="testRelay()">Test</button><i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="left" data-content="Test previous relay setting. Keep in mind that this is actually triggers the relay."></i>
-        </span>
-    </div>
-    <div class="row form-group">
+              </span>rfidgain
         <label class="col-xs-3">Lock Type<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Use momentary method for door lock counterparts, and the continuous one for electromagnetic locks."></i></label>
         <span class="col-xs-9 col-md-5">
             <select class="form-control input-sm" id="lockType" onchange="handleLock();">

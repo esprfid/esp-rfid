@@ -1,26 +1,46 @@
-void ICACHE_FLASH_ATTR sendUserList(int page, AsyncWebSocketClient *client) {
-	DynamicJsonBuffer jsonBuffer;
-	JsonObject &root = jsonBuffer.createObject();
+void sendUserList(int page, AsyncWebSocketClient *client) {
+#ifdef DEBUG
+			Serial.print(F("[ INFO ] retrieve page = "));
+			Serial.println(1);
+#endif
+	DynamicJsonDocument root(1024);
 	root["command"] = "userlist";
 	root["page"] = page;
-	JsonArray &users = root.createNestedArray("list");
-	Dir dir = SPIFFS.openDir("/P/");
+	JsonArray users = root.createNestedArray("list");
 	int first = (page - 1) * 15;
 	int last = page * 15;
 	int i = 0;
-	while (dir.next()) {
+	File dir = SPIFFS.open("/P");
+#ifdef DEBUG
+	if (dir.isDirectory()) {
+			Serial.print(F("[ INFO ] /P is directory "));
+			Serial.println(dir.name());
+	}
+#endif
+	
+	while (File entry = dir.openNextFile()) {
+#ifdef DEBUG
+			Serial.print(F("[ INFO ] open file = "));
+			Serial.println(entry.name());
+#endif
 		if (i >= first && i < last) {
-			JsonObject &item = users.createNestedObject();
-			String uid = dir.fileName();
+			JsonObject item = users.createNestedObject();
+			String uid = entry.name();
 			uid.remove(0, 3);
 			item["uid"] = uid;
-			File f = SPIFFS.open(dir.fileName(), "r");
+			File f = SPIFFS.open(entry.name(), "r");
 			size_t size = f.size();
+#ifdef DEBUG
+			Serial.print(F("[ INFO ] open file = "));
+			Serial.print(entry.name());
+			Serial.print(F(" with size : "));
+			Serial.println(f.size());
+#endif
 			std::unique_ptr<char[]> buf(new char[size]);
 			f.readBytes(buf.get(), size);
-			DynamicJsonBuffer jsonBuffer2;
-			JsonObject &json = jsonBuffer2.parseObject(buf.get());
-			if (json.success()) {
+			DynamicJsonDocument json(1024);
+			DeserializationError error = deserializeJson(json, buf.get());
+			if (!error) {
 				String username = json["user"];
 				int AccType = json["acctype"];
 				unsigned long validuntil = json["validuntil"];
@@ -28,15 +48,20 @@ void ICACHE_FLASH_ATTR sendUserList(int page, AsyncWebSocketClient *client) {
 				item["acctype"] = AccType;
 				item["validuntil"] = validuntil;
 			}
+#ifdef DEBUG
+			else {
+				Serial.println(F("[ WARN ] Failed to parse file"));
+			}
+#endif
 		}
 		i++;
 	}
 	float pages = i / 15.0;
 	root["haspages"] = ceil(pages);
-	size_t len = root.measureLength();
+	size_t len = measureJson(root);
 	AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
 	if (buffer) {
-		root.printTo((char *)buffer->get(), len + 1);
+		serializeJson(root, (char *)buffer->get(), len + 1);
 		if (client) {
 			client->text(buffer);
 			client->text("{\"command\":\"result\",\"resultof\":\"userlist\",\"result\": true}");
@@ -46,62 +71,59 @@ void ICACHE_FLASH_ATTR sendUserList(int page, AsyncWebSocketClient *client) {
 	}
 }
 
-void ICACHE_FLASH_ATTR sendStatus() {
-	struct ip_info info;
-	FSInfo fsinfo;
-	if (!SPIFFS.info(fsinfo)) {
-#ifdef DEBUG
-		Serial.print(F("[ WARN ] Error getting info on SPIFFS"));
-#endif
-	}
-	DynamicJsonBuffer jsonBuffer;
-	JsonObject &root = jsonBuffer.createObject();
+void sendStatus() {
+//	fs_info fsinfo;
+//	if (!SPIFFS.info(fsinfo)) {
+// #ifdef DEBUG
+//		Serial.print(F("[ WARN ] Error getting info on SPIFFS"));
+// #endif
+//	}
+	DynamicJsonDocument root(1024);
 	root["command"] = "status";
-#ifdef OFFICIALBOARD
-	root["board"] = "brdV2";
-#endif
 	root["heap"] = ESP.getFreeHeap();
-	root["chipid"] = String(ESP.getChipId(), HEX);
+//	root["chipid"] = String(ESP.getChipId(), HEX);
 	root["cpu"] = ESP.getCpuFreqMHz();
 	root["sketchsize"] = ESP.getSketchSize();
 	root["availsize"] = ESP.getFreeSketchSpace();
-	root["availspiffs"] = fsinfo.totalBytes - fsinfo.usedBytes;
-	root["spiffssize"] = fsinfo.totalBytes;
+//	root["availspiffs"] = fsinfo.totalBytes - fsinfo.usedBytes;
+//	root["spiffssize"] = fsinfo.totalBytes;
 	root["uptime"] = NTP.getDeviceUptimeString();
 	root["version"] = VERSION;
 
 	if (inAPMode) {
-		wifi_get_ip_info(SOFTAP_IF, &info);
-		struct softap_config conf;
-		wifi_softap_get_config(&conf);
-		root["ssid"] = String(reinterpret_cast<char *>(conf.ssid));
+//		struct ip_info info;
+//		wifi_get_ip_info(SOFTAP_IF, &info);
+//		IPAddress myIP = WiFi.softAPIP();
+//		struct softap_config conf;
+//		wifi_softap_get_config(&conf);
+		root["ssid"] = String(WiFi.softAPSSID());
 		root["dns"] = printIP(WiFi.softAPIP());
 		root["mac"] = WiFi.softAPmacAddress();
 	} else {
-		wifi_get_ip_info(STATION_IF, &info);
-		struct station_config conf;
-		wifi_station_get_config(&conf);
-		root["ssid"] = String(reinterpret_cast<char *>(conf.ssid));
+//		wifi_get_ip_info(STATION_IF, &info);
+//		struct station_config conf;
+//		wifi_station_get_config(&conf);
+		root["ssid"] = String(WiFi.softAPSSID());
 		root["dns"] = printIP(WiFi.dnsIP());
 		root["mac"] = WiFi.macAddress();
 	}
 
-	IPAddress ipaddr = IPAddress(info.ip.addr);
-	IPAddress gwaddr = IPAddress(info.gw.addr);
-	IPAddress nmaddr = IPAddress(info.netmask.addr);
+	IPAddress ipaddr = WiFi.softAPIP();
+	IPAddress gwaddr = WiFi.softAPNetworkID();
+	IPAddress nmaddr = WiFi.softAPBroadcastIP();
 	root["ip"] = printIP(ipaddr);
 	root["gateway"] = printIP(gwaddr);
 	root["netmask"] = printIP(nmaddr);
 
-	size_t len = root.measureLength();
+	size_t len = measureJson(root);
 	AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
 	if (buffer) {
-		root.printTo((char *)buffer->get(), len + 1);
+		serializeJson(root, (char *)buffer->get(), len + 1);
 		ws.textAll(buffer);
 	}
 }
 
-void ICACHE_FLASH_ATTR printScanResult(int networksFound) {
+void printScanResult(int networksFound) {
 	// sort by RSSI
 	int n = networksFound;
 	int indices[n];
@@ -117,38 +139,36 @@ void ICACHE_FLASH_ATTR printScanResult(int networksFound) {
 			}
 		}
 	}
-	DynamicJsonBuffer jsonBuffer;
-	JsonObject &root = jsonBuffer.createObject();
+	DynamicJsonDocument root(1024);
 	root["command"] = "ssidlist";
-	JsonArray &scan = root.createNestedArray("list");
+	JsonArray scan = root.createNestedArray("list");
 	for (int i = 0; i < 5 && i < networksFound; ++i) {
-		JsonObject &item = scan.createNestedObject();
+		JsonObject item = scan.createNestedObject();
 		item["ssid"] = WiFi.SSID(indices[i]);
 		item["bssid"] = WiFi.BSSIDstr(indices[i]);
 		item["rssi"] = WiFi.RSSI(indices[i]);
 		item["channel"] = WiFi.channel(indices[i]);
 		item["enctype"] = WiFi.encryptionType(indices[i]);
-		item["hidden"] = WiFi.isHidden(indices[i]) ? true : false;
+//		item["hidden"] = WiFi.isHidden(indices[i]) ? true : false;
 	}
-	size_t len = root.measureLength();
+	size_t len = measureJson(root);
 	AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
 	if (buffer) {
-		root.printTo((char *)buffer->get(), len + 1);
+		serializeJson(root, (char *)buffer->get(), len + 1);
 		ws.textAll(buffer);
 	}
 	WiFi.scanDelete();
 }
 
 void ICACHE_FLASH_ATTR sendTime() {
-	DynamicJsonBuffer jsonBuffer;
-	JsonObject &root = jsonBuffer.createObject();
+	DynamicJsonDocument root(1024);
 	root["command"] = "gettime";
 	root["epoch"] = now();
 	root["timezone"] = timeZone;
-	size_t len = root.measureLength();
+	size_t len = measureJson(root);
 	AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
 	if (buffer) {
-		root.printTo((char *)buffer->get(), len + 1);
+		serializeJson(root, (char *)buffer->get(), len + 1);
 		ws.textAll(buffer);
 	}
 }

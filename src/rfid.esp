@@ -1,8 +1,8 @@
-void ICACHE_FLASH_ATTR rfidloop()
+void rfidloop()
 {
 	String uid = "";
 	String type = "";
-#ifndef OFFICIALBOARD
+
 	if (readerType == 0)
 	{
 		if (!mfrc522.PICC_IsNewCardPresent())
@@ -30,7 +30,7 @@ void ICACHE_FLASH_ATTR rfidloop()
 		MFRC522::PICC_Type piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
 		type = mfrc522.PICC_GetTypeName(piccType);
 #ifdef DEBUG
-		Serial.print(" " + type);
+		Serial.println(" " + type);
 #endif
 	}
 	else if (readerType == 1)
@@ -186,36 +186,27 @@ void ICACHE_FLASH_ATTR rfidloop()
 		delay(50);
 		return;
 	}
-#endif
-#ifdef OFFICIALBOARD
-	if (wg.available())
-	{
-#ifdef DEBUG
-		Serial.print(F("[ INFO ] PICC's UID: "));
-		Serial.print(wg.getCode());
-#endif
-		uid = String(wg.getCode(), DEC);
-		type = String(wg.getWiegandType(), HEX);
-		cooldown = millis() + 2000;
-	}
-	else
-	{
-		delay(50);
-		return;
-	}
-#endif
+
 	int AccType = 0;
 	String filename = "/P/";
 	filename += uid;
 	File f = SPIFFS.open(filename, "r");
-	if (f)
+#ifdef DEBUG
+	Serial.print(F("[ INFO ] Filename = "));
+	Serial.println(filename);
+#endif
+	if (f && f.size() != 0)
 	{
 		size_t size = f.size();
+#ifdef DEBUG
+	Serial.print(F("[ INFO ] Filename = "));
+	Serial.println(size);
+#endif
 		std::unique_ptr<char[]> buf(new char[size]);
 		f.readBytes(buf.get(), size);
-		DynamicJsonBuffer jsonBuffer;
-		JsonObject &json = jsonBuffer.parseObject(buf.get());
-		if (json.success())
+		DynamicJsonDocument json(1024);
+		DeserializationError error= deserializeJson(json, buf.get());
+		if (!error)
 		{
 			String username = json["user"];
 			AccType = json["acctype"];
@@ -281,19 +272,18 @@ void ICACHE_FLASH_ATTR rfidloop()
 				}
 			}
 			writeLatest(uid, username, AccType);
-			DynamicJsonBuffer jsonBuffer2;
-			JsonObject &root = jsonBuffer2.createObject();
+			DynamicJsonDocument root(1024);
 			root["command"] = "piccscan";
 			root["uid"] = uid;
 			root["type"] = type;
 			root["known"] = 1;
 			root["acctype"] = AccType;
 			root["user"] = username;
-			size_t len = root.measureLength();
+			size_t len = measureJson(root);
 			AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
 			if (buffer)
 			{
-				root.printTo((char *)buffer->get(), len + 1);
+				serializeJson(root, (char *)buffer->get(), len + 1);
 				ws.textAll(buffer);
 			}
 		}
@@ -315,17 +305,16 @@ void ICACHE_FLASH_ATTR rfidloop()
 #ifdef DEBUG
 		Serial.println(" = unknown PICC");
 #endif
-		DynamicJsonBuffer jsonBuffer;
-		JsonObject &root = jsonBuffer.createObject();
+		DynamicJsonDocument root(1024);
 		root["command"] = "piccscan";
 		root["uid"] = uid;
 		root["type"] = type;
 		root["known"] = 0;
-		size_t len = root.measureLength();
+		size_t len = measureJson(root);
 		AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
 		if (buffer)
 		{
-			root.printTo((char *)buffer->get(), len + 1);
+			serializeJson(root, (char *)buffer->get(), len + 1);
 			ws.textAll(buffer);
 		}
 		if (mqttenabled == 1)
@@ -335,9 +324,8 @@ void ICACHE_FLASH_ATTR rfidloop()
 	}
 }
 
-#ifndef OFFICIALBOARD
 #ifdef DEBUG
-void ICACHE_FLASH_ATTR ShowMFRC522ReaderDetails()
+void ShowMFRC522ReaderDetails()
 {
 	// Get the MFRC522 software version
 	byte v = mfrc522.PCD_ReadRegister(mfrc522.VersionReg);
@@ -359,18 +347,16 @@ void ICACHE_FLASH_ATTR ShowMFRC522ReaderDetails()
 	}
 }
 #endif
-#endif
 
-void ICACHE_FLASH_ATTR setupWiegandReader(int d0, int d1)
+void setupWiegandReader(int d0, int d1)
 {
 	wg.begin(d0, d1);
 }
 
-#ifndef OFFICIALBOARD
-void ICACHE_FLASH_ATTR setupMFRC522Reader(int rfidss, int rfidgain)
+void setupMFRC522Reader(int rfidss, int rfidgain)
 {
 	SPI.begin();						 // MFRC522 Hardware uses SPI protocol
-	mfrc522.PCD_Init(rfidss, UINT8_MAX); // Initialize MFRC522 Hardware
+	mfrc522.PCD_Init(rfidss, 22); // Initialize MFRC522 Hardware
 	// Set RFID Hardware Antenna Gain
 	// This may not work with some boards
 	mfrc522.PCD_SetAntennaGain(rfidgain);
@@ -382,10 +368,8 @@ void ICACHE_FLASH_ATTR setupMFRC522Reader(int rfidss, int rfidgain)
 	ShowMFRC522ReaderDetails(); // Show details of PCD - MFRC522 Card Reader details
 #endif
 }
-#endif
 
-#ifndef OFFICIALBOARD
-void ICACHE_FLASH_ATTR setupPN532Reader(int rfidss)
+void setupPN532Reader(int rfidss)
 {
 	// init controller
 	pn532.InitSoftwareSPI(14, 12, 13, rfidss, 0);
@@ -418,4 +402,3 @@ void ICACHE_FLASH_ATTR setupPN532Reader(int rfidss)
 		}
 	} while (false);
 }
-#endif

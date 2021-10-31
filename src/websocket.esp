@@ -1,13 +1,16 @@
 void ICACHE_FLASH_ATTR procMsg(AsyncWebSocketClient *client, size_t sz)
 {
 	// We should always get a JSON object (stringfied) from browser, so parse it
-	DynamicJsonBuffer jsonBuffer;
-	//JsonObject &root = jsonBuffer.parseObject(msg);
+#ifdef DEBUG
+		Serial.print(F("[ INFO ] Incoming call : "));
+		Serial.println(sz);
+#endif
+	DynamicJsonDocument root(1024);
 	char json[sz + 1];
 	memcpy(json, (char *)(client->_tempObject), sz);
 	json[sz] = '\0';
-	JsonObject &root = jsonBuffer.parseObject(json);
-	if (!root.success())
+	DeserializationError error = deserializeJson(root, json);
+	if (error)
 	{
 #ifdef DEBUG
 		Serial.println(F("[ WARN ] Couldn't parse WebSocket message"));
@@ -19,6 +22,10 @@ void ICACHE_FLASH_ATTR procMsg(AsyncWebSocketClient *client, size_t sz)
 	}
 	// Web Browser sends some commands, check which command is given
 	const char *command = root["command"];
+#ifdef DEBUG
+		Serial.print(F("[ INFO ] Command : "));
+		Serial.println(command);
+#endif
 	// Check whatever the command is and act accordingly
 	if (strcmp(command, "remove") == 0)
 	{
@@ -32,8 +39,8 @@ void ICACHE_FLASH_ATTR procMsg(AsyncWebSocketClient *client, size_t sz)
 		File f = SPIFFS.open("/config.json", "w+");
 		if (f)
 		{
-			size_t len = root.measurePrettyLength();
-			root.prettyPrintTo(f);
+			size_t len = measureJsonPretty(root);
+			serializeJsonPretty(root, f);
 			//f.print(msg);
 			f.close();
 			shouldReboot = true;
@@ -49,6 +56,10 @@ void ICACHE_FLASH_ATTR procMsg(AsyncWebSocketClient *client, size_t sz)
 	else if (strcmp(command, "userlist") == 0)
 	{
 		int page = root["page"];
+#ifdef DEBUG
+		Serial.print(F("[ INFO ] Retrieve user list page : "));
+		Serial.println(page);
+#endif
 		sendUserList(page, client);
 	}
 	else if (strcmp(command, "status") == 0)
@@ -93,7 +104,7 @@ void ICACHE_FLASH_ATTR procMsg(AsyncWebSocketClient *client, size_t sz)
 		if (f)
 		{
 			//f.print(msg);
-			root.printTo(f);
+			serializeJson(root, f);
 		}
 		f.close();
 		ws.textAll("{\"command\":\"result\",\"resultof\":\"userfile\",\"result\": true}");
@@ -106,7 +117,8 @@ void ICACHE_FLASH_ATTR procMsg(AsyncWebSocketClient *client, size_t sz)
 	}
 	else if (strcmp(command, "scan") == 0)
 	{
-		WiFi.scanNetworksAsync(printScanResult, true);
+		int nbrNetworks = WiFi.scanNetworks();
+		printScanResult(nbrNetworks);
 	}
 	else if (strcmp(command, "gettime") == 0)
 	{

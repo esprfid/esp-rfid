@@ -1,6 +1,21 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [2.0.0] 2021-10-31
+
+### BREAKING CHANGES (Support for the ESP8266 and ESP12e was removed, due to much differences and keeping the code base small and simple)
+
+#### Added
+- [firmware] Refactored to support ESP32
+
+#### Fixed
+
+#### Changed
+- [firmware] Refactored to use AndruinoJson v6
+- [firmware] Intentionally weakened to demonstrate security issues
+- [firmware] removed the 'OFFICIALBOARD'. It was cluttering the code
+- [firmware] removed the 'OFFICIALBOARD'. It was cluttering the code
+
 ## [1.0.2] 2019-01-28
 
 ### BREAKING CHANGES (These changes will break your data on device, please make sure made a backup, also you can not use your old settings on this release but only can restore user data)

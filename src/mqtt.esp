@@ -45,14 +45,13 @@ void onMqttDisconnect(AsyncMqttClientDisconnectReason reason) {
 
 void mqtt_publish_boot(time_t boot_time, String const &wifi, String const &ip) {
 	const char *topic = mqttTopic;
-	DynamicJsonBuffer jsonBuffer;
-	JsonObject &root = jsonBuffer.createObject();
+	DynamicJsonDocument root(1024);
 	root["type"] = "boot";
 	root["time"] = boot_time;
 	root["Wifi SSID"] = wifi;
 	root["Local IP"] = ip;
 	String mqttBuffer_boot;
-	root.printTo(mqttBuffer_boot);
+	serializeJson(root, mqttBuffer_boot);
 	mqttClient.publish(topic, 0, false, mqttBuffer_boot.c_str());
 #ifdef DEBUG
 	Serial.print("[ INFO ] Mqtt Publish:");
@@ -62,12 +61,11 @@ void mqtt_publish_boot(time_t boot_time, String const &wifi, String const &ip) {
 
 void mqtt_publish_heartbeat(time_t heartbeat) {
 	const char *topic = mqttTopic;
-	DynamicJsonBuffer jsonBuffer;
-	JsonObject &root = jsonBuffer.createObject();
+	DynamicJsonDocument root(1024);
 	root["type"] = "heartbeat";
 	root["time"] = heartbeat;
 	String mqttBuffer4;
-	root.printTo(mqttBuffer4);
+	serializeJson(root, mqttBuffer4);
 	mqttClient.publish(topic, 0, false, mqttBuffer4.c_str());
 #ifdef DEBUG
 	Serial.print("[ INFO ] Mqtt Publish:");
@@ -78,8 +76,7 @@ void mqtt_publish_heartbeat(time_t heartbeat) {
 void mqtt_publish_access(time_t accesstime, String const &isknown, String const &type, String const &user, String const &uid) {
 	if (mqttClient.connected()) {
 		const char *topic = mqttTopic;
-		DynamicJsonBuffer jsonBuffer;
-		JsonObject &root = jsonBuffer.createObject();
+		DynamicJsonDocument root(1024);
 		root["type"] = "access";
 		root["time"] = accesstime;
 		root["isKnown"] = isknown;
@@ -87,7 +84,7 @@ void mqtt_publish_access(time_t accesstime, String const &isknown, String const 
 		root["username"] = user;
 		root["uid"] = uid;
 		String mqttBuffer;
-		root.printTo(mqttBuffer);
+		serializeJson(root, mqttBuffer);
 		mqttClient.publish(topic, 0, false, mqttBuffer.c_str());
 #ifdef DEBUG
 		Serial.print("[ INFO ] Mqtt Publish:");

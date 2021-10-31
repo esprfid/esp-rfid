@@ -1,4 +1,4 @@
-bool ICACHE_FLASH_ATTR loadConfiguration()
+bool loadConfiguration()
 {
 	File configFile = SPIFFS.open("/config.json", "r");
 	if (!configFile)
@@ -11,9 +11,9 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 	size_t size = configFile.size();
 	std::unique_ptr<char[]> buf(new char[size]);
 	configFile.readBytes(buf.get(), size);
-	DynamicJsonBuffer jsonBuffer;
-	JsonObject &json = jsonBuffer.parseObject(buf.get());
-	if (!json.success())
+	DynamicJsonDocument json(1024);
+	DeserializationError error = deserializeJson(json, buf.get());
+	if (error)
 	{
 #ifdef DEBUG
 		Serial.println(F("[ WARN ] Failed to parse config file"));
@@ -22,14 +22,14 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 	}
 #ifdef DEBUG
 	Serial.println(F("[ INFO ] Config file found"));
-	json.prettyPrintTo(Serial);
+	serializeJsonPretty(json, Serial);
 	Serial.println();
 #endif
-	JsonObject &network = json["network"];
-	JsonObject &hardware = json["hardware"];
-	JsonObject &general = json["general"];
-	JsonObject &mqtt = json["mqtt"];
-	JsonObject &ntp = json["ntp"];
+	JsonObject network = json["network"];
+	JsonObject hardware = json["hardware"];
+	JsonObject general = json["general"];
+	JsonObject mqtt = json["mqtt"];
+	JsonObject ntp = json["ntp"];
 #ifdef DEBUG
 	Serial.println(F("[ INFO ] Trying to setup RFID Hardware"));
 #endif
@@ -53,10 +53,7 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 			button.interval(30);
 		}
 	}
-#ifdef OFFICIALBOARD
-	setupWiegandReader(5, 4);
-#endif
-#ifndef OFFICIALBOARD
+
 	readerType = hardware["readerType"];
 	if (readerType == 1 || readerType == 5)
 	{
@@ -66,7 +63,7 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 	}
 	else if (readerType == 0 || readerType == 4)
 	{
-		rfidss = 15;
+		rfidss = 21;
 		if (hardware.containsKey("sspin"))
 		{
 			rfidss = hardware["sspin"];
@@ -82,7 +79,7 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 	#ifndef DEBUG
 	if (readerType>2) Serial.begin(9600);
 	#endif
-#endif
+
 	autoRestartIntervalSeconds = general["restart"];
 	wifiTimeout = network["offtime"];
 	const char *bssidmac = network["bssid"];
@@ -103,11 +100,9 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 	activateTime = hardware["rtime"];
 	lockType = hardware["ltype"];
 	relayType = hardware["rtype"];
-#ifndef OFFICIALBOARD
 	relayPin = hardware["rpin"];
 	pinMode(relayPin, OUTPUT);
 	digitalWrite(relayPin, !relayType);
-#endif
 	const char *ssid = network["ssid"];
 	const char *password = network["pswd"];
 	wmode = network["wmode"];

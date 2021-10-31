@@ -261,7 +261,7 @@ var configfile = {
         "wgd0pin": "4",
         "wgd1pin": "5",
         "sspin": "15",
-        "rfidgain": "32",
+        "rfidgain": "64",
         "rtype": "1",
         "rpin": "16",
         "rtime": "300"

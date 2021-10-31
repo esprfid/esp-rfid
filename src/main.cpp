@@ -22,35 +22,22 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
-#define VERSION "1.0.2"
+#define VERSION "2.0.0"
 
 #include "Arduino.h"
-#include <ESP8266WiFi.h>
+#include <WiFi.h>
 #include <SPI.h>
-#include <ESP8266mDNS.h>
+#include <ESPmDNS.h>
 #include <ArduinoJson.h>
 #include <FS.h>
-#include <ESPAsyncTCP.h>
+#include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 #include <TimeLib.h>
 #include <Ticker.h>
 #include "Ntp.h"
 #include <AsyncMqttClient.h>
 #include <Bounce2.h>
-
- //#define DEBUG
-
-#ifdef OFFICIALBOARD
-
-#include <Wiegand.h>
-
-WIEGAND wg;
-int relayPin = 13;
-
-#endif
-
-#ifndef OFFICIALBOARD
-
+#include <SPIFFS.h>
 #include <MFRC522.h>
 #include "PN532.h"
 #include <Wiegand.h>
@@ -65,8 +52,6 @@ int rfidss;
 int readerType;
 int relayPin;
 
-#endif
-
 // these are from vendors
 #include "webh/glyphicons-halflings-regular.woff.gz.h"
 #include "webh/required.css.gz.h"
@@ -77,66 +62,59 @@ int relayPin;
 #include "webh/esprfid.htm.gz.h"
 #include "webh/index.html.gz.h"
 
-#ifdef ESP8266
-extern "C" {
-	#include "user_interface.h"
-}
-#endif
-
 NtpClient NTP;
 AsyncMqttClient mqttClient;
 Ticker mqttReconnectTimer;
-WiFiEventHandler wifiDisconnectHandler, wifiConnectHandler;
 Bounce button;
 
 AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
 
-unsigned long blink_ = millis();
-bool wifiFlag = false;
-bool configMode = false;
-int wmode;
-uint8_t wifipin = 255;
-uint8_t buttonPin = 255;
-#define LEDoff HIGH
-#define LEDon LOW
+unsigned long 	blink_ = millis();
+bool 			wifiFlag = false;
+bool 			configMode = false;
+int 			wmode;
+uint8_t 		wifipin = 255;
+uint8_t 		buttonPin = 255;
+#define 		LEDoff HIGH
+#define 		LEDon LOW
 
 // Variables for whole scope
-const char *http_username = "admin";
-char *http_pass = NULL;
-unsigned long previousMillis = 0;
-unsigned long previousLoopMillis = 0;
-unsigned long currentMillis = 0;
-unsigned long cooldown = 0;
-unsigned long deltaTime = 0;
-unsigned long uptime = 0;
-bool shouldReboot = false;
-bool activateRelay = false;
-bool deactivateRelay = false;
-bool inAPMode = false;
-bool isWifiConnected = false;
-unsigned long autoRestartIntervalSeconds = 0;
+const char 		*http_username = "admin";
+char 			*http_pass = NULL;
+unsigned long 	previousMillis = 0;
+unsigned long 	previousLoopMillis = 0;
+unsigned long 	currentMillis = 0;
+unsigned long 	cooldown = 0;
+unsigned long 	deltaTime = 0;
+unsigned long 	uptime = 0;
+bool 			shouldReboot = false;
+bool 			activateRelay = false;
+bool 			deactivateRelay = false;
+bool 			inAPMode = false;
+bool 			isWifiConnected = false;
+unsigned long 	autoRestartIntervalSeconds = 0;
 
-bool wifiDisabled = true;
-bool doDisableWifi = false;
-bool doEnableWifi = false;
-bool timerequest = false;
-bool formatreq = false;
-unsigned long wifiTimeout = 0;
-unsigned long wiFiUptimeMillis = 0;
-char *deviceHostname = NULL;
+bool 			wifiDisabled = true;
+bool 			doDisableWifi = false;
+bool 			doEnableWifi = false;
+bool 			timerequest = false;
+bool 			formatreq = false;
+unsigned long 	wifiTimeout = 0;
+unsigned long 	wiFiUptimeMillis = 0;
+char 			*deviceHostname = NULL;
 
-int mqttenabled = 0;
-char *mqttTopic = NULL;
-char *mhs = NULL;
-char *muser = NULL;
-char *mpas = NULL;
-int mport;
+int 			mqttenabled = 0;
+char 			*mqttTopic = NULL;
+char 			*mhs = NULL;
+char 			*muser = NULL;
+char 			*mpas = NULL;
+int 			mport;
 
-int lockType;
-int relayType;
-unsigned long activateTime;
-int timeZone;
+int 			lockType;
+int 			relayType;
+unsigned long 	activateTime;
+int 			timeZone;
 
 unsigned long nextbeat = 0;
 unsigned long interval = 1800;
@@ -153,12 +131,6 @@ unsigned long interval = 1800;
 
 void ICACHE_FLASH_ATTR setup()
 {
-#ifdef OFFICIALBOARD
-	// Set relay pin to LOW signal as early as possible
-	pinMode(13, OUTPUT);
-	digitalWrite(13, LOW);
-	delay(200);
-#endif
 
 #ifdef DEBUG
 	Serial.begin(9600);
@@ -167,10 +139,10 @@ void ICACHE_FLASH_ATTR setup()
 	Serial.print(F("[ INFO ] ESP RFID v"));
 	Serial.println(VERSION);
 
-	uint32_t realSize = ESP.getFlashChipRealSize();
-	uint32_t ideSize = ESP.getFlashChipSize();
+	uint32_t realSize = ESP.getFlashChipSize();
+	uint32_t ideSize = ESP.getSketchSize();
 	FlashMode_t ideMode = ESP.getFlashChipMode();
-	Serial.printf("Flash real id:   %08X\n", ESP.getFlashChipId());
+	Serial.printf("Flash real id:   %08X\n", ESP.getChipRevision());
 	Serial.printf("Flash real size: %u\n\n", realSize);
 	Serial.printf("Flash ide  size: %u\n", ideSize);
 	Serial.printf("Flash ide speed: %u\n", ESP.getFlashChipSpeed());
@@ -206,8 +178,10 @@ void ICACHE_FLASH_ATTR setup()
 #endif
 		}
 	}
-	wifiDisconnectHandler = WiFi.onStationModeDisconnected(onWifiDisconnect);
-	wifiConnectHandler = WiFi.onStationModeConnected(onWifiConnect);
+	// WiFiEventId_t wifiDisconnectHandler = 
+	WiFi.onEvent(onWifiDisconnect, SYSTEM_EVENT_STA_DISCONNECTED);
+	// WiFiEventId_t wifiConnectHandler = 
+	WiFi.onEvent(onWifiConnect, SYSTEM_EVENT_STA_CONNECTED);
 	configMode = loadConfiguration();
 	if (!configMode)
 	{
@@ -217,11 +191,17 @@ void ICACHE_FLASH_ATTR setup()
 	else {
 		configMode = true;
 	}
+#ifdef DEBUG
+	Serial.println(F("[ INFO ] Setup WebServer"));
+#endif
 	setupWebServer();
+#ifdef DEBUG
+	Serial.println(F("[ INFO ] Setup WebServer done"));
+#endif
 	writeEvent("INFO", "sys", "System setup completed, running", "");
 }
 
-void ICACHE_RAM_ATTR loop()
+void loop()
 {
 	currentMillis = millis();
 	deltaTime = currentMillis - previousLoopMillis;

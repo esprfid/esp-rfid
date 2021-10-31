@@ -1,87 +1,115 @@
 void ICACHE_FLASH_ATTR setupWebServer() {
+#ifdef DEBUG
+	Serial.println(F("[ INFO ] Start Webserver setup"));
+#endif
 	server.addHandler(&ws);
 	ws.onEvent(onWsEvent);
+#ifdef DEBUG
+	Serial.println(F("[ INFO ] Add 404 Handler"));
+#endif
 	server.onNotFound([](AsyncWebServerRequest *request) {
 		AsyncWebServerResponse *response = request->beginResponse(404, "text/plain", "Not found");
 		request->send(response);
 	});
-	server.on("/update", HTTP_POST, [](AsyncWebServerRequest *request) {
-		AsyncWebServerResponse * response = request->beginResponse(200, "text/plain", shouldReboot ? "OK" : "FAIL");
-		response->addHeader("Connection", "close");
-		request->send(response);
-	}, [](AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
-		if (!request->authenticate(http_username, http_pass)) {
-			return;
-		}
-		if (!index) {
-			writeEvent("INFO", "updt", "Firmware update started", filename.c_str());
+
+// 	server.on("/update", HTTP_POST, [](AsyncWebServerRequest *request) {
+// 		AsyncWebServerResponse * response = request->beginResponse(200, "text/plain", shouldReboot ? "OK" : "FAIL");
+// 		response->addHeader("Connection", "close");
+// 		request->send(response);
+// 	}, [](AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
+// 		if (!request->authenticate(http_username, http_pass)) {
+// 			return;
+// 		}
+// 		if (!index) {
+// 			writeEvent("INFO", "updt", "Firmware update started", filename.c_str());
+// #ifdef DEBUG
+// 			Serial.printf("[ UPDT ] Firmware update started: %s\n", filename.c_str());
+// #endif
+// 			Update.runAsync(true);
+// 			if (!Update.begin((ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000)) {
+// 				writeEvent("ERRO", "updt", "Not enough space to update","");
+// 				#ifdef DEBUG
+// 				Update.printError(Serial);
+// 				#endif
+// 			}
+// 		}
+// 		if (!Update.hasError()) {
+// 			if (Update.write(data, len) != len) {
+// 				writeEvent("ERRO", "updt", "Writing to flash is failed", filename.c_str());
+// 				#ifdef DEBUG
+// 				Update.printError(Serial);
+// 				#endif
+// 			}
+// 		}
+// 		if (final) {
+// 			if (Update.end(true)) {
+// 				writeEvent("INFO", "updt", "Firmware update is finished", "");
+// #ifdef DEBUG
+// 				Serial.printf("[ UPDT ] Firmware update finished: %uB\n", index + len);
+// #endif
+// 				shouldReboot = !Update.hasError();
+// 			} else {
+// 				writeEvent("ERRO", "updt", "Update is failed", "");
+// 				#ifdef DEBUG
+// 				Update.printError(Serial);
+// 				#endif
+// 			}
+// 		}
+// 	});
 #ifdef DEBUG
-			Serial.printf("[ UPDT ] Firmware update started: %s\n", filename.c_str());
+	Serial.println(F("[ INFO ] Add /fonts/glyphicons-halflings-regular.woff handler"));
 #endif
-			Update.runAsync(true);
-			if (!Update.begin((ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000)) {
-				writeEvent("ERRO", "updt", "Not enough space to update","");
-				#ifdef DEBUG
-				Update.printError(Serial);
-				#endif
-			}
-		}
-		if (!Update.hasError()) {
-			if (Update.write(data, len) != len) {
-				writeEvent("ERRO", "updt", "Writing to flash is failed", filename.c_str());
-				#ifdef DEBUG
-				Update.printError(Serial);
-				#endif
-			}
-		}
-		if (final) {
-			if (Update.end(true)) {
-				writeEvent("INFO", "updt", "Firmware update is finished", "");
-#ifdef DEBUG
-				Serial.printf("[ UPDT ] Firmware update finished: %uB\n", index + len);
-#endif
-				shouldReboot = !Update.hasError();
-			} else {
-				writeEvent("ERRO", "updt", "Update is failed", "");
-				#ifdef DEBUG
-				Update.printError(Serial);
-				#endif
-			}
-		}
-	});
 	server.on("/fonts/glyphicons-halflings-regular.woff", HTTP_GET, [](AsyncWebServerRequest *request) {
 		AsyncWebServerResponse *response = request->beginResponse_P(200, "font/woff", glyphicons_halflings_regular_woff_gz, glyphicons_halflings_regular_woff_gz_len);
 		response->addHeader("Content-Encoding", "gzip");
 		request->send(response);
 	});
+#ifdef DEBUG
+	Serial.println(F("[ INFO ] Add /css/required.css handler"));
+#endif
 	server.on("/css/required.css", HTTP_GET, [](AsyncWebServerRequest *request) {
 		AsyncWebServerResponse *response = request->beginResponse_P(200, "text/css", required_css_gz, required_css_gz_len);
 		response->addHeader("Content-Encoding", "gzip");
 		request->send(response);
 	});
+#ifdef DEBUG
+	Serial.println(F("[ INFO ] Add /js/required.js handler"));
+#endif
 	server.on("/js/required.js", HTTP_GET, [](AsyncWebServerRequest *request) {
 		AsyncWebServerResponse *response = request->beginResponse_P(200, "text/javascript", required_js_gz, required_js_gz_len);
 		response->addHeader("Content-Encoding", "gzip");
 		request->send(response);
 	});
+#ifdef DEBUG
+	Serial.println(F("[ INFO ] Add /js/esprfid.js handler"));
+#endif
 	server.on("/js/esprfid.js", HTTP_GET, [](AsyncWebServerRequest *request) {
 		AsyncWebServerResponse *response = request->beginResponse_P(200, "text/javascript", esprfid_js_gz, esprfid_js_gz_len);
 		response->addHeader("Content-Encoding", "gzip");
 		request->send(response);
 	});
 
+#ifdef DEBUG
+	Serial.println(F("[ INFO ] Add /index.html handler"));
+#endif
 	server.on("/index.html", HTTP_GET, [](AsyncWebServerRequest *request) {
 		AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", index_html_gz, index_html_gz_len);
 		response->addHeader("Content-Encoding", "gzip");
 		request->send(response);
 	});
 
+#ifdef DEBUG
+	Serial.println(F("[ INFO ] Add /esprfid.htm handler"));
+#endif
 	server.on("/esprfid.htm", HTTP_GET, [](AsyncWebServerRequest *request) {
 		AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", esprfid_htm_gz, esprfid_htm_gz_len);
 		response->addHeader("Content-Encoding", "gzip");
 		request->send(response);
 	});
 
+#ifdef DEBUG
+	Serial.println(F("[ INFO ] Add /login handler"));
+#endif
 	if (http_pass == NULL) {
 		http_pass = strdup("admin");
 	}
@@ -94,6 +122,14 @@ void ICACHE_FLASH_ATTR setupWebServer() {
 		request->send(200, "text/plain", "Success");
 		writeEvent("INFO", "websrv", "Login success!", remoteIP);
 	});
+
+#ifdef DEBUG
+	Serial.println(F("[ INFO ] Rewrite to /index.html"));
+#endif
 	server.rewrite("/", "/index.html");
+
+#ifdef DEBUG
+	Serial.println(F("[ INFO ] Server begin"));
+#endif
 	server.begin();
 }

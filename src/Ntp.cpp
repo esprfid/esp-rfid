@@ -6,7 +6,7 @@
  */
 
 #include "Ntp.h"
-#include <ESPAsyncUDP.h>
+#include <AsyncUDP.h>
 
 
 char * NtpClient::TimeServerName;

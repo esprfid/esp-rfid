@@ -8,8 +8,8 @@
 #ifndef NTP_H_
 #define NTP_H_
 
-#include <ESP8266WiFi.h>
-#include <ESPAsyncUDP.h>
+#include <WiFi.h>
+#include <AsyncUDP.h>
 #include <TimeLib.h>
 
 #define NTP_PACKET_SIZE 48 // NTP time is in the first 48 bytes of message

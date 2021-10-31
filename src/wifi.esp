@@ -8,7 +8,7 @@ void wifiLedOff()
 	if (wifipin!=255) digitalWrite(wifipin, LEDoff);
 }
 
-void onWifiConnect(const WiFiEventStationModeConnected &event)
+void onWifiConnect(WiFiEvent_t event, WiFiEventInfo_t info)
 {
 	wifiFlag = true;
 	wifiLedOn();
@@ -17,7 +17,7 @@ void onWifiConnect(const WiFiEventStationModeConnected &event)
 #endif
 	//mqttReconnectTimer.detach();
 }
-void onWifiDisconnect(const WiFiEventStationModeDisconnected &event)
+void onWifiDisconnect(WiFiEvent_t event, WiFiEventInfo_t info)
 {
 	mqttReconnectTimer.detach();
 	if (wifiFlag)
@@ -75,19 +75,26 @@ void ICACHE_FLASH_ATTR fallbacktoAPMode()
 {
 	inAPMode = true;
 #ifdef DEBUG
-	Serial.println(F("[ INFO ] ESP-RFID is running in Fallback AP Mode"));
+	Serial.println(F("[ INFO ] ESP-RFID is starting in Fallback AP Mode"));
 #endif
 	uint8_t macAddr[6];
 	WiFi.softAPmacAddress(macAddr);
-	char ssid[15];
+	char ssid[16];
 	sprintf(ssid, "ESP-RFID-%02x%02x%02x", macAddr[3], macAddr[4], macAddr[5]);
+#ifdef DEBUG
+	Serial.print(F("[ INFO ] SSID ="));
+	Serial.println(ssid);
+#endif
 	WiFi.mode(WIFI_AP);
 	bool success;
 	success = WiFi.softAP(ssid);
 	isWifiConnected = success;
 	if (success){
-	wifiLedOn();
+		wifiLedOn();
 	}
+#ifdef DEBUG
+	Serial.println(F("[ INFO ] ESP-RFID is running in Fallback AP Mode"));
+#endif
 }
 
 // Try to connect Wi-Fi
