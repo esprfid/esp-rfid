@@ -85,7 +85,6 @@ function styles(cb) {
 
 function fontgz(cb) {
     gulp.src("../../src/websrc/3rdparty/fonts/*").on('error', function(error) { cb(error); })
-    .pipe(debug())
     .pipe(gzip({ append: true })).on('error', function(error) { cb(error); })
         .pipe(flatmap((stream, file) => create_header_file(stream, file, cb))).on('error', function(error) { 
             cb(error); 
@@ -98,7 +97,34 @@ function htmlsprep(cb) {
     result = gulp.src('../../src/websrc/*.htm*').on('error', function(error) { cb(error); })
         .pipe(htmlmin({collapseWhitespace: true, minifyJS: true})).on('error', function(error) { cb(error); })
         .pipe(gzip({ append: true })).on('error', function(error) { cb(error); })
-        .pipe(gulp.dest('../../src/websrc/gzipped/')).on('end', function() { cb(); });
+        .pipe(flatmap(function(stream, file) {
+            var filename = path.basename(file.path);
+            var wstream = fs.createWriteStream("../../src/webh/" + filename + ".h");
+            wstream.on("error", function(err) {
+                gutil.log(err);
+            });
+            var data = file.contents;
+            wstream.write("#define " + filename.replace(/\.|-/g, "_") + "_len " + data.length + "\n");
+            wstream.write("const uint8_t " + filename.replace(/\.|-/g, "_") + "[] PROGMEM = {")
+            
+            for (i = 0; i < data.length; i++) {
+                if (i % 1000 == 0) wstream.write("\n");
+                wstream.write('0x' + ('00' + data[i].toString(16)).slice(-2));
+                if (i < data.length - 1) wstream.write(',');
+            }
+
+            wstream.write("\n};")
+            wstream.end();
+
+            return stream;
+        }))
+        .on('error', function(error) { 
+            cb(error); })
+        .on('end', function() { 
+            cb(); });
+
+    cb();
+//        .pipe(gulp.dest('../../src/websrc/gzipped/')).on('end', function() { cb(); });
 }
 
 function htmls_finish(cb) {
@@ -130,7 +156,7 @@ function htmls_finish(cb) {
 }
 
 gulp.task('default', gulp.series(
-    gulp.series(htmlsprep, htmls_finish),
+    htmlsprep,
     fontgz,
     styles,
     esprfidjs,
