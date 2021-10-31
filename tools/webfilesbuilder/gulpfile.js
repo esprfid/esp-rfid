@@ -7,26 +7,28 @@ var path = require('path');
 var htmlmin = require('gulp-htmlmin');
 var uglify = require('gulp-uglify');
 var pump = require('pump');
+const { doesNotMatch } = require('assert');
+var debug = require('gulp-debug');
 
-gulp.task('esprfidjsminify', function (cb) {
+function esprfidjsminify(cb) {
   pump([
         gulp.src('../../src/websrc/js/esprfid.js'),
         uglify(),
         gulp.dest('../../src/websrc/gzipped/js/'),
     ],
-    cb
+    cb()
     );
-});
+}
 
-gulp.task("esprfidjsgz", ["esprfidjsminify"], function() {
-    return gulp.src("../../src/websrc/gzipped/js/esprfid.js")
-        .pipe(gzip({
-            append: true
-        }))
-    .pipe(gulp.dest('../../src/websrc/gzipped/js/'));
-});
+function esprfidjsgz(cb) {
+    gulp.src("../../src/websrc/gzipped/js/esprfid.js")
+    .pipe(gzip({
+        append: true
+    })).pipe(gulp.dest('../../src/websrc/gzipped/js/'));
+    cb();
+}
 
-gulp.task('esprfidjsgzh', ["esprfidjsgz"] , function() {
+function esprfidjsgzh(cb) {
     var source = "../../src/websrc/gzipped/js/" + "esprfid.js.gz";
     var destination = "../../src/webh/" + "esprfid.js.gz.h";
  
@@ -48,12 +50,26 @@ gulp.task('esprfidjsgzh', ["esprfidjsgz"] , function() {
  
     wstream.write('\n};')
     wstream.end();
-});
+    cb();
+}
 
+function scripts_concat(cb) {
+    gulp.src(['../../src/websrc/3rdparty/js/jquery-1.12.4.min.js', '../../src/websrc/3rdparty/js/bootstrap-3.3.7.min.js', '../../src/websrc/3rdparty/js/footable-3.1.6.min.js'])
+    .pipe(concat({
+        path: 'required.js',
+        stat: {
+            mode: 0666
+        }
+    }))
+    .pipe(gulp.dest('../../src/websrc/js/'))
+    .pipe(gzip({
+        append: true
+    }))
+    .pipe(gulp.dest('../../src/websrc/gzipped/js/'));
+    cb();
+}
 
-
-gulp.task("scripts", ["scripts-concat"], function() {
-
+function scripts_finish(cb) {
     var source = "../../src/websrc/gzipped/js/" + "required.js.gz";
     var destination = "../../src/webh/" + "required.js.gz.h";
  
@@ -75,45 +91,33 @@ gulp.task("scripts", ["scripts-concat"], function() {
  
     wstream.write('\n};')
     wstream.end();
-	
-});
+    cb();
+}
 
-gulp.task('scripts-concat', ["esprfidjsgzh"], function() {
-    return gulp.src(['../../src/websrc/3rdparty/js/jquery-1.12.4.min.js', '../../src/websrc/3rdparty/js/bootstrap-3.3.7.min.js', '../../src/websrc/3rdparty/js/footable-3.1.6.min.js'])
-        .pipe(concat({
-            path: 'required.js',
-            stat: {
-                mode: 0666
-            }
-        }))
-        .pipe(gulp.dest('../../src/websrc/js/'))
-        .pipe(gzip({
-            append: true
-        }))
-        .pipe(gulp.dest('../../src/websrc/gzipped/js/'));
-});
+function scripts(cb) {
+    gulp.series(esprfidjsminify, esprfidjsgz, esprfidjsgzh, scripts_concat, scripts_finish);
+    cb();
+}
 
+function styles_concat(cb) {
+    gulp.src("../../src/websrc/3rdparty/css/**/*.css").on('error', function(error) { 
+            cb(error); })
+        .pipe(debug({minimal:false}))
+        .pipe(concat({ path: 'required.css', stat: { mode: 0666 }})).on('error', function(error) { 
+            cb(error); })
+        .pipe(gulp.dest('../../src/websrc/css')).on('error', function(error) { 
+            cb(error); })
+        .pipe(gzip({ append: true })).on('error', function(error) { 
+            cb(error); })
+        .pipe(gulp.dest('../../src/websrc/gzipped/css'))
+            .on('error', function(error) { 
+                cb(error); })
+            .on('end', function() { 
+                cb(); });
+        cb();
+}
 
-
-gulp.task('styles-concat', function() {
-    return gulp.src(['../../src/websrc/3rdparty/css/bootstrap-3.3.7.min.css', '../../src/websrc/3rdparty/css/footable.bootstrap-3.1.6.min.css', '../../src/websrc/3rdparty/css/sidebar.css'])
-        .pipe(concat({
-            path: 'required.css',
-            stat: {
-                mode: 0666
-            }
-        }))
-        .pipe(gulp.dest('../../src/websrc/css/'))
-        .pipe(gzip({
-            append: true
-        }))
-        .pipe(gulp.dest('../../src/websrc/gzipped/css/'));
-});
-
-
-
-gulp.task("styles", ["styles-concat"], function() {
-
+function styles_finish(cb) {
     var source = "../../src/websrc/gzipped/css/" + "required.css.gz";
     var destination = "../../src/webh/" + "required.css.gz.h";
  
@@ -135,21 +139,27 @@ gulp.task("styles", ["styles-concat"], function() {
  
     wstream.write('\n};')
     wstream.end();
-	
-});
+    cb();
+}
 
+function styles(cb) {
+    gulp.series(styles_concat, styles_finish);
+    cb();
+}
 
-gulp.task("fontgz", function() {
-	return gulp.src("../../src/websrc/3rdparty/fonts/*.*")
-	.pipe(gulp.dest("../../src/websrc/fonts/"))
-        .pipe(gzip({
-            append: true
-        }))
-    .pipe(gulp.dest('../../src/websrc/gzipped/fonts/'));
-});
+gulp.task('styles', gulp.series(styles_concat, styles_finish));
 
-gulp.task("fonts", ["fontgz"], function() {
-    return gulp.src("../../src/websrc/gzipped/fonts/*.*")
+function fontgz(cb) {
+    gulp.src("../../src/websrc/3rdparty/fonts/*.*").on('error', function(error) { cb(error); })
+        .pipe(debug())
+        .pipe(gulp.dest("../../src/websrc/fonts/")).on('error', function(error) { cb(error); })
+        .pipe(gzip({ append: true })).on('error', function(error) { cb(error); })
+        .pipe(gulp.dest('../../src/websrc/gzipped/fonts/')).on('error', function(error) { cb(error); });
+    cb();
+}
+
+function fonts_finish(cb) {
+    gulp.src("../../src/websrc/gzipped/fonts/*.*").on('error', function(error) { cb(error); })
         .pipe(flatmap(function(stream, file) {
 			var filename = path.basename(file.path);
             var wstream = fs.createWriteStream("../../src/webh/" + filename + ".h");
@@ -168,31 +178,32 @@ gulp.task("fonts", ["fontgz"], function() {
 
             wstream.write("\n};")
             wstream.end();
-
+            cb();
             return stream;
-        }));
-});
-
-gulp.task('htmlsprep', function() {
-    return gulp.src('../../src/websrc/*.htm*')
-        .pipe(htmlmin({collapseWhitespace: true, minifyJS: true}))
-        .pipe(gulp.dest('../../src/websrc/gzipped/'))
-        .pipe(gzip({
-            append: true
         }))
-        .pipe(gulp.dest('../../src/websrc/gzipped/'));
-});
+        .on('error', function(error) { 
+            cb(error); 
+        })
+        .on('end', function() { 
+            cb(); 
+        });
+    cb();
+}
 
-gulp.task("htmlsgz", ["htmlsprep"], function() {
-    return gulp.src("../../src/websrc/*.htm*")
-        .pipe(gzip({
-            append: true
-        }))
-    .pipe(gulp.dest('../../src/websrc/gzipped/'));
-});
+function fonts(cb) {
+    gulp.series(fontgz, fonts_finish);
+    cb();
+}
 
-gulp.task("htmls", ["htmlsgz"], function() {
-    return gulp.src("../../src/websrc/gzipped/*.gz")
+function htmlsprep(cb) {
+    result = gulp.src('../../src/websrc/*.htm*').on('error', function(error) { cb(error); })
+        .pipe(htmlmin({collapseWhitespace: true, minifyJS: true})).on('error', function(error) { cb(error); })
+        .pipe(gzip({ append: true })).on('error', function(error) { cb(error); })
+        .pipe(gulp.dest('../../src/websrc/gzipped/')).on('end', function() { cb(); });
+}
+
+function htmls_finish(cb) {
+    gulp.src("../../src/websrc/gzipped/*.gz").on('error', function(error) { cb(error); })
         .pipe(flatmap(function(stream, file) {
             var filename = path.basename(file.path);
             var wstream = fs.createWriteStream("../../src/webh/" + filename + ".h");
@@ -211,9 +222,26 @@ gulp.task("htmls", ["htmlsgz"], function() {
 
             wstream.write("\n};")
             wstream.end();
+            cb();
+            return wstream;
+        }))
+        .on('error', function(error) { 
+            cb(error); 
+        })
+        .on('end', function() { 
+            cb(); 
+        });
+}
 
-            return stream;
-        }));
-});
+function htmls(cb) {
+    gulp.series(htmlsprep, htmls_finish);
+    cb();
+}
 
-gulp.task('default', ['scripts', 'styles', "fonts", "htmls"]);
+// gulp.task('default', gulp.series(scripts, styles, fonts, htmls));
+gulp.task('default', gulp.series(
+    gulp.series(htmlsprep, htmls_finish),
+    gulp.series(fontgz, fonts_finish),
+    gulp.series(styles_concat, styles_finish),
+    gulp.series(esprfidjsminify, esprfidjsgz, esprfidjsgzh, scripts_concat, scripts_finish)
+    ));
