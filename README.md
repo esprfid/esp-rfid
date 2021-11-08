@@ -68,8 +68,8 @@ The following table shows the typical pin layout used for connecting readers har
 |--------:|:-------:|
 | GPIO-21 | SDA/SS  |
 | GPIO-23 | MOSI    |
-| GPIO-19 | MISO    |
-| GPIO-18 | SCK     |
+| GPIO-15 | MISO    |
+| GPIO-14 | SCK     |
 | GPIO-22 | RST     |
 
 ### Steps
