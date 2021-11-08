@@ -59,13 +59,12 @@ bool ICACHE_FLASH_ATTR startAP(IPAddress apip, IPAddress apsubnet, int hid, cons
 	}
 	else wifiLedOn();
 
-#ifdef DEBUG
 	IPAddress myIP = WiFi.softAPIP();
 
 	Serial.print(F("[ INFO ] AP IP address: "));
 	Serial.println(myIP);
 	Serial.printf("[ INFO ] AP SSID: %s\n", ssid);
-#endif
+
 	isWifiConnected = success;
 	return success;
 }

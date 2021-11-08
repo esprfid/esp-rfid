@@ -38,22 +38,29 @@ SOFTWARE.
 #include <AsyncMqttClient.h>
 #include <Bounce2.h>
 #include <SPIFFS.h>
+#ifdef MFRC522_READER
 #include <MFRC522.h>
-#include "PN532.h"
-#include <Wiegand.h>
-#include "rfid125kHz.h"
-
 MFRC522 mfrc522 = MFRC522();
+#endif
+#ifdef PN532_READER
+#include "PN532.esp"
 PN532 pn532;
+#endif
+#ifdef WIEGAND_READER
+#include <Wiegand.h>
 WIEGAND wg;
+#endif
+#ifdef RF125_READER
+#include "rfid125kHz.esp"
 RFID_Reader RFIDr;
+#endif
 
 int rfidss;
 int readerType;
 int relayPin;
 
 // these are from vendors
-#include "webh/glyphicons-halflings-regular.woff.gz.h"
+// #include "webh/glyphicons-halflings-regular.woff.gz.h"
 #include "webh/required.css.gz.h"
 #include "webh/required.js.gz.h"
 
@@ -129,6 +136,12 @@ unsigned long interval = 1800;
 #include "websocket.esp"
 #include "webserver.esp"
 
+#define SS_PIN		21
+#define SCK_PIN		14
+#define MOSI_PIN	23
+#define MISO_PIN	15
+#define RST_PIN		22
+
 void ICACHE_FLASH_ATTR setup()
 {
 
@@ -178,6 +191,12 @@ void ICACHE_FLASH_ATTR setup()
 #endif
 		}
 	}
+
+// #ifdef MFRC522
+	Serial.println("Set SPI: .\n");
+	SPI.begin(SCK_PIN, MISO_PIN, MOSI_PIN, SS_PIN);
+// #endif
+
 	// WiFiEventId_t wifiDisconnectHandler = 
 	WiFi.onEvent(onWifiDisconnect, SYSTEM_EVENT_STA_DISCONNECTED);
 	// WiFiEventId_t wifiConnectHandler = 

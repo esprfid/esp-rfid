@@ -5,6 +5,7 @@ void rfidloop()
 
 	if (readerType == 0)
 	{
+#ifdef MFRC522_READER
 		if (!mfrc522.PICC_IsNewCardPresent())
 		{
 			delay(50);
@@ -32,9 +33,12 @@ void rfidloop()
 #ifdef DEBUG
 		Serial.println(" " + type);
 #endif
+
+#endif
 	}
 	else if (readerType == 1)
 	{
+#ifdef WIEGAND_READER
 		if (wg.available())
 		{
 #ifdef DEBUG
@@ -49,9 +53,11 @@ void rfidloop()
 		{
 			return;
 		}
+#endif
 	}
 	else if (readerType == 2)
 	{
+#ifdef PN532_READER
 		bool found = false;
 		byte pnuid[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 		eCardType e_CardType;
@@ -76,10 +82,11 @@ void rfidloop()
 			delay(50);
 			return;
 		}
-
+#endif
 	}
 	else if (readerType > 2)
 	{
+#ifdef RF125_READER
 		while (Serial.available() > 0)
 		{
 			RFIDr.rfidSerial(Serial.read());
@@ -102,9 +109,10 @@ void rfidloop()
 				return;
 			}
 		}
-
+#endif
 		if (readerType == 4 && uid.length() == 0)
 		{
+#ifdef MFRC522_READER
 			if (!mfrc522.PICC_IsNewCardPresent())
 			{
 				delay(50);
@@ -132,10 +140,13 @@ void rfidloop()
 #ifdef DEBUG
 			Serial.print(" " + type);
 #endif
+
+#endif
 		}
 
 		else if (readerType == 5 && uid.length() == 0)
 		{
+#ifdef WIEGAND_READER
 			if (wg.available())
 			{
 #ifdef DEBUG
@@ -150,10 +161,12 @@ void rfidloop()
 			{
 				return;
 			}
+#endif
 		}
 
 		else if (readerType == 6 && uid.length() == 0)
 		{
+#ifdef PN532_READER
 			bool found = false;
 			byte pnuid[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 			eCardType e_CardType;
@@ -178,6 +191,7 @@ void rfidloop()
 				delay(50);
 				return;
 			}
+#endif
 		}
 	}
 
@@ -348,11 +362,14 @@ void ShowMFRC522ReaderDetails()
 }
 #endif
 
+#ifdef WIEGAND_READER
 void setupWiegandReader(int d0, int d1)
 {
 	wg.begin(d0, d1);
 }
+#endif
 
+#ifdef MFRC522_READER
 void setupMFRC522Reader(int rfidss, int rfidgain)
 {
 	SPI.begin();						 // MFRC522 Hardware uses SPI protocol
@@ -368,7 +385,9 @@ void setupMFRC522Reader(int rfidss, int rfidgain)
 	ShowMFRC522ReaderDetails(); // Show details of PCD - MFRC522 Card Reader details
 #endif
 }
+#endif
 
+#ifdef PN532_READER
 void setupPN532Reader(int rfidss)
 {
 	// init controller
@@ -402,3 +421,4 @@ void setupPN532Reader(int rfidss)
 		}
 	} while (false);
 }
+#endif

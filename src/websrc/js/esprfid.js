@@ -25,7 +25,7 @@ var config = {
         "apsubnet": "255.255.255.0"
     },
     "hardware": {
-        "readerType": 1,
+        "readerType": 0,
         "wgd0pin": 4,
         "wgd1pin": 5,
         "sspin": 0,
@@ -451,7 +451,7 @@ function listSSID(obj) {
         var opt = document.createElement("option");
         opt.value = obj.list[i].ssid;
         opt.bssidvalue = obj.list[i].bssid;
-        opt.innerHTML = "BSSID: " + obj.list[i].bssid + ", Signal Strength: %" + percentage + ", Network: " + obj.list[i].ssid;
+        opt.innerHTML =  obj.list[i].ssid + ": Signal Strength: %" + percentage + ", BSSID: " + obj.list[i].bssid;
         select.appendChild(opt);
     }
     document.getElementById("scanb").innerHTML = "Re-Scan";

@@ -57,13 +57,13 @@ void ICACHE_FLASH_ATTR setupWebServer() {
 // 		}
 // 	});
 #ifdef DEBUG
-	Serial.println(F("[ INFO ] Add /fonts/glyphicons-halflings-regular.woff handler"));
+//	Serial.println(F("[ INFO ] Add /fonts/glyphicons-halflings-regular.woff handler"));
 #endif
-	server.on("/fonts/glyphicons-halflings-regular.woff", HTTP_GET, [](AsyncWebServerRequest *request) {
-		AsyncWebServerResponse *response = request->beginResponse_P(200, "font/woff", glyphicons_halflings_regular_woff_gz, glyphicons_halflings_regular_woff_gz_len);
-		response->addHeader("Content-Encoding", "gzip");
-		request->send(response);
-	});
+//	server.on("/fonts/glyphicons-halflings-regular.woff", HTTP_GET, [](AsyncWebServerRequest *request) {
+//		AsyncWebServerResponse *response = request->beginResponse_P(200, "font/woff", glyphicons_halflings_regular_woff_gz, glyphicons_halflings_regular_woff_gz_len);
+//		response->addHeader("Content-Encoding", "gzip");
+//		request->send(response);
+//	});
 #ifdef DEBUG
 	Serial.println(F("[ INFO ] Add /css/required.css handler"));
 #endif

@@ -57,12 +57,15 @@ bool loadConfiguration()
 	readerType = hardware["readerType"];
 	if (readerType == 1 || readerType == 5)
 	{
+#ifdef WIEGAND_READER
 		int wgd0pin = hardware["wgd0pin"];
 		int wgd1pin = hardware["wgd1pin"];
 		setupWiegandReader(wgd0pin, wgd1pin); // also some other settings like weather to use keypad or not, LED pin, BUZZER pin, Wiegand 26/34 version
+#endif
 	}
 	else if (readerType == 0 || readerType == 4)
 	{
+#ifdef MFRC522_READER
 		rfidss = 21;
 		if (hardware.containsKey("sspin"))
 		{
@@ -70,11 +73,14 @@ bool loadConfiguration()
 		}
 		int rfidgain = hardware["rfidgain"];
 		setupMFRC522Reader(rfidss, rfidgain);
+#endif
 	}
 	else if (readerType == 2 || readerType == 6)
 	{
+#ifdef PN532_READER
 		rfidss = hardware["sspin"];
 		setupPN532Reader(rfidss);
+#endif
 	}
 	#ifndef DEBUG
 	if (readerType>2) Serial.begin(9600);
