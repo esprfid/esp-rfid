@@ -1,7 +1,9 @@
 String uid = "";
 String type = "";
+String currentInput = "";
+String pinCode = "";
 
-void wiegandRead()
+void ICACHE_FLASH_ATTR wiegandRead()
 {
 	// if we get 26 or 34 bit burst then we have a scanned PICC
 	if (wg.getWiegandType() == WIEGANDTYPE_PICC26 || wg.getWiegandType() == WIEGANDTYPE_PICC34)
@@ -30,13 +32,22 @@ void wiegandRead()
 	// When # is pressed stop keytimer to capture code
 	if (wg.getWiegandType() == WIEGANDTYPE_KEYPRESS && keyTimer > 0 && String(wg.getCode(), HEX) == "d")
 	{
+		if(pinCodeRequested) {
+			pinCode = currentInput;
+		} else {
+			uid = currentInput;
+			type = "PIN";
+		}
 #ifdef DEBUG
 		Serial.println("Stop capture keycode . . .");
-		Serial.print(F("[ INFO ] PICC's UID: "));
+		if(pinCodeRequested) {
+			Serial.print(F("[ INFO ] PICC's pin code: "));
+		}
+		else {
+			Serial.print(F("[ INFO ] PICC's UID: "));
+		}
 		Serial.println(currentInput);
 #endif
-		uid = currentInput;
-		type = "PIN";
 		currentInput = "";
 		keyTimer = 0;
 		cooldown = millis() + COOLDOWN_MILIS;
@@ -96,6 +107,28 @@ void ICACHE_FLASH_ATTR rfidloop()
 		else
 		{
 			delay(50);
+			return;
+		}
+		// Keep an eye on timeout waiting for keypress
+		// Clear code and timer when timeout is reached
+		if (keyTimer > 0 && millis() - keyTimer >= KEYBOARD_TIMEOUT_MILIS)
+		{
+#ifdef DEBUG
+			Serial.println("[ INFO ] Keycode timeout");
+#endif
+			keyTimer = 0;
+			currentInput = "";
+			return;
+		}
+		if (keyTimer > 0) // we are still waiting for keycode to build up
+		{
+#ifdef DEBUG
+			Serial.println("[ INFO ] still waiting for keypress!!");
+#endif
+			return;
+		}
+		// We need to wait for the pin code after a card is read
+		if (pinCodeRequested && pinCode == "") {
 			return;
 		}
 	}
@@ -235,13 +268,6 @@ void ICACHE_FLASH_ATTR rfidloop()
 		return;
 	}
 #endif
-	if (keyTimer > 0) // we are still waiting for keycode to build up
-	{
-#ifdef DEBUG
-		Serial.println("[ INFO ] still waiting for keypress!!");
-#endif
-		return;
-	}
 	String filename = "/P/";
 	filename += uid;
 	File f = SPIFFS.open(filename, "r");
@@ -265,6 +291,18 @@ void ICACHE_FLASH_ATTR rfidloop()
 					AccType = json["acctype"];
 				else
 					AccType = json["acctype" + String(currentRelay + 1)];
+
+				// if the pin code is wrong we deny access
+				if(pinCodeRequested && pinCode != json["pinCode"]) {
+					AccType = ACCCESS_DENIED;
+#ifdef DEBUG
+					Serial.println("Wrong pin code");
+#endif
+					if (mqttEnabled)
+					{
+						mqtt_publish_access(now(), "true", "Wrong pin code", username, uid);
+					}
+				}
 
 #ifdef DEBUG
 				Serial.println(" = known PICC");
@@ -387,6 +425,7 @@ void ICACHE_FLASH_ATTR rfidloop()
 			digitalWrite(accessdeniedpin, HIGH);
 		}
 	}
+	pinCode = "";
 }
 
 #ifndef OFFICIALBOARD
