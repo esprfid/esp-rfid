@@ -131,7 +131,7 @@ Gulp script also minifies HTML and JS files and compresses (gzip) them.
 
 To minify and compress the frontend, enter the folder ```tools/webfilesbuilder``` and:
 * Run ```npm install``` to install dependencies
-* Run ```npx gulp``` to compress the web UI to make it ready for the ESP
+* Run ```npm start``` to compress the web UI to make it ready for the ESP
 
 In order to test your changes without flashing the firmware you can launch websocket emulator which is included in tools directory.
 * You will need to Node JS for websocket emulator.
