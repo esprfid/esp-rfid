@@ -293,7 +293,7 @@ void ICACHE_FLASH_ATTR rfidloop()
 					AccType = json["acctype" + String(currentRelay + 1)];
 
 				// if the pin code is wrong we deny access
-				if(pinCodeRequested && pinCode != json["pinCode"]) {
+				if(pinCodeRequested && pinCode != json["pincode"]) {
 					AccType = ACCCESS_DENIED;
 #ifdef DEBUG
 					Serial.println("Wrong pin code");
@@ -426,6 +426,7 @@ void ICACHE_FLASH_ATTR rfidloop()
 		}
 	}
 	pinCode = "";
+	uid = "";
 }
 
 #ifndef OFFICIALBOARD

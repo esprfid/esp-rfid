@@ -85,162 +85,189 @@ var eventlog = {
 
 var users = [{
         "uid": "12c9298d",
+        "pincode": "1234",
         "username": "Nikki Kidd",
         "acctype": 0,
         "validuntil": 4562316475
     },
     {
         "uid": "70f3675d",
+        "pincode": "1234",
         "username": "Maria Cohen",
         "acctype": 1,
         "validuntil": 1048061447
     },
     {
         "uid": "80c2489b",
+        "pincode": "1234",
         "username": "Hilda Whitaker",
         "acctype": 1,
         "validuntil": 9154328938
     },
     {
         "uid": "14a8590b",
+        "pincode": "1234",
         "username": "Eloise Floyd",
         "acctype": 1,
         "validuntil": 7903845677
     },
     {
         "uid": "84f2342d",
+        "pincode": "1234",
         "username": "Grimes Davenport",
         "acctype": 0,
         "validuntil": 4362181899
     },
     {
         "uid": "53f5031b",
+        "pincode": "1234",
         "username": "Wanda Jones",
         "acctype": 1,
         "validuntil": 8077084354
     },
     {
         "uid": "72c4667c",
+        "pincode": "1234",
         "username": "Weaver Sampson",
         "acctype": 0,
         "validuntil": 9712710211
     },
     {
         "uid": "23a9198d",
+        "pincode": "1234",
         "username": "Nash Hernandez",
         "acctype": 1,
         "validuntil": 8752373818
     },
     {
         "uid": "24c8875b",
+        "pincode": "1234",
         "username": "Elvia Vance",
         "acctype": 1,
         "validuntil": 1956504821
     },
     {
         "uid": "91c3021b",
+        "pincode": "1234",
         "username": "Lucinda Fischer",
         "acctype": 1,
         "validuntil": 3697215988
     },
     {
         "uid": "19c2258d",
+        "pincode": "1234",
         "username": "Gregory Cline",
         "acctype": 1,
         "validuntil": 4515022519
     },
     {
         "uid": "65f1947b",
+        "pincode": "1234",
         "username": "Lidia Hancock",
         "acctype": 1,
         "validuntil": 2333382745
     },
     {
         "uid": "21c9851d",
+        "pincode": "1234",
         "username": "Lina George",
         "acctype": 0,
         "validuntil": 8146061670
     },
     {
         "uid": "13c2627d",
+        "pincode": "1234",
         "username": "Fields Macdonald",
         "acctype": 0,
         "validuntil": 8564191761
     },
     {
         "uid": "61f7214b",
+        "pincode": "1234",
         "username": "Mollie Dean",
         "acctype": 1,
         "validuntil": 3201049552
     },
     {
         "uid": "94f4198b",
+        "pincode": "1234",
         "username": "Silva Lawrence",
         "acctype": 0,
         "validuntil": 3967606320
     },
     {
         "uid": "52c4392d",
+        "pincode": "1234",
         "username": "Tyler Gonzalez",
         "acctype": 0,
         "validuntil": 7258523602
     },
     {
         "uid": "74f9928c",
+        "pincode": "1234",
         "username": "Summers Whitehead",
         "acctype": 0,
         "validuntil": 3326998231
     },
     {
         "uid": "52f6266c",
+        "pincode": "1234",
         "username": "Misty Williams",
         "acctype": 1,
         "validuntil": 1760784347
     },
     {
         "uid": "71f4745c",
+        "pincode": "1234",
         "username": "Sanchez Osborn",
         "acctype": 1,
         "validuntil": 9210015456
     },
     {
         "uid": "65a5218c",
+        "pincode": "1234",
         "username": "Brown Glover",
         "acctype": 0,
         "validuntil": 6616351487
     },
     {
         "uid": "82f6569d",
+        "pincode": "1234",
         "username": "Pat Flowers",
         "acctype": 1,
         "validuntil": 2176624484
     },
     {
         "uid": "21a6381c",
+        "pincode": "1234",
         "username": "Tanya Mcmillan",
         "acctype": 1,
         "validuntil": 7135500634
     },
     {
         "uid": "62c8616b",
+        "pincode": "1234",
         "username": "Norma Perry",
         "acctype": 0,
         "validuntil": 8382065121
     },
     {
         "uid": "23f2325b",
+        "pincode": "1234",
         "username": "Etta Mooney",
         "acctype": 1,
         "validuntil": 5466868107
     },
     {
         "uid": "33a5116b",
+        "pincode": "1234",
         "username": "Marissa Waller",
         "acctype": 0,
         "validuntil": 8998269761
     },
     {
         "uid": "23c7176b",
+        "pincode": "1234",
         "username": "Kari Gutierrez",
         "acctype": 1,
         "validuntil": 3100510208
@@ -305,6 +332,7 @@ function updateuser(obj) {
     }
     var newdata = {};
     newdata.uid = obj.uid;
+    newdata.pincode = obj.pincode;
     newdata.username = obj.user;
     newdata.acctype = obj.acctype;
     newdata.validuntil = obj.validuntil;

@@ -26,6 +26,7 @@ void ICACHE_FLASH_ATTR sendUserList(int page, AsyncWebSocketClient *client)
 			if (json.success())
 			{
 				String username = json["user"];
+				String pincode = json["pincode"];
 				for (int x = 1; x <= MAX_NUM_RELAYS; x++)
 				{
 					String theKey = String();
@@ -34,14 +35,12 @@ void ICACHE_FLASH_ATTR sendUserList(int page, AsyncWebSocketClient *client)
 					else
 						theKey = "acctype" + String(x);
 					int AccType = json[theKey];
-#ifdef DEBUG
-					// Serial.printf ("[ DEBUG ] User uid %s Acctype %d %d key %s\n", uid.c_str()  , x ,AccType,theKey.c_str());
-#endif
 					item[theKey] = AccType;
 				}
 				unsigned long validuntil = json["validuntil"];
 				item["username"] = username;
 				item["validuntil"] = validuntil;
+				item["pincode"] = pincode;
 			}
 		}
 		i++;
