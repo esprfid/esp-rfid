@@ -375,23 +375,30 @@ void DeleteUserID(const char *uid)
 
 void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total)
 {
-	char jjson[total + 1];
-	memcpy(jjson, payload, total);
-	jjson[total + 1] = '\0';
-	String espIp = WiFi.localIP().toString();
-	Serial.println(espIp);
+	size_t n = 0;
+	size_t i = index;
+	while(n < len) {
+		mqttBuffer[i] = payload[n];
+		n++;
+		i++;
+	}
+	if(index + len == total) {
+		mqttBuffer[i + 1] = '\0';
+	} else {
+		return;
+	}
 	StaticJsonBuffer<255> jsonBuffer;
 #ifdef DEBUG
 	Serial.print("[ INFO ] JSON msg :");
-	Serial.println(jjson);
+	Serial.println(mqttBuffer);
 #endif
 
-	JsonObject &root = jsonBuffer.parseObject(jjson);
+	JsonObject &root = jsonBuffer.parseObject(mqttBuffer);
 	if (!root.success())
 	{
 #ifdef DEBUG
 		Serial.print("[ INFO ] Failed parse MQTT message :");
-		Serial.println(jjson);
+		Serial.println(mqttBuffer);
 #endif
 		return;
 	}
@@ -403,7 +410,7 @@ void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties 
 		if (root.containsKey("doorip"))
 		{
 			const char *ipadr = root["doorip"];
-
+			String espIp = WiFi.localIP().toString();
 			if (!((strcmp(ipadr, espIp.c_str()) == 0) && (ipadr != NULL)))
 			{
 #ifdef DEBUG
