@@ -9,14 +9,11 @@ var uglify = require('gulp-uglify');
 var pump = require('pump');
 
 function espRfidJsMinify (cb) {
-  pump([
+    return pump([
         gulp.src('../../src/websrc/js/esprfid.js'),
         uglify(),
         gulp.dest('../../src/websrc/gzipped/js/'),
-    ],
-    cb
-    );
-    cb();
+    ] );
 }
 
 function espRfidJsGz() {
