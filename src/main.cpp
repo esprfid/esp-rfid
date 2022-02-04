@@ -174,8 +174,6 @@ bool mqttEvents = false;	  // Sends events over MQTT disables SPIFFS file loggin
 
 bool mqttHA = false; // Sends events over simple MQTT topics and AutoDiscovery
 
-char mqttBuffer[1460];
-
 #include "log.esp"
 #include "mqtt.esp"
 #include "helpers.esp"

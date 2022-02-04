@@ -1,3 +1,5 @@
+char mqttBuffer[512];
+
 void connectToMqtt()
 {
 #ifdef DEBUG
@@ -387,7 +389,7 @@ void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties 
 	} else {
 		return;
 	}
-	StaticJsonBuffer<255> jsonBuffer;
+	StaticJsonBuffer<512> jsonBuffer;
 #ifdef DEBUG
 	Serial.print("[ INFO ] JSON msg :");
 	Serial.println(mqttBuffer);
