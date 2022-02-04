@@ -172,6 +172,15 @@
                   </select>
                 </span>
         </div>
+        <div class="row form-group">
+            <label class="col-xs-3">Pin code requested<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Ask pin code after having swiped an RFID card."></i></label>
+            <span class="col-xs-9 col-md-5">
+                  <select class="form-control input-sm" id="pincoderequested">
+                    <option value="false">False</option>
+                    <option value="true">True</option>
+                  </select>
+                </span>
+        </div>
     </div>
     <div class="" id="mfrc522Form" style="display:none">
         <div class="row form-group">
@@ -896,6 +905,12 @@
                         <label for="uid" class="col-sm-3 control-label">UID</label>
                         <div class="col-sm-9" style="font-family:monospace">
                             <input type="text" class="form-control" id="uid" name="uid" placeholder="UID" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="pincode" class="col-sm-3 control-label">Pin code</label>
+                        <div class="col-sm-9" style="font-family:monospace">
+                            <input type="text" class="form-control" id="pincode" name="pincode" placeholder="Pin code">
                         </div>
                     </div>
                     <div class="form-group required">

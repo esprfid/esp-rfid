@@ -153,6 +153,7 @@ function listhardware() {
   document.getElementById("doorbellpin").value = config.hardware.doorbellpin;
   document.getElementById("openlockpin").value = config.hardware.openlockpin;
   document.getElementById("accessdeniedpin").value = config.hardware.accessdeniedpin;
+  document.getElementById("pincoderequested").value = config.hardware.pincoderequested;
   if (isOfficialBoard) {
     document.getElementById("readertype").value = 1;
     document.getElementById("wg0pin").value = 5;
@@ -222,6 +223,7 @@ function savehardware() {
   config.hardware.readertype = parseInt(document.getElementById("readertype").value);
   config.hardware.wgd0pin = parseInt(document.getElementById("wg0pin").value);
   config.hardware.wgd1pin = parseInt(document.getElementById("wg1pin").value);
+  config.hardware.pincoderequested = document.getElementById("pincoderequested").value == "true";
   config.hardware.sspin = parseInt(document.getElementById("gpioss").value);
   config.hardware.rfidgain = parseInt(document.getElementById("gain").value);
   config.hardware.rtype = parseInt(document.getElementById("typerly").value);
@@ -799,15 +801,17 @@ function restoreSet() {
 
 function restore1by1(i, len, data) {
   var part = 100 / len;
-  var uid, user, acc, valid;
+  var uid, pincode, user, acc, valid;
   document.getElementById("dynamic").style.width = part * (i + 1) + "%";
   var datatosend = {};
   uid = data[i].uid;
+  pincode = data[i].pincode;
   user = data[i].username;
   acc = data[i].acctype;
   valid = data[i].validuntil;
   datatosend.command = "userfile";
   datatosend.uid = uid;
+  datatosend.pincode = pincode;
   datatosend.user = user;
   datatosend.acctype = acc;
   datatosend.validuntil = valid;
@@ -1182,6 +1186,12 @@ function initUserTable() {
             "style": "font-family:monospace"
           },
           {
+            "name": "pincode",
+            "title": "Pin code",
+            "type": "text",
+            "visible": false
+          },
+          {
             "name": "username",
             "title": "User Name or Label"
           },
@@ -1287,6 +1297,7 @@ function initUserTable() {
               if (xval === "Disabled") return 0;
             }
             $editor.find("#uid").val(values.uid);
+            $editor.find("#pincode").val(values.pincode);
             $editor.find("#username").val(values.username);
             $editor.find("#acctype").val(giveAccType(1));
             $editor.find("#acctype2").val(giveAccType(2));
@@ -1320,6 +1331,7 @@ function initUserTable() {
       var row = $modal.data("row"),
         values = {
           uid: $editor.find("#uid").val(),
+          pincode: $editor.find("#pincode").val(),
           username: $editor.find("#username").val(),
           acctype: parseInt($editor.find("#acctype").val()),
           acctype2: parseInt($editor.find("#acctype2").val()),
@@ -1338,6 +1350,7 @@ function initUserTable() {
       var datatosend = {};
       datatosend.command = "userfile";
       datatosend.uid = $editor.find("#uid").val();
+      datatosend.pincode = $editor.find("#pincode").val();
       datatosend.user = $editor.find("#username").val();
       datatosend.acctype = parseInt($editor.find("#acctype").val());
       datatosend.acctype2 = parseInt($editor.find("#acctype2").val());

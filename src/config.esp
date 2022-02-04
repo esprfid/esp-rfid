@@ -101,6 +101,7 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 		numRelays = 1;
 
 #ifdef OFFICIALBOARD
+	pinCodeRequested = hardware["pincoderequested"];
 	setupWiegandReader(5, 4);
 #endif
 #ifndef OFFICIALBOARD
@@ -109,6 +110,7 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 	{
 		int wgd0pin = hardware["wgd0pin"];
 		int wgd1pin = hardware["wgd1pin"];
+		pinCodeRequested = hardware["pincoderequested"];
 		setupWiegandReader(wgd0pin, wgd1pin); // also some other settings like weather to use keypad or not, LED pin, BUZZER pin, Wiegand 26/34 version
 	}
 	else if (readertype == READER_MFRC522 || readertype == READER_MFRC522_RDM6300)

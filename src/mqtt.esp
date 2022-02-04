@@ -391,7 +391,7 @@ void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties 
 	}
 	StaticJsonBuffer<512> jsonBuffer;
 #ifdef DEBUG
-	Serial.print("[ INFO ] JSON msg :");
+	Serial.print("[ INFO ] JSON msg: ");
 	Serial.println(mqttBuffer);
 #endif
 
@@ -399,7 +399,7 @@ void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties 
 	if (!root.success())
 	{
 #ifdef DEBUG
-		Serial.print("[ INFO ] Failed parse MQTT message :");
+		Serial.print("[ INFO ] Failed parse MQTT message: ");
 		Serial.println(mqttBuffer);
 #endif
 		return;
@@ -488,7 +488,7 @@ void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties 
 	{
 
 #ifdef DEBUG
-		Serial.print("[ INFO ] Add Users :");
+		Serial.print("[ INFO ] Add Users: ");
 		const char *name = root["user"];
 		Serial.println(name);
 #endif
