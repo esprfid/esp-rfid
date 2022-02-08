@@ -206,9 +206,13 @@ function htmls() {
         }));
 }
 
-const scriptTasks = gulp.series(espRfidJsMinify, espRfidJsGz, espRfidJsGzh, scriptsConcat, scripts);
-const styleTasks = gulp.series(stylesConcat, styles);
-const fontTasks = gulp.series(fontgz, fonts);
-const htmlTasks = gulp.series(htmlsGz, htmlsPrep, htmls);
+async function runner() {
+    const scriptTasks = gulp.series(espRfidJsMinify, espRfidJsGz, espRfidJsGzh, scriptsConcat, scripts);
+    const styleTasks = gulp.series(stylesConcat, styles);
+    const fontTasks = gulp.series(fontgz, fonts);
+    const htmlTasks = gulp.series(htmlsGz, htmlsPrep, htmls);
+    const parallel = await gulp.parallel(scriptTasks, styleTasks, fontTasks, htmlTasks);
+    return await parallel();
+}
 
-exports.default = gulp.parallel(scriptTasks, styleTasks, fontTasks, htmlTasks);
+exports.default = runner;
