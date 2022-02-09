@@ -1,6 +1,6 @@
 {
-  "name": "uglifier",
-  "version": "0.0.1",
+  "name": "webfilesbuilder",
+  "version": "1.0.0",
   "description": "Combine all js and css files into one and gzip them for the ESP-RFID project",
   "scripts": {
     "start": "gulp"
@@ -15,5 +15,6 @@
     "gulp-htmlmin": "^4.0.0",
     "gulp-uglify": "^3.0.2",
     "pump": "^3.0.0"
-  }
+  },
+  "bin": "bin.js"
 }
