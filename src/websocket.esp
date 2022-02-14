@@ -1,20 +1,18 @@
 void ICACHE_FLASH_ATTR procMsg(AsyncWebSocketClient *client, size_t sz)
 {
 	// We should always get a JSON object (stringfied) from browser, so parse it
-	DynamicJsonBuffer jsonBuffer;
-	//JsonObject &root = jsonBuffer.parseObject(msg);
+	DynamicJsonDocument root(4096);
 	char json[sz + 1];
 	memcpy(json, (char *)(client->_tempObject), sz);
 	json[sz] = '\0';
-	JsonObject &root = jsonBuffer.parseObject(json);
-	if (!root.success())
+	auto error = deserializeJson(root, json);
+	if (error)
 	{
 #ifdef DEBUG
 		Serial.println(F("[ WARN ] Couldn't parse WebSocket message"));
 #endif
 		free(client->_tempObject);
 		client->_tempObject = NULL;
-		//delete client->_tempObject;
 		return;
 	}
 	// Web Browser sends some commands, check which command is given
@@ -32,8 +30,8 @@ void ICACHE_FLASH_ATTR procMsg(AsyncWebSocketClient *client, size_t sz)
 		File f = SPIFFS.open("/config.json", "w+");
 		if (f)
 		{
-			size_t len = root.measurePrettyLength();
-			root.prettyPrintTo(f);
+			size_t len = measureJsonPretty(root);
+			serializeJsonPretty(root, f);
 			//f.print(msg);
 			f.close();
 			shouldReboot = true;
@@ -93,9 +91,7 @@ void ICACHE_FLASH_ATTR procMsg(AsyncWebSocketClient *client, size_t sz)
 	{
 #ifdef DEBUG
 		Serial.println(F("[ DEBUG ] userfile received"));
-		String st = String();
-		root.printTo(st);
-		Serial.println(st);
+		serializeJson(root, Serial);
 #endif
 		const char *uid = root["uid"];
 		String filename = "/P/";
@@ -104,8 +100,7 @@ void ICACHE_FLASH_ATTR procMsg(AsyncWebSocketClient *client, size_t sz)
 		// Check if we created the file
 		if (f)
 		{
-			//f.print(msg);
-			root.printTo(f);
+			serializeJson(root, f);
 #ifdef DEBUG
 		Serial.println(F("[ DEBUG ] userfile saved"));
 #endif
