@@ -1,10 +1,9 @@
 void ICACHE_FLASH_ATTR sendUserList(int page, AsyncWebSocketClient *client)
 {
-	DynamicJsonBuffer jsonBuffer;
-	JsonObject &root = jsonBuffer.createObject();
+	DynamicJsonDocument root(4096);
 	root["command"] = "userlist";
 	root["page"] = page;
-	JsonArray &users = root.createNestedArray("list");
+	JsonArray users = root.createNestedArray("list");
 	Dir dir = SPIFFS.openDir("/P/");
 	int first = (page - 1) * 15;
 	int last = page * 15;
@@ -13,7 +12,7 @@ void ICACHE_FLASH_ATTR sendUserList(int page, AsyncWebSocketClient *client)
 	{
 		if (i >= first && i < last)
 		{
-			JsonObject &item = users.createNestedObject();
+			JsonObject item = users.createNestedObject();
 			String uid = dir.fileName();
 			uid.remove(0, 3);
 			item["uid"] = uid;
@@ -21,9 +20,9 @@ void ICACHE_FLASH_ATTR sendUserList(int page, AsyncWebSocketClient *client)
 			size_t size = f.size();
 			std::unique_ptr<char[]> buf(new char[size]);
 			f.readBytes(buf.get(), size);
-			DynamicJsonBuffer jsonBuffer2;
-			JsonObject &json = jsonBuffer2.parseObject(buf.get());
-			if (json.success())
+			DynamicJsonDocument json(512);
+			auto error = deserializeJson(json, buf.get());
+			if (!error)
 			{
 				String username = json["user"];
 				String pincode = json["pincode"];
@@ -47,11 +46,11 @@ void ICACHE_FLASH_ATTR sendUserList(int page, AsyncWebSocketClient *client)
 	}
 	float pages = i / 15.0;
 	root["haspages"] = ceil(pages);
-	size_t len = root.measureLength();
+	size_t len = measureJson(root);
 	AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
 	if (buffer)
 	{
-		root.printTo((char *)buffer->get(), len + 1);
+		serializeJson(root, (char *)buffer->get(), len + 1);
 		if (client)
 		{
 			client->text(buffer);
@@ -74,8 +73,7 @@ void ICACHE_FLASH_ATTR sendStatus()
 		Serial.print(F("[ WARN ] Error getting info on SPIFFS"));
 #endif
 	}
-	DynamicJsonBuffer jsonBuffer;
-	JsonObject &root = jsonBuffer.createObject();
+	DynamicJsonDocument root(512);
 	root["command"] = "status";
 #ifdef OFFICIALBOARD
 	root["board"] = "brdV2";
@@ -116,11 +114,11 @@ void ICACHE_FLASH_ATTR sendStatus()
 	root["gateway"] = printIP(gwaddr);
 	root["netmask"] = printIP(nmaddr);
 
-	size_t len = root.measureLength();
+	size_t len = measureJson(root);
 	AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
 	if (buffer)
 	{
-		root.printTo((char *)buffer->get(), len + 1);
+		serializeJson(root, (char *)buffer->get(), len + 1);
 		ws.textAll(buffer);
 	}
 }
@@ -146,13 +144,12 @@ void ICACHE_FLASH_ATTR printScanResult(int networksFound)
 			}
 		}
 	}
-	DynamicJsonBuffer jsonBuffer;
-	JsonObject &root = jsonBuffer.createObject();
+	DynamicJsonDocument root(512);
 	root["command"] = "ssidlist";
-	JsonArray &scan = root.createNestedArray("list");
+	JsonArray scan = root.createNestedArray("list");
 	for (int i = 0; i < 5 && i < networksFound; ++i)
 	{
-		JsonObject &item = scan.createNestedObject();
+		JsonObject item = scan.createNestedObject();
 		item["ssid"] = WiFi.SSID(indices[i]);
 		item["bssid"] = WiFi.BSSIDstr(indices[i]);
 		item["rssi"] = WiFi.RSSI(indices[i]);
@@ -160,11 +157,11 @@ void ICACHE_FLASH_ATTR printScanResult(int networksFound)
 		item["enctype"] = WiFi.encryptionType(indices[i]);
 		item["hidden"] = WiFi.isHidden(indices[i]) ? true : false;
 	}
-	size_t len = root.measureLength();
+	size_t len = measureJson(root);
 	AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
 	if (buffer)
 	{
-		root.printTo((char *)buffer->get(), len + 1);
+		serializeJson(root, (char *)buffer->get(), len + 1);
 		ws.textAll(buffer);
 	}
 	WiFi.scanDelete();
@@ -172,16 +169,15 @@ void ICACHE_FLASH_ATTR printScanResult(int networksFound)
 
 void ICACHE_FLASH_ATTR sendTime()
 {
-	DynamicJsonBuffer jsonBuffer;
-	JsonObject &root = jsonBuffer.createObject();
+	DynamicJsonDocument root(512);
 	root["command"] = "gettime";
 	root["epoch"] = now();
 	root["timezone"] = timeZone;
-	size_t len = root.measureLength();
+	size_t len = measureJson(root);
 	AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
 	if (buffer)
 	{
-		root.printTo((char *)buffer->get(), len + 1);
+		serializeJson(root, (char *)buffer->get(), len + 1);
 		ws.textAll(buffer);
 	}
 }

@@ -53,15 +53,14 @@ void mqtt_publish_boot(time_t boot_time)
 {
 	String stopic(mqttTopic);
 	stopic = stopic + "/send";
-	DynamicJsonBuffer jsonBuffer;
-	JsonObject &root = jsonBuffer.createObject();
+	DynamicJsonDocument root(512);
 	root["type"] = "boot";
 	root["time"] = boot_time;
 	root["uptime"] = "0";
 	root["ip"] = WiFi.localIP().toString();
 	root["hostname"] = deviceHostname;
 	String mqttBuffer_boot;
-	root.printTo(mqttBuffer_boot);
+	serializeJson(root, mqttBuffer_boot);
 	mqttClient.publish(stopic.c_str(), 0, false, mqttBuffer_boot.c_str());
 #ifdef DEBUG
 	Serial.print("[ INFO ] Mqtt Publish:");
@@ -75,11 +74,10 @@ void mqtt_publish_discovery()
 	String deviceName = deviceHostname;
 
 	String topic;
-	DynamicJsonBuffer jsonBuffer;
+	DynamicJsonDocument jsonBuffer(512);
 	String mqttBuffer;
 
-	DynamicJsonBuffer jsonBufferVia;
-	JsonObject &via = jsonBufferVia.createObject();
+	DynamicJsonDocument via(512);
 	via["ids"] = WiFi.macAddress();
 
 	for (int i = 0; i < 6; i++)
@@ -90,13 +88,12 @@ void mqtt_publish_discovery()
 		{
 		case 0:
 		{
-			DynamicJsonBuffer jsonBufferDevice;
-			JsonObject &dev = jsonBufferDevice.createObject();
+			DynamicJsonDocument dev(512);
 			dev["ids"] = WiFi.macAddress();
 			dev["name"] = deviceHostname;
 			dev["mf"] = "esp-rfid";
 			dev["sw"] = VERSION;
-			JsonObject &root = jsonBuffer.createObject();
+			DynamicJsonDocument root(512);
 			topic = "homeassistant/lock/" + deviceName + "/config";
 			root["name"] = "Lock";
 			root["uniq_id"] = deviceName + "/lock";
@@ -106,12 +103,12 @@ void mqtt_publish_discovery()
 			root["pl_lock"] = "{cmd:'opendoor'}";
 			root["avty_t"] = mtopic + "/avty";
 			root["dev"] = dev;
-			root.printTo(mqttBuffer);
+			serializeJson(root, mqttBuffer);
 			break;
 		}
 		case 1:
 		{
-			JsonObject &door = jsonBuffer.createObject();
+			DynamicJsonDocument door(512);
 			topic = "homeassistant/binary_sensor/" + deviceName + "/door/config";
 			door["name"] = "Door";
 			door["uniq_id"] = deviceName + "/door";
@@ -119,12 +116,12 @@ void mqtt_publish_discovery()
 			door["avty_t"] = mtopic + "/avty";
 			door["dev_cla"] = "door";
 			door["dev"] = via;
-			door.printTo(mqttBuffer);
+			serializeJson(door, mqttBuffer);
 			break;
 		}
 		case 2:
 		{
-			JsonObject &doorbell = jsonBuffer.createObject();
+			DynamicJsonDocument doorbell(512);
 			topic = "homeassistant/binary_sensor/" + deviceName + "/doorbell/config";
 			doorbell["name"] = "Doorbell";
 			doorbell["uniq_id"] = deviceName + "/doorbell";
@@ -133,12 +130,12 @@ void mqtt_publish_discovery()
 			doorbell["dev_cla"] = "sound";
 			doorbell["icon"] = "mdi:bell";
 			doorbell["dev"] = via;
-			doorbell.printTo(mqttBuffer);
+			serializeJson(doorbell, mqttBuffer);
 			break;
 		}
 		case 3:
 		{
-			JsonObject &tag = jsonBuffer.createObject();
+			DynamicJsonDocument tag(512);
 			topic = "homeassistant/sensor/" + deviceName + "/tag/config";
 			tag["name"] = "Tag";
 			tag["uniq_id"] = deviceName + "/tag";
@@ -148,12 +145,12 @@ void mqtt_publish_discovery()
 			tag["json_attr_t"] = mtopic + "/tag";
 			tag["icon"] = "mdi:key";
 			tag["dev"] = via;
-			tag.printTo(mqttBuffer);
+			serializeJson(tag, mqttBuffer);
 			break;
 		}
 		case 4:
 		{
-			JsonObject &user = jsonBuffer.createObject();
+			DynamicJsonDocument user(512);
 			topic = "homeassistant/sensor/" + deviceName + "/user/config";
 			user["name"] = "User";
 			user["uniq_id"] = deviceName + "/name";
@@ -163,12 +160,12 @@ void mqtt_publish_discovery()
 			user["json_attr_t"] = mtopic + "/tag";
 			user["icon"] = "mdi:human";
 			user["dev"] = via;
-			user.printTo(mqttBuffer);
+			serializeJson(user, mqttBuffer);
 			break;
 		}
 		case 5:
 		{
-			JsonObject &tamper = jsonBuffer.createObject();
+			DynamicJsonDocument tamper(512);
 			topic = "homeassistant/binary_sensor/" + deviceName + "/tamper/config";
 			tamper["name"] = "Door tamper";
 			tamper["uniq_id"] = deviceName + "/tamper";
@@ -177,7 +174,7 @@ void mqtt_publish_discovery()
 			tamper["dev_cla"] = "safety";
 			//tamper["icon"] = "mdi:bell";
 			tamper["dev"] = via;
-			tamper.printTo(mqttBuffer);
+			serializeJson(tamper, mqttBuffer);
 			break;
 		}
 		}
@@ -205,10 +202,9 @@ void mqtt_publish_avty()
 void mqtt_publish_heartbeat(time_t heartbeat, time_t uptime)
 {
 	String stopic(mqttTopic);
-	DynamicJsonBuffer jsonBuffer;
+	DynamicJsonDocument root(512);
 
 	stopic = stopic + "/send";
-	JsonObject &root = jsonBuffer.createObject();
 	root["type"] = "heartbeat";
 	root["time"] = heartbeat;
 	root["uptime"] = uptime;
@@ -216,7 +212,7 @@ void mqtt_publish_heartbeat(time_t heartbeat, time_t uptime)
 	root["hostname"] = deviceHostname;
 
 	String mqttBuffer8;
-	root.printTo(mqttBuffer8);
+	serializeJson(root, mqttBuffer8);
 	mqttClient.publish(stopic.c_str(), 0, false, mqttBuffer8.c_str());
 #ifdef DEBUG
 	Serial.print("[ INFO ] Mqtt Publish:");
@@ -237,8 +233,7 @@ void mqtt_publish_access(time_t accesstime, String const &isknown, String const 
 		{
 			stopic = stopic + "/tag";
 		}
-		DynamicJsonBuffer jsonBuffer;
-		JsonObject &root = jsonBuffer.createObject();
+		DynamicJsonDocument root(512);
 		// log to MQTT adding cmd command
 		if (mqttEvents)
 		{
@@ -262,7 +257,7 @@ void mqtt_publish_access(time_t accesstime, String const &isknown, String const 
 			root["time"] = accesstime;
 		}
 		String mqttBuffer;
-		root.printTo(mqttBuffer);
+		serializeJson(root, mqttBuffer);
 		mqttClient.publish(stopic.c_str(), 0, false, mqttBuffer.c_str());
 #ifdef DEBUG
 		Serial.print("[ INFO ] Mqtt Publish:");
@@ -287,14 +282,14 @@ void mqtt_publish_io(String const &io, String const &state)
 	}
 }
 
-void mqtt_publish_event(JsonObject *root)
+void mqtt_publish_event(JsonDocument *root)
 {
 	if (mqttClient.connected())
 	{
 		String stopic(mqttTopic);
 		stopic = stopic + "/send";
 		String mqttBuffer;
-		root->printTo(mqttBuffer);
+		serializeJson(*root, mqttBuffer);
 		mqttClient.publish(stopic.c_str(), 0, false, mqttBuffer.c_str());
 	}
 }
@@ -311,16 +306,15 @@ void ICACHE_FLASH_ATTR getUserList(int todo)
 		stopic = stopic + "/accesslist";
 	else if (todo == 1) // Just for List
 		stopic = stopic + "/send";
-	DynamicJsonBuffer jsonBuffer;
-	JsonObject &root = jsonBuffer.createObject();
-	JsonArray &users = root.createNestedArray("list");
+	DynamicJsonDocument root(512);
+	JsonArray users = root.createNestedArray("list");
 	Dir dir = SPIFFS.openDir("/P/");
 #ifdef DEBUG
 	Serial.println("[ INFO ] getUserList");
 #endif
 	while (dir.next())
 	{
-		JsonObject &item = users.createNestedObject();
+		JsonObject item = users.createNestedObject();
 		String uid = dir.fileName();
 		uid.remove(0, 3);
 		item["uid"] = uid;
@@ -328,15 +322,15 @@ void ICACHE_FLASH_ATTR getUserList(int todo)
 		size_t size = f.size();
 		std::unique_ptr<char[]> buf(new char[size]);
 		f.readBytes(buf.get(), size);
-		DynamicJsonBuffer jsonBuffer2;
-		JsonObject &json = jsonBuffer2.parseObject(buf.get());
-		if (json.success())
+		DynamicJsonDocument json(512);
+		auto error = deserializeJson(json, buf.get());
+		if (!error)
 		{
 
 			if (mqttClient.connected())
 			{
 				String mqttBuffer;
-				json.printTo(mqttBuffer);
+				serializeJson(json, mqttBuffer);
 				mqttClient.publish(stopic.c_str(), 0, false, mqttBuffer.c_str());
 #ifdef DEBUG
 				Serial.print("[ INFO ] Mqtt Publish:");
@@ -391,7 +385,6 @@ void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties 
 	} else {
 		return;
 	}
-	StaticJsonBuffer<512> jsonBuffer;
 #ifdef DEBUG
 	Serial.print("[ INFO ] JSON msg: ");
 	Serial.println(mqttBuffer);

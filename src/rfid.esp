@@ -276,9 +276,9 @@ void ICACHE_FLASH_ATTR rfidloop()
 		size_t size = f.size();
 		std::unique_ptr<char[]> buf(new char[size]);
 		f.readBytes(buf.get(), size);
-		DynamicJsonBuffer jsonBuffer;
-		JsonObject &json = jsonBuffer.parseObject(buf.get());
-		if (json.success())
+		DynamicJsonDocument json(512);
+		auto error = deserializeJson(json, buf.get());
+		if (!error)
 		{
 
 			for (int currentRelay = 0; currentRelay < numRelays; currentRelay++)
@@ -370,19 +370,18 @@ void ICACHE_FLASH_ATTR rfidloop()
 					}
 				}
 				writeLatest(uid, username, AccType);
-				DynamicJsonBuffer jsonBuffer2;
-				JsonObject &root = jsonBuffer2.createObject();
+				DynamicJsonDocument root(512);
 				root["command"] = "piccscan";
 				root["uid"] = uid;
 				root["type"] = type;
 				root["known"] = 1;
 				root["acctype"] = AccType;
 				root["user"] = username;
-				size_t len = root.measureLength();
+				size_t len = measureJson(root);
 				AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
 				if (buffer)
 				{
-					root.printTo((char *)buffer->get(), len + 1);
+					serializeJson(root, (char *)buffer->get(), len + 1);
 					ws.textAll(buffer);
 				}
 			}
@@ -402,17 +401,16 @@ void ICACHE_FLASH_ATTR rfidloop()
 		data += " " + String(type);
 		writeEvent("WARN", "rfid", "Unknown rfid tag is scanned", data);
 		writeLatest(uid, "Unknown", 98);
-		DynamicJsonBuffer jsonBuffer;
-		JsonObject &root = jsonBuffer.createObject();
+		DynamicJsonDocument root(512);
 		root["command"] = "piccscan";
 		root["uid"] = uid;
 		root["type"] = type;
 		root["known"] = 0;
-		size_t len = root.measureLength();
+		size_t len = measureJson(root);
 		AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
 		if (buffer)
 		{
-			root.printTo((char *)buffer->get(), len + 1);
+			serializeJson(root, (char *)buffer->get(), len + 1);
 			ws.textAll(buffer);
 		}
 		if (mqttEnabled)
