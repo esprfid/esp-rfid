@@ -234,13 +234,8 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 #ifdef DEBUG
 	Serial.println("[ INFO ] Trying to setup NTP Server");
 #endif
-	/*
-	IPAddress timeserverip;
-	WiFi.hostByName(ntpserver, timeserverip);
-	String ip = printIP(timeserverip);
-	writeEvent("INFO", "ntp", "Connecting NTP Server", ip);
-	*/
 	NTP.Ntp(ntpserver, timeZone, ntpinter * 60);
+
 	if (mqtt["enabled"] == 1)
 		mqttEnabled = true;
 	else
