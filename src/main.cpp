@@ -477,5 +477,6 @@ void ICACHE_RAM_ATTR loop()
 #endif
 			}
 		}
+		processMqttMessage();
 	}
 }

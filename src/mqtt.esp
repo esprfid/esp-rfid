@@ -1,4 +1,6 @@
 char mqttBuffer[512];
+StaticJsonDocument<512> incomingMqttMessage;
+bool mqttMessageToProcess = false;
 
 void connectToMqtt()
 {
@@ -388,8 +390,7 @@ void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties 
 	Serial.println(mqttBuffer);
 #endif
 
-	StaticJsonDocument<512> root;
-	auto error = deserializeJson(root, mqttBuffer);
+	auto error = deserializeJson(incomingMqttMessage, mqttBuffer);
 	if (error)
 	{
 #ifdef DEBUG
@@ -403,9 +404,9 @@ void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties 
 	{
 		// Check if IP was send with command because we only
 		// accept commands for this where sent IP is equal to device IP
-		if (root.containsKey("doorip"))
+		if (incomingMqttMessage.containsKey("doorip"))
 		{
-			const char *ipadr = root["doorip"];
+			const char *ipadr = incomingMqttMessage["doorip"];
 			String espIp = WiFi.localIP().toString();
 			if (!((strcmp(ipadr, espIp.c_str()) == 0) && (ipadr != NULL)))
 			{
@@ -424,15 +425,21 @@ void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties 
 		}
 	}
 
-	////////////////////////////////////////////////////////////
-	// CASE FOR MQTT
-	////////////////////////////////////////////////////////////
-	const char *command = root["cmd"];
-	// Check whatever the command is and act accordingly
+	mqttMessageToProcess = true;
+	return;
+}
+
+void processMqttMessage() {
+	if(!mqttMessageToProcess)
+	{
+		return;
+	}
+	mqttMessageToProcess = false;
+	const char *command = incomingMqttMessage["cmd"];
 	if (strcmp(command, "getuser") == 0)
 	{
 #ifdef DEBUG
-		Serial.println("[ MARE ] Get User List");
+		Serial.println("[ INFO ] Get User List");
 #endif
 		getUserList(0);
 		return;
@@ -473,7 +480,7 @@ void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties 
 #ifdef DEBUG
 		Serial.println("[ INFO ] Delete a single user by uid");
 #endif
-		const char *uid = root["uid"];
+		const char *uid = incomingMqttMessage["uid"];
 		DeleteUserID(uid);
 		return;
 	}
@@ -483,18 +490,18 @@ void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties 
 
 #ifdef DEBUG
 		Serial.print("[ INFO ] Add Users: ");
-		const char *name = root["user"];
+		const char *name = incomingMqttMessage["user"];
 		Serial.println(name);
 #endif
 
-		const char *uid = root["uid"];
+		const char *uid = incomingMqttMessage["uid"];
 		String filename = "/P/";
 		filename += uid;
 		File f = SPIFFS.open(filename, "w+");
 		// Check if we created the file
 		if (f)
 		{
-			serializeJson(root, f);
+			serializeJson(incomingMqttMessage, f);
 		}
 		f.close();
 		return;

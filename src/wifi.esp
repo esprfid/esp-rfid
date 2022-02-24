@@ -39,8 +39,9 @@ void onWifiGotIP(const WiFiEventStationModeGotIP &event)
 #ifdef DEBUG
 	Serial.println(F("\n[ INFO ] WiFi IP Connected"));
 #endif
-	connectToMqtt();
-	//writeEvent("INFO", "wifi", "Connected with IP", "onWifiGotIP");
+	if (mqttEnabled) {
+		connectToMqtt();
+	}
 }
 
 bool ICACHE_FLASH_ATTR startAP(IPAddress apip, IPAddress apsubnet, int hid, const char *ssid, const char *password = NULL)
@@ -165,11 +166,6 @@ bool ICACHE_FLASH_ATTR connectSTA(const char *ssid, const char *password, byte b
 	if (WiFi.status() == WL_CONNECTED)
 	{
 		// Assume time is out first and check
-#ifdef DEBUG
-		//Serial.println();
-		Serial.print(F("[ INFO ] Client IP address: "));
-		Serial.println(WiFi.localIP());
-#endif
 		isWifiConnected = true;
 		String data = ssid;
 		data += " " + WiFi.localIP().toString();
