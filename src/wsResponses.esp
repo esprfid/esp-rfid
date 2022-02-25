@@ -172,7 +172,7 @@ void ICACHE_FLASH_ATTR sendTime()
 	DynamicJsonDocument root(512);
 	root["command"] = "gettime";
 	root["epoch"] = now();
-	root["timezone"] = timeZone;
+	root["timezone"] = config.timeZone;
 	size_t len = measureJson(root);
 	AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
 	if (buffer)

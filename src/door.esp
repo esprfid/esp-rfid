@@ -6,32 +6,32 @@ void doorStatus(/* arguments */)
 {
 
   // if this changes and if mqtt and mqtt logging enabled, push the message, also to a web socket!
-  if ((digitalRead(doorstatpin) == HIGH) && (lastDoorState == 0))
+  if ((digitalRead(config.doorstatpin) == HIGH) && (lastDoorState == 0))
   {
     writeEvent("INFO", "door", "Door Closed", "");
     if (lastTamperState == 1)
     {
       lastTamperState = 0;
-      if ((mqttHA) && (mqttEnabled == 1))
+      if ((config.mqttHA) && (config.mqttEnabled == 1))
       {
         mqtt_publish_io("tamper", "OFF");
       }
     }
-    if ((mqttHA) && (mqttEnabled == 1))
+    if ((config.mqttHA) && (config.mqttEnabled == 1))
     {
       mqtt_publish_io("door", "OFF");
     }
     lastDoorState = 1;
   }
 
-  if ((digitalRead(doorstatpin) == LOW) && (lastDoorState == 1))
+  if ((digitalRead(config.doorstatpin) == LOW) && (lastDoorState == 1))
   {
     writeEvent("INFO", "door", "Door Open", "");
-    if (digitalRead(relayPin[0]) == !relayType[0])
+    if (digitalRead(config.relayPin[0]) == !config.relayType[0])
     {
       writeEvent("WARN", "tamper", "Door was tampered!", "");
       lastTamperState = 1;
-      if ((mqttHA) && (mqttEnabled == 1))
+      if ((config.mqttHA) && (config.mqttEnabled == 1))
       {
         mqtt_publish_io("tamper", "ON");
       }
@@ -44,7 +44,7 @@ void doorStatus(/* arguments */)
       Serial.println(openDoorMillis);
 #endif
     }
-    if ((mqttHA) && (mqttEnabled == 1))
+    if ((config.mqttHA) && (config.mqttEnabled == 1))
     {
       mqtt_publish_io("door", "ON");
     }
@@ -52,7 +52,7 @@ void doorStatus(/* arguments */)
   }
   if ((lastDoorState == 0) && (lastTamperState == 0))
 	{
-		if (currentMillis - openDoorMillis >= maxOpenDoorTime*1000)
+		if (currentMillis - openDoorMillis >= config.maxOpenDoorTime*1000)
 		{
 #ifdef DEBUG
       Serial.print("currentMillis : ");
@@ -63,7 +63,7 @@ void doorStatus(/* arguments */)
 
 			writeEvent("WARN", "tamper", "Door wasn't closed within max open time!", "");
 			lastTamperState = 1;
-			if ((mqttHA) && (mqttEnabled == 1))
+			if ((config.mqttHA) && (config.mqttEnabled == 1))
 			{
 				mqtt_publish_io("tamper", "ON");
 			}

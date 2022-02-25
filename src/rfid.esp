@@ -32,7 +32,7 @@ void ICACHE_FLASH_ATTR wiegandRead()
 	// When # is pressed stop keytimer to capture code
 	if (wg.getWiegandType() == WIEGANDTYPE_KEYPRESS && keyTimer > 0 && String(wg.getCode(), HEX) == "d")
 	{
-		if(pinCodeRequested) {
+		if(config.pinCodeRequested) {
 			pinCode = currentInput;
 		} else {
 			uid = currentInput;
@@ -40,7 +40,7 @@ void ICACHE_FLASH_ATTR wiegandRead()
 		}
 #ifdef DEBUG
 		Serial.println("Stop capture keycode . . .");
-		if(pinCodeRequested) {
+		if(config.pinCodeRequested) {
 			Serial.print(F("[ INFO ] PICC's pin code: "));
 		}
 		else {
@@ -68,7 +68,7 @@ void ICACHE_FLASH_ATTR rfidloop()
 	}
 #endif
 #ifndef OFFICIALBOARD
-	if (readertype == READER_MFRC522)
+	if (config.readertype == READER_MFRC522)
 	{
 		if (!mfrc522.PICC_IsNewCardPresent())
 		{
@@ -98,7 +98,7 @@ void ICACHE_FLASH_ATTR rfidloop()
 		Serial.print(" " + type);
 #endif
 	}
-	else if (readertype == READER_WIEGAND)
+	else if (config.readertype == READER_WIEGAND)
 	{
 		if (wg.available())
 		{
@@ -128,11 +128,11 @@ void ICACHE_FLASH_ATTR rfidloop()
 			return;
 		}
 		// We need to wait for the pin code after a card is read
-		if (pinCodeRequested && pinCode == "") {
+		if (config.pinCodeRequested && pinCode == "") {
 			return;
 		}
 	}
-	else if (readertype == READER_PN532)
+	else if (config.readertype == READER_PN532)
 	{
 		bool found = false;
 		byte pnuid[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
@@ -159,7 +159,7 @@ void ICACHE_FLASH_ATTR rfidloop()
 			return;
 		}
 	}
-	else if (readertype > READER_PN532)
+	else if (config.readertype > READER_PN532)
 	{
 		while (Serial.available() > 0)
 		{
@@ -177,14 +177,14 @@ void ICACHE_FLASH_ATTR rfidloop()
 		}
 		else
 		{
-			if (readertype == READER_RDM6300)
+			if (config.readertype == READER_RDM6300)
 			{
 				delay(50);
 				return;
 			}
 		}
 
-		if (readertype == READER_MFRC522_RDM6300 && uid.length() == 0)
+		if (config.readertype == READER_MFRC522_RDM6300 && uid.length() == 0)
 		{
 			if (!mfrc522.PICC_IsNewCardPresent())
 			{
@@ -215,7 +215,7 @@ void ICACHE_FLASH_ATTR rfidloop()
 #endif
 		}
 
-		else if (readertype == READER_WIEGAND_RDM6300 && uid.length() == 0)
+		else if (config.readertype == READER_WIEGAND_RDM6300 && uid.length() == 0)
 		{
 			if (wg.available())
 			{
@@ -233,7 +233,7 @@ void ICACHE_FLASH_ATTR rfidloop()
 			}
 		}
 
-		else if (readertype == READER_PN532_RDM6300 && uid.length() == 0)
+		else if (config.readertype == READER_PN532_RDM6300 && uid.length() == 0)
 		{
 			bool found = false;
 			byte pnuid[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
@@ -281,7 +281,7 @@ void ICACHE_FLASH_ATTR rfidloop()
 		if (!error)
 		{
 
-			for (int currentRelay = 0; currentRelay < numRelays; currentRelay++)
+			for (int currentRelay = 0; currentRelay < config.numRelays; currentRelay++)
 			{
 
 				int AccType = ACCCESS_DENIED;
@@ -293,12 +293,12 @@ void ICACHE_FLASH_ATTR rfidloop()
 					AccType = json["acctype" + String(currentRelay + 1)];
 
 				// if the pin code is wrong we deny access
-				if(pinCodeRequested && pinCode != json["pincode"]) {
+				if(config.pinCodeRequested && pinCode != json["pincode"]) {
 					AccType = ACCCESS_DENIED;
 #ifdef DEBUG
 					Serial.println("Wrong pin code");
 #endif
-					if (mqttEnabled)
+					if (config.mqttEnabled)
 					{
 						mqtt_publish_access(now(), "true", "Wrong pin code", username, uid);
 					}
@@ -324,7 +324,7 @@ void ICACHE_FLASH_ATTR rfidloop()
 #ifdef DEBUG
 						Serial.printf(" has access relay %d\n", currentRelay);
 #endif
-						if (mqttEnabled)
+						if (config.mqttEnabled)
 						{
 							mqtt_publish_access(now(), "true", "Always", username, uid);
 						}
@@ -335,7 +335,7 @@ void ICACHE_FLASH_ATTR rfidloop()
 #ifdef DEBUG
 						Serial.println(" expired");
 #endif
-						if (mqttEnabled)
+						if (config.mqttEnabled)
 						{
 							mqtt_publish_access(now(), "true", "Expired", username, uid);
 						}
@@ -349,7 +349,7 @@ void ICACHE_FLASH_ATTR rfidloop()
 #ifdef DEBUG
 					Serial.println(" has admin access, enable wifi");
 #endif
-					if (mqttEnabled)
+					if (config.mqttEnabled)
 					{
 						mqtt_publish_access(now(), "true", "Admin", username, uid);
 					}
@@ -359,14 +359,14 @@ void ICACHE_FLASH_ATTR rfidloop()
 #ifdef DEBUG
 					Serial.println(" does not have access");
 #endif
-					if (mqttEnabled)
+					if (config.mqttEnabled)
 					{
 						mqtt_publish_access(now(), "true", "Disabled", username, uid);
 					}
-					if (accessdeniedpin != 255)
+					if (config.accessdeniedpin != 255)
 					{
 						accessdeniedOffTime = currentMillis + 1000;
-						digitalWrite(accessdeniedpin, HIGH);
+						digitalWrite(config.accessdeniedpin, HIGH);
 					}
 				}
 				writeLatest(uid, username, AccType);
@@ -413,14 +413,14 @@ void ICACHE_FLASH_ATTR rfidloop()
 			serializeJson(root, (char *)buffer->get(), len + 1);
 			ws.textAll(buffer);
 		}
-		if (mqttEnabled)
+		if (config.mqttEnabled)
 		{
 			mqtt_publish_access(now(), "false", "Denied", "Unknown", uid);
 		}
-		if (accessdeniedpin != 255)
+		if (config.accessdeniedpin != 255)
 		{
 			accessdeniedOffTime = currentMillis + 1000;
-			digitalWrite(accessdeniedpin, HIGH);
+			digitalWrite(config.accessdeniedpin, HIGH);
 		}
 	}
 	pinCode = "";

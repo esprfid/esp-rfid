@@ -1,4 +1,4 @@
-bool ICACHE_FLASH_ATTR loadConfiguration()
+bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 {
 	File configFile = SPIFFS.open("/config.json", "r");
 	if (!configFile)
@@ -35,85 +35,82 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 #endif
 	if (hardware.containsKey("wifipin"))
 	{
-		wifipin = hardware["wifipin"];
-		if (wifipin != 255)
+		config.wifipin = hardware["wifipin"];
+		if (config.wifipin != 255)
 		{
-			pinMode(wifipin, OUTPUT);
-			digitalWrite(wifipin, LEDoff);
+			pinMode(config.wifipin, OUTPUT);
+			digitalWrite(config.wifipin, LEDoff);
 		}
 	}
 
 	if (hardware.containsKey("doorstatpin"))
 	{
-		doorstatpin = hardware["doorstatpin"];
-		if (doorstatpin != 255)
+		config.doorstatpin = hardware["doorstatpin"];
+		if (config.doorstatpin != 255)
 		{
-			pinMode(doorstatpin, INPUT);
+			pinMode(config.doorstatpin, INPUT);
 		}
 	}
 
 	if (hardware.containsKey("maxOpenDoorTime"))
 	{
-		maxOpenDoorTime = hardware["maxOpenDoorTime"];
+		config.maxOpenDoorTime = hardware["maxOpenDoorTime"];
 		Serial.print("maxOpenDoorTime = ");
-		Serial.println(maxOpenDoorTime);
-		//if (doorstatpin != 255)
-		//{
-		//	pinMode(doorstatpin, INPUT);
-		//}
+		Serial.println(config.maxOpenDoorTime);
 	}
 
 	if (hardware.containsKey("doorbellpin"))
 	{
-		doorbellpin = hardware["doorbellpin"];
-		if (doorbellpin != 255)
+		config.doorbellpin = hardware["doorbellpin"];
+		if (config.doorbellpin != 255)
 		{
-			pinMode(doorbellpin, INPUT);
+			pinMode(config.doorbellpin, INPUT);
 		}
 	}
 
 	if (hardware.containsKey("accessdeniedpin"))
 	{
-		accessdeniedpin = hardware["accessdeniedpin"];
-		if (accessdeniedpin != 255)
+		config.accessdeniedpin = hardware["accessdeniedpin"];
+		if (config.accessdeniedpin != 255)
 		{
-			pinMode(accessdeniedpin, OUTPUT);
-			digitalWrite(accessdeniedpin, LOW);
+			pinMode(config.accessdeniedpin, OUTPUT);
+			digitalWrite(config.accessdeniedpin, LOW);
 		}
 	}
 
 	if (hardware.containsKey("openlockpin"))
 	{
-		openlockpin = hardware["openlockpin"];
-		if (openlockpin != 255)
+		config.openlockpin = hardware["openlockpin"];
+		if (config.openlockpin != 255)
 		{
 			openLockButton = Bounce();
-			openLockButton.attach(openlockpin, INPUT_PULLUP);
+			openLockButton.attach(config.openlockpin, INPUT_PULLUP);
 			openLockButton.interval(30);
 		}
 	}
 
 	if (hardware.containsKey("numrelays"))
 	{
-		numRelays = hardware["numrelays"];
+		config.numRelays = hardware["numrelays"];
 	}
 	else
-		numRelays = 1;
+		config.numRelays = 1;
 
 #ifdef OFFICIALBOARD
-	pinCodeRequested = hardware["pincoderequested"];
+	config.pinCodeRequested = hardware["pincoderequested"];
 	setupWiegandReader(5, 4);
 #endif
 #ifndef OFFICIALBOARD
-	readertype = hardware["readertype"];
-	if (readertype == READER_WIEGAND || readertype == READER_WIEGAND_RDM6300)
+	config.readertype = hardware["readertype"];
+	int rfidss;
+	if (config.readertype == READER_WIEGAND || config.readertype == READER_WIEGAND_RDM6300)
 	{
 		int wgd0pin = hardware["wgd0pin"];
 		int wgd1pin = hardware["wgd1pin"];
-		pinCodeRequested = hardware["pincoderequested"];
+		config.pinCodeRequested = hardware["pincoderequested"];
 		setupWiegandReader(wgd0pin, wgd1pin); // also some other settings like weather to use keypad or not, LED pin, BUZZER pin, Wiegand 26/34 version
 	}
-	else if (readertype == READER_MFRC522 || readertype == READER_MFRC522_RDM6300)
+	else if (config.readertype == READER_MFRC522 || config.readertype == READER_MFRC522_RDM6300)
 	{
 		rfidss = 15;
 		if (hardware.containsKey("sspin"))
@@ -123,25 +120,25 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 		int rfidgain = hardware["rfidgain"];
 		setupMFRC522Reader(rfidss, rfidgain);
 	}
-	else if (readertype == READER_PN532 || readertype == READER_PN532_RDM6300)
+	else if (config.readertype == READER_PN532 || config.readertype == READER_PN532_RDM6300)
 	{
 		rfidss = hardware["sspin"];
 		setupPN532Reader(rfidss);
 	}
 #ifndef DEBUG
-	if (readertype > 2)
+	if (config.readertype > 2)
 		Serial.begin(9600);
 #endif
 #endif
-	autoRestartIntervalSeconds = general["restart"];
-	wifiTimeout = network["offtime"];
+	config.autoRestartIntervalSeconds = general["restart"];
+	config.wifiTimeout = network["offtime"];
 	const char *bssidmac = network["bssid"];
 	byte bssid[6] = {0, 0, 0, 0, 0, 0};
 	if (strlen(bssidmac) > 0)
 		parseBytes(bssidmac, ':', bssid, 6, 16);
-	deviceHostname = strdup(general["hostnm"]);
-	WiFi.hostname(deviceHostname);
-	if (!MDNS.begin(deviceHostname))
+	config.deviceHostname = strdup(general["hostnm"]);
+	WiFi.hostname(config.deviceHostname);
+	if (!MDNS.begin(config.deviceHostname))
 	{
 #ifdef DEBUG
 		Serial.println("[ WARN ] Error setting up MDNS responder!");
@@ -150,34 +147,34 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 	MDNS.addService("http", "tcp", 80);
 	const char *ntpserver = ntp["server"];
 	int ntpinter = ntp["interval"];
-	timeZone = ntp["timezone"];
-	activateTime[0] = hardware["rtime"];
-	lockType[0] = hardware["ltype"];
-	relayType[0] = hardware["rtype"];
+	config.timeZone = ntp["timezone"];
+	config.activateTime[0] = hardware["rtime"];
+	config.lockType[0] = hardware["ltype"];
+	config.relayType[0] = hardware["rtype"];
 
 #ifndef OFFICIALBOARD
-	relayPin[0] = hardware["rpin"];
-	pinMode(relayPin[0], OUTPUT);
-	digitalWrite(relayPin[0], !relayType[0]);
+	config.relayPin[0] = hardware["rpin"];
+	pinMode(config.relayPin[0], OUTPUT);
+	digitalWrite(config.relayPin[0], !config.relayType[0]);
 
-	for (int i = 1; i < numRelays; i++)
+	for (int i = 1; i < config.numRelays; i++)
 	{
 		JsonObject relay = hardware["relay" + String((i + 1))];
-		activateTime[i] = relay["rtime"];
-		lockType[i] = relay["ltype"];
-		relayType[i] = relay["rtype"];
-		relayPin[i] = relay["rpin"];
-		pinMode(relayPin[i], OUTPUT);
-		digitalWrite(relayPin[i], !relayType[i]);
+		config.activateTime[i] = relay["rtime"];
+		config.lockType[i] = relay["ltype"];
+		config.relayType[i] = relay["rtype"];
+		config.relayPin[i] = relay["rpin"];
+		pinMode(config.relayPin[i], OUTPUT);
+		digitalWrite(config.relayPin[i], !config.relayType[i]);
 	}
 
 #endif
 	const char *ssid = network["ssid"];
 	const char *password = network["pswd"];
-	wmode = network["wmode"];
-	http_pass = strdup(general["pswd"]);
-	ws.setAuthentication("admin", http_pass);
-	if (wmode == 1)
+	config.wmode = network["wmode"];
+	config.httpPass = strdup(general["pswd"]);
+	ws.setAuthentication("admin", config.httpPass);
+	if (config.wmode == 1)
 	{
 		int hid = network["hide"];
 #ifdef DEBUG
@@ -234,52 +231,49 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 #ifdef DEBUG
 	Serial.println("[ INFO ] Trying to setup NTP Server");
 #endif
-	NTP.Ntp(ntpserver, timeZone, ntpinter * 60);
+	NTP.Ntp(ntpserver, config.timeZone, ntpinter * 60);
 
 	if (mqtt["enabled"] == 1)
-		mqttEnabled = true;
+		config.mqttEnabled = true;
 	else
-		mqttEnabled = false;
-	if (mqttEnabled)
+		config.mqttEnabled = false;
+	if (config.mqttEnabled)
 	{
 #ifdef DEBUG
 		Serial.println("[ INFO ] Trying to setup MQTT");
 #endif
 		String mhsString = mqtt["host"];
-		mhs = strdup(mhsString.c_str());
-
-		mport = mqtt["port"];
-
+		config.mqttHost = strdup(mhsString.c_str());
+		config.mqttPort = mqtt["port"];
 		String muserString = mqtt["user"];
-		muser = strdup(muserString.c_str());
+		config.mqttUser = strdup(muserString.c_str());
 		String mpasString = mqtt["pswd"];
-		mpas = strdup(mpasString.c_str());
+		config.mqttPass = strdup(mpasString.c_str());
 		String mqttTopicString = mqtt["topic"];
-		mqttTopic = strdup(mqttTopicString.c_str());
-
-		interval = mqtt["syncrate"];
+		config.mqttTopic = strdup(mqttTopicString.c_str());
+		config.mqttInterval = mqtt["syncrate"];
 
 		if (mqtt["mqttlog"] == 1)
-			mqttEvents = true;
+			config.mqttEvents = true;
 		else
-			mqttEvents = false;
+			config.mqttEvents = false;
 
 		if (mqtt["mqttha"] == 1)
-			mqttHA = true;
+			config.mqttHA = true;
 		else
-			mqttHA = false;
+			config.mqttHA = false;
 
-		if (mqttHA)
+		if (config.mqttHA)
 		{
-			String mtopic(mqttTopic);
+			String mtopic(config.mqttTopic);
 			String topicString = mtopic + "/avty";
 			String payloadString = "offline";
-			topicLWT = strdup(topicString.c_str());
-			payloadLWT = strdup(payloadString.c_str());
+			char *topicLWT = strdup(topicString.c_str());
+			char *payloadLWT = strdup(payloadString.c_str());
 			mqttClient.setWill(topicLWT, 2, true, payloadLWT);
 		}
-		mqttClient.setServer(mhs, mport);
-		mqttClient.setCredentials(muser, mpas);
+		mqttClient.setServer(config.mqttHost, config.mqttPort);
+		mqttClient.setCredentials(config.mqttUser, config.mqttPass);
 		mqttClient.onDisconnect(onMqttDisconnect);
 		mqttClient.onPublish(onMqttPublish);
 		mqttClient.onSubscribe(onMqttSubscribe);
