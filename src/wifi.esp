@@ -1,13 +1,13 @@
 void wifiLedOn()
 {
-	if (wifipin != 255)
-		digitalWrite(wifipin, LEDon);
+	if (config.wifipin != 255)
+		digitalWrite(config.wifipin, LEDon);
 }
 
 void wifiLedOff()
 {
-	if (wifipin != 255)
-		digitalWrite(wifipin, LEDoff);
+	if (config.wifipin != 255)
+		digitalWrite(config.wifipin, LEDoff);
 }
 
 void onWifiConnect(const WiFiEventStationModeConnected &event)
@@ -39,7 +39,7 @@ void onWifiGotIP(const WiFiEventStationModeGotIP &event)
 #ifdef DEBUG
 	Serial.println(F("\n[ INFO ] WiFi IP Connected"));
 #endif
-	if (mqttEnabled) {
+	if (config.mqttEnabled) {
 		connectToMqtt();
 	}
 }
@@ -154,8 +154,8 @@ bool ICACHE_FLASH_ATTR connectSTA(const char *ssid, const char *password, byte b
 			break;
 		}
 		delay(500);
-		if (wifipin != 255)
-			digitalWrite(wifipin, !digitalRead(wifipin));
+		if (config.wifipin != 255)
+			digitalWrite(config.wifipin, !digitalRead(config.wifipin));
 #ifdef DEBUG
 		if (!wifiFlag)
 			Serial.print(F("."));

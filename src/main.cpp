@@ -38,17 +38,15 @@ SOFTWARE.
 #include <AsyncMqttClient.h>
 #include <Bounce2.h>
 #include "magicnumbers.h"
+#include "config.h"
 
-// #define DEBUG
-
-int numRelays = 1;
+Config config;
 
 #ifdef OFFICIALBOARD
 
 #include <Wiegand.h>
 
 WIEGAND wg;
-int relayPin[MAX_NUM_RELAYS] = {13};
 bool activateRelay[MAX_NUM_RELAYS] = {false};
 bool deactivateRelay[MAX_NUM_RELAYS] = {false};
 
@@ -66,20 +64,11 @@ PN532 pn532;
 WIEGAND wg;
 RFID_Reader RFIDr;
 
-int rfidss;
-int readertype;
-
 // relay specific variables
-
-int relayPin[MAX_NUM_RELAYS];
 bool activateRelay[MAX_NUM_RELAYS] = {false, false, false, false};
 bool deactivateRelay[MAX_NUM_RELAYS] = {false, false, false, false};
 
 #endif
-
-int lockType[MAX_NUM_RELAYS];
-int relayType[MAX_NUM_RELAYS];
-unsigned long activateTime[MAX_NUM_RELAYS];
 
 // these are from vendors
 #include "webh/glyphicons-halflings-regular.woff.gz.h"
@@ -91,13 +80,6 @@ unsigned long activateTime[MAX_NUM_RELAYS];
 #include "webh/esprfid.htm.gz.h"
 #include "webh/index.html.gz.h"
 
-#ifdef ESP8266
-extern "C"
-{
-#include "user_interface.h"
-}
-#endif
-
 NtpClient NTP;
 AsyncMqttClient mqttClient;
 Ticker mqttReconnectTimer;
@@ -107,72 +89,35 @@ Bounce openLockButton;
 AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
 
-unsigned long blink_ = millis();
-bool wifiFlag = false;
-bool configMode = false;
-int wmode;
-uint8_t wifipin = 255;
-
-uint8_t doorstatpin = 255;
-uint8_t lastDoorState = 0;
-uint8_t maxOpenDoorTime = 0;
-
-uint8_t openlockpin = 255;
-
-uint8_t doorbellpin = 255;
-uint8_t lastDoorbellState = 0;
-
-uint8_t accessdeniedpin = 255;
-unsigned long accessdeniedOffTime = 0;
-
-uint8_t lastTamperState = 0;
-
 #define LEDoff HIGH
 #define LEDon LOW
 
 // Variables for whole scope
-const char *http_username = "admin";
-char *http_pass = NULL;
-unsigned long previousMillis = 0;
-unsigned long openDoorMillis = 0;
-unsigned long previousLoopMillis = 0;
-unsigned long currentMillis = 0;
+unsigned long accessdeniedOffTime = 0;
+bool configMode = false;
 unsigned long cooldown = 0;
-unsigned long keyTimer = 0;
-bool pinCodeRequested;
+unsigned long currentMillis = 0;
 unsigned long deltaTime = 0;
-unsigned long uptime = 0;
-bool shouldReboot = false;
-bool inAPMode = false;
-bool isWifiConnected = false;
-unsigned long autoRestartIntervalSeconds = 0;
-
-bool wifiDisabled = true;
 bool doDisableWifi = false;
 bool doEnableWifi = false;
-bool timerequest = false;
 bool formatreq = false;
-unsigned long wifiTimeout = 0;
-unsigned long wiFiUptimeMillis = 0;
-char *deviceHostname = NULL;
-
-int mqttEnabled = 0;
-char *mqttTopic = NULL;
-char *mhs = NULL;
-char *muser = NULL;
-char *mpas = NULL;
-char *topicLWT = NULL;
-char *payloadLWT = NULL;
-int mport;
-
-int timeZone;
-
+const char *httpUsername = "admin";
+bool inAPMode = false;
+bool isWifiConnected = false;
+unsigned long keyTimer = 0;
+uint8_t lastDoorbellState = 0;
+uint8_t lastDoorState = 0;
+uint8_t lastTamperState = 0;
 unsigned long nextbeat = 0;
-
-unsigned long interval = 180; // Add to GUI & json config
-bool mqttEvents = false;	  // Sends events over MQTT disables SPIFFS file logging
-
-bool mqttHA = false; // Sends events over simple MQTT topics and AutoDiscovery
+unsigned long openDoorMillis = 0;
+unsigned long previousLoopMillis = 0;
+unsigned long previousMillis = 0;
+bool shouldReboot = false;
+bool timerequest = false;
+unsigned long uptime = 0;
+bool wifiFlag = false;
+unsigned long wifiPinBlink = millis();
+unsigned long wiFiUptimeMillis = 0;
 
 #include "log.esp"
 #include "mqtt.esp"
@@ -241,7 +186,7 @@ void ICACHE_FLASH_ATTR setup()
 	wifiConnectHandler = WiFi.onStationModeConnected(onWifiConnect);
 	wifiOnStationModeGotIPHandler = WiFi.onStationModeGotIP(onWifiGotIP);
 
-	configMode = loadConfiguration();
+	configMode = loadConfiguration(config);
 	if (!configMode)
 	{
 		fallbacktoAPMode();
@@ -253,22 +198,22 @@ void ICACHE_FLASH_ATTR setup()
 	}
 	setupWebServer();
 	writeEvent("INFO", "sys", "System setup completed, running", "");
-	if (mqttEnabled == 1)
+	if (config.mqttEnabled == 1)
 	{
 		delay(1000);
-		if (digitalRead(doorstatpin) == HIGH)
+		if (digitalRead(config.doorstatpin) == HIGH)
 			mqtt_publish_io("door", "OFF");
 		else
 			mqtt_publish_io("door", "ON");
 		delay(500);
-		if (digitalRead(doorbellpin) == HIGH)
+		if (digitalRead(config.doorbellpin) == HIGH)
 			mqtt_publish_io("doorbell", "ON");
 		else
 			mqtt_publish_io("doorbell", "OFF");
 		delay(500);
 		mqtt_publish_io("lock", "LOCKED");
 		delay(500);
-		if (mqttHA)
+		if (config.mqttHA)
 		{
 			mqtt_publish_discovery();
 			mqtt_publish_avty();
@@ -287,42 +232,42 @@ void ICACHE_RAM_ATTR loop()
 	if (openLockButton.fell())
 	{
 		writeLatest(" ", "Button", 1);
-		if (mqttEnabled)
+		if (config.mqttEnabled)
 		{
 			mqtt_publish_access(now(), "true", "Always", "Button", " ");
 		}
 		activateRelay[0] = true;
 	}
 
-	if (wifipin != 255 && configMode && !wmode)
+	if (config.wifipin != 255 && configMode && !config.wmode)
 	{
 		if (!wifiFlag)
 		{
-			if ((currentMillis - blink_) > 500)
+			if ((currentMillis - wifiPinBlink) > 500)
 			{
-				blink_ = currentMillis;
-				digitalWrite(wifipin, !digitalRead(wifipin));
+				wifiPinBlink = currentMillis;
+				digitalWrite(config.wifipin, !digitalRead(config.wifipin));
 			}
 		}
 		else
 		{
-			if (!(digitalRead(wifipin) == LEDon))
-				digitalWrite(wifipin, LEDon);
+			if (!(digitalRead(config.wifipin) == LEDon))
+				digitalWrite(config.wifipin, LEDon);
 		}
 	}
 
-	if (accessdeniedpin != 255 && digitalRead(accessdeniedpin) == HIGH && currentMillis > accessdeniedOffTime)
+	if (config.accessdeniedpin != 255 && digitalRead(config.accessdeniedpin) == HIGH && currentMillis > accessdeniedOffTime)
 	{
-		digitalWrite(accessdeniedpin, LOW);
+		digitalWrite(config.accessdeniedpin, LOW);
 	}
 
-	if (doorstatpin != 255)
+	if (config.doorstatpin != 255)
 	{
 		doorStatus();
 		delayMicroseconds(500);
 	}
 
-	if (doorbellpin != 255)
+	if (config.doorbellpin != 255)
 	{
 		doorbellStatus();
 		delayMicroseconds(500);
@@ -330,18 +275,18 @@ void ICACHE_RAM_ATTR loop()
 
 	if (currentMillis >= cooldown)
 	{
-		rfidloop();
+		// rfidloop();
 	}
 
-	for (int currentRelay = 0; currentRelay < numRelays; currentRelay++)
+	for (int currentRelay = 0; currentRelay < config.numRelays; currentRelay++)
 	{
-		if (lockType[currentRelay] == LOCKTYPE_CONTINUOUS) // Continuous relay mode
+		if (config.lockType[currentRelay] == LOCKTYPE_CONTINUOUS) // Continuous relay mode
 		{
 			if (activateRelay[currentRelay])
 			{
-				if (digitalRead(relayPin[currentRelay]) == !relayType[currentRelay]) // currently OFF, need to switch ON
+				if (digitalRead(config.relayPin[currentRelay]) == !config.relayType[currentRelay]) // currently OFF, need to switch ON
 				{
-					if ((mqttHA) && (mqttEnabled == 1))
+					if ((config.mqttHA) && (config.mqttEnabled == 1))
 					{
 						mqtt_publish_io("lock", "UNLOCKED");
 					}
@@ -350,11 +295,11 @@ void ICACHE_RAM_ATTR loop()
 					Serial.println(millis());
 					Serial.printf("activating relay %d now\n", currentRelay);
 #endif
-					digitalWrite(relayPin[currentRelay], relayType[currentRelay]);
+					digitalWrite(config.relayPin[currentRelay], config.relayType[currentRelay]);
 				}
 				else // currently ON, need to switch OFF
 				{
-					if ((mqttHA) && (mqttEnabled == 1))
+					if ((config.mqttHA) && (config.mqttEnabled == 1))
 					{
 						mqtt_publish_io("lock", "LOCKED");
 					}
@@ -363,16 +308,16 @@ void ICACHE_RAM_ATTR loop()
 					Serial.println(millis());
 					Serial.printf("deactivating relay %d now\n", currentRelay);
 #endif
-					digitalWrite(relayPin[currentRelay], !relayType[currentRelay]);
+					digitalWrite(config.relayPin[currentRelay], !config.relayType[currentRelay]);
 				}
 				activateRelay[currentRelay] = false;
 			}
 		}
-		else if (lockType[currentRelay] == LOCKTYPE_MOMENTARY) // Momentary relay mode
+		else if (config.lockType[currentRelay] == LOCKTYPE_MOMENTARY) // Momentary relay mode
 		{
 			if (activateRelay[currentRelay])
 			{
-				if ((mqttHA) && (mqttEnabled == 1))
+				if ((config.mqttHA) && (config.mqttEnabled == 1))
 				{
 					mqtt_publish_io("lock", "UNLOCKED");
 				}
@@ -381,27 +326,27 @@ void ICACHE_RAM_ATTR loop()
 				Serial.println(millis());
 				Serial.printf("activating relay %d now\n", currentRelay);
 #endif
-				digitalWrite(relayPin[currentRelay], relayType[currentRelay]);
+				digitalWrite(config.relayPin[currentRelay], config.relayType[currentRelay]);
 				previousMillis = millis();
 				activateRelay[currentRelay] = false;
 				deactivateRelay[currentRelay] = true;
 			}
-			else if ((currentMillis - previousMillis >= activateTime[currentRelay]) && (deactivateRelay[currentRelay]))
+			else if ((currentMillis - previousMillis >= config.activateTime[currentRelay]) && (deactivateRelay[currentRelay]))
 			{
-				if ((mqttHA) && (mqttEnabled == 1))
+				if ((config.mqttHA) && (config.mqttEnabled == 1))
 				{
 					mqtt_publish_io("lock", "LOCKED");
 				}
 #ifdef DEBUG
 				Serial.println(currentMillis);
 				Serial.println(previousMillis);
-				Serial.println(activateTime[currentRelay]);
+				Serial.println(config.activateTime[currentRelay]);
 				Serial.println(activateRelay[currentRelay]);
 				Serial.println("deactivate relay after this");
 				Serial.print("mili : ");
 				Serial.println(millis());
 #endif
-				digitalWrite(relayPin[currentRelay], !relayType[currentRelay]);
+				digitalWrite(config.relayPin[currentRelay], !config.relayType[currentRelay]);
 				deactivateRelay[currentRelay] = false;
 			}
 		}
@@ -423,7 +368,7 @@ void ICACHE_RAM_ATTR loop()
 		sendTime();
 	}
 
-	if (autoRestartIntervalSeconds > 0 && uptime > autoRestartIntervalSeconds * 1000)
+	if (config.autoRestartIntervalSeconds > 0 && uptime > config.autoRestartIntervalSeconds * 1000)
 	{
 		writeEvent("WARN", "sys", "Auto restarting...", "");
 		shouldReboot = true;
@@ -440,7 +385,7 @@ void ICACHE_RAM_ATTR loop()
 		wiFiUptimeMillis += deltaTime;
 	}
 
-	if (wifiTimeout > 0 && wiFiUptimeMillis > (wifiTimeout * 1000) && isWifiConnected == true)
+	if (config.wifiTimeout > 0 && wiFiUptimeMillis > (config.wifiTimeout * 1000) && isWifiConnected == true)
 	{
 		writeEvent("INFO", "wifi", "WiFi is going to be disabled", "");
 		doDisableWifi = true;
@@ -463,14 +408,14 @@ void ICACHE_RAM_ATTR loop()
 		}
 	}
 
-	if (mqttEnabled)
+	if (config.mqttEnabled)
 	{
 		if (mqttClient.connected())
 		{
 			if ((unsigned)now() > nextbeat)
 			{
 				mqtt_publish_heartbeat(now(), uptime);
-				nextbeat = (unsigned)now() + interval;
+				nextbeat = (unsigned)now() + config.mqttInterval;
 #ifdef DEBUG
 				Serial.print("[ INFO ] Nextbeat=");
 				Serial.println(nextbeat);

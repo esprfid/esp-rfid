@@ -3,19 +3,19 @@
 void doorbellStatus()
 {
       // if this changes and if mqtt and mqtt logging enabled, push the message, also to a web socket!
-      if ((digitalRead(doorbellpin) == HIGH) && (lastDoorbellState == 0))
+      if ((digitalRead(config.doorbellpin) == HIGH) && (lastDoorbellState == 0))
       {
             writeEvent("INFO", "doorbell", "Doorbell ringing", "");
-            if ((mqttHA) && (mqttEnabled == 1))
+            if ((config.mqttHA) && (config.mqttEnabled == 1))
             {
                   mqtt_publish_io("doorbell", "ON");
             }
             lastDoorbellState = 1;
       }
 
-      if ((digitalRead(doorbellpin) == LOW) && (lastDoorbellState == 1))
+      if ((digitalRead(config.doorbellpin) == LOW) && (lastDoorbellState == 1))
       {
-            if ((mqttHA) && (mqttEnabled == 1))
+            if ((config.mqttHA) && (config.mqttEnabled == 1))
             {
                   mqtt_publish_io("doorbell", "OFF");
             }

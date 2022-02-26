@@ -44,21 +44,20 @@ void onMqttDisconnect(AsyncMqttClientDisconnectReason reason)
 
 	if (WiFi.isConnected())
 	{
-		//mqttClient.setServer(mhs, mport);
 		mqttReconnectTimer.once(60, connectToMqtt);
 	}
 }
 
 void mqtt_publish_boot(time_t boot_time)
 {
-	String stopic(mqttTopic);
+	String stopic(config.mqttTopic);
 	stopic = stopic + "/send";
 	DynamicJsonDocument root(512);
 	root["type"] = "boot";
 	root["time"] = boot_time;
 	root["uptime"] = "0";
 	root["ip"] = WiFi.localIP().toString();
-	root["hostname"] = deviceHostname;
+	root["hostname"] = config.deviceHostname;
 	String mqttBuffer_boot;
 	serializeJson(root, mqttBuffer_boot);
 	mqttClient.publish(stopic.c_str(), 0, false, mqttBuffer_boot.c_str());
@@ -70,8 +69,8 @@ void mqtt_publish_boot(time_t boot_time)
 
 void mqtt_publish_discovery()
 {
-	String mtopic(mqttTopic);
-	String deviceName = deviceHostname;
+	String mtopic(config.mqttTopic);
+	String deviceName = config.deviceHostname;
 
 	String topic;
 	DynamicJsonDocument jsonBuffer(512);
@@ -90,7 +89,7 @@ void mqtt_publish_discovery()
 		{
 			DynamicJsonDocument dev(512);
 			dev["ids"] = WiFi.macAddress();
-			dev["name"] = deviceHostname;
+			dev["name"] = config.deviceHostname;
 			dev["mf"] = "esp-rfid";
 			dev["sw"] = VERSION;
 			DynamicJsonDocument root(512);
@@ -189,7 +188,7 @@ void mqtt_publish_discovery()
 
 void mqtt_publish_avty()
 {
-	String mtopic(mqttTopic);
+	String mtopic(config.mqttTopic);
 	String avty_topic = mtopic + "/avty";
 	String payloadString = "online";
 	mqttClient.publish(avty_topic.c_str(), 0, true, payloadString.c_str());
@@ -201,7 +200,7 @@ void mqtt_publish_avty()
 
 void mqtt_publish_heartbeat(time_t heartbeat, time_t uptime)
 {
-	String stopic(mqttTopic);
+	String stopic(config.mqttTopic);
 	DynamicJsonDocument root(512);
 
 	stopic = stopic + "/send";
@@ -209,7 +208,7 @@ void mqtt_publish_heartbeat(time_t heartbeat, time_t uptime)
 	root["time"] = heartbeat;
 	root["uptime"] = uptime;
 	root["ip"] = WiFi.localIP().toString();
-	root["hostname"] = deviceHostname;
+	root["hostname"] = config.deviceHostname;
 
 	String mqttBuffer8;
 	serializeJson(root, mqttBuffer8);
@@ -224,8 +223,8 @@ void mqtt_publish_access(time_t accesstime, String const &isknown, String const 
 {
 	if (mqttClient.connected())
 	{
-		String stopic(mqttTopic);
-		if (!mqttHA)
+		String stopic(config.mqttTopic);
+		if (!config.mqttHA)
 		{
 			stopic = stopic + "/send";
 		}
@@ -235,11 +234,11 @@ void mqtt_publish_access(time_t accesstime, String const &isknown, String const 
 		}
 		DynamicJsonDocument root(512);
 		// log to MQTT adding cmd command
-		if (mqttEvents)
+		if (config.mqttEvents)
 		{
 			root["cmd"] = "log";
 		}
-		if (!mqttHA)
+		if (!config.mqttHA)
 		{
 			root["type"] = "access";
 			root["time"] = accesstime;
@@ -247,7 +246,7 @@ void mqtt_publish_access(time_t accesstime, String const &isknown, String const 
 			root["access"] = type;
 			root["username"] = user;
 			root["uid"] = uid;
-			root["door"] = deviceHostname;
+			root["door"] = config.deviceHostname;
 		}
 		else
 		{
@@ -270,7 +269,7 @@ void mqtt_publish_io(String const &io, String const &state)
 {
 	if (mqttClient.connected())
 	{
-		String stopic(mqttTopic);
+		String stopic(config.mqttTopic);
 		stopic = stopic + "/io/" + io;
 
 		mqttClient.publish(stopic.c_str(), 0, false, state.c_str());
@@ -286,7 +285,7 @@ void mqtt_publish_event(JsonDocument *root)
 {
 	if (mqttClient.connected())
 	{
-		String stopic(mqttTopic);
+		String stopic(config.mqttTopic);
 		stopic = stopic + "/send";
 		String mqttBuffer;
 		serializeJson(*root, mqttBuffer);
@@ -301,7 +300,7 @@ void onMqttPublish(uint16_t packetId)
 
 void ICACHE_FLASH_ATTR getUserList(int todo)
 {
-	String stopic(mqttTopic);
+	String stopic(config.mqttTopic);
 	if (todo == 0) // Userlist to add to DB
 		stopic = stopic + "/accesslist";
 	else if (todo == 1) // Just for List
@@ -400,7 +399,7 @@ void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties 
 		return;
 	}
 
-	if (!mqttHA)
+	if (!config.mqttHA)
 	{
 		// Check if IP was send with command because we only
 		// accept commands for this where sent IP is equal to device IP
@@ -534,7 +533,7 @@ void onMqttConnect(bool sessionPresent)
 	}
 	mqtt_publish_boot(now());
 
-	String stopic(mqttTopic);
+	String stopic(config.mqttTopic);
 	stopic = stopic + "/cmd";
 	uint16_t packetIdSub = mqttClient.subscribe(stopic.c_str(), 2);
 
