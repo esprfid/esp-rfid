@@ -1,6 +1,13 @@
 char mqttBuffer[512];
-StaticJsonDocument<512> incomingMqttMessage;
-bool mqttMessageToProcess = false;
+
+struct MqttMessage {
+	char command[20];
+	char uid[20];
+	char user[64];
+	char serializedMessage[512];
+	MqttMessage *nextMessage = NULL;
+};
+MqttMessage *messageQueue = NULL;
 
 void connectToMqtt()
 {
@@ -45,6 +52,22 @@ void onMqttDisconnect(AsyncMqttClientDisconnectReason reason)
 	if (WiFi.isConnected())
 	{
 		mqttReconnectTimer.once(60, connectToMqtt);
+	}
+}
+
+void mqttPublishEvent(JsonDocument *root)
+{
+	if (mqttClient.connected())
+	{
+		String stopic(config.mqttTopic);
+		stopic = stopic + "/send";
+		String mqttBuffer;
+		serializeJson(*root, mqttBuffer);
+		mqttClient.publish(stopic.c_str(), 0, false, mqttBuffer.c_str());
+#ifdef DEBUG
+		Serial.print("[ INFO ] Mqtt Publish:");
+		Serial.println(mqttBuffer);
+#endif
 	}
 }
 
@@ -281,18 +304,6 @@ void mqtt_publish_io(String const &io, String const &state)
 	}
 }
 
-void mqtt_publish_event(JsonDocument *root)
-{
-	if (mqttClient.connected())
-	{
-		String stopic(config.mqttTopic);
-		stopic = stopic + "/send";
-		String mqttBuffer;
-		serializeJson(*root, mqttBuffer);
-		mqttClient.publish(stopic.c_str(), 0, false, mqttBuffer.c_str());
-	}
-}
-
 void onMqttPublish(uint16_t packetId)
 {
 	writeEvent("INFO", "mqtt", "MQTT publish acknowledged", String(packetId));
@@ -380,7 +391,7 @@ void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties 
 		i++;
 	}
 	if(index + len == total) {
-		mqttBuffer[i + 1] = '\0';
+		mqttBuffer[i] = '\0';
 	} else {
 		return;
 	}
@@ -389,7 +400,8 @@ void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties 
 	Serial.println(mqttBuffer);
 #endif
 
-	auto error = deserializeJson(incomingMqttMessage, mqttBuffer);
+	StaticJsonDocument<512> mqttIncomingJson;
+	auto error = deserializeJson(mqttIncomingJson, mqttBuffer);
 	if (error)
 	{
 #ifdef DEBUG
@@ -403,9 +415,9 @@ void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties 
 	{
 		// Check if IP was send with command because we only
 		// accept commands for this where sent IP is equal to device IP
-		if (incomingMqttMessage.containsKey("doorip"))
+		if (mqttIncomingJson.containsKey("doorip"))
 		{
-			const char *ipadr = incomingMqttMessage["doorip"];
+			const char *ipadr = mqttIncomingJson["doorip"];
 			String espIp = WiFi.localIP().toString();
 			if (!((strcmp(ipadr, espIp.c_str()) == 0) && (ipadr != NULL)))
 			{
@@ -424,24 +436,56 @@ void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties 
 		}
 	}
 
-	mqttMessageToProcess = true;
+	if(ESP.getFreeHeap() < 2000)
+	{
+#ifdef DEBUG
+		Serial.println("Dropping MQTT message, out of memory");
+#endif
+		writeEvent("ERRO", "mqtt", "Dropping MQTT message, out of memory","");
+		return;
+	}
+
+	MqttMessage* incomingMessage = new MqttMessage;
+
+	strlcpy(incomingMessage->command, mqttIncomingJson["cmd"], sizeof(incomingMessage->command));
+	if (mqttIncomingJson.containsKey("uid")) {
+		strlcpy(incomingMessage->uid, mqttIncomingJson["uid"], sizeof(incomingMessage->uid));
+	}
+	if (mqttIncomingJson.containsKey("user")) {
+		strlcpy(incomingMessage->user, mqttIncomingJson["user"], sizeof(incomingMessage->user));
+	}
+	serializeJson(mqttIncomingJson, incomingMessage->serializedMessage);
+
+	MqttMessage* lastMessage = messageQueue;
+	if(lastMessage == NULL)
+	{
+		messageQueue = incomingMessage;
+	}
+	else {
+		while(lastMessage->nextMessage != NULL)
+		{
+			lastMessage = lastMessage->nextMessage;
+		}
+		lastMessage->nextMessage = incomingMessage;
+	}
+
+	DynamicJsonDocument root(512);
+	root["type"] = mqttIncomingJson["cmd"];
+	root["ip"] = WiFi.localIP().toString();
+	root["hostname"] = config.deviceHostname;
+	mqttPublishEvent(&root);
+
 	return;
 }
 
-void processMqttMessage() {
-	if(!mqttMessageToProcess)
-	{
-		return;
-	}
-	mqttMessageToProcess = false;
-	const char *command = incomingMqttMessage["cmd"];
+void processMqttMessage(MqttMessage *incomingMessage) {
+	char *command = incomingMessage->command;
 	if (strcmp(command, "getuser") == 0)
 	{
 #ifdef DEBUG
 		Serial.println("[ INFO ] Get User List");
 #endif
 		getUserList(0);
-		return;
 	}
 
 	else if (strcmp(command, "listusr") == 0)
@@ -450,7 +494,6 @@ void processMqttMessage() {
 		Serial.println("[ INFO ] List users");
 #endif
 		getUserList(1);
-		return;
 	}
 
 	else if (strcmp(command, "opendoor") == 0)
@@ -462,7 +505,6 @@ void processMqttMessage() {
 		mqtt_publish_access(now(), "true", "Always", "MQTT", " ");
 		activateRelay[0] = true;
 		previousMillis = millis();
-		return;
 	}
 
 	else if (strcmp(command, "deletusers") == 0)
@@ -471,7 +513,6 @@ void processMqttMessage() {
 		Serial.println("[ INFO ] Delete all users");
 #endif
 		DeleteAllUserFiles();
-		return;
 	}
 
 	else if (strcmp(command, "deletuid") == 0)
@@ -479,9 +520,8 @@ void processMqttMessage() {
 #ifdef DEBUG
 		Serial.println("[ INFO ] Delete a single user by uid");
 #endif
-		const char *uid = incomingMqttMessage["uid"];
+		const char *uid = incomingMessage->uid;
 		DeleteUserID(uid);
-		return;
 	}
 
 	else if (strcmp(command, "adduser") == 0)
@@ -489,22 +529,22 @@ void processMqttMessage() {
 
 #ifdef DEBUG
 		Serial.print("[ INFO ] Add Users: ");
-		const char *name = incomingMqttMessage["user"];
+		const char *name = incomingMessage->user;
 		Serial.println(name);
 #endif
 
-		const char *uid = incomingMqttMessage["uid"];
+		const char *uid = incomingMessage->uid;
 		String filename = "/P/";
 		filename += uid;
 		File f = SPIFFS.open(filename, "w+");
 		// Check if we created the file
 		if (f)
 		{
-			serializeJson(incomingMqttMessage, f);
+			f.println(incomingMessage->serializedMessage);
 		}
 		f.close();
-		return;
 	}
+	free(incomingMessage);
 	return;
 }
 
@@ -541,4 +581,12 @@ void onMqttConnect(bool sessionPresent)
 	Serial.print("[ INFO ] Subscribing at QoS 2, packetId: ");
 	Serial.println(packetIdSub);
 #endif
+}
+
+void processMqttQueue() {
+	while(messageQueue != NULL) {
+		MqttMessage *messageToProcess = messageQueue;
+		messageQueue = messageToProcess->nextMessage;
+		processMqttMessage(messageToProcess);
+	}
 }
