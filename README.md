@@ -4,8 +4,6 @@
 
 Access Control system using a cheap MFRC522, PN532 RFID, RDM6300 readers or Wiegand RFID readers and Espressif's ESP8266 Microcontroller. 
 
-[See Demo Here](https://bitadvise.com/esp-rfid/)
-
 [![Showcase Gif](https://raw.githubusercontent.com/esprfid/esp-rfid/stable/demo/showcase.gif)](https://bitadvise.com/esp-rfid/)[![Board](https://raw.githubusercontent.com/esprfid/esp-rfid/stable/demo/board.jpg)](https://www.tindie.com/products/nardev/esp-rfid-relay-board-12v-in-esp8266-board/)
 
 ## Features
@@ -54,7 +52,6 @@ Get more information and see accessory options from [Tindie Store](https://www.t
 ## Getting Started
 This project still in its development phase. New features (and also bugs) are introduced often and some functions may become deprecated. Please feel free to comment or give feedback.
 
-* [See Demo Here](https://bitadvise.com/esp-rfid/)
 * Get the latest release from [here.](https://github.com/esprfid/esp-rfid/releases)
 * See [Known Issues](https://github.com/esprfid/esp-rfid#known-issues) before starting right away.
 * See [Security](https://github.com/esprfid/esp-rfid#security) for your safety.
