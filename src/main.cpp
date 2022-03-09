@@ -258,6 +258,7 @@ void ICACHE_RAM_ATTR loop()
 	}
 
 	ledAccessDeniedOff();
+	beeperBeep();
 
 	if (config.doorstatpin != 255)
 	{
@@ -273,7 +274,7 @@ void ICACHE_RAM_ATTR loop()
 
 	if (currentMillis >= cooldown)
 	{
-		rfidloop();
+		rfidLoop();
 	}
 
 	for (int currentRelay = 0; currentRelay < config.numRelays; currentRelay++)
