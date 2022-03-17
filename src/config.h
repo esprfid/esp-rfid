@@ -7,10 +7,12 @@ struct Config {
     uint8_t accessdeniedpin = 255;
     unsigned long activateTime[MAX_NUM_RELAYS];
     unsigned long autoRestartIntervalSeconds = 0;
+    uint8_t beeperpin = 255;
     char *deviceHostname = NULL;
     uint8_t doorbellpin = 255;
     uint8_t doorstatpin = 255;
     char *httpPass = NULL;
+    uint8_t ledwaitingpin = 255;
     int lockType[MAX_NUM_RELAYS];
     uint8_t maxOpenDoorTime = 0;
     int mqttEnabled = 0;

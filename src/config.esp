@@ -78,6 +78,26 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 		}
 	}
 
+	if (hardware.containsKey("beeperpin"))
+	{
+		config.beeperpin = hardware["beeperpin"];
+		if (config.beeperpin != 255)
+		{
+			pinMode(config.beeperpin, OUTPUT);
+			digitalWrite(config.beeperpin, BEEPERoff);
+		}
+	}
+
+	if (hardware.containsKey("ledwaitingpin"))
+	{
+		config.ledwaitingpin = hardware["ledwaitingpin"];
+		if (config.ledwaitingpin != 255)
+		{
+			pinMode(config.ledwaitingpin, OUTPUT);
+			digitalWrite(config.ledwaitingpin, LEDoff);
+		}
+	}
+
 	if (hardware.containsKey("openlockpin"))
 	{
 		config.openlockpin = hardware["openlockpin"];

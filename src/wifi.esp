@@ -1,19 +1,7 @@
-void wifiLedOn()
-{
-	if (config.wifipin != 255)
-		digitalWrite(config.wifipin, LEDon);
-}
-
-void wifiLedOff()
-{
-	if (config.wifipin != 255)
-		digitalWrite(config.wifipin, LEDoff);
-}
-
 void onWifiConnect(const WiFiEventStationModeConnected &event)
 {
 	wifiFlag = true;
-	wifiLedOn();
+	ledWifiOn();
 #ifdef DEBUG
 	Serial.println(F("\n[ INFO ] WiFi STA Connected"));
 #endif
@@ -28,14 +16,14 @@ void onWifiDisconnect(const WiFiEventStationModeDisconnected &event)
 		Serial.println(F("[ INFO ] WiFi STA Disconnected"));
 #endif
 		wifiFlag = false;
-		wifiLedOff();
+		ledWifiOff();
 	}
 }
 
 void onWifiGotIP(const WiFiEventStationModeGotIP &event)
 {
 	wifiFlag = true;
-	wifiLedOn();
+	ledWifiOn();
 #ifdef DEBUG
 	Serial.println(F("\n[ INFO ] WiFi IP Connected"));
 #endif
@@ -72,7 +60,7 @@ bool ICACHE_FLASH_ATTR startAP(IPAddress apip, IPAddress apsubnet, int hid, cons
 		ESP.restart();
 	}
 	else
-		wifiLedOn();
+		ledWifiOn();
 
 #ifdef DEBUG
 	IPAddress myIP = WiFi.softAPIP();
@@ -102,7 +90,7 @@ void ICACHE_FLASH_ATTR fallbacktoAPMode()
 	isWifiConnected = success;
 	if (success)
 	{
-		wifiLedOn();
+		ledWifiOn();
 	}
 }
 
@@ -150,7 +138,7 @@ bool ICACHE_FLASH_ATTR connectSTA(const char *ssid, const char *password, byte b
 	{
 		if (WiFi.status() == WL_CONNECTED)
 		{
-			wifiLedOn();
+			ledWifiOn();
 			break;
 		}
 		delay(500);

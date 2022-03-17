@@ -242,9 +242,9 @@ void mqtt_publish_heartbeat(time_t heartbeat, time_t uptime)
 #endif
 }
 
-void mqtt_publish_access(time_t accesstime, String const &isknown, String const &type, String const &user, String const &uid)
+void mqttPublishAccess(time_t accesstime, String const &isknown, String const &type, String const &user, String const &uid)
 {
-	if (mqttClient.connected())
+	if (config.mqttEnabled && mqttClient.connected())
 	{
 		String stopic(config.mqttTopic);
 		if (!config.mqttHA)
@@ -502,7 +502,7 @@ void processMqttMessage(MqttMessage *incomingMessage) {
 		Serial.println("[ INFO ] Door open");
 #endif
 		writeLatest(" ", "MQTT", 1);
-		mqtt_publish_access(now(), "true", "Always", "MQTT", " ");
+		mqttPublishAccess(now(), "true", "Always", "MQTT", " ");
 		activateRelay[0] = true;
 		previousMillis = millis();
 	}

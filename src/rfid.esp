@@ -298,10 +298,7 @@ void ICACHE_FLASH_ATTR rfidloop()
 #ifdef DEBUG
 					Serial.println("Wrong pin code");
 #endif
-					if (config.mqttEnabled)
-					{
-						mqtt_publish_access(now(), "true", "Wrong pin code", username, uid);
-					}
+					mqttPublishAccess(now(), "true", "Wrong pin code", username, uid);
 				}
 
 #ifdef DEBUG
@@ -324,10 +321,7 @@ void ICACHE_FLASH_ATTR rfidloop()
 #ifdef DEBUG
 						Serial.printf(" has access relay %d\n", currentRelay);
 #endif
-						if (config.mqttEnabled)
-						{
-							mqtt_publish_access(now(), "true", "Always", username, uid);
-						}
+						mqttPublishAccess(now(), "true", "Always", username, uid);
 					}
 
 					else
@@ -335,10 +329,7 @@ void ICACHE_FLASH_ATTR rfidloop()
 #ifdef DEBUG
 						Serial.println(" expired");
 #endif
-						if (config.mqttEnabled)
-						{
-							mqtt_publish_access(now(), "true", "Expired", username, uid);
-						}
+						mqttPublishAccess(now(), "true", "Expired", username, uid);
 					}
 				}
 				else if (AccType == ACCESS_ADMIN)
@@ -349,25 +340,15 @@ void ICACHE_FLASH_ATTR rfidloop()
 #ifdef DEBUG
 					Serial.println(" has admin access, enable wifi");
 #endif
-					if (config.mqttEnabled)
-					{
-						mqtt_publish_access(now(), "true", "Admin", username, uid);
-					}
+					mqttPublishAccess(now(), "true", "Admin", username, uid);
 				}
 				else
 				{
 #ifdef DEBUG
 					Serial.println(" does not have access");
 #endif
-					if (config.mqttEnabled)
-					{
-						mqtt_publish_access(now(), "true", "Disabled", username, uid);
-					}
-					if (config.accessdeniedpin != 255)
-					{
-						accessdeniedOffTime = currentMillis + 1000;
-						digitalWrite(config.accessdeniedpin, HIGH);
-					}
+					mqttPublishAccess(now(), "true", "Disabled", username, uid);
+					ledAccessDeniedOn();
 				}
 				writeLatest(uid, username, AccType);
 				DynamicJsonDocument root(512);
@@ -413,15 +394,8 @@ void ICACHE_FLASH_ATTR rfidloop()
 			serializeJson(root, (char *)buffer->get(), len + 1);
 			ws.textAll(buffer);
 		}
-		if (config.mqttEnabled)
-		{
-			mqtt_publish_access(now(), "false", "Denied", "Unknown", uid);
-		}
-		if (config.accessdeniedpin != 255)
-		{
-			accessdeniedOffTime = currentMillis + 1000;
-			digitalWrite(config.accessdeniedpin, HIGH);
-		}
+		mqttPublishAccess(now(), "false", "Denied", "Unknown", uid);
+		ledAccessDeniedOn();
 	}
 	pinCode = "";
 	uid = "";
