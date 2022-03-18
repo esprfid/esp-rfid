@@ -275,7 +275,7 @@ void ICACHE_RAM_ATTR loop()
 
 	if (currentMillis >= cooldown)
 	{
-		// rfidloop();
+		rfidloop();
 	}
 
 	for (int currentRelay = 0; currentRelay < config.numRelays; currentRelay++)
