@@ -14,7 +14,7 @@ struct Config {
     char *httpPass = NULL;
     uint8_t ledwaitingpin = 255;
     int lockType[MAX_NUM_RELAYS];
-    uint8_t maxOpenDoorTime = 0;
+    unsigned long maxOpenDoorTime = 0;
     int mqttEnabled = 0;
     bool mqttEvents = false;	  // Sends events over MQTT disables SPIFFS file logging
     bool mqttHA = false; // Sends events over simple MQTT topics and AutoDiscovery
