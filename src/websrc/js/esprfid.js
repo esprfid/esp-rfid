@@ -41,6 +41,8 @@ var config = {
         "ltype": 0,
         "rpin": 4,
         "rtime": 400,
+        "beeperpin" : 255,
+        "ledwaitingpin" : 255,
         "openlockpin": 255,
         "doorbellpin": 255,
         "accessdeniedpin": 255,
@@ -154,6 +156,8 @@ function listhardware() {
   document.getElementById("openlockpin").value = config.hardware.openlockpin;
   document.getElementById("accessdeniedpin").value = config.hardware.accessdeniedpin;
   document.getElementById("pincoderequested").value = config.hardware.pincoderequested;
+  document.getElementById("ledwaitingpin").value = config.hardware.ledwaitingpin;
+  document.getElementById("beeperpin").value = config.hardware.beeperpin;
   if (isOfficialBoard) {
     document.getElementById("readertype").value = 1;
     document.getElementById("wg0pin").value = 5;
@@ -236,6 +240,8 @@ function savehardware() {
   config.hardware.doorbellpin = parseInt(document.getElementById("doorbellpin").value);
   config.hardware.openlockpin = parseInt(document.getElementById("openlockpin").value);
   config.hardware.accessdeniedpin = parseInt(document.getElementById("accessdeniedpin").value);
+  config.hardware.beeperpin = parseInt(document.getElementById("beeperpin").value);
+  config.hardware.ledwaitingpin = parseInt(document.getElementById("ledwaitingpin").value);
   config.hardware["numrelays"] = numRelays; 
 
   for (var i = 2; i<=numRelays; i++)

@@ -92,8 +92,10 @@ AsyncWebSocket ws("/ws");
 #define LEDoff HIGH
 #define LEDon LOW
 
+#define BEEPERoff HIGH
+#define BEEPERon LOW
+
 // Variables for whole scope
-unsigned long accessdeniedOffTime = 0;
 bool configMode = false;
 unsigned long cooldown = 0;
 unsigned long currentMillis = 0;
@@ -119,6 +121,8 @@ bool wifiFlag = false;
 unsigned long wifiPinBlink = millis();
 unsigned long wiFiUptimeMillis = 0;
 
+#include "led.esp"
+#include "beeper.esp"
 #include "log.esp"
 #include "mqtt.esp"
 #include "helpers.esp"
@@ -232,10 +236,7 @@ void ICACHE_RAM_ATTR loop()
 	if (openLockButton.fell())
 	{
 		writeLatest(" ", "Button", 1);
-		if (config.mqttEnabled)
-		{
-			mqtt_publish_access(now(), "true", "Always", "Button", " ");
-		}
+		mqttPublishAccess(now(), "true", "Always", "Button", " ");
 		activateRelay[0] = true;
 	}
 
@@ -256,10 +257,8 @@ void ICACHE_RAM_ATTR loop()
 		}
 	}
 
-	if (config.accessdeniedpin != 255 && digitalRead(config.accessdeniedpin) == HIGH && currentMillis > accessdeniedOffTime)
-	{
-		digitalWrite(config.accessdeniedpin, LOW);
-	}
+	ledAccessDeniedOff();
+	beeperBeep();
 
 	if (config.doorstatpin != 255)
 	{
@@ -275,7 +274,7 @@ void ICACHE_RAM_ATTR loop()
 
 	if (currentMillis >= cooldown)
 	{
-		rfidloop();
+		rfidLoop();
 	}
 
 	for (int currentRelay = 0; currentRelay < config.numRelays; currentRelay++)
