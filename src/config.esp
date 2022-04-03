@@ -11,7 +11,7 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 	size_t size = configFile.size();
 	std::unique_ptr<char[]> buf(new char[size]);
 	configFile.readBytes(buf.get(), size);
-	DynamicJsonDocument json(5120);
+	DynamicJsonDocument json(8192);
 	auto error = deserializeJson(json, buf.get());
 	if (error)
 	{
@@ -22,8 +22,6 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 	}
 #ifdef DEBUG
 	Serial.println(F("[ INFO ] Config file found"));
-	serializeJsonPretty(json, Serial);
-	Serial.println();
 #endif
 	JsonObject network = json["network"];
 	JsonObject hardware = json["hardware"];
@@ -55,8 +53,6 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 	if (hardware.containsKey("maxOpenDoorTime"))
 	{
 		config.maxOpenDoorTime = hardware["maxOpenDoorTime"];
-		Serial.print("maxOpenDoorTime = ");
-		Serial.println(config.maxOpenDoorTime);
 	}
 
 	if (hardware.containsKey("doorbellpin"))
@@ -150,23 +146,15 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 		Serial.begin(9600);
 #endif
 #endif
+	config.fallbackMode = network["fallbackmode"] == 1;
 	config.autoRestartIntervalSeconds = general["restart"];
 	config.wifiTimeout = network["offtime"];
 	const char *bssidmac = network["bssid"];
-	byte bssid[6] = {0, 0, 0, 0, 0, 0};
 	if (strlen(bssidmac) > 0)
-		parseBytes(bssidmac, ':', bssid, 6, 16);
+		parseBytes(bssidmac, ':', config.bssid, 6, 16);
 	config.deviceHostname = strdup(general["hostnm"]);
-	WiFi.hostname(config.deviceHostname);
-	if (!MDNS.begin(config.deviceHostname))
-	{
-#ifdef DEBUG
-		Serial.println("[ WARN ] Error setting up MDNS responder!");
-#endif
-	}
-	MDNS.addService("http", "tcp", 80);
-	const char *ntpserver = ntp["server"];
-	int ntpinter = ntp["interval"];
+	config.ntpServer = strdup(ntp["server"]);
+	config.ntpInterval = ntp["interval"];
 	config.timeZone = ntp["timezone"];
 	config.activateTime[0] = hardware["rtime"];
 	config.lockType[0] = hardware["ltype"];
@@ -189,79 +177,46 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 	}
 
 #endif
-	const char *ssid = network["ssid"];
-	const char *password = network["pswd"];
-	config.wmode = network["wmode"];
+	config.ssid = strdup(network["ssid"]);
+	config.wifiPassword = strdup(network["pswd"]);
+	config.accessPointMode = network["wmode"] == 1;
+	config.wifiApIp = strdup(network["apip"]);
+	config.wifiApSubnet = strdup(network["apsubnet"]);
+	config.networkHidden = network["hide"] == 1;
 	config.httpPass = strdup(general["pswd"]);
-	ws.setAuthentication("admin", config.httpPass);
-	if (config.wmode == 1)
-	{
-		int hid = network["hide"];
-#ifdef DEBUG
-		Serial.println(F("[ INFO ] ESP-RFID is running in AP Mode "));
-#endif
-		const char *apipch;
-		if (network.containsKey("apip"))
-		{
-			apipch = network["apip"];
-		}
-		else
-		{
-			apipch = "192.168.4.1";
-		}
-		const char *apsubnetch;
-		if (network.containsKey("apsubnet"))
-		{
-			apsubnetch = network["apsubnet"];
-		}
-		else
-		{
-			apsubnetch = "255.255.255.0";
-		}
-		IPAddress apip;
-		IPAddress apsubnet;
-		apip.fromString(apipch);
-		apsubnet.fromString(apsubnetch);
-		return startAP(apip, apsubnet, hid, ssid, password);
-	}
-	else
-	{
-		if (network["dhcp"] == "0")
-		{
-			WiFi.mode(WIFI_STA);
-			const char *clientipch = network["ip"];
-			const char *subnetch = network["subnet"];
-			const char *gatewaych = network["gateway"];
-			const char *dnsch = network["dns"];
-			IPAddress clientip;
-			IPAddress subnet;
-			IPAddress gateway;
-			IPAddress dns;
-			clientip.fromString(clientipch);
-			subnet.fromString(subnetch);
-			gateway.fromString(gatewaych);
-			dns.fromString(dnsch);
-			WiFi.config(clientip, gateway, subnet, dns);
-		}
-		if (!connectSTA(ssid, password, bssid))
-		{
-			return false;
-		}
-	}
-#ifdef DEBUG
-	Serial.println("[ INFO ] Trying to setup NTP Server");
-#endif
-	NTP.Ntp(ntpserver, config.timeZone, ntpinter * 60);
+	config.dhcpEnabled = network["dhcp"] == 1;
+	config.ipAddress.fromString(network["ip"].as<const char*>());
+	config.subnetIp.fromString(network["subnet"].as<const char*>());
+	config.gatewayIp.fromString(network["gateway"].as<const char*>());
+	config.dnsIp.fromString(network["dns"].as<const char*>());
 
-	if (mqtt["enabled"] == 1)
-		config.mqttEnabled = true;
+	const char *apipch;
+	if (config.wifiApIp)
+	{
+		apipch = config.wifiApIp;
+	}
 	else
-		config.mqttEnabled = false;
+	{
+		apipch = "192.168.4.1";
+	}
+	const char *apsubnetch;
+	if (config.wifiApSubnet)
+	{
+		apsubnetch = config.wifiApSubnet;
+	}
+	else
+	{
+		apsubnetch = "255.255.255.0";
+	}
+	config.accessPointIp.fromString(apipch);
+	config.accessPointSubnetIp.fromString(apsubnetch);
+
+	ws.setAuthentication("admin", config.httpPass);
+
+	config.mqttEnabled = mqtt["enabled"] == 1;
+
 	if (config.mqttEnabled)
 	{
-#ifdef DEBUG
-		Serial.println("[ INFO ] Trying to setup MQTT");
-#endif
 		String mhsString = mqtt["host"];
 		config.mqttHost = strdup(mhsString.c_str());
 		config.mqttPort = mqtt["port"];
@@ -282,31 +237,10 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 			config.mqttHA = true;
 		else
 			config.mqttHA = false;
-
-		if (config.mqttHA)
-		{
-			String mtopic(config.mqttTopic);
-			String topicString = mtopic + "/avty";
-			String payloadString = "offline";
-			char *topicLWT = strdup(topicString.c_str());
-			char *payloadLWT = strdup(payloadString.c_str());
-			mqttClient.setWill(topicLWT, 2, true, payloadLWT);
-		}
-		mqttClient.setServer(config.mqttHost, config.mqttPort);
-		mqttClient.setCredentials(config.mqttUser, config.mqttPass);
-		mqttClient.onDisconnect(onMqttDisconnect);
-		mqttClient.onPublish(onMqttPublish);
-		mqttClient.onSubscribe(onMqttSubscribe);
-		mqttClient.onConnect(onMqttConnect);
-		mqttClient.onMessage(onMqttMessage);
-
-#ifdef DEBUG
-		Serial.println("[ INFO ] try to call mqttconnect ");
-#endif
-		connectToMqtt();
 	}
 #ifdef DEBUG
 	Serial.println(F("[ INFO ] Configuration done."));
 #endif
+	config.present = true;
 	return true;
 }

@@ -44,6 +44,27 @@ void ledWifiOff()
 	}
 }
 
+// blink when not connected, on when connected
+void ledWifiStatus()
+{
+	if (config.wifipin != 255 && !config.accessPointMode)
+	{
+		if (!WiFi.isConnected())
+		{
+			if ((currentMillis - wifiPinBlink) > 500)
+			{
+				wifiPinBlink = currentMillis;
+				digitalWrite(config.wifipin, !digitalRead(config.wifipin));
+			}
+		}
+		else
+		{
+			if (!(digitalRead(config.wifipin) == LEDon))
+				digitalWrite(config.wifipin, LEDon);
+		}
+	}
+}
+
 void ledAccessDeniedOff()
 {
 	if (config.accessdeniedpin != 255 && currentMillis > accessdeniedOffTime && digitalRead(config.accessdeniedpin) == LEDon)

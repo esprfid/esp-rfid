@@ -8,7 +8,7 @@ void ICACHE_FLASH_ATTR writeEvent(String type, String src, String desc, String d
 	root["desc"] = desc;
 	root["data"] = data;
 	root["time"] = now();
-	if ((config.mqttEvents) && (config.mqttEnabled == 1)) // log to MQTT
+	if (config.mqttEvents && config.mqttEnabled) // log to MQTT
 	{
 		root["cmd"] = "event";
 		root["door"] = config.deviceHostname;
@@ -55,8 +55,6 @@ void ICACHE_FLASH_ATTR sendLogFile(int page, String fileName, int logFileType)
 	if (page == 1)
 		lastPos = 0;
 	float pages;
-	Serial.println("sendLogFile");
-	Serial.println(ESP.getFreeHeap());
 	DynamicJsonDocument root(2048);
 	if (logFileType == LOGTYPE_EVENTLOG)
 		root["command"] = "eventlist";
