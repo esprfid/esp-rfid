@@ -12,7 +12,7 @@ MqttMessage *messageQueue = NULL;
 void connectToMqtt()
 {
 #ifdef DEBUG
-	Serial.println("[ INFO ] try to connect mqtt ");
+	Serial.println("[ INFO ] Connecting MQTT");
 #endif
 	mqttClient.connect();
 }
@@ -468,14 +468,6 @@ void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties 
 		}
 		lastMessage->nextMessage = incomingMessage;
 	}
-
-	DynamicJsonDocument root(512);
-	root["type"] = mqttIncomingJson["cmd"];
-	root["ip"] = WiFi.localIP().toString();
-	root["hostname"] = config.deviceHostname;
-	mqttPublishEvent(&root);
-
-	return;
 }
 
 void processMqttMessage(MqttMessage *incomingMessage) {
@@ -547,6 +539,12 @@ void processMqttMessage(MqttMessage *incomingMessage) {
 		}
 		f.close();
 	}
+	DynamicJsonDocument root(512);
+	root["type"] = incomingMessage->command;
+	root["ip"] = WiFi.localIP().toString();
+	root["hostname"] = config.deviceHostname;
+	mqttPublishEvent(&root);
+	
 	free(incomingMessage);
 	return;
 }
@@ -584,6 +582,21 @@ void onMqttConnect(bool sessionPresent)
 	Serial.print("[ INFO ] Subscribing at QoS 2, packetId: ");
 	Serial.println(packetIdSub);
 #endif
+
+	if (digitalRead(config.doorstatpin) == HIGH)
+		mqtt_publish_io("door", "OFF");
+	else
+		mqtt_publish_io("door", "ON");
+	if (digitalRead(config.doorbellpin) == HIGH)
+		mqtt_publish_io("doorbell", "ON");
+	else
+		mqtt_publish_io("doorbell", "OFF");
+	mqtt_publish_io("lock", "LOCKED");
+	if (config.mqttHA)
+	{
+		mqtt_publish_discovery();
+		mqtt_publish_avty();
+	}
 }
 
 void processMqttQueue() {
@@ -592,4 +605,32 @@ void processMqttQueue() {
 		messageQueue = messageToProcess->nextMessage;
 		processMqttMessage(messageToProcess);
 	}
+}
+
+void setupMqtt()
+{
+    if (!config.mqttEnabled)
+	{
+		return;
+	}
+
+#ifdef DEBUG
+	Serial.println("[ INFO ] Trying to setup MQTT");
+#endif
+	if (config.mqttHA)
+	{
+		String mtopic(config.mqttTopic);
+		String topicString = mtopic + "/avty";
+		String payloadString = "offline";
+		char *topicLWT = strdup(topicString.c_str());
+		char *payloadLWT = strdup(payloadString.c_str());
+		mqttClient.setWill(topicLWT, 2, true, payloadLWT);
+	}
+	mqttClient.setServer(config.mqttHost, config.mqttPort);
+	mqttClient.setCredentials(config.mqttUser, config.mqttPass);
+	mqttClient.onDisconnect(onMqttDisconnect);
+	mqttClient.onPublish(onMqttPublish);
+	mqttClient.onSubscribe(onMqttSubscribe);
+	mqttClient.onConnect(onMqttConnect);
+	mqttClient.onMessage(onMqttMessage);
 }

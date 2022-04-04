@@ -4,6 +4,10 @@
 // door status
 void doorStatus(/* arguments */)
 {
+  if (config.doorstatpin == 255)
+	{
+    return;
+  }
 
   // if this changes and if mqtt and mqtt logging enabled, push the message, also to a web socket!
   if ((digitalRead(config.doorstatpin) == HIGH) && (lastDoorState == 0))
@@ -12,12 +16,12 @@ void doorStatus(/* arguments */)
     if (lastTamperState == 1)
     {
       lastTamperState = 0;
-      if ((config.mqttHA) && (config.mqttEnabled == 1))
+      if (config.mqttHA && config.mqttEnabled)
       {
         mqtt_publish_io("tamper", "OFF");
       }
     }
-    if ((config.mqttHA) && (config.mqttEnabled == 1))
+    if (config.mqttHA && config.mqttEnabled)
     {
       mqtt_publish_io("door", "OFF");
     }
@@ -31,7 +35,7 @@ void doorStatus(/* arguments */)
     {
       writeEvent("WARN", "tamper", "Door was tampered!", "");
       lastTamperState = 1;
-      if ((config.mqttHA) && (config.mqttEnabled == 1))
+      if (config.mqttHA && config.mqttEnabled)
       {
         mqtt_publish_io("tamper", "ON");
       }
@@ -44,7 +48,7 @@ void doorStatus(/* arguments */)
       Serial.println(openDoorMillis);
 #endif
     }
-    if ((config.mqttHA) && (config.mqttEnabled == 1))
+    if (config.mqttHA && config.mqttEnabled)
     {
       mqtt_publish_io("door", "ON");
     }
@@ -63,10 +67,11 @@ void doorStatus(/* arguments */)
 
 			writeEvent("WARN", "tamper", "Door wasn't closed within max open time!", "");
 			lastTamperState = 1;
-			if ((config.mqttHA) && (config.mqttEnabled == 1))
+			if (config.mqttHA && config.mqttEnabled)
 			{
 				mqtt_publish_io("tamper", "ON");
 			}
 		}
 	}
+  delayMicroseconds(500);
 }

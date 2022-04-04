@@ -83,6 +83,7 @@ bool deactivateRelay[MAX_NUM_RELAYS] = {false, false, false, false};
 NtpClient NTP;
 AsyncMqttClient mqttClient;
 Ticker mqttReconnectTimer;
+Ticker wifiReconnectTimer;
 WiFiEventHandler wifiDisconnectHandler, wifiConnectHandler, wifiOnStationModeGotIPHandler;
 Bounce openLockButton;
 
@@ -96,16 +97,12 @@ AsyncWebSocket ws("/ws");
 #define BEEPERon LOW
 
 // Variables for whole scope
-bool configMode = false;
 unsigned long cooldown = 0;
 unsigned long currentMillis = 0;
 unsigned long deltaTime = 0;
-bool doDisableWifi = false;
 bool doEnableWifi = false;
 bool formatreq = false;
 const char *httpUsername = "admin";
-bool inAPMode = false;
-bool isWifiConnected = false;
 unsigned long keyTimer = 0;
 uint8_t lastDoorbellState = 0;
 uint8_t lastDoorState = 0;
@@ -117,7 +114,6 @@ unsigned long previousMillis = 0;
 bool shouldReboot = false;
 bool timerequest = false;
 unsigned long uptime = 0;
-bool wifiFlag = false;
 unsigned long wifiPinBlink = millis();
 unsigned long wiFiUptimeMillis = 0;
 
@@ -186,43 +182,13 @@ void ICACHE_FLASH_ATTR setup()
 #endif
 		}
 	}
-	wifiDisconnectHandler = WiFi.onStationModeDisconnected(onWifiDisconnect);
-	wifiConnectHandler = WiFi.onStationModeConnected(onWifiConnect);
-	wifiOnStationModeGotIPHandler = WiFi.onStationModeGotIP(onWifiGotIP);
 
-	configMode = loadConfiguration(config);
-	if (!configMode)
-	{
-		fallbacktoAPMode();
-		configMode = false;
-	}
-	else
-	{
-		configMode = true;
-	}
+	bool configured = false;
+	configured = loadConfiguration(config);
+	setupMqtt();
 	setupWebServer();
+	setupWifi(configured);
 	writeEvent("INFO", "sys", "System setup completed, running", "");
-	if (config.mqttEnabled == 1)
-	{
-		delay(1000);
-		if (digitalRead(config.doorstatpin) == HIGH)
-			mqtt_publish_io("door", "OFF");
-		else
-			mqtt_publish_io("door", "ON");
-		delay(500);
-		if (digitalRead(config.doorbellpin) == HIGH)
-			mqtt_publish_io("doorbell", "ON");
-		else
-			mqtt_publish_io("doorbell", "OFF");
-		delay(500);
-		mqtt_publish_io("lock", "LOCKED");
-		delay(500);
-		if (config.mqttHA)
-		{
-			mqtt_publish_discovery();
-			mqtt_publish_avty();
-		}
-	}
 }
 
 void ICACHE_RAM_ATTR loop()
@@ -240,37 +206,11 @@ void ICACHE_RAM_ATTR loop()
 		activateRelay[0] = true;
 	}
 
-	if (config.wifipin != 255 && configMode && !config.wmode)
-	{
-		if (!wifiFlag)
-		{
-			if ((currentMillis - wifiPinBlink) > 500)
-			{
-				wifiPinBlink = currentMillis;
-				digitalWrite(config.wifipin, !digitalRead(config.wifipin));
-			}
-		}
-		else
-		{
-			if (!(digitalRead(config.wifipin) == LEDon))
-				digitalWrite(config.wifipin, LEDon);
-		}
-	}
-
+	ledWifiStatus();
 	ledAccessDeniedOff();
 	beeperBeep();
-
-	if (config.doorstatpin != 255)
-	{
-		doorStatus();
-		delayMicroseconds(500);
-	}
-
-	if (config.doorbellpin != 255)
-	{
-		doorbellStatus();
-		delayMicroseconds(500);
-	}
+	doorStatus();
+	doorbellStatus();
 
 	if (currentMillis >= cooldown)
 	{
@@ -285,7 +225,7 @@ void ICACHE_RAM_ATTR loop()
 			{
 				if (digitalRead(config.relayPin[currentRelay]) == !config.relayType[currentRelay]) // currently OFF, need to switch ON
 				{
-					if ((config.mqttHA) && (config.mqttEnabled == 1))
+					if (config.mqttHA && config.mqttEnabled)
 					{
 						mqtt_publish_io("lock", "UNLOCKED");
 					}
@@ -298,7 +238,7 @@ void ICACHE_RAM_ATTR loop()
 				}
 				else // currently ON, need to switch OFF
 				{
-					if ((config.mqttHA) && (config.mqttEnabled == 1))
+					if (config.mqttHA && config.mqttEnabled)
 					{
 						mqtt_publish_io("lock", "LOCKED");
 					}
@@ -316,7 +256,7 @@ void ICACHE_RAM_ATTR loop()
 		{
 			if (activateRelay[currentRelay])
 			{
-				if ((config.mqttHA) && (config.mqttEnabled == 1))
+				if (config.mqttHA && config.mqttEnabled)
 				{
 					mqtt_publish_io("lock", "UNLOCKED");
 				}
@@ -332,7 +272,7 @@ void ICACHE_RAM_ATTR loop()
 			}
 			else if ((currentMillis - previousMillis >= config.activateTime[currentRelay]) && (deactivateRelay[currentRelay]))
 			{
-				if ((config.mqttHA) && (config.mqttEnabled == 1))
+				if (config.mqttHA && config.mqttEnabled)
 				{
 					mqtt_publish_io("lock", "LOCKED");
 				}
@@ -379,47 +319,37 @@ void ICACHE_RAM_ATTR loop()
 		ESP.restart();
 	}
 
-	if (isWifiConnected)
+	if (WiFi.isConnected())
 	{
 		wiFiUptimeMillis += deltaTime;
 	}
 
-	if (config.wifiTimeout > 0 && wiFiUptimeMillis > (config.wifiTimeout * 1000) && isWifiConnected == true)
+	if (config.wifiTimeout > 0 && wiFiUptimeMillis > (config.wifiTimeout * 1000) && WiFi.isConnected())
 	{
 		writeEvent("INFO", "wifi", "WiFi is going to be disabled", "");
-		doDisableWifi = true;
-	}
-
-	if (doDisableWifi == true)
-	{
-		doDisableWifi = false;
-		wiFiUptimeMillis = 0;
 		disableWifi();
 	}
-	else if (doEnableWifi == true)
+
+	if (doEnableWifi == true)
 	{
 		writeEvent("INFO", "wifi", "Enabling WiFi", "");
 		doEnableWifi = false;
-		if (!isWifiConnected)
+		if (!WiFi.isConnected())
 		{
-			wiFiUptimeMillis = 0;
 			enableWifi();
 		}
 	}
 
-	if (config.mqttEnabled)
+	if (config.mqttEnabled && mqttClient.connected())
 	{
-		if (mqttClient.connected())
+		if ((unsigned)now() > nextbeat)
 		{
-			if ((unsigned)now() > nextbeat)
-			{
-				mqtt_publish_heartbeat(now(), uptime);
-				nextbeat = (unsigned)now() + config.mqttInterval;
+			mqtt_publish_heartbeat(now(), uptime);
+			nextbeat = (unsigned)now() + config.mqttInterval;
 #ifdef DEBUG
-				Serial.print("[ INFO ] Nextbeat=");
-				Serial.println(nextbeat);
+			Serial.print("[ INFO ] Nextbeat=");
+			Serial.println(nextbeat);
 #endif
-			}
 		}
 		processMqttQueue();
 	}

@@ -73,7 +73,7 @@ void ICACHE_FLASH_ATTR sendStatus()
 		Serial.print(F("[ WARN ] Error getting info on SPIFFS"));
 #endif
 	}
-	DynamicJsonDocument root(512);
+	DynamicJsonDocument root(1024);
 	root["command"] = "status";
 #ifdef OFFICIALBOARD
 	root["board"] = "brdV2";
@@ -88,7 +88,7 @@ void ICACHE_FLASH_ATTR sendStatus()
 	root["uptime"] = NTP.getDeviceUptimeString();
 	root["version"] = VERSION;
 
-	if (inAPMode)
+	if (config.accessPointMode)
 	{
 		wifi_get_ip_info(SOFTAP_IF, &info);
 		struct softap_config conf;
