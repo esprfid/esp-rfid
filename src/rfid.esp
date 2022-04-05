@@ -226,6 +226,12 @@ void pinCodeRead()
 	}
 }
 
+int weekdayFromMonday(int weekdayFromSunday) {
+	// we expect weeks starting from Sunday equals to 1
+	// we return week day starting from Monday equals to 0
+	return ( weekdayFromSunday + 5 ) % 7;
+}
+
 void rfidProcess()
 {
 	if ((config.pinCodeRequested && rfidState != cardAndPincodePresented) || (!config.pinCodeRequested && rfidState != cardSwiped))
@@ -282,10 +288,15 @@ void rfidProcess()
 	{
 		unsigned long validL = json["validuntil"];
 		unsigned long nowL = now();
+		int hourTz = hour() + config.timeZone;
+		bool officeHour = config.openingHours[weekdayFromMonday(weekday())][hourTz] == 1;
 		if (validL < nowL)
 		{
 			processingState = expired;
-		} else
+		} else if (!officeHour)
+		{
+			processingState = notValid;
+		}
 		{
 			processingState = valid;
 		}

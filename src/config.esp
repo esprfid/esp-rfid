@@ -213,6 +213,14 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 
 	ws.setAuthentication("admin", config.httpPass);
 
+	if (general["openinghours"])
+	{
+		for (int d=0; d<7; d++)
+		{
+			config.openingHours[d] = strdup(general["openinghours"][d].as<const char *>());
+		}
+	}
+
 	config.mqttEnabled = mqtt["enabled"] == 1;
 
 	if (config.mqttEnabled)
