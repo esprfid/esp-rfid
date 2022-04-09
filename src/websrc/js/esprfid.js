@@ -89,6 +89,8 @@ var completed = false;
 var file = {};
 var backupstarted = false;
 var restorestarted = false;
+var gotInitialData = false;
+var wsConnectionPresent = false;
 
 var esprfidcontent;
 
@@ -1904,7 +1906,29 @@ function logout() {
   return false;
 }
 
+function wsConnectionActive() {
+  wsConnectionPresent = true;
+  websock.send("{\"command\":\"status\"}");
+  $("#ws-connection-status").slideUp();
+}
+
+function wsConnectionClosed() {
+  wsConnectionPresent = false;
+  $("#ws-connection-status").slideDown();
+  connectWS();
+}
+
+function keepWSConnectionOpen() {
+  if (!wsConnectionPresent) {
+    setTimeout(connectWS, 5000);
+  }
+}
+
 function connectWS() {
+  if(wsConnectionPresent) {
+    return;
+  }
+
   if (window.location.protocol === "https:") {
     wsUri = "wss://" + window.location.hostname + ":" + window.location.port + "/ws";
   } else if (window.location.protocol === "file:" ||
@@ -1915,9 +1939,18 @@ function connectWS() {
   websock.addEventListener("message", socketMessageListener);
 
   websock.onopen = function(evt) {
-    websock.send("{\"command\":\"getconf\"}");
-    websock.send("{\"command\":\"status\"}");
+    if (!gotInitialData) {
+      websock.send("{\"command\":\"getconf\"}");
+      gotInitialData = true;
+    }
+    wsConnectionActive();
   };
+
+  websock.onclose = function(evt) {
+    wsConnectionClosed();
+  };
+
+  keepWSConnectionOpen();
 }
 
 function upload() {
