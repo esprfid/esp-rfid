@@ -7,6 +7,7 @@ struct MqttMessage {
 	char serializedMessage[512];
 	MqttMessage *nextMessage = NULL;
 };
+
 MqttMessage *messageQueue = NULL;
 
 void connectToMqtt()
@@ -55,12 +56,12 @@ void onMqttDisconnect(AsyncMqttClientDisconnectReason reason)
 	}
 }
 
-void mqttPublishEvent(JsonDocument *root)
+void mqttPublishEvent(JsonDocument *root, String topic)
 {
-	if (mqttClient.connected())
+	if (config.mqttEnabled && mqttClient.connected())
 	{
 		String stopic(config.mqttTopic);
-		stopic = stopic + "/send";
+		stopic = stopic + topic;
 		String mqttBuffer;
 		serializeJson(*root, mqttBuffer);
 		mqttClient.publish(stopic.c_str(), 0, false, mqttBuffer.c_str());
@@ -71,41 +72,41 @@ void mqttPublishEvent(JsonDocument *root)
 	}
 }
 
-void mqtt_publish_boot(time_t boot_time)
+void mqttPublishEvent(JsonDocument *root)
 {
-	String stopic(config.mqttTopic);
-	stopic = stopic + "/send";
+	mqttPublishEvent(root, "/send");
+}
+
+void mqttPublishAck(String command)
+{
+	DynamicJsonDocument root(512);
+	root["type"] = command;
+	root["ip"] = WiFi.localIP().toString();
+	root["hostname"] = config.deviceHostname;
+	mqttPublishEvent(&root);
+}
+
+void mqttPublishBoot(time_t boot_time)
+{
 	DynamicJsonDocument root(512);
 	root["type"] = "boot";
 	root["time"] = boot_time;
 	root["uptime"] = "0";
 	root["ip"] = WiFi.localIP().toString();
 	root["hostname"] = config.deviceHostname;
-	String mqttBuffer_boot;
-	serializeJson(root, mqttBuffer_boot);
-	mqttClient.publish(stopic.c_str(), 0, false, mqttBuffer_boot.c_str());
-#ifdef DEBUG
-	Serial.print("[ INFO ] Mqtt Publish:");
-	Serial.println(mqttBuffer_boot);
-#endif
+	mqttPublishEvent(&root);
 }
 
-void mqtt_publish_discovery()
+void mqttPublishDiscovery()
 {
 	String mtopic(config.mqttTopic);
-	String deviceName = config.deviceHostname;
-
 	String topic;
-	DynamicJsonDocument jsonBuffer(512);
-	String mqttBuffer;
-
+	String deviceName = config.deviceHostname;
 	DynamicJsonDocument via(512);
 	via["ids"] = WiFi.macAddress();
 
 	for (int i = 0; i < 6; i++)
 	{
-		jsonBuffer.clear();
-		mqttBuffer = "";
 		switch (i)
 		{
 		case 0:
@@ -125,7 +126,7 @@ void mqtt_publish_discovery()
 			root["pl_lock"] = "{cmd:'opendoor'}";
 			root["avty_t"] = mtopic + "/avty";
 			root["dev"] = dev;
-			serializeJson(root, mqttBuffer);
+			mqttPublishEvent(&root, topic);
 			break;
 		}
 		case 1:
@@ -138,7 +139,7 @@ void mqtt_publish_discovery()
 			door["avty_t"] = mtopic + "/avty";
 			door["dev_cla"] = "door";
 			door["dev"] = via;
-			serializeJson(door, mqttBuffer);
+			mqttPublishEvent(&door, topic);
 			break;
 		}
 		case 2:
@@ -152,7 +153,7 @@ void mqtt_publish_discovery()
 			doorbell["dev_cla"] = "sound";
 			doorbell["icon"] = "mdi:bell";
 			doorbell["dev"] = via;
-			serializeJson(doorbell, mqttBuffer);
+			mqttPublishEvent(&doorbell, topic);
 			break;
 		}
 		case 3:
@@ -167,7 +168,7 @@ void mqtt_publish_discovery()
 			tag["json_attr_t"] = mtopic + "/tag";
 			tag["icon"] = "mdi:key";
 			tag["dev"] = via;
-			serializeJson(tag, mqttBuffer);
+			mqttPublishEvent(&tag, topic);
 			break;
 		}
 		case 4:
@@ -182,7 +183,7 @@ void mqtt_publish_discovery()
 			user["json_attr_t"] = mtopic + "/tag";
 			user["icon"] = "mdi:human";
 			user["dev"] = via;
-			serializeJson(user, mqttBuffer);
+			mqttPublishEvent(&user, topic);
 			break;
 		}
 		case 5:
@@ -194,22 +195,15 @@ void mqtt_publish_discovery()
 			tamper["stat_t"] = mtopic + "/io/tamper";
 			tamper["avty_t"] = mtopic + "/avty";
 			tamper["dev_cla"] = "safety";
-			//tamper["icon"] = "mdi:bell";
 			tamper["dev"] = via;
-			serializeJson(tamper, mqttBuffer);
+			mqttPublishEvent(&tamper, topic);
 			break;
 		}
 		}
-		mqttClient.publish(topic.c_str(), 0, true, mqttBuffer.c_str());
-#ifdef DEBUG
-		Serial.print("[ INFO ] Mqtt Publish:");
-		Serial.println(mqttBuffer);
-#endif
-		delay(500);
 	}
 }
 
-void mqtt_publish_avty()
+void mqttPublishAvty()
 {
 	String mtopic(config.mqttTopic);
 	String avty_topic = mtopic + "/avty";
@@ -218,79 +212,59 @@ void mqtt_publish_avty()
 #ifdef DEBUG
 	Serial.println("[ INFO ] Mqtt Publish online @ avty");
 #endif
-	delay(500);
 }
 
-void mqtt_publish_heartbeat(time_t heartbeat, time_t uptime)
+void mqttPublishHeartbeat(time_t heartbeat, time_t uptime)
 {
-	String stopic(config.mqttTopic);
 	DynamicJsonDocument root(512);
-
-	stopic = stopic + "/send";
 	root["type"] = "heartbeat";
 	root["time"] = heartbeat;
 	root["uptime"] = uptime;
 	root["ip"] = WiFi.localIP().toString();
 	root["hostname"] = config.deviceHostname;
-
-	String mqttBuffer8;
-	serializeJson(root, mqttBuffer8);
-	mqttClient.publish(stopic.c_str(), 0, false, mqttBuffer8.c_str());
-#ifdef DEBUG
-	Serial.print("[ INFO ] Mqtt Publish:");
-	Serial.println(mqttBuffer8);
-#endif
+	mqttPublishEvent(&root);
 }
 
 void mqttPublishAccess(time_t accesstime, String const &isknown, String const &type, String const &user, String const &uid)
 {
-	if (config.mqttEnabled && mqttClient.connected())
+	DynamicJsonDocument root(512);
+	// log to MQTT adding cmd command
+	if (config.mqttEvents)
 	{
-		String stopic(config.mqttTopic);
-		if (!config.mqttHA)
-		{
-			stopic = stopic + "/send";
-		}
-		else
-		{
-			stopic = stopic + "/tag";
-		}
-		DynamicJsonDocument root(512);
-		// log to MQTT adding cmd command
-		if (config.mqttEvents)
-		{
-			root["cmd"] = "log";
-		}
-		if (!config.mqttHA)
-		{
-			root["type"] = "access";
-			root["time"] = accesstime;
-			root["isKnown"] = isknown;
-			root["access"] = type;
-			root["username"] = user;
-			root["uid"] = uid;
-			root["door"] = config.deviceHostname;
-		}
-		else
-		{
-			root["uid"] = uid;
-			root["username"] = user;
-			root["access"] = type;
-			root["time"] = accesstime;
-		}
-		String mqttBuffer;
-		serializeJson(root, mqttBuffer);
-		mqttClient.publish(stopic.c_str(), 0, false, mqttBuffer.c_str());
-#ifdef DEBUG
-		Serial.print("[ INFO ] Mqtt Publish:");
-		Serial.println(mqttBuffer);
-#endif
+		root["cmd"] = "log";
+	}
+
+	if (!config.mqttHA)
+	{
+		root["type"] = "access";
+		root["time"] = accesstime;
+		root["isKnown"] = isknown;
+		root["access"] = type;
+		root["username"] = user;
+		root["uid"] = uid;
+		root["hostname"] = config.deviceHostname;
+	}
+	else
+	{
+		root["uid"] = uid;
+		root["username"] = user;
+		root["access"] = type;
+		root["time"] = accesstime;
+	}
+
+	if (!config.mqttHA)
+	{
+		mqttPublishEvent(&root);
+	}
+	else
+	{
+		mqttPublishEvent(&root, "/tag");
 	}
 }
 
-void mqtt_publish_io(String const &io, String const &state)
+void mqttPublishIo(String const &io, String const &state)
 {
-	if (mqttClient.connected())
+	if (config.mqttHA && config.mqttEnabled && mqttClient.connected())
 	{
 		String stopic(config.mqttTopic);
 		stopic = stopic + "/io/" + io;
@@ -309,13 +283,8 @@ void onMqttPublish(uint16_t packetId)
 	writeEvent("INFO", "mqtt", "MQTT publish acknowledged", String(packetId));
 }
 
-void ICACHE_FLASH_ATTR getUserList(int todo)
+void getUserList()
 {
-	String stopic(config.mqttTopic);
-	if (todo == 0) // Userlist to add to DB
-		stopic = stopic + "/accesslist";
-	else if (todo == 1) // Just for List
-		stopic = stopic + "/send";
 	DynamicJsonDocument root(512);
 	JsonArray users = root.createNestedArray("list");
 	Dir dir = SPIFFS.openDir("/P/");
@@ -336,22 +305,12 @@ void ICACHE_FLASH_ATTR getUserList(int todo)
 		auto error = deserializeJson(json, buf.get());
 		if (!error)
 		{
-
-			if (mqttClient.connected())
-			{
-				String mqttBuffer;
-				serializeJson(json, mqttBuffer);
-				mqttClient.publish(stopic.c_str(), 0, false, mqttBuffer.c_str());
-#ifdef DEBUG
-				Serial.print("[ INFO ] Mqtt Publish:");
-				Serial.println(mqttBuffer);
-#endif
-			}
+			mqttPublishEvent(&root);
 		}
 	}
 }
 
-void DeleteAllUserFiles()
+void deleteAllUserFiles()
 {
 	Dir dir = SPIFFS.openDir("/P/");
 	while (dir.next())
@@ -362,7 +321,7 @@ void DeleteAllUserFiles()
 	}
 }
 
-void DeleteUserID(const char *uid)
+void deleteUserID(const char *uid)
 {
 	// only do this if a user id has been provided
 	if (uid)
@@ -411,29 +370,24 @@ void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties 
 		return;
 	}
 
-	if (!config.mqttHA)
+	// Check if IP was sent with command because we only
+	// accept commands where sent IP is equal to device IP
+	if (!mqttIncomingJson.containsKey("doorip"))
 	{
-		// Check if IP was send with command because we only
-		// accept commands for this where sent IP is equal to device IP
-		if (mqttIncomingJson.containsKey("doorip"))
-		{
-			const char *ipadr = mqttIncomingJson["doorip"];
-			String espIp = WiFi.localIP().toString();
-			if (!((strcmp(ipadr, espIp.c_str()) == 0) && (ipadr != NULL)))
-			{
+		return;
+	}
+	
+	const char *ipadr = mqttIncomingJson["doorip"];
+	String espIp = WiFi.localIP().toString();
+	if (!((strcmp(ipadr, espIp.c_str()) == 0) && (ipadr != NULL)))
+	{
 #ifdef DEBUG
-				Serial.print("[ INFO ] ESP  IP: ");
-				Serial.println(espIp);
-				Serial.print("[ INFO ] recv IP: ");
-				Serial.println(ipadr);
+		Serial.print("[ INFO ] ESP  IP: ");
+		Serial.println(espIp);
+		Serial.print("[ INFO ] recv IP: ");
+		Serial.println(ipadr);
 #endif
-				return;
-			}
-		}
-		else
-		{
-			return;
-		}
+		return;
 	}
 
 	if(ESP.getFreeHeap() < 2000)
@@ -441,7 +395,7 @@ void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties 
 #ifdef DEBUG
 		Serial.println("Dropping MQTT message, out of memory");
 #endif
-		writeEvent("ERRO", "mqtt", "Dropping MQTT message, out of memory","");
+		writeEvent("ERRO", "mqtt", "Dropping MQTT message, out of memory", "");
 		return;
 	}
 
@@ -470,22 +424,15 @@ void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties 
 	}
 }
 
-void processMqttMessage(MqttMessage *incomingMessage) {
+void processMqttMessage(MqttMessage *incomingMessage)
+{
 	char *command = incomingMessage->command;
-	if (strcmp(command, "getuser") == 0)
+	if (strcmp(command, "getuserlist") == 0)
 	{
 #ifdef DEBUG
 		Serial.println("[ INFO ] Get User List");
 #endif
-		getUserList(0);
-	}
-
-	else if (strcmp(command, "listusr") == 0)
-	{
-#ifdef DEBUG
-		Serial.println("[ INFO ] List users");
-#endif
-		getUserList(1);
+		getUserList();
 	}
 
 	else if (strcmp(command, "opendoor") == 0)
@@ -507,7 +454,8 @@ void processMqttMessage(MqttMessage *incomingMessage) {
 #ifdef DEBUG
 		Serial.println("[ INFO ] Delete all users");
 #endif
-		DeleteAllUserFiles();
+		deleteAllUserFiles();
+		mqttPublishAck(command);
 	}
 
 	else if (strcmp(command, "deletuid") == 0)
@@ -516,18 +464,17 @@ void processMqttMessage(MqttMessage *incomingMessage) {
 		Serial.println("[ INFO ] Delete a single user by uid");
 #endif
 		const char *uid = incomingMessage->uid;
-		DeleteUserID(uid);
+		deleteUserID(uid);
+		mqttPublishAck(command);
 	}
 
 	else if (strcmp(command, "adduser") == 0)
 	{
-
 #ifdef DEBUG
 		Serial.print("[ INFO ] Add Users: ");
 		const char *name = incomingMessage->user;
 		Serial.println(name);
 #endif
-
 		const char *uid = incomingMessage->uid;
 		String filename = "/P/";
 		filename += uid;
@@ -538,12 +485,8 @@ void processMqttMessage(MqttMessage *incomingMessage) {
 			f.println(incomingMessage->serializedMessage);
 		}
 		f.close();
+		mqttPublishAck(command);
 	}
-	DynamicJsonDocument root(512);
-	root["type"] = incomingMessage->command;
-	root["ip"] = WiFi.localIP().toString();
-	root["hostname"] = config.deviceHostname;
-	mqttPublishEvent(&root);
 	
 	free(incomingMessage);
 	return;
@@ -568,11 +511,11 @@ void onMqttConnect(bool sessionPresent)
 	if (sessionPresent == true)
 	{
 #ifdef DEBUG
-		Serial.println("[ INFO ]MQTT session Present: True");
+		Serial.println("[ INFO ] MQTT session Present: True");
 #endif
 		writeEvent("INFO", "mqtt", "Connected to MQTT Server", "Session Present");
 	}
-	mqtt_publish_boot(now());
+	mqttPublishBoot(now());
 
 	String stopic(config.mqttTopic);
 	stopic = stopic + "/cmd";
@@ -583,23 +526,18 @@ void onMqttConnect(bool sessionPresent)
 	Serial.println(packetIdSub);
 #endif
 
-	if (digitalRead(config.doorstatpin) == HIGH)
-		mqtt_publish_io("door", "OFF");
-	else
-		mqtt_publish_io("door", "ON");
-	if (digitalRead(config.doorbellpin) == HIGH)
-		mqtt_publish_io("doorbell", "ON");
-	else
-		mqtt_publish_io("doorbell", "OFF");
-	mqtt_publish_io("lock", "LOCKED");
 	if (config.mqttHA)
 	{
-		mqtt_publish_discovery();
-		mqtt_publish_avty();
+		mqttPublishIo("door", digitalRead(config.doorstatpin) == HIGH ? "OFF" : "ON");
+		mqttPublishIo("doorbell", digitalRead(config.doorbellpin) == HIGH ? "ON" :"OFF");
+		mqttPublishIo("lock", "LOCKED");
+		mqttPublishDiscovery();
+		mqttPublishAvty();
 	}
 }
 
-void processMqttQueue() {
+void processMqttQueue()
+{
 	while(messageQueue != NULL) {
 		MqttMessage *messageToProcess = messageQueue;
 		messageQueue = messageToProcess->nextMessage;

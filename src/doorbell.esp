@@ -10,19 +10,13 @@ void doorbellStatus()
       if ((digitalRead(config.doorbellpin) == HIGH) && (lastDoorbellState == 0))
       {
             writeEvent("INFO", "doorbell", "Doorbell ringing", "");
-            if (config.mqttHA && config.mqttEnabled)
-            {
-                  mqtt_publish_io("doorbell", "ON");
-            }
+            mqttPublishIo("doorbell", "ON");
             lastDoorbellState = 1;
       }
 
       if ((digitalRead(config.doorbellpin) == LOW) && (lastDoorbellState == 1))
       {
-            if (config.mqttHA && config.mqttEnabled)
-            {
-                  mqtt_publish_io("doorbell", "OFF");
-            }
+            mqttPublishIo("doorbell", "OFF");
             lastDoorbellState = 0;
       }
       delayMicroseconds(500);
