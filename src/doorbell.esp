@@ -2,7 +2,7 @@
 
 void doorbellStatus()
 {
-      if (config.doorbellpin != 255)
+      if (config.doorbellpin == 255)
       {
             return;
       }
