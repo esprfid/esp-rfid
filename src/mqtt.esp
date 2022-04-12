@@ -72,6 +72,22 @@ void mqttPublishEvent(JsonDocument *root, String topic)
 	}
 }
 
+void mqttPublishEventHA(JsonDocument *root, String topic)
+{
+	if (config.mqttEnabled && mqttClient.connected())
+	{
+		String stopic(config.mqttTopic);
+		stopic = topic;
+		String mqttBuffer;
+		serializeJson(*root, mqttBuffer);
+		mqttClient.publish(stopic.c_str(), 0, false, mqttBuffer.c_str());
+#ifdef DEBUG
+		Serial.print("[ INFO ] Mqtt Publish:");
+		Serial.println(mqttBuffer);
+#endif
+	}
+}
+
 void mqttPublishEvent(JsonDocument *root)
 {
 	mqttPublishEvent(root, "/send");
@@ -102,6 +118,7 @@ void mqttPublishDiscovery()
 	String mtopic(config.mqttTopic);
 	String topic;
 	String deviceName = config.deviceHostname;
+	String deviceIP = WiFi.localIP().toString();
 	DynamicJsonDocument via(512);
 	via["ids"] = WiFi.macAddress();
 
@@ -122,11 +139,11 @@ void mqttPublishDiscovery()
 			root["uniq_id"] = deviceName + "/lock";
 			root["stat_t"] = mtopic + "/io/lock";
 			root["cmd_t"] = mtopic + "/cmd";
-			root["pl_unlk"] = "{cmd:'opendoor'}";
-			root["pl_lock"] = "{cmd:'opendoor'}";
+			root["pl_unlk"] = "{cmd:'opendoor',doorip:'" + deviceIP + "'}";
+			root["pl_lock"] = "{cmd:'opendoor',doorip:'" + deviceIP + "'}";
 			root["avty_t"] = mtopic + "/avty";
 			root["dev"] = dev;
-			mqttPublishEvent(&root, topic);
+			mqttPublishEventHA(&root, topic);
 			break;
 		}
 		case 1:
@@ -139,7 +156,7 @@ void mqttPublishDiscovery()
 			door["avty_t"] = mtopic + "/avty";
 			door["dev_cla"] = "door";
 			door["dev"] = via;
-			mqttPublishEvent(&door, topic);
+			mqttPublishEventHA(&door, topic);
 			break;
 		}
 		case 2:
@@ -153,7 +170,7 @@ void mqttPublishDiscovery()
 			doorbell["dev_cla"] = "sound";
 			doorbell["icon"] = "mdi:bell";
 			doorbell["dev"] = via;
-			mqttPublishEvent(&doorbell, topic);
+			mqttPublishEventHA(&doorbell, topic);
 			break;
 		}
 		case 3:
@@ -168,7 +185,7 @@ void mqttPublishDiscovery()
 			tag["json_attr_t"] = mtopic + "/tag";
 			tag["icon"] = "mdi:key";
 			tag["dev"] = via;
-			mqttPublishEvent(&tag, topic);
+			mqttPublishEventHA(&tag, topic);
 			break;
 		}
 		case 4:
@@ -183,7 +200,7 @@ void mqttPublishDiscovery()
 			user["json_attr_t"] = mtopic + "/tag";
 			user["icon"] = "mdi:human";
 			user["dev"] = via;
-			mqttPublishEvent(&user, topic);
+			mqttPublishEventHA(&user, topic);
 			break;
 		}
 		case 5:
@@ -196,7 +213,7 @@ void mqttPublishDiscovery()
 			tamper["avty_t"] = mtopic + "/avty";
 			tamper["dev_cla"] = "safety";
 			tamper["dev"] = via;
-			mqttPublishEvent(&tamper, topic);
+			mqttPublishEventHA(&tamper, topic);
 			break;
 		}
 		}
