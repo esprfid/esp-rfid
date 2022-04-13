@@ -16,15 +16,9 @@ void doorStatus(/* arguments */)
     if (lastTamperState == 1)
     {
       lastTamperState = 0;
-      if (config.mqttHA && config.mqttEnabled)
-      {
-        mqtt_publish_io("tamper", "OFF");
-      }
+      mqttPublishIo("tamper", "OFF");
     }
-    if (config.mqttHA && config.mqttEnabled)
-    {
-      mqtt_publish_io("door", "OFF");
-    }
+    mqttPublishIo("door", "OFF");
     lastDoorState = 1;
   }
 
@@ -35,10 +29,7 @@ void doorStatus(/* arguments */)
     {
       writeEvent("WARN", "tamper", "Door was tampered!", "");
       lastTamperState = 1;
-      if (config.mqttHA && config.mqttEnabled)
-      {
-        mqtt_publish_io("tamper", "ON");
-      }
+      mqttPublishIo("tamper", "ON");
     }
     else
     {
@@ -48,10 +39,7 @@ void doorStatus(/* arguments */)
       Serial.println(openDoorMillis);
 #endif
     }
-    if (config.mqttHA && config.mqttEnabled)
-    {
-      mqtt_publish_io("door", "ON");
-    }
+    mqttPublishIo("door", "ON");
     lastDoorState = 0;
   }
   if ((lastDoorState == 0) && (lastTamperState == 0))
@@ -67,10 +55,7 @@ void doorStatus(/* arguments */)
 
 			writeEvent("WARN", "tamper", "Door wasn't closed within max open time!", "");
 			lastTamperState = 1;
-			if (config.mqttHA && config.mqttEnabled)
-			{
-				mqtt_publish_io("tamper", "ON");
-			}
+			mqttPublishIo("tamper", "ON");
 		}
 	}
   delayMicroseconds(500);

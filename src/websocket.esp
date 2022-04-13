@@ -140,13 +140,13 @@ void ICACHE_FLASH_ATTR procMsg(AsyncWebSocketClient *client, size_t sz)
 	}
 	else if (strcmp(command, "gettime") == 0)
 	{
-		timerequest = true;
+		sendTime();
 	}
 	else if (strcmp(command, "settime") == 0)
 	{
 		time_t t = root["epoch"];
 		setTime(t);
-		timerequest = true;
+		sendTime();
 	}
 	else if (strcmp(command, "getconf") == 0)
 	{

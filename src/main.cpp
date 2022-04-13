@@ -112,7 +112,6 @@ unsigned long openDoorMillis = 0;
 unsigned long previousLoopMillis = 0;
 unsigned long previousMillis = 0;
 bool shouldReboot = false;
-bool timerequest = false;
 unsigned long uptime = 0;
 unsigned long wifiPinBlink = millis();
 unsigned long wiFiUptimeMillis = 0;
@@ -225,10 +224,7 @@ void ICACHE_RAM_ATTR loop()
 			{
 				if (digitalRead(config.relayPin[currentRelay]) == !config.relayType[currentRelay]) // currently OFF, need to switch ON
 				{
-					if (config.mqttHA && config.mqttEnabled)
-					{
-						mqtt_publish_io("lock", "UNLOCKED");
-					}
+					mqttPublishIo("lock", "UNLOCKED");
 #ifdef DEBUG
 					Serial.print("mili : ");
 					Serial.println(millis());
@@ -238,10 +234,7 @@ void ICACHE_RAM_ATTR loop()
 				}
 				else // currently ON, need to switch OFF
 				{
-					if (config.mqttHA && config.mqttEnabled)
-					{
-						mqtt_publish_io("lock", "LOCKED");
-					}
+					mqttPublishIo("lock", "LOCKED");
 #ifdef DEBUG
 					Serial.print("mili : ");
 					Serial.println(millis());
@@ -256,10 +249,7 @@ void ICACHE_RAM_ATTR loop()
 		{
 			if (activateRelay[currentRelay])
 			{
-				if (config.mqttHA && config.mqttEnabled)
-				{
-					mqtt_publish_io("lock", "UNLOCKED");
-				}
+				mqttPublishIo("lock", "UNLOCKED");
 #ifdef DEBUG
 				Serial.print("mili : ");
 				Serial.println(millis());
@@ -272,10 +262,7 @@ void ICACHE_RAM_ATTR loop()
 			}
 			else if ((currentMillis - previousMillis >= config.activateTime[currentRelay]) && (deactivateRelay[currentRelay]))
 			{
-				if (config.mqttHA && config.mqttEnabled)
-				{
-					mqtt_publish_io("lock", "LOCKED");
-				}
+				mqttPublishIo("lock", "LOCKED");
 #ifdef DEBUG
 				Serial.println(currentMillis);
 				Serial.println(previousMillis);
@@ -301,12 +288,6 @@ void ICACHE_RAM_ATTR loop()
 		ESP.restart();
 	}
 
-	if (timerequest)
-	{
-		timerequest = false;
-		sendTime();
-	}
-
 	if (config.autoRestartIntervalSeconds > 0 && uptime > config.autoRestartIntervalSeconds * 1000)
 	{
 		writeEvent("WARN", "sys", "Auto restarting...", "");
@@ -330,7 +311,8 @@ void ICACHE_RAM_ATTR loop()
 		disableWifi();
 	}
 
-	if (doEnableWifi == true)
+	// don't try connecting to WiFi when waiting for pincode
+	if (doEnableWifi == true && keyTimer == 0)
 	{
 		writeEvent("INFO", "wifi", "Enabling WiFi", "");
 		doEnableWifi = false;
@@ -344,7 +326,7 @@ void ICACHE_RAM_ATTR loop()
 	{
 		if ((unsigned)now() > nextbeat)
 		{
-			mqtt_publish_heartbeat(now(), uptime);
+			mqttPublishHeartbeat(now(), uptime);
 			nextbeat = (unsigned)now() + config.mqttInterval;
 #ifdef DEBUG
 			Serial.print("[ INFO ] Nextbeat=");
