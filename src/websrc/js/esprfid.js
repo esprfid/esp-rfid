@@ -55,7 +55,16 @@ var config = {
     "general": {
         "hostnm": "esp-rfid",
         "restart": 0,
-        "pswd": "admin"
+        "pswd": "admin",
+        "openinghours": [
+          "111111111111111111111111",
+          "111111111111111111111111",
+          "111111111111111111111111",
+          "111111111111111111111111",
+          "111111111111111111111111",
+          "111111111111111111111111",
+          "111111111111111111111111",
+        ]
     },
     "mqtt": {
         "enabled": 0,
@@ -267,6 +276,21 @@ function saventp() {
   uncommited();
 }
 
+function extractOpeningHours() {
+  // removing header row
+  var days = Array.from(document.getElementById("openinghours").getElementsByTagName("tr")).slice(1);
+  var openingHours = []
+  for(var d=0; d<7; d++) {
+    var hours = days[d].getElementsByTagName("input");
+    var dayFlags = "";
+    for(var h=0; h<24; h++) {
+      dayFlags += hours[h].checked ? "1" : "0";
+    }
+    openingHours.push(dayFlags);
+  }
+  return openingHours;
+}
+
 function savegeneral() {
   var a = document.getElementById("adminpwd").value;
   if (a === null || a === "") {
@@ -276,6 +300,7 @@ function savegeneral() {
   config.general.pswd = a;
   config.general.hostnm = document.getElementById("hostname").value;
   config.general.restart = parseInt(document.getElementById("autorestart").value);
+  config.general.openinghours = extractOpeningHours();
   uncommited();
 }
 
@@ -508,11 +533,49 @@ function listnetwork() {
 
 }
 
-function listgeneral() {
+function populateOpeningHours() {
+  var openingHours = Array(7);
+  for(var d=0; d<7; d++) {
+    openingHours[d] = "111111111111111111111111";
+  }
+  var table = document.getElementById("openinghours");
+  if (config.general.openinghours) {
+    openingHours = config.general.openinghours.map(function(day) { return day.split("") });
+  }
 
+  var firstRow = document.createElement("tr");
+  var spacerTh = document.createElement("th");
+  firstRow.appendChild(spacerTh);
+  for(hour = 0; hour<24; hour++) {
+    var th = document.createElement("th");
+    th.innerText = hour;
+    firstRow.appendChild(th);
+  }
+  table.appendChild(firstRow);
+  var weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+  for(var day=0; day<7; day++) {
+    var tr = document.createElement("tr");
+    var firstCol = document.createElement("td");
+    firstCol.innerHTML = "<b>" + weekDays[day] + "</b>";
+    tr.appendChild(firstCol);
+    for(var hour=0; hour<24; hour++) {
+      var td = document.createElement("td");
+      var checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.checked = openingHours[day][hour] == 1;
+      td.appendChild(checkbox);
+      tr.appendChild(td);
+    }
+    table.appendChild(tr);
+  }
+}
+
+function listgeneral() {
   document.getElementById("adminpwd").value = config.general.pswd;
   document.getElementById("hostname").value = config.general.hostnm;
   document.getElementById("autorestart").value = config.general.restart;
+  populateOpeningHours();
 }
 
 function listmqtt() {
@@ -582,11 +645,10 @@ function listlogsettings() {
   }
  
 }
+
 function getFileList() {
     websock.send("{\"command\":\"listfiles\", \"page\":" + page + "}");
 }
-
-
 
 function listBSSID() {
   var select = document.getElementById("ssid");
@@ -1402,8 +1464,6 @@ function restartESP() {
   inProgress("restart");
 }
 
-var nextIsNotJson = false;
-
 function socketMessageListener(evt) {
   var obj = JSON.parse(evt.data);
   if (obj.hasOwnProperty("command")) {
@@ -1628,7 +1688,6 @@ function changeRelayNumber(){
 }
 
 function updateRelayForm(){
-  //alert (numRelays);
   var i;
   for (i=2; i<= maxNumRelays; i++)
   {

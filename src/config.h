@@ -39,6 +39,7 @@ struct Config {
     char *ntpServer = NULL;
 	int ntpInterval = 0;
     int numRelays = 1;
+    char *openingHours[7];
     uint8_t openlockpin = 255;
     bool pinCodeRequested;
     bool present = false;
