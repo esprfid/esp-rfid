@@ -188,7 +188,6 @@ void ICACHE_FLASH_ATTR enableWifi()
 		{
 			fallbacktoAPMode();
 		}
-		setupMqtt();
 	}
 }
 
