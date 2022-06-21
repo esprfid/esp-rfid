@@ -6,6 +6,9 @@ String uid = "";
 String username = "";
 bool wiegandAvailable = false;
 
+#define WIEGAND_ENT 0xD
+#define WIEGAND_ESC 0x1B
+
 enum RfidStates { waitingCard, cardSwiped, waitingForPincode, cardAndPincodePresented };
 enum RfidProcessingStates { waiting, notValid, wrongPincode, expired, unknown, valid, validAdmin };
 
@@ -199,30 +202,40 @@ void pinCodeRead()
 	// for the next key unless * or # have been pressed
 	// we do not require * as the first character because some
 	// readers use this as special admin code and would hence require *#PIN#
-	if ((wg.getWiegandType() == WIEGANDTYPE_KEYPRESS4 || wg.getWiegandType() == WIEGANDTYPE_KEYPRESS8) && String(wg.getCode(), HEX) != "d" && String(wg.getCode(), HEX) != "1b")
+	if (wg.getWiegandType() == WIEGANDTYPE_KEYPRESS4 || wg.getWiegandType() == WIEGANDTYPE_KEYPRESS8)
 	{
+		if (wg.getCode() != WIEGAND_ENT && wg.getCode() != WIEGAND_ESC) // normal key entry, add to currentInput
+		{
 #ifdef DEBUG
-		Serial.println("Keycode captured. . .");
+			Serial.println("Keycode captured. . .");
 #endif
-		currentInput = currentInput + String(wg.getCode());
-		keyTimer = millis();
-	}
-	// When # is pressed stop keytimer to capture code
-	if ((wg.getWiegandType() == WIEGANDTYPE_KEYPRESS4 || wg.getWiegandType() == WIEGANDTYPE_KEYPRESS8) && keyTimer > 0 && String(wg.getCode(), HEX) == "d")
-	{
+			currentInput = currentInput + String(wg.getCode());
+			keyTimer = millis();
+		} else if (keyTimer > 0) // if we are waiting on input still
+		{
+			if(wg.getCode() == WIEGAND_ESC) // esc, abort pincode
+			{
 #ifdef DEBUG
-		Serial.println("Stop capture keycode . . .");
+				Serial.println("Keycode escape, aborting pincode entry");
 #endif
-		pinCode = currentInput;
-		rfidState = cardAndPincodePresented;
+				rfidState = waitingCard;
+				processingState = unknown;
+				cooldown = millis() + COOLDOWN_MILIS;
+			}
+			if(wg.getCode() == WIEGAND_ENT) // enter, process pincode
+			{
+				pinCode = currentInput;
+				rfidState = cardAndPincodePresented;
 #ifdef DEBUG
-		Serial.print(F("[ INFO ] PICC's pin code: "));
-		Serial.println(currentInput);
+				Serial.println("Stop capture keycode . . .");
+				Serial.print(F("[ INFO ] PICC's pin code: "));
+				Serial.println(currentInput);
 #endif
-		currentInput = "";
-		keyTimer = 0;
-		cooldown = millis() + COOLDOWN_MILIS;
-		return;
+				currentInput = "";
+				keyTimer = 0;
+				cooldown = millis() + COOLDOWN_MILIS;
+			}
+		}
 	}
 }
 
