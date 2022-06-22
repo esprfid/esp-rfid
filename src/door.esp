@@ -42,7 +42,7 @@ void doorStatus(/* arguments */)
     mqttPublishIo("door", "ON");
     lastDoorState = 0;
   }
-  if ((lastDoorState == 0) && (lastTamperState == 0))
+  if (config.maxOpenDoorTime != 0 && (lastDoorState == 0) && (lastTamperState == 0))
 	{
 		if (currentMillis - openDoorMillis >= config.maxOpenDoorTime*1000)
 		{
