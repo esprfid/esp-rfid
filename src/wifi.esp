@@ -9,6 +9,7 @@ void onWifiDisconnect(const WiFiEventStationModeDisconnected &event)
 	Serial.println(F("[ INFO ] WiFi STA Disconnected"));
 #endif
 	mqttReconnectTimer.detach();
+	disconnectMqtt();
 	if (!wifiReconnectTimer.active() && !config.fallbackMode)
 	{
 		wifiReconnectTimer.once(300, setEnableWifi);
