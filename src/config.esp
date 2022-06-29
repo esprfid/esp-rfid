@@ -154,6 +154,7 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 	config.activateTime[0] = hardware["rtime"];
 	config.lockType[0] = hardware["ltype"];
 	config.relayType[0] = hardware["rtype"];
+	config.doorName[0] = strdup(hardware["doorname"]);
 
 	config.relayPin[0] = hardware["rpin"];
 	pinMode(config.relayPin[0], OUTPUT);
@@ -166,6 +167,7 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 		config.lockType[i] = relay["ltype"];
 		config.relayType[i] = relay["rtype"];
 		config.relayPin[i] = relay["rpin"];
+		config.doorName[i]= strdup(relay["doorname"]);
 		pinMode(config.relayPin[i], OUTPUT);
 		digitalWrite(config.relayPin[i], !config.relayType[i]);
 	}

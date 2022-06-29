@@ -41,6 +41,7 @@ var config = {
         "ltype": 0,
         "rpin": 4,
         "rtime": 400,
+        "doorname": "Door",
         "beeperpin" : 255,
         "ledwaitingpin" : 255,
         "openlockpin": 255,
@@ -177,6 +178,7 @@ function listhardware() {
   document.getElementById("gpioss").value = config.hardware.sspin;
   document.getElementById("gain").value = config.hardware.rfidgain;
   document.getElementById("gpiorly").value = config.hardware.rpin;
+  document.getElementById("doorname").value = config.hardware.doorname || "";
   document.getElementById("numrlys").value = numRelays;
   updateRelayForm();
   updateUserModalForm();
@@ -186,6 +188,7 @@ function listhardware() {
     document.getElementById("lockType"+i).value = config.hardware["relay"+i].ltype;
     document.getElementById("typerly"+i).value = config.hardware["relay"+i].rtype;
     document.getElementById("delay"+i).value = config.hardware["relay"+i].rtime;
+    document.getElementById("doorname"+i).value = config.hardware["relay"+i].doorname || "";
   }
   handleReader();
   handleLock();
@@ -243,6 +246,7 @@ function savehardware() {
   config.hardware.accessdeniedpin = parseInt(document.getElementById("accessdeniedpin").value);
   config.hardware.beeperpin = parseInt(document.getElementById("beeperpin").value);
   config.hardware.ledwaitingpin = parseInt(document.getElementById("ledwaitingpin").value);
+  config.hardware.doorname = document.getElementById("doorname").value;
   config.hardware["numrelays"] = numRelays; 
 
   for (var i = 2; i<=numRelays; i++)
@@ -251,6 +255,7 @@ function savehardware() {
     config.hardware["relay"+i].ltype = document.getElementById("lockType"+i).value;
     config.hardware["relay"+i].rtype = document.getElementById("typerly"+i).value;
     config.hardware["relay"+i].rtime = document.getElementById("delay"+i).value;
+    config.hardware["relay"+i].doorname = document.getElementById("doorname"+i).value;
   }  
   uncommited();
 }
@@ -891,14 +896,6 @@ function twoDigits(value) {
 }
 
 function initFileListTable() {
-//  var newlist = [];
-//  for (var i = 0; i < data.length; i++) {
-//    var dup = JSON.parse(data[i]);
-//    newlist[i] = {};
-//    newlist[i].options = {};
-//    newlist[i].value = {};
-//    newlist[i].value = dup;
-//  }
   jQuery(function($) {
     window.FooTable.init("#spifftable", {
       columns: [{
@@ -975,11 +972,8 @@ function initFileListTable() {
               .on("click", this, rollover))
               .appendTo(actions);
             } 
-            
-
 
             return actions;
-              //'<span class="glyphicon glyphicon-chevron-up" aria-hidden="true"></span></a>'
           }
       }
 
@@ -1218,7 +1212,7 @@ function initUserTable() {
           },
           {
             "name": "acctype",
-            "title": "Access Rl1",
+            "title": "Access Door " + config.hardware.doorname || "1",
             "breakpoints": "xs",
             "parser": function(value) {
               if (value === 1) {
@@ -1233,7 +1227,7 @@ function initUserTable() {
           },
           {
             "name": "acctype2",
-            "title": "Access Rl2",
+            "title": "Access Door " + config.hardware.relay2.doorname || "2",
             "breakpoints": "xs",
             "visible": false,
             "parser": function(value) {
@@ -1249,7 +1243,7 @@ function initUserTable() {
           },
           {
             "name": "acctype3",
-            "title": "Access Rl3",
+            "title": "Access Door " + config.hardware.relay3.doorname || "3",
             "breakpoints": "xs",
             "visible": false,
             "parser": function(value) {
@@ -1265,7 +1259,7 @@ function initUserTable() {
           },
           {
             "name": "acctype4",
-            "title": "Access Rl4",
+            "title": "Access Door " + config.hardware.relay4.doorname || "4",
             "breakpoints": "xs",
             "visible": false,
             "parser": function(value) {
@@ -1648,14 +1642,10 @@ function changeRelayNumber(){
   updateUserModalForm();
 }
 
-function updateRelayForm(){
-  var i;
-  for (i=2; i<= maxNumRelays; i++)
-  {
-
+function updateRelayForm() {
+  for (var i = 2; i <= maxNumRelays; i++) {
     // downstream compatibility
-    if (!(config.hardware.hasOwnProperty("relay"+i))) 
-    {
+    if (!(config.hardware.hasOwnProperty("relay" + i))) {
       var relayJson =
       { 
         "rtype": 1,
@@ -1663,17 +1653,14 @@ function updateRelayForm(){
         "rpin": 4,
         "rtime": 400,
       };
-      config.hardware["relay"+i] = relayJson; 
+      config.hardware["relay" + i] = relayJson; 
     }
-    
 
     var relayForm = $("#relayform");
     var relayparent= $("#relayformparent");
-    if (i<= numRelays) 
-    {
+    if (i<= numRelays) {
       var existingRelayForm = document.getElementById("relayform" + i);
-      if (!(existingRelayForm))
-      {
+      if (!(existingRelayForm)) {
         var relayFormClone = relayForm.clone(true);
         var cloneObj = relayFormClone[0];
         relayFormClone.attr('id', 'relayform' + i);
@@ -1683,6 +1670,7 @@ function updateRelayForm(){
         str=str.replace ("gpiorly","gpiorly" +i);
         str=str.replace ("lockType","lockType" +i);
         str=str.replace ("typerly","typerly" +i);
+        str=str.replace ("doorname","doorname" +i);
         str=str.replace ("handleLock(1)","handleLock(" +i+")");
         str=str.replace ("testRelay(1)","testRelay(" +i+")");
         str=str.replace ("activateTimeForm","activateTimeForm"+i);
@@ -1692,8 +1680,7 @@ function updateRelayForm(){
       handleLock(i);
     } else {
       var removeRelayForm = document.getElementById("relayform" + i);
-      if (removeRelayForm)
-      {
+      if (removeRelayForm) {
         relayparent[0].removeChild(removeRelayForm);
       }
     }
@@ -1701,9 +1688,11 @@ function updateRelayForm(){
 }
 
 function updateUserModalForm(){
-  var i;
-  for (i=2; i<= maxNumRelays; i++)
-  {
+  if(config.hardware.doorname) {
+    $("#useracctype label").text("Access to " + config.hardware.doorname);
+  }
+
+  for (var i=2; i<= maxNumRelays; i++) {
     var accTypeForm = $("#useracctype");
     var accParent= $("#usermodalbody");
     if (i<= numRelays) 
@@ -1713,11 +1702,12 @@ function updateUserModalForm(){
       {
         var accTypeFormClone = accTypeForm.clone(true);
         var cloneObj = accTypeFormClone[0];
-        accTypeFormClone.attr('id', 'useracctype' + i);
+        accTypeFormClone.attr("id", "useracctype" + i);
 
         var str = cloneObj.innerHTML;
-        str=str.replace(/acctype/g,"acctype"+i);
-        str=str.replace("Access Type","Access Relay "+i);
+        str=str.replace(/acctype/g, "acctype"+i);
+        str=str.replace("Access Type Relay 1", "Access Type Relay "+i);
+        str=str.replace ("<option value=\"99\">Admin</option>", "");
         cloneObj.innerHTML=str;
         accParent[0].appendChild(cloneObj);
       }
@@ -1814,7 +1804,7 @@ window.FooTable.MyFiltering = window.FooTable.Filtering.extend({
     this._super(instance);
     this.acctypes = ["1", "99", "0"];
     this.acctypesstr = ["Always", "Admin", "Disabled"];
-    this.def = "Access Type";
+    this.def = config.hardware.doorname ? "Access to " + config.hardware.doorname : "Access Type";
     this.$acctype = null;
   },
   $create: function() {

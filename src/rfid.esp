@@ -1,4 +1,5 @@
 int accountType;
+int accountTypes[MAX_NUM_RELAYS];
 String currentInput = "";
 String pinCode = "";
 String type = "";
@@ -358,7 +359,8 @@ void rfidProcess()
 			if (currentRelay == 0) {
 				activateRelay[currentRelay] = true;
 			} else {
-				bool isRelayActive = json["acctype" + String(currentRelay + 1)] == ACCESS_GRANTED;
+				bool isRelayActive = accountTypes[currentRelay] == ACCESS_GRANTED;
+				accountTypes[currentRelay] = json["acctype" + String(currentRelay + 1)];
 				activateRelay[currentRelay] = isRelayActive;
 			}
 			if (processingState == validAdmin)
@@ -375,9 +377,13 @@ void rfidOutsideMessaging()
 	{
 		ws.textAll("{\"command\":\"giveAccess\"}");
 #ifdef DEBUG
-		Serial.printf(" has access relay");
+		Serial.println(" has access relay");
 #endif
-		mqttPublishAccess(now(), "true", "Always", username, uid);
+		if (config.numRelays == 1) {
+			mqttPublishAccess(now(), "true", "Always", username, uid);
+		} else {
+			mqttPublishAccess(now(), "true", accountTypes, username, uid);
+		}
 		beeperValidAccess();
 	}
 	if (processingState == validAdmin)
@@ -386,7 +392,11 @@ void rfidOutsideMessaging()
 #ifdef DEBUG
 		Serial.println(" has admin access, enable wifi");
 #endif
-		mqttPublishAccess(now(), "true", "Admin", username, uid);
+		if (config.numRelays == 1) {
+			mqttPublishAccess(now(), "true", "Admin", username, uid);
+		} else {
+			mqttPublishAccess(now(), "true", accountTypes, username, uid);
+		}
 		beeperAdminAccess();
 	}
 	if (processingState == expired)
