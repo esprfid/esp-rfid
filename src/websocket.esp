@@ -1,217 +1,165 @@
 void ICACHE_FLASH_ATTR procMsg(AsyncWebSocketClient *client, size_t sz)
 {
-	// We should always get a JSON object (stringfied) from browser, so parse it
-	DynamicJsonDocument root(8192);
-	char json[sz + 1];
-	memcpy(json, (char *)(client->_tempObject), sz);
-	json[sz] = '\0';
-	auto error = deserializeJson(root, json);
-	if (error)
-	{
+    // We should always get a JSON object (stringfied) from browser, so parse it
+    DynamicJsonDocument root(8192);
+    char json[sz + 1];
+
+    memcpy(json, (char *)(client->_tempObject), sz);
+    json[sz] = '\0';
+    auto error = deserializeJson(root, json);
+
+    if (error) {
 #ifdef DEBUG
-		Serial.println(F("[ WARN ] Couldn't parse WebSocket message"));
+        Serial.println(F("[ WARN ] Couldn't parse WebSocket message"));
 #endif
-		free(client->_tempObject);
-		client->_tempObject = NULL;
-		return;
-	}
-	// Web Browser sends some commands, check which command is given
-	const char *command = root["command"];
-	// Check whatever the command is and act accordingly
-	if (strcmp(command, "remove") == 0)
-	{
-		const char *uid = root["uid"];
-		String filename = "/P/";
-		filename += uid;
-		SPIFFS.remove(filename);
-	}
-	else if (strcmp(command, "configfile") == 0)
-	{
-		File f = SPIFFS.open("/config.json", "w+");
-		if (f)
-		{
-			size_t len = measureJsonPretty(root);
-			serializeJsonPretty(root, f);
-			//f.print(msg);
-			f.close();
-			shouldReboot = true;
-			//ESP.restart();
-			writeEvent("INFO", "sys", "Config stored in the SPIFFS", String(len) + " bytes");
-		}
-	}
-	else if (strcmp(command, "userlist") == 0)
-	{
-		int page = root["page"];
-		sendUserList(page, client);
-	}
-	else if (strcmp(command, "status") == 0)
-	{
-		sendStatus();
-	}
-	else if (strcmp(command, "restart") == 0)
-	{
-		shouldReboot = true;
-	}
-	else if (strcmp(command, "destroy") == 0)
-	{
-		formatreq = true;
-	}
-	else if (strcmp(command, "geteventlog") == 0)
-	{
-		int page = root["page"];
-		const char *xfileName = root["filename"];
-		sendEventLog(page,xfileName);
-	}
-	else if (strcmp(command, "getlatestlog") == 0)
-	{
-		int page = root["page"];
-		const char *xfileName = root["filename"];
-		sendLatestLog(page,xfileName);
-	}
-	else if (strcmp(command, "listfiles") == 0)
-	{
-		int page = root["page"];
-		sendFileList(page);
-	}
-	else if (strcmp(command, "logMaintenance") == 0)
-	{
-		logMaintenance(root["action"],root["filename"]);
-	}
-	else if (strcmp(command, "clearevent") == 0)
-	{
-		SPIFFS.remove("/eventlog.json");
-		writeEvent("WARN", "sys", "Event log cleared!", "");
-	}
-	else if (strcmp(command, "clearlatest") == 0)
-	{
-		SPIFFS.remove("/latestlog.json");
-		writeEvent("WARN", "sys", "Latest Access log cleared!", "");
-	}
-	else if (strcmp(command, "userfile") == 0)
-	{
+        free(client->_tempObject);
+        client->_tempObject = NULL;
+        return;
+    }
+    // Web Browser sends some commands, check which command is given
+    const char *command = root["command"];
+    // Check whatever the command is and act accordingly
+    if (strcmp(command, "remove") == 0) {
+        const char *uid = root["uid"];
+        String filename = "/P/";
+        filename += uid;
+        SPIFFS.remove(filename);
+    } else if (strcmp(command, "configfile") == 0) {
+        File f = SPIFFS.open("/config.json", "w+");
+        if (f) {
+            size_t len = measureJsonPretty(root);
+            serializeJsonPretty(root, f);
+            //f.print(msg);
+            f.close();
+            shouldReboot = true;
+            //ESP.restart();
+            writeEvent("INFO", "sys", "Config stored in the SPIFFS", String(len) + " bytes");
+        }
+    } else if (strcmp(command, "userlist") == 0) {
+        int page = root["page"];
+        sendUserList(page, client);
+    } else if (strcmp(command, "status") == 0) {
+        sendStatus();
+    } else if (strcmp(command, "restart") == 0) {
+        shouldReboot = true;
+    } else if (strcmp(command, "destroy") == 0) {
+        formatreq = true;
+    } else if (strcmp(command, "geteventlog") == 0) {
+        int page = root["page"];
+        const char *xfileName = root["filename"];
+        sendEventLog(page, xfileName);
+    } else if (strcmp(command, "getlatestlog") == 0) {
+        int page = root["page"];
+        const char *xfileName = root["filename"];
+        sendLatestLog(page, xfileName);
+    } else if (strcmp(command, "listfiles") == 0) {
+        int page = root["page"];
+        sendFileList(page);
+    } else if (strcmp(command, "logMaintenance") == 0) {
+        logMaintenance(root["action"], root["filename"]);
+    } else if (strcmp(command, "clearevent") == 0) {
+        SPIFFS.remove("/eventlog.json");
+        writeEvent("WARN", "sys", "Event log cleared!", "");
+    } else if (strcmp(command, "clearlatest") == 0) {
+        SPIFFS.remove("/latestlog.json");
+        writeEvent("WARN", "sys", "Latest Access log cleared!", "");
+    } else if (strcmp(command, "userfile") == 0) {
 #ifdef DEBUG
-		Serial.println(F("[ DEBUG ] userfile received"));
-		serializeJson(root, Serial);
+        Serial.println(F("[ DEBUG ] userfile received"));
+        serializeJson(root, Serial);
 #endif
-		const char *uid = root["uid"];
-		String filename = "/P/";
-		filename += uid;
-		File f = SPIFFS.open(filename, "w+");
-		// Check if we created the file
-		if (f)
-		{
-			serializeJson(root, f);
+        const char *uid = root["uid"];
+        String filename = "/P/";
+        filename += uid;
+        File f = SPIFFS.open(filename, "w+");
+        // Check if we created the file
+        if (f) {
+            serializeJson(root, f);
 #ifdef DEBUG
-		Serial.println(F("[ DEBUG ] userfile saved"));
+            Serial.println(F("[ DEBUG ] userfile saved"));
 #endif
-		}
-		f.close();
-		ws.textAll("{\"command\":\"result\",\"resultof\":\"userfile\",\"result\": true}");
-	}
-	else if (strcmp(command, "testrelay1") == 0)
-	{
-		activateRelay[0] = true;
-		previousMillis = millis();
-		ws.textAll("{\"command\":\"giveAccess\"}");
-	}
-#ifndef OFFICIALBOARD	
-	else if (strcmp(command, "testrelay2") == 0)
-	{
-		activateRelay[1] = true;
-		previousMillis = millis();
-		ws.textAll("{\"command\":\"giveAccess\"}");
-	}
-	else if (strcmp(command, "testrelay3") == 0)
-	{
-		activateRelay[2] = true;
-		previousMillis = millis();
-		ws.textAll("{\"command\":\"giveAccess\"}");
-	}
-	else if (strcmp(command, "testrelay4") == 0)
-	{
-		activateRelay[3] = true;
-		previousMillis = millis();
-		ws.textAll("{\"command\":\"giveAccess\"}");
-	}
+        }
+        f.close();
+        ws.textAll("{\"command\":\"result\",\"resultof\":\"userfile\",\"result\": true}");
+    } else if (strcmp(command, "testrelay1") == 0) {
+        activateRelay[0] = true;
+        previousMillis = millis();
+        ws.textAll("{\"command\":\"giveAccess\"}");
+    }
+#ifndef OFFICIALBOARD
+    else if (strcmp(command, "testrelay2") == 0) {
+        activateRelay[1] = true;
+        previousMillis = millis();
+        ws.textAll("{\"command\":\"giveAccess\"}");
+    } else if (strcmp(command, "testrelay3") == 0) {
+        activateRelay[2] = true;
+        previousMillis = millis();
+        ws.textAll("{\"command\":\"giveAccess\"}");
+    } else if (strcmp(command, "testrelay4") == 0) {
+        activateRelay[3] = true;
+        previousMillis = millis();
+        ws.textAll("{\"command\":\"giveAccess\"}");
+    }
 #endif
-	else if (strcmp(command, "scan") == 0)
-	{
-		WiFi.scanNetworksAsync(printScanResult, true);
-	}
-	else if (strcmp(command, "gettime") == 0)
-	{
-		sendTime();
-	}
-	else if (strcmp(command, "settime") == 0)
-	{
-		time_t t = root["epoch"];
-		setTime(t);
-		sendTime();
-	}
-	else if (strcmp(command, "getconf") == 0)
-	{
-		File configFile = SPIFFS.open("/config.json", "r");
-		if (configFile)
-		{
-			size_t len = configFile.size();
-			AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
-			if (buffer)
-			{
-				configFile.readBytes((char *)buffer->get(), len + 1);
-				ws.textAll(buffer);
-			}
-			configFile.close();
-		}
-	}
-	free(client->_tempObject);
-	client->_tempObject = NULL;
+    else if (strcmp(command, "scan") == 0) {
+        WiFi.scanNetworksAsync(printScanResult, true);
+    } else if (strcmp(command, "gettime") == 0) {
+        sendTime();
+    } else if (strcmp(command, "settime") == 0) {
+        time_t t = root["epoch"];
+        setTime(t);
+        sendTime();
+    } else if (strcmp(command, "getconf") == 0) {
+        File configFile = SPIFFS.open("/config.json", "r");
+        if (configFile) {
+            size_t len = configFile.size();
+            AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
+            if (buffer) {
+                configFile.readBytes((char *)buffer->get(), len + 1);
+                ws.textAll(buffer);
+            }
+            configFile.close();
+        }
+    }
+    free(client->_tempObject);
+    client->_tempObject = NULL;
 }
 
 // Handles WebSocket Events
-void ICACHE_FLASH_ATTR onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len)
+void ICACHE_FLASH_ATTR onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg,
+                                 uint8_t *data, size_t len)
 {
-	if (type == WS_EVT_ERROR)
-	{
+    if (type == WS_EVT_ERROR) {
 #ifdef DEBUG
-		Serial.printf("[ WARN ] WebSocket[%s][%u] error(%u): %s\r\n", server->url(), client->id(), *((uint16_t *)arg), (char *)data);
+        Serial.printf("[ WARN ] WebSocket[%s][%u] error(%u): %s\r\n", server->url(), client->id(), *((uint16_t *)arg),
+                      (char *)data);
 #endif
-	}
-	else if (type == WS_EVT_DATA)
-	{
-		AwsFrameInfo *info = (AwsFrameInfo *)arg;
-		uint64_t index = info->index;
-		uint64_t infolen = info->len;
-		if (info->final && info->index == 0 && infolen == len)
-		{
-			//the whole message is in a single frame and we got all of it's data
-			client->_tempObject = malloc(len);
-			if (client->_tempObject != NULL)
-			{
-				memcpy((uint8_t *)(client->_tempObject), data, len);
-			}
-			procMsg(client, infolen);
-		}
-		else
-		{
-			//message is comprised of multiple frames or the frame is split into multiple packets
-			if (index == 0)
-			{
-				if (info->num == 0 && client->_tempObject == NULL)
-				{
-					client->_tempObject = malloc(infolen);
-				}
-			}
-			if (client->_tempObject != NULL)
-			{
-				memcpy((uint8_t *)(client->_tempObject) + index, data, len);
-			}
-			if ((index + len) == infolen)
-			{
-				if (info->final)
-				{
-					procMsg(client, infolen);
-				}
-			}
-		}
-	}
+    } else if (type == WS_EVT_DATA) {
+        AwsFrameInfo *info = (AwsFrameInfo *)arg;
+        uint64_t index = info->index;
+        uint64_t infolen = info->len;
+        if (info->final && info->index == 0 && infolen == len) {
+            //the whole message is in a single frame and we got all of it's data
+            client->_tempObject = malloc(len);
+            if (client->_tempObject != NULL) {
+                memcpy((uint8_t *)(client->_tempObject), data, len);
+            }
+            procMsg(client, infolen);
+        } else {
+            //message is comprised of multiple frames or the frame is split into multiple packets
+            if (index == 0) {
+                if (info->num == 0 && client->_tempObject == NULL) {
+                    client->_tempObject = malloc(infolen);
+                }
+            }
+            if (client->_tempObject != NULL) {
+                memcpy((uint8_t *)(client->_tempObject) + index, data, len);
+            }
+            if ((index + len) == infolen) {
+                if (info->final) {
+                    procMsg(client, infolen);
+                }
+            }
+        }
+    }
 }

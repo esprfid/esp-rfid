@@ -1,4 +1,3 @@
-
 #ifndef ADAFRUIT_PN532_H
 #define ADAFRUIT_PN532_H
 
@@ -88,11 +87,11 @@
 #define PN532_GPIO_P35 (0x20)
 #define PN532_GPIO_VALIDATIONBIT (0x80)
 
-#define CARD_TYPE_106KB_ISO14443A (0x00) // card baudrate 106 kB
-#define CARD_TYPE_212KB_FELICA (0x01)    // card baudrate 212 kB
-#define CARD_TYPE_424KB_FELICA (0x02)    // card baudrate 424 kB
-#define CARD_TYPE_106KB_ISO14443B (0x03) // card baudrate 106 kB
-#define CARD_TYPE_106KB_JEWEL (0x04)     // card baudrate 106 kB
+#define CARD_TYPE_106KB_ISO14443A (0x00)    // card baudrate 106 kB
+#define CARD_TYPE_212KB_FELICA (0x01)       // card baudrate 212 kB
+#define CARD_TYPE_424KB_FELICA (0x02)       // card baudrate 424 kB
+#define CARD_TYPE_106KB_ISO14443B (0x03)    // card baudrate 106 kB
+#define CARD_TYPE_106KB_JEWEL (0x04)        // card baudrate 106 kB
 
 // Prefixes for NDEF Records (to identify record type), not used
 #define NDEF_URIPREFIX_NONE (0x00)
@@ -132,11 +131,10 @@
 #define NDEF_URIPREFIX_URN_EPC (0x22)
 #define NDEF_URIPREFIX_URN_NFC (0x23)
 
-enum eCardType
-{
-    CARD_Unknown = 0,   // Mifare Classic or other card
-    CARD_Desfire = 1,   // A Desfire card with normal 7 byte UID  (bit 0)
-    CARD_DesRandom = 3, // A Desfire card with 4 byte random UID  (bit 0 + 1)
+enum eCardType {
+    CARD_Unknown    = 0,    // Mifare Classic or other card
+    CARD_Desfire    = 1,    // A Desfire card with normal 7 byte UID  (bit 0)
+    CARD_DesRandom  = 3,    // A Desfire card with 4 byte random UID  (bit 0 + 1)
 };
 
 class PN532
@@ -154,7 +152,7 @@ public:
     void InitI2C(byte u8_Reset);
 #endif
 
-    // Generic PN532 functions
+// Generic PN532 functions
     void begin();
     void SetDebugLevel(byte level);
     bool SamConfig();
@@ -165,14 +163,14 @@ public:
     bool ReleaseCard();
     bool SelectCard();
 
-    // This function is overridden in Desfire.cpp
+// This function is overridden in Desfire.cpp
     virtual bool SwitchOffRfField();
 
-    // ISO14443A functions
+// ISO14443A functions
     bool ReadPassiveTargetID(byte *uidBuffer, byte *uidLength, eCardType *pe_CardType);
 
 protected:
-    // Low Level functions
+// Low Level functions
     bool CheckPN532Status(byte u8_Status);
     bool SendCommandCheckAck(byte *cmd, byte cmdlen);
     byte ReadData(byte *buff, byte len);
