@@ -184,6 +184,10 @@ void ICACHE_FLASH_ATTR setup()
 
 	bool configured = false;
 	configured = loadConfiguration(config);
+	// set relays to closed now that we know the config
+	for (int currentRelay = 0; currentRelay < config.numRelays; currentRelay++) {
+		digitalWrite(config.relayPin[currentRelay], !config.relayType[currentRelay]);
+	}
 	setupMqtt();
 	setupWebServer();
 	setupWifi(configured);
