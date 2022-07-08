@@ -24,6 +24,7 @@ void ICACHE_FLASH_ATTR procMsg(AsyncWebSocketClient *client, size_t sz)
 		String filename = "/P/";
 		filename += uid;
 		SPIFFS.remove(filename);
+		ws.textAll("{\"command\":\"result\",\"resultof\":\"remove\",\"result\": true}");
 	}
 	else if (strcmp(command, "configfile") == 0)
 	{
@@ -114,7 +115,7 @@ void ICACHE_FLASH_ATTR procMsg(AsyncWebSocketClient *client, size_t sz)
 		previousMillis = millis();
 		ws.textAll("{\"command\":\"giveAccess\"}");
 	}
-#ifndef OFFICIALBOARD	
+#ifndef OFFICIALBOARD
 	else if (strcmp(command, "testrelay2") == 0)
 	{
 		activateRelay[1] = true;
