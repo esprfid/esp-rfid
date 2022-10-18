@@ -42,18 +42,6 @@ SOFTWARE.
 
 Config config;
 
-#ifdef OFFICIALBOARD
-
-#include <Wiegand.h>
-
-WIEGAND wg;
-bool activateRelay[MAX_NUM_RELAYS] = {false};
-bool deactivateRelay[MAX_NUM_RELAYS] = {false};
-
-#endif
-
-#ifndef OFFICIALBOARD
-
 #include <MFRC522.h>
 #include "PN532.h"
 #include <Wiegand.h>
@@ -67,8 +55,6 @@ RFID_Reader RFIDr;
 // relay specific variables
 bool activateRelay[MAX_NUM_RELAYS] = {false, false, false, false};
 bool deactivateRelay[MAX_NUM_RELAYS] = {false, false, false, false};
-
-#endif
 
 // these are from vendors
 #include "webh/glyphicons-halflings-regular.woff.gz.h"
@@ -132,13 +118,6 @@ unsigned long wiFiUptimeMillis = 0;
 
 void ICACHE_FLASH_ATTR setup()
 {
-#ifdef OFFICIALBOARD
-	// Set relay pin to LOW signal as early as possible
-	pinMode(13, OUTPUT);
-	digitalWrite(13, LOW);
-	delay(200);
-#endif
-
 #ifdef DEBUG
 	Serial.begin(9600);
 	Serial.println();

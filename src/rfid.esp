@@ -25,14 +25,10 @@ void loadWiegandData()
 
 void rfidPrepareRead()
 {
-#ifdef OFFICIALBOARD
-	loadWiegandData();
-#else
 	if (config.readertype == READER_WIEGAND)
 	{
 		loadWiegandData();
 	}
-#endif
 }
 
 void wiegandRead()
@@ -72,7 +68,6 @@ void wiegandRead()
 	}
 }
 
-#ifndef OFFICIALBOARD
 void mfrc522Read()
 {
 	if (!mfrc522.PICC_IsNewCardPresent() || !mfrc522.PICC_ReadCardSerial())
@@ -153,7 +148,6 @@ void genericRead()
 		pn532Read();
 	}
 }
-#endif
 
 void rfidRead()
 {
@@ -161,10 +155,6 @@ void rfidRead()
 	{
 		return;
 	}
-#ifdef OFFICIALBOARD
-	wiegandRead();
-#endif
-#ifndef OFFICIALBOARD
 	if (config.readertype == READER_MFRC522)
 	{
 		mfrc522Read();
@@ -181,17 +171,14 @@ void rfidRead()
 	{
 		genericRead();
 	}
-#endif
 }
 
 void pinCodeRead()
 {
-#ifndef OFFICIALBOARD
 	if (config.readertype != READER_WIEGAND)
 	{
 		return;
 	}
-#endif
 	if (rfidState != waitingForPincode || !config.pinCodeRequested || !wiegandAvailable)
 	{
 		return;
@@ -457,7 +444,6 @@ void rfidLoop()
 	cleanRfidLoop();
 }
 
-#ifndef OFFICIALBOARD
 #ifdef DEBUG
 void ICACHE_FLASH_ATTR ShowMFRC522ReaderDetails()
 {
@@ -481,14 +467,12 @@ void ICACHE_FLASH_ATTR ShowMFRC522ReaderDetails()
 	}
 }
 #endif
-#endif
 
 void ICACHE_FLASH_ATTR setupWiegandReader(int d0, int d1)
 {
 	wg.begin(d0, d1);
 }
 
-#ifndef OFFICIALBOARD
 void ICACHE_FLASH_ATTR setupMFRC522Reader(int rfidss, int rfidgain)
 {
 	SPI.begin();						 // MFRC522 Hardware uses SPI protocol
@@ -504,9 +488,7 @@ void ICACHE_FLASH_ATTR setupMFRC522Reader(int rfidss, int rfidgain)
 	ShowMFRC522ReaderDetails(); // Show details of PCD - MFRC522 Card Reader details
 #endif
 }
-#endif
 
-#ifndef OFFICIALBOARD
 void ICACHE_FLASH_ATTR setupPN532Reader(int rfidss)
 {
 	// init controller
@@ -540,4 +522,3 @@ void ICACHE_FLASH_ATTR setupPN532Reader(int rfidss)
 		}
 	} while (false);
 }
-#endif

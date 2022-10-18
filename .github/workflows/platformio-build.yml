@@ -20,7 +20,7 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Run Platformio builds
       run: |
-        platformio run -e generic -e relayboard -e debug
+        platformio run -e generic -e debug
     - name: Export bins
       uses: actions/upload-artifact@v2
       with:

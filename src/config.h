@@ -1,9 +1,5 @@
 struct Config {
-#ifdef OFFICIALBOARD
-    int relayPin[MAX_NUM_RELAYS] = {13};
-#else
     int relayPin[MAX_NUM_RELAYS];
-#endif
     uint8_t accessdeniedpin = 255;
     bool accessPointMode = false;
     IPAddress accessPointIp;

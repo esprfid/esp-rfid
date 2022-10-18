@@ -75,9 +75,6 @@ void ICACHE_FLASH_ATTR sendStatus()
 	}
 	DynamicJsonDocument root(1024);
 	root["command"] = "status";
-#ifdef OFFICIALBOARD
-	root["board"] = "brdV2";
-#endif
 	root["heap"] = ESP.getFreeHeap();
 	root["chipid"] = String(ESP.getChipId(), HEX);
 	root["cpu"] = ESP.getCpuFreqMHz();
