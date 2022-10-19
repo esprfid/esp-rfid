@@ -404,7 +404,7 @@ void rfidOutsideMessaging()
 		ledAccessDeniedOn();
 		beeperAccessDenied();
 	}
-	if (uid != "")
+	if (uid != "" && processingState != waiting)
 	{
 		writeLatest(uid, username, accountType);
 		DynamicJsonDocument root(512);
