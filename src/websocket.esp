@@ -115,7 +115,6 @@ void ICACHE_FLASH_ATTR procMsg(AsyncWebSocketClient *client, size_t sz)
 		previousMillis = millis();
 		ws.textAll("{\"command\":\"giveAccess\"}");
 	}
-#ifndef OFFICIALBOARD
 	else if (strcmp(command, "testrelay2") == 0)
 	{
 		activateRelay[1] = true;
@@ -134,7 +133,6 @@ void ICACHE_FLASH_ATTR procMsg(AsyncWebSocketClient *client, size_t sz)
 		previousMillis = millis();
 		ws.textAll("{\"command\":\"giveAccess\"}");
 	}
-#endif
 	else if (strcmp(command, "scan") == 0)
 	{
 		WiFi.scanNetworksAsync(printScanResult, true);

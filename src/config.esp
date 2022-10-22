@@ -112,11 +112,6 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 	else
 		config.numRelays = 1;
 
-#ifdef OFFICIALBOARD
-	config.pinCodeRequested = hardware["pincoderequested"];
-	setupWiegandReader(5, 4);
-#endif
-#ifndef OFFICIALBOARD
 	config.readertype = hardware["readertype"];
 	int rfidss;
 	if (config.readertype == READER_WIEGAND || config.readertype == READER_WIEGAND_RDM6300)
@@ -145,7 +140,6 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 	if (config.readertype > 2)
 		Serial.begin(9600);
 #endif
-#endif
 	config.fallbackMode = network["fallbackmode"] == 1;
 	config.autoRestartIntervalSeconds = general["restart"];
 	config.wifiTimeout = network["offtime"];
@@ -160,7 +154,6 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 	config.lockType[0] = hardware["ltype"];
 	config.relayType[0] = hardware["rtype"];
 
-#ifndef OFFICIALBOARD
 	config.relayPin[0] = hardware["rpin"];
 	pinMode(config.relayPin[0], OUTPUT);
 	digitalWrite(config.relayPin[0], !config.relayType[0]);
@@ -176,7 +169,6 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 		digitalWrite(config.relayPin[i], !config.relayType[i]);
 	}
 
-#endif
 	config.ssid = strdup(network["ssid"]);
 	config.wifiPassword = strdup(network["pswd"]);
 	config.accessPointMode = network["wmode"] == 1;
