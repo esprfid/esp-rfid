@@ -12,7 +12,7 @@ MqttMessage *messageQueue = NULL;
 
 void connectToMqtt()
 {
-	if (!config.mqttEnabled) {
+	if (!config.mqttEnabled || mqttClient.connected()) {
 		return;
 	}
 #ifdef DEBUG
@@ -23,7 +23,7 @@ void connectToMqtt()
 
 void disconnectMqtt()
 {
-	if (!config.mqttEnabled) {
+	if (!config.mqttEnabled || !mqttClient.connected()) {
 		return;
 	}
 #ifdef DEBUG
@@ -561,7 +561,7 @@ void processMqttQueue()
 
 void setupMqtt()
 {
-    if (!config.mqttEnabled)
+  if (!config.mqttEnabled)
 	{
 		return;
 	}

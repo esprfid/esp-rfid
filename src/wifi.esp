@@ -3,8 +3,25 @@ void setEnableWifi()
 	doEnableWifi = true;
 }
 
+void onWifiConnect(const WiFiEventStationModeConnected &event)
+{
+#ifdef DEBUG
+	Serial.println(F("[ INFO ] WiFi STA Connected"));
+#endif
+	mqttReconnectTimer.detach();
+	if (!wifiReconnectTimer.active() && !config.fallbackMode)
+	{
+		wifiReconnectTimer.once(300, setEnableWifi);
+	}
+	ledWifiOff();
+}
+
 void onWifiDisconnect(const WiFiEventStationModeDisconnected &event)
 {
+	if ( !WiFi.isConnected() )
+	{
+		return;
+	}
 #ifdef DEBUG
 	Serial.println(F("[ INFO ] WiFi STA Disconnected"));
 #endif
@@ -200,6 +217,7 @@ void setupWifi(bool configured)
 		fallbacktoAPMode();
 	} else
 	{
+		wifiConnectHandler = WiFi.onStationModeConnected(onWifiConnect);
 		wifiDisconnectHandler = WiFi.onStationModeDisconnected(onWifiDisconnect);
 		wifiOnStationModeGotIPHandler = WiFi.onStationModeGotIP(onWifiGotIP);
 		WiFi.hostname(config.deviceHostname);
