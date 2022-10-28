@@ -113,7 +113,7 @@ function browserTime() {
 
 function deviceTime() {
   var t = new Date(0); // The 0 there is the key, which sets the date to the epoch,
-  var devTime = Math.floor(utcSeconds + ((t.getTimezoneOffset() * 60) * -1));
+  var devTime = Math.floor(utcSeconds + (config.ntp.timezone * 60 * 60));
   t.setUTCSeconds(devTime);
   document.getElementById("utc").innerHTML = t.toUTCString().slice(0, -3);
 }
