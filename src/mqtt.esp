@@ -487,6 +487,10 @@ void processMqttMessage(MqttMessage *incomingMessage)
 		f.close();
 		mqttPublishAck(command);
 	}
+	else if (strcmp(command, "reboot") == 0){
+		shouldReboot = true;
+		mqttPublishAck(command);
+	}
 	
 	free(incomingMessage);
 	return;
