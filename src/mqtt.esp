@@ -12,10 +12,24 @@ MqttMessage *messageQueue = NULL;
 
 void connectToMqtt()
 {
+	if (!config.mqttEnabled || mqttClient.connected()) {
+		return;
+	}
 #ifdef DEBUG
 	Serial.println("[ INFO ] Connecting MQTT");
 #endif
 	mqttClient.connect();
+}
+
+void disconnectMqtt()
+{
+	if (!config.mqttEnabled || !mqttClient.connected()) {
+		return;
+	}
+#ifdef DEBUG
+	Serial.println("[ INFO ] Disconnecting MQTT");
+#endif
+	mqttClient.disconnect(true);
 }
 
 void onMqttDisconnect(AsyncMqttClientDisconnectReason reason)
@@ -547,7 +561,7 @@ void processMqttQueue()
 
 void setupMqtt()
 {
-    if (!config.mqttEnabled)
+  if (!config.mqttEnabled)
 	{
 		return;
 	}
