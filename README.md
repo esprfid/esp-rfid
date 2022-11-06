@@ -1,31 +1,8 @@
-# Announcement
-
-We are rising funds for next version (2.0) of ESP-RFID.
-
-<p align="center">
-  <img src="https://opencollective.com/esp-rfid/tiers/esp-rfid-user.svg?avatarHeight=56">
-</p>
-
-What to expect from version 2.0:
-
-* Better Wi-Fi connection handling
-* MQTT Subscribing (activate relay on MQTT event)
-* Better handling of hardware state (like health checks)
-* Time Based One Time Password access (keypad abstraction layer)
-* More polished WebUI
-* Yet still Open Source (MIT License)
-* Optional Goal --> NFC NDEF transactions from mobile phone to esp-rfid and vice versa
-
----
-
-
 # ESP RFID - Access Control with ESP8266, RC522 PN532 Wiegand RDM6300
 
-[![Backers on Open Collective](https://opencollective.com/esp-rfid/backers/badge.svg)](#backers) [![Sponsors on Open Collective](https://opencollective.com/esp-rfid/sponsors/badge.svg)](#sponsors) [![Chat at https://gitter.im/esp-rfid/Lobby](https://badges.gitter.im/esp-rfid.svg)](https://gitter.im/esp-rfid/Lobby) [![Build Status](https://travis-ci.org/esprfid/esp-rfid.svg?branch=stable)](https://travis-ci.org/esprfid/esp-rfid) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/d475052a09bd4865bc2654f524614cba)](https://www.codacy.com/app/omersiar/esp-rfid?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=esprfid/esp-rfid&amp;utm_campaign=Badge_Grade) [![BCH compliance](https://bettercodehub.com/edge/badge/esprfid/esp-rfid?branch=stable)](https://bettercodehub.com/) [![Bountysource](https://api.bountysource.com/badge/team?team_id=242217)](https://salt.bountysource.com/checkout/amount?team=esp-rfid)
+[![Chat at https://gitter.im/esp-rfid/Lobby](https://badges.gitter.im/esp-rfid.svg)](https://gitter.im/esp-rfid/Lobby) [![Backers on Open Collective](https://opencollective.com/esp-rfid/backers/badge.svg)](#backers) [![Sponsors on Open Collective](https://opencollective.com/esp-rfid/sponsors/badge.svg)](#sponsors) [![Bountysource](https://api.bountysource.com/badge/team?team_id=242217)](https://salt.bountysource.com/checkout/amount?team=esp-rfid)
 
 Access Control system using a cheap MFRC522, PN532 RFID, RDM6300 readers or Wiegand RFID readers and Espressif's ESP8266 Microcontroller. 
-
-[See Demo Here](https://bitadvise.com/esp-rfid/)
 
 [![Showcase Gif](https://raw.githubusercontent.com/esprfid/esp-rfid/stable/demo/showcase.gif)](https://bitadvise.com/esp-rfid/)[![Board](https://raw.githubusercontent.com/esprfid/esp-rfid/stable/demo/board.jpg)](https://www.tindie.com/products/nardev/esp-rfid-relay-board-12v-in-esp8266-board/)
 
@@ -75,8 +52,7 @@ Get more information and see accessory options from [Tindie Store](https://www.t
 ## Getting Started
 This project still in its development phase. New features (and also bugs) are introduced often and some functions may become deprecated. Please feel free to comment or give feedback.
 
-* [See Demo Here](https://bitadvise.com/esp-rfid/)
-* Get the latest release from [here.](https://github.com/esprfid/esp-rfid/releases)
+* Get the latest release from [here](https://github.com/esprfid/esp-rfid/releases).
 * See [Known Issues](https://github.com/esprfid/esp-rfid#known-issues) before starting right away.
 * See [Security](https://github.com/esprfid/esp-rfid#security) for your safety.
 * See [ChangeLog](https://github.com/esprfid/esp-rfid/blob/dev/CHANGELOG.md)
@@ -85,7 +61,7 @@ This project still in its development phase. New features (and also bugs) are in
 ### Hardware
 * [Official ESP-RFID Relay Board](https://www.tindie.com/products/nardev/esp-rfid-relay-board-12v-in-esp8266-board/)
 or
-* An ESP8266 module or a development board like **WeMos D1 mini** or **NodeMcu 1.0** with at least **32Mbit Flash (equals to 4MBytes)** (ESP32 does not supported for now)
+* An ESP8266 module or a development board like **WeMos D1 mini** or **NodeMcu 1.0** with at least **32Mbit Flash (equals to 4MBytes)** (ESP32 is not supported for now)
 * A MFRC522 RFID PCD Module or PN532 NFC Reader Module or RDM6300 125KHz RFID Module Wiegand based RFID reader
 * A Relay Module (or you can build your own circuit)
 * n quantity of Mifare Classic 1KB (recommended due to available code base) PICCs (RFID Tags) equivalent to User Number
@@ -95,6 +71,7 @@ or
 #### Using Compiled Binaries
 Download compiled binaries from GitHub Releases page
 https://github.com/esprfid/esp-rfid/releases
+
 On Windows you can use **"flash.bat"**, it will ask you which COM port that ESP is connected and then flashes it. You can use any flashing tool and do the flashing manually. The flashing process itself has been described at numerous places on Internet.
 
 #### Building With PlatformIO
@@ -120,7 +97,7 @@ When you run ```platformio run``` for the first time, it will download the toolc
 The resulting (built) image(s) can be found in the directory ```/bin``` created during the build process.
 
 ##### Frontend
-You can not simply edit Web UI files because you will need to convert them to C arrays, which can be done automatically by a gulp script that can be found in tools directory or you can use compiled executables at the same directory as well (for Windows PCs only).
+You cannot simply edit Web UI files because you will need to convert them to C arrays, which can be done automatically by a gulp script that can be found in tools directory or you can use compiled executables at the same directory as well (for Windows PCs only).
 
 If you want to edit esp-rfid's Web UI you will need (unless using compiled executables):
 * NodeJS
@@ -169,7 +146,7 @@ For Wiegand based readers, you can configure D0 and D1 pins via settings page. B
 * First, flash firmware (you can use /bin/flash.bat on Windows) to your ESP either using Arduino IDE or with your favourite flash tool
 * (optional) Fire up your serial monitor to get informed
 * Search for Wireless Network "esp-rfid-xxxxxx" and connect to it (It should be an open network and does not require password)
-* Open your browser and type either "http://192.168.4.1" or "http://esp-rfid.local" (.local needs Bonjour installed on your computer) on address bar.
+* Open your browser and visit either "http://192.168.4.1" or "http://esp-rfid.local" (.local needs Bonjour installed on your computer).
 * Log on to ESP, default password is "admin"
 * Go to "Settings" page
 * Configure your amazing access control device. Push "Scan" button to join your wireless network, configure RFID hardware, Relay Module.

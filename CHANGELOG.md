@@ -2,14 +2,49 @@
 All notable changes to this project will be documented in this file.
 
 ## Unreleased
+
+#### Breaking changes
+- [firmware] Removed build flag for `OFFICIALBOARD` #533 @matjack1
+- [firmware] MQTT endpoints have been changed to be more consistent and complete #501 @matjack1
+
 #### Added
+- [webui] Improvoed support for websocket reconnection #502 @matjack1
+- [firmware] Added opening hours with an hourly granularity #499 @matjack1
+- [firmware] Added LED to signal that we are waiting for pincode and beeper support #490 @matjack1
+    - beeper for valid, denied or admin access 
+- [firmware] Added different pincode for each user after a card swipe #477 @matjack1
+- [firmware] Improvements in MQTT including AutoDiscovery for the Home Assistant #449 @xyzroe
+- [firmware] Added anti-tamper support #449 @xyzroe
+- [firmware] Added pin to give users feedback when access denied #426 @matjack1
+- [firmware] Added ability to delete a single user over MQTT via UID #424 @baden02
+- [docs] improved MQTT documentation #416 #423 @matjack1 @baden03
+- [firmware] added doorbell support #415 @matjack1
+- [firmware] improved decoding of Wiegand keypresses #360 @christofkac
+- [firmware] added support for multiple relays #318 @frenchie71
+- [firmware] optional BSSID for wifi connections #307 @frenchie71
 - [firmware] Initial support for Wiegand Keypads @frenchie71
 - [firmware] Initial support for OTP (TOTP) @frenchie71
 - [webui] Added Download function for log files @frenchie71
 - [webui] Log file options on WebUI @frenchie71
 - [firmware] Log Maintenance Split, Rollover, View, Delete @frenchie7
+- [firmware] Added button to open door and door status pin @nardev
 
 #### Changed
+- [firmware] Refactor WiFi connection #495 #497 @matjack1
+    - Option to disable access point mode for production usage
+    - Automatic retries when connection drops
+- [firmware] Refactor configuration #485 @matjack1
+- [firmware] Upgrade to ArduinoJSON v6 #483 @matjack1
+- [tools] Added Github Actions instead of Travis CI for building esp-rfid and ancillary tools #478 #482 @matjack1
+- [firmware] Improved MQTT support #475 #476 #484 #487 #488 @matjack1
+    - added queue for message processing to avoid watchdog timeout
+    - ACK message on processing, to enable throttling of incoming messages
+    - better reconnection on WiFi reconnections
+- [firmware] Refactor RFID reading #471 #491 #496 @matjack1
+    - separate reading card, reading pincode, processing
+    - better support for external feedback, LEDs, beeper
+- [tools] updated Gulp scripts for building web UI #414 #473 @matjack1
+- [firmware] improved wifi handling #374 #375 @ingeninge
 - [firmware] Wi-Fi connection routine is now improved @frenchie71
 - [firmware] Log file operations are now more robust @frenchie71
 
