@@ -133,6 +133,17 @@ Command:
      "validuntil": "1608466200"
 }
 ```
+### Reboot
+Rebooting the device.
+
+Command:
+```
+{
+    "cmd":"reboot",
+    "doorip":"(The ESP-RFID IP of the door to open as String)"
+}
+```
+
 * _acctype_
   * 0 = Disabled
   * 1 = Always
