@@ -332,11 +332,10 @@ void rfidProcess()
 		unsigned long validL = json["validuntil"];
 		unsigned long nowL = now();
 		int hourTz = hour() + config.timeZone;
-		bool officeHour = config.openingHours[weekdayFromMonday(weekday())][hourTz] == '1';
 		if (validL < nowL)
 		{
 			processingState = expired;
-		} else if (!officeHour)
+		} else if (config.openingHours[weekdayFromMonday(weekday())][hourTz] != '1')
 		{
 			processingState = notValid;
 		} else
