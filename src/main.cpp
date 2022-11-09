@@ -182,6 +182,7 @@ void ICACHE_RAM_ATTR loop()
 		writeLatest(" ", "Button", 1);
 		mqttPublishAccess(now(), "true", "Always", "Button", " ");
 		activateRelay[0] = true;
+		beeperValidAccess();
 	}
 
 	ledWifiStatus();
@@ -203,7 +204,7 @@ void ICACHE_RAM_ATTR loop()
 			{
 				if (digitalRead(config.relayPin[currentRelay]) == !config.relayType[currentRelay]) // currently OFF, need to switch ON
 				{
-					mqttPublishIo("lock", "UNLOCKED");
+					mqttPublishIo("lock" + String(currentRelay), "UNLOCKED");
 #ifdef DEBUG
 					Serial.print("mili : ");
 					Serial.println(millis());
@@ -213,7 +214,7 @@ void ICACHE_RAM_ATTR loop()
 				}
 				else // currently ON, need to switch OFF
 				{
-					mqttPublishIo("lock", "LOCKED");
+					mqttPublishIo("lock" + String(currentRelay), "LOCKED");
 #ifdef DEBUG
 					Serial.print("mili : ");
 					Serial.println(millis());
@@ -228,7 +229,7 @@ void ICACHE_RAM_ATTR loop()
 		{
 			if (activateRelay[currentRelay])
 			{
-				mqttPublishIo("lock", "UNLOCKED");
+				mqttPublishIo("lock" + String(currentRelay), "UNLOCKED");
 #ifdef DEBUG
 				Serial.print("mili : ");
 				Serial.println(millis());
@@ -241,7 +242,7 @@ void ICACHE_RAM_ATTR loop()
 			}
 			else if ((currentMillis - previousMillis >= config.activateTime[currentRelay]) && (deactivateRelay[currentRelay]))
 			{
-				mqttPublishIo("lock", "LOCKED");
+				mqttPublishIo("lock" + String(currentRelay), "LOCKED");
 #ifdef DEBUG
 				Serial.println(currentMillis);
 				Serial.println(previousMillis);
