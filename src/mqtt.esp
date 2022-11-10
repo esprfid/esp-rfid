@@ -5,6 +5,7 @@ struct MqttMessage {
 	char uid[20];
 	char user[64];
 	char serializedMessage[512];
+	char door[20];
 	MqttMessage *nextMessage = NULL;
 };
 
@@ -86,6 +87,22 @@ void mqttPublishEvent(JsonDocument *root, String topic)
 	}
 }
 
+void mqttPublishEventHA(JsonDocument *root, String topic)
+{
+	if (config.mqttEnabled && mqttClient.connected())
+	{
+		String stopic = "homeassistant/";
+		stopic = stopic + topic;
+		String mqttBuffer;
+		serializeJson(*root, mqttBuffer);
+		mqttClient.publish(stopic.c_str(), 0, false, mqttBuffer.c_str());
+#ifdef DEBUG
+		Serial.print("[ INFO ] Mqtt Publish:");
+		Serial.println(mqttBuffer);
+#endif
+	}
+}
+
 void mqttPublishEvent(JsonDocument *root)
 {
 	mqttPublishEvent(root, "/send");
@@ -113,118 +130,121 @@ void mqttPublishBoot(time_t boot_time)
 
 void mqttPublishDiscovery()
 {
-	String mtopic(config.mqttTopic);
+	String topicHA = "homeassistant";
 	String topic;
 	String deviceName = config.deviceHostname;
+	String deviceIP = WiFi.localIP().toString();
 	DynamicJsonDocument via(512);
 	via["ids"] = WiFi.macAddress();
 
-	for (int i = 0; i < 6; i++)
+	DynamicJsonDocument dev(512);
+	dev["ids"] = WiFi.macAddress();
+	dev["name"] = config.deviceHostname;
+	dev["mf"] = "esp-rfid";
+	dev["sw"] = VERSION;
+	String num;
+	for (int n = 0; n < config.numRelays; n++)
 	{
-		switch (i)
+		DynamicJsonDocument root(512);
+		num = String(n);
+		topic = "lock/" + deviceName + "/lock" + num + "/config";
+		root["name"] = deviceName + " Lock" + num;
+		root["uniq_id"] = deviceName + "/lock" + num;
+		root["stat_t"] = topicHA + "/io/lock" + num;
+		root["cmd_t"] = topicHA + "/cmd";
+		root["pl_unlk"] = "{cmd:'open', door:'" + num + "', doorip:'" + deviceIP + "'}";
+		root["pl_lock"] = "{cmd:'close', door:'" + num + "', doorip:'" + deviceIP + "'}";
+		root["avty_t"] = topicHA + "/avty";
+		if (n == 0)
 		{
-		case 0:
-		{
-			DynamicJsonDocument dev(512);
-			dev["ids"] = WiFi.macAddress();
-			dev["name"] = config.deviceHostname;
-			dev["mf"] = "esp-rfid";
-			dev["sw"] = VERSION;
-			DynamicJsonDocument root(512);
-			topic = "homeassistant/lock/" + deviceName + "/config";
-			root["name"] = "Lock";
-			root["uniq_id"] = deviceName + "/lock";
-			root["stat_t"] = mtopic + "/io/lock";
-			root["cmd_t"] = mtopic + "/cmd";
-			root["pl_unlk"] = "{cmd:'opendoor'}";
-			root["pl_lock"] = "{cmd:'opendoor'}";
-			root["avty_t"] = mtopic + "/avty";
 			root["dev"] = dev;
-			mqttPublishEvent(&root, topic);
-			break;
 		}
-		case 1:
+		else
 		{
-			DynamicJsonDocument door(512);
-			topic = "homeassistant/binary_sensor/" + deviceName + "/door/config";
-			door["name"] = "Door";
-			door["uniq_id"] = deviceName + "/door";
-			door["stat_t"] = mtopic + "/io/door";
-			door["avty_t"] = mtopic + "/avty";
-			door["dev_cla"] = "door";
-			door["dev"] = via;
-			mqttPublishEvent(&door, topic);
-			break;
+			root["dev"] = via;
 		}
-		case 2:
-		{
-			DynamicJsonDocument doorbell(512);
-			topic = "homeassistant/binary_sensor/" + deviceName + "/doorbell/config";
-			doorbell["name"] = "Doorbell";
-			doorbell["uniq_id"] = deviceName + "/doorbell";
-			doorbell["stat_t"] = mtopic + "/io/doorbell";
-			doorbell["avty_t"] = mtopic + "/avty";
-			doorbell["dev_cla"] = "sound";
-			doorbell["icon"] = "mdi:bell";
-			doorbell["dev"] = via;
-			mqttPublishEvent(&doorbell, topic);
-			break;
-		}
-		case 3:
-		{
-			DynamicJsonDocument tag(512);
-			topic = "homeassistant/sensor/" + deviceName + "/tag/config";
-			tag["name"] = "Tag";
-			tag["uniq_id"] = deviceName + "/tag";
-			tag["stat_t"] = mtopic + "/tag";
-			tag["avty_t"] = mtopic + "/avty";
-			tag["val_tpl"] = "{{ value_json.uid }}";
-			tag["json_attr_t"] = mtopic + "/tag";
-			tag["icon"] = "mdi:key";
-			tag["dev"] = via;
-			mqttPublishEvent(&tag, topic);
-			break;
-		}
-		case 4:
-		{
-			DynamicJsonDocument user(512);
-			topic = "homeassistant/sensor/" + deviceName + "/user/config";
-			user["name"] = "User";
-			user["uniq_id"] = deviceName + "/name";
-			user["stat_t"] = mtopic + "/tag";
-			user["avty_t"] = mtopic + "/avty";
-			user["val_tpl"] = "{{ value_json.username }}";
-			user["json_attr_t"] = mtopic + "/tag";
-			user["icon"] = "mdi:human";
-			user["dev"] = via;
-			mqttPublishEvent(&user, topic);
-			break;
-		}
-		case 5:
-		{
-			DynamicJsonDocument tamper(512);
-			topic = "homeassistant/binary_sensor/" + deviceName + "/tamper/config";
-			tamper["name"] = "Door tamper";
-			tamper["uniq_id"] = deviceName + "/tamper";
-			tamper["stat_t"] = mtopic + "/io/tamper";
-			tamper["avty_t"] = mtopic + "/avty";
-			tamper["dev_cla"] = "safety";
-			tamper["dev"] = via;
-			mqttPublishEvent(&tamper, topic);
-			break;
-		}
-		}
+		mqttPublishEventHA(&root, topic);
 	}
+
+	if (config.doorstatpin != 255)
+	{
+		DynamicJsonDocument door(512);
+		topic = "binary_sensor/" + deviceName + "/door/config";
+		door["name"] = "Door";
+		door["uniq_id"] = deviceName + "/door";
+		door["stat_t"] = topicHA + "/io/door";
+		door["avty_t"] = topicHA + "/avty";
+		door["dev_cla"] = "door";
+		door["dev"] = via;
+		mqttPublishEventHA(&door, topic);
+
+		DynamicJsonDocument tamper(512);
+		topic = "binary_sensor/" + deviceName + "/tamper/config";
+		tamper["name"] = "Door tamper";
+		tamper["uniq_id"] = deviceName + "/tamper";
+		tamper["stat_t"] = topicHA + "/io/tamper";
+		tamper["avty_t"] = topicHA + "/avty";
+		tamper["dev_cla"] = "safety";
+		tamper["dev"] = via;
+		mqttPublishEventHA(&tamper, topic);
+	}
+
+	if (config.doorbellpin != 255)
+	{
+		DynamicJsonDocument doorbell(512);
+		topic = "binary_sensor/" + deviceName + "/doorbell/config";
+		doorbell["name"] = "Doorbell";
+		doorbell["uniq_id"] = deviceName + "/doorbell";
+		doorbell["stat_t"] = topicHA + "/io/doorbell";
+		doorbell["avty_t"] = topicHA + "/avty";
+		doorbell["dev_cla"] = "sound";
+		doorbell["icon"] = "mdi:bell";
+		doorbell["dev"] = via;
+		mqttPublishEventHA(&doorbell, topic);
+	}
+
+	DynamicJsonDocument tag(512);
+	topic = "sensor/" + deviceName + "/tag/config";
+	tag["name"] = "Tag";
+	tag["uniq_id"] = deviceName + "/tag";
+	tag["stat_t"] = topicHA + "/tag";
+	tag["avty_t"] = topicHA + "/avty";
+	tag["val_tpl"] = "{{ value_json.uid }}";
+	tag["json_attr_t"] = topicHA + "/tag";
+	tag["icon"] = "mdi:key";
+	tag["dev"] = via;
+	mqttPublishEventHA(&tag, topic);
+
+	DynamicJsonDocument user(512);
+	topic = "sensor/" + deviceName + "/user/config";
+	user["name"] = "User";
+	user["uniq_id"] = deviceName + "/name";
+	user["stat_t"] = topicHA + "/tag";
+	user["avty_t"] = topicHA + "/avty";
+	user["val_tpl"] = "{{ value_json.username }}";
+	user["json_attr_t"] = topicHA + "/tag";
+	user["icon"] = "mdi:human";
+	user["dev"] = via;
+	mqttPublishEventHA(&user, topic);
+
+	DynamicJsonDocument dellog(512);
+	topic = "button/" + deviceName + "/dellog/config";
+	dellog["name"] = deviceName + " Delete Log";
+	dellog["uniq_id"] = deviceName + "/deletlog";
+	dellog["cmd_t"] = topicHA + "/cmd";
+	dellog["payload_press"] = "{cmd:'deletlog',doorip:'" + deviceIP + "'}";
+	dellog["avty_t"] = topicHA + "/avty";
+	dellog["dev"] = via;
+	mqttPublishEventHA(&dellog, topic);
 }
 
 void mqttPublishAvty()
 {
-	String mtopic(config.mqttTopic);
-	String avty_topic = mtopic + "/avty";
+	String avty_topic = "homeassistant/avty";
 	String payloadString = "online";
 	mqttClient.publish(avty_topic.c_str(), 0, true, payloadString.c_str());
 #ifdef DEBUG
-	Serial.println("[ INFO ] Mqtt Publish online @ avty");
+	Serial.println("[ INFO ] Mqtt Publish: online @ homeassistant/avty");
 #endif
 }
 
@@ -272,7 +292,7 @@ void mqttPublishAccess(time_t accesstime, String const &isknown, String const &t
 	}
 	else
 	{
-		mqttPublishEvent(&root, "/tag");
+		mqttPublishEventHA(&root, "tag");
 	}
 }
 
@@ -280,13 +300,12 @@ void mqttPublishIo(String const &io, String const &state)
 {
 	if (config.mqttHA && config.mqttEnabled && mqttClient.connected())
 	{
-		String stopic(config.mqttTopic);
-		stopic = stopic + "/io/" + io;
+		String stopic = "homeassistant/io/" + io;
 
 		mqttClient.publish(stopic.c_str(), 0, false, state.c_str());
 
 #ifdef DEBUG
-		Serial.print("[ INFO ] Mqtt Publish:");
+		Serial.print("[ INFO ] Mqtt Publish: ");
 		Serial.println(state + " @ " + stopic);
 #endif
 	}
@@ -422,6 +441,9 @@ void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties 
 	if (mqttIncomingJson.containsKey("user")) {
 		strlcpy(incomingMessage->user, mqttIncomingJson["user"], sizeof(incomingMessage->user));
 	}
+	if (mqttIncomingJson.containsKey("door")) {
+		strlcpy(incomingMessage->door, mqttIncomingJson["door"], sizeof(incomingMessage->door));
+	}
 	serializeJson(mqttIncomingJson, incomingMessage->serializedMessage);
 
 	MqttMessage* lastMessage = messageQueue;
@@ -462,7 +484,38 @@ void processMqttMessage(MqttMessage *incomingMessage)
 		}
 		previousMillis = millis();
 	}
-
+	else if (strcmp(command, "open") == 0)
+	{
+#ifdef DEBUG
+		Serial.println("[ INFO ] Door open");
+#endif
+		writeLatest(" ", "MQTT", 1);
+		mqttPublishAccess(now(), "true", "Always", "MQTT", " ");
+		const char *door = incomingMessage->door;
+		String stringDoor = String(door);
+		int currentRelay = stringDoor.toInt();
+		if (digitalRead(config.relayPin[currentRelay]) == !config.relayType[currentRelay])
+		{
+			activateRelay[currentRelay] = true;
+		}
+		previousMillis = millis();
+	}
+	else if (strcmp(command, "close") == 0)
+	{
+#ifdef DEBUG
+		Serial.println("[ INFO ] Door close");
+#endif
+		writeLatest(" ", "MQTT", 1);
+		mqttPublishAccess(now(), "true", "Always", "MQTT", " ");
+		const char *door = incomingMessage->door;
+		String stringDoor = String(door);
+		int currentRelay = stringDoor.toInt();
+		if (digitalRead(config.relayPin[currentRelay]) == config.relayType[currentRelay])
+		{
+			activateRelay[currentRelay] = true;
+		}
+		previousMillis = millis();
+	}
 	else if (strcmp(command, "deletusers") == 0)
 	{
 #ifdef DEBUG
@@ -501,7 +554,14 @@ void processMqttMessage(MqttMessage *incomingMessage)
 		f.close();
 		mqttPublishAck(command);
 	}
-	
+	else if (strcmp(command, "deletlog") == 0)
+	{
+		logMaintenance("delete", "/latestlog.json.1");
+		logMaintenance("delete", "/eventlog.json");
+		logMaintenance("rollover", "/latestlog.json");
+		mqttPublishAck(command);
+	}
+
 	free(incomingMessage);
 	return;
 }
@@ -537,11 +597,21 @@ void onMqttConnect(bool sessionPresent)
 
 	if (config.mqttHA)
 	{
-		mqttPublishIo("door", digitalRead(config.doorstatpin) == HIGH ? "OFF" : "ON");
-		mqttPublishIo("doorbell", digitalRead(config.doorbellpin) == HIGH ? "ON" :"OFF");
-		mqttPublishIo("lock", "LOCKED");
 		mqttPublishDiscovery();
 		mqttPublishAvty();
+		if (config.doorstatpin != 255)
+		{
+			mqttPublishIo("door", digitalRead(config.doorstatpin) == HIGH ? "OFF" : "ON");
+		}
+		if (config.doorbellpin != 255)
+		{
+			mqttPublishIo("doorbell", digitalRead(config.doorbellpin) == HIGH ? "ON" : "OFF");
+		}
+		for (int i = 0; i < config.numRelays; i++)
+		{
+			mqttPublishIo("lock" + String(i), digitalRead(config.relayPin[i]) == config.relayType[i] ? "UNLOCKED" : "LOCKED");
+		}
+		mqttPublishIo("tamper", "OFF");
 	}
 }
 
@@ -566,8 +636,7 @@ void setupMqtt()
 #endif
 	if (config.mqttHA)
 	{
-		String mtopic(config.mqttTopic);
-		String topicString = mtopic + "/avty";
+		String topicString = "homeassistant/avty";
 		String payloadString = "offline";
 		char *topicLWT = strdup(topicString.c_str());
 		char *payloadLWT = strdup(payloadString.c_str());
