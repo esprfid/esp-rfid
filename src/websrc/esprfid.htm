@@ -184,13 +184,16 @@
                 </span>
         </div>
         <div class="row form-group">
-            <label class="col-xs-3">Pin code requested<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Ask pin code after having swiped an RFID card."></i></label>
+            <label class="col-xs-3">Pin code mode<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign"
+                    aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right"
+                    data-content="RFID card only, or pin code after RFID card or pin code only without RFID card. The pin code entered is the uid of the user."></i></label>
             <span class="col-xs-9 col-md-5">
-                  <select class="form-control input-sm" id="pincoderequested">
-                    <option value="false">False</option>
-                    <option value="true">True</option>
-                  </select>
-                </span>
+                <select class="form-control input-sm" id="pincodemode">
+                    <option value="rfid-without-pincode">RFID card without asking pin code</option>
+                    <option value="rfid-with-pincode">RFID card with mandatory pin code</option>
+                    <option value="pincode-without-rfid">Pin code without RFID card</option>
+                </select>
+            </span>
         </div>
     </div>
     <div class="" id="mfrc522Form" style="display:none">

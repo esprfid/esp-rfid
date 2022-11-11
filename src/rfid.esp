@@ -9,8 +9,23 @@ bool wiegandAvailable = false;
 #define WIEGAND_ENT 0xD
 #define WIEGAND_ESC 0x1B
 
-enum RfidStates { waitingCard, cardSwiped, waitingForPincode, cardAndPincodePresented };
-enum RfidProcessingStates { waiting, notValid, wrongPincode, expired, unknown, valid, validAdmin };
+enum RfidStates
+{
+	waitingCard,
+	cardSwiped,
+	waitingForPincode,
+	readyToProcess
+};
+enum RfidProcessingStates
+{
+	waiting,
+	notValid,
+	wrongPincode,
+	expired,
+	unknown,
+	valid,
+	validAdmin
+};
 
 RfidStates rfidState = waitingCard;
 RfidProcessingStates processingState = waiting;
@@ -151,6 +166,10 @@ void genericRead()
 
 void rfidRead()
 {
+	if (config.pinCodeOnly)
+	{
+		return;
+	}
 	if (rfidState == cardSwiped)
 	{
 		return;
@@ -179,7 +198,9 @@ void pinCodeRead()
 	{
 		return;
 	}
-	if (rfidState != waitingForPincode || !config.pinCodeRequested || !wiegandAvailable)
+	if (!wiegandAvailable ||
+			rfidState != waitingForPincode ||
+			!(config.pinCodeRequested || config.pinCodeOnly))
 	{
 		return;
 	}
@@ -205,14 +226,14 @@ void pinCodeRead()
 #ifdef DEBUG
 				Serial.println("Keycode escape, aborting pincode entry");
 #endif
-				rfidState = waitingCard;
+				rfidState = config.pinCodeOnly ? waitingForPincode : waitingCard;
 				processingState = unknown;
 				cooldown = millis() + COOLDOWN_MILIS;
 			}
 			if(wg.getCode() == WIEGAND_ENT) // enter, process pincode
 			{
 				pinCode = currentInput;
-				rfidState = cardAndPincodePresented;
+				rfidState = readyToProcess;
 #ifdef DEBUG
 				Serial.println("Stop capture keycode . . .");
 				Serial.print(F("[ INFO ] PICC's pin code: "));
@@ -234,9 +255,15 @@ int weekdayFromMonday(int weekdayFromSunday) {
 
 void rfidProcess()
 {
-	if ((config.pinCodeRequested && rfidState != cardAndPincodePresented) || (!config.pinCodeRequested && rfidState != cardSwiped))
+	if (((config.pinCodeRequested || config.pinCodeOnly) && rfidState != readyToProcess) ||
+			(!config.pinCodeRequested && !config.pinCodeOnly && rfidState != cardSwiped))
 	{
 		return;
+	}
+
+	if (config.pinCodeOnly)
+	{
+		uid = pinCode;
 	}
 
 	File f = SPIFFS.open("/P/" + uid, "r");
@@ -428,7 +455,7 @@ void cleanRfidLoop()
 		currentInput = "";
 		type = "";
 		uid = "";
-		rfidState = waitingCard;
+		rfidState = config.pinCodeOnly ? waitingForPincode : waitingCard;
 		processingState = waiting;
 		ledWaitingOff();
 	}
@@ -471,6 +498,7 @@ void ICACHE_FLASH_ATTR ShowMFRC522ReaderDetails()
 void ICACHE_FLASH_ATTR setupWiegandReader(int d0, int d1)
 {
 	wg.begin(d0, d1);
+	rfidState = config.pinCodeOnly ? waitingForPincode : waitingCard;
 }
 
 void ICACHE_FLASH_ATTR setupMFRC522Reader(int rfidss, int rfidgain)

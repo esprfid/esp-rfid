@@ -38,6 +38,7 @@ struct Config {
     char *openingHours[7];
     uint8_t openlockpin = 255;
     bool pinCodeRequested;
+    bool pinCodeOnly;
     bool present = false;
     int readertype;
     int relayType[MAX_NUM_RELAYS];
