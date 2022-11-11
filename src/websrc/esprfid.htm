@@ -94,15 +94,20 @@
         <br>
     </div>
     <div class="row form-group">
-        <label class="col-xs-3">Auto Restart<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="How often to automatically restart the unit to lessen risk of memory leaks and crashes."></i></label>
+        <label class="col-xs-3">Auto Restart
+            <i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="How often to automatically restart the unit to lessen risk of memory leaks and crashes."></i>
+        </label>
         <span class="col-xs-9 col-md-5">
-                <select class="form-control input-sm" id="autorestart" name="autorestart">
-                  <option value='0'>Never</option>
-                  <option value='86400' selected>Every 24h</option>
-                  <option value='604800'>Every 7 days</option>
-                  <option value='18144000'>Every 30 days</option>
-                </select>
-              </span>
+            <select class="form-control input-sm" id="autorestart" name="autorestart">
+                <option value="0">Never</option>
+                <option value="86400" selected>Every 24h</option>
+                <option value="604800">Every 7 days</option>
+                <option value="18144000">Every 30 days</option>
+                <option value="custom">Custom restart time in seconds...</option>
+            </select>
+            <br>
+            <input class="form-control input-sm hidden" placeholder="Restart time in seconds" value="3600" id="autorestart-custom" type="text">
+        </span>
         <br>
     </div>
     <div class="row form-group">
