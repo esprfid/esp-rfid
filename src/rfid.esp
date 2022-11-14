@@ -11,24 +11,24 @@ bool wiegandAvailable = false;
 
 enum RfidStates
 {
-	waitingCard,
+	waitingRfid,
 	cardSwiped,
-	waitingForPincode,
-	readyToProcess
+	pinCodeEntered
 };
 enum RfidProcessingStates
 {
-	waiting,
+	waitingProcessing,
 	notValid,
 	wrongPincode,
 	expired,
 	unknown,
 	valid,
-	validAdmin
+	validAdmin,
+	cancelled
 };
 
-RfidStates rfidState = waitingCard;
-RfidProcessingStates processingState = waiting;
+RfidStates rfidState = waitingRfid;
+RfidProcessingStates processingState = waitingProcessing;
 
 void loadWiegandData()
 {
@@ -48,17 +48,17 @@ void rfidPrepareRead()
 
 void wiegandRead()
 {
-	if (wiegandAvailable && rfidState == waitingCard)
+	if (wiegandAvailable && rfidState == waitingRfid)
 	{
 		// if we get 26 or 34 bit burst then we have a scanned PICC
 		if (wg.getWiegandType() == WIEGANDTYPE_PICC26 || wg.getWiegandType() == WIEGANDTYPE_PICC34)
 		{
-	#ifdef DEBUG
-			Serial.print(F("[ INFO ] PICC's UID: "));
-			Serial.println(wg.getCode(),HEX);
-	#endif
-			uid = String(wg.getCode(), HEX);
+			uid = String(wg.getCode(), config.wiegandReadHex ? HEX : DEC);
 			type = String(wg.getWiegandType(), DEC);
+#ifdef DEBUG
+			Serial.print(F("[ INFO ] PICC's UID: "));
+			Serial.println(uid);
+#endif
 
 			File f = SPIFFS.open("/P/" + uid, "r");
 			// user exists, we should wait for pincode
@@ -68,15 +68,12 @@ void wiegandRead()
 				{
 					keyTimer = millis();
 					ledWaitingOn();
-					rfidState = waitingForPincode;
-				} else
-				{
-					rfidState = cardSwiped;
 				}
+				rfidState = cardSwiped;
 			} else
 			{
 				cooldown = millis() + COOLDOWN_MILIS;
-				rfidState = waitingCard;
+				rfidState = waitingRfid;
 				processingState = unknown;
 			}
 		}
@@ -166,10 +163,6 @@ void genericRead()
 
 void rfidRead()
 {
-	if (config.pinCodeOnly)
-	{
-		return;
-	}
 	if (rfidState == cardSwiped)
 	{
 		return;
@@ -194,13 +187,11 @@ void rfidRead()
 
 void pinCodeRead()
 {
-	if (config.readertype != READER_WIEGAND)
-	{
-		return;
-	}
-	if (!wiegandAvailable ||
-			rfidState != waitingForPincode ||
-			!(config.pinCodeRequested || config.pinCodeOnly))
+	if (config.readertype != READER_WIEGAND ||
+			!wiegandAvailable ||
+			(!config.pinCodeRequested && rfidState == cardSwiped) ||
+			(!config.pinCodeOnly && rfidState == waitingRfid) ||
+			rfidState == pinCodeEntered)
 	{
 		return;
 	}
@@ -219,21 +210,26 @@ void pinCodeRead()
 #endif
 			currentInput = currentInput + String(wg.getCode());
 			keyTimer = millis();
-		} else if (keyTimer > 0) // if we are waiting on input still
+			ledWaitingOn();
+		} else if (keyTimer > 0) // if we are waitingProcessing on input still
 		{
 			if(wg.getCode() == WIEGAND_ESC) // esc, abort pincode
 			{
 #ifdef DEBUG
 				Serial.println("Keycode escape, aborting pincode entry");
 #endif
-				rfidState = config.pinCodeOnly ? waitingForPincode : waitingCard;
-				processingState = unknown;
+				rfidState = waitingRfid;
+				processingState = cancelled;
 				cooldown = millis() + COOLDOWN_MILIS;
 			}
 			if(wg.getCode() == WIEGAND_ENT) // enter, process pincode
 			{
 				pinCode = currentInput;
-				rfidState = readyToProcess;
+				if (config.pinCodeOnly && rfidState == waitingRfid)
+				{
+					uid = pinCode;
+				}
+				rfidState = pinCodeEntered;
 #ifdef DEBUG
 				Serial.println("Stop capture keycode . . .");
 				Serial.print(F("[ INFO ] PICC's pin code: "));
@@ -255,15 +251,10 @@ int weekdayFromMonday(int weekdayFromSunday) {
 
 void rfidProcess()
 {
-	if (((config.pinCodeRequested || config.pinCodeOnly) && rfidState != readyToProcess) ||
-			(!config.pinCodeRequested && !config.pinCodeOnly && rfidState != cardSwiped))
+	if (rfidState == waitingRfid ||
+			(config.pinCodeRequested && rfidState == cardSwiped))
 	{
 		return;
-	}
-
-	if (config.pinCodeOnly)
-	{
-		uid = pinCode;
 	}
 
 	File f = SPIFFS.open("/P/" + uid, "r");
@@ -290,7 +281,8 @@ void rfidProcess()
 	}
 
 	// if the pin code is wrong we deny access
-	if(config.pinCodeRequested && pinCode != json["pincode"])
+	// pinCode is equal to uid if we allow pin code only access
+	if(config.pinCodeRequested && pinCode != json["pincode"] && pinCode != uid)
 	{
 		processingState = wrongPincode;
 #ifdef DEBUG
@@ -418,7 +410,7 @@ void rfidOutsideMessaging()
 		ledAccessDeniedOn();
 		beeperAccessDenied();
 	}
-	if (uid != "" && processingState != waiting)
+	if (uid != "" && processingState != waitingProcessing)
 	{
 		writeLatest(uid, username, accountType);
 		DynamicJsonDocument root(512);
@@ -440,13 +432,13 @@ void rfidOutsideMessaging()
 
 void cleanRfidLoop()
 {
-	if (rfidState == waitingCard)
+	if (rfidState == waitingRfid)
 	{
 		delay(50);
 	}
-	// Keep an eye on timeout waiting for keypress
+	// Keep an eye on timeout waitingProcessing for keypress
 	// Clear code and timer when timeout is reached
-	if ((keyTimer > 0 && millis() - keyTimer >= KEYBOARD_TIMEOUT_MILIS) || processingState != waiting)
+	if ((keyTimer > 0 && millis() - keyTimer >= KEYBOARD_TIMEOUT_MILIS) || processingState != waitingProcessing)
 	{
 #ifdef DEBUG
 		Serial.println("[ INFO ] Read timeout or clean after read");
@@ -455,8 +447,8 @@ void cleanRfidLoop()
 		currentInput = "";
 		type = "";
 		uid = "";
-		rfidState = config.pinCodeOnly ? waitingForPincode : waitingCard;
-		processingState = waiting;
+		rfidState = waitingRfid;
+		processingState = waitingProcessing;
 		ledWaitingOff();
 	}
 }
@@ -498,7 +490,7 @@ void ICACHE_FLASH_ATTR ShowMFRC522ReaderDetails()
 void ICACHE_FLASH_ATTR setupWiegandReader(int d0, int d1)
 {
 	wg.begin(d0, d1);
-	rfidState = config.pinCodeOnly ? waitingForPincode : waitingCard;
+	rfidState = waitingRfid;
 }
 
 void ICACHE_FLASH_ATTR setupMFRC522Reader(int rfidss, int rfidgain)
@@ -538,7 +530,7 @@ void ICACHE_FLASH_ATTR setupPN532Reader(int rfidss)
 		Utils::Print(Buf);
 #endif
 		// Set the max number of retry attempts to read from a card.
-		// This prevents us from waiting forever for a card, which is the default behaviour of the PN532.
+		// This prevents us from waitingProcessing forever for a card, which is the default behaviour of the PN532.
 		if (!pn532.SetPassiveActivationRetries())
 		{
 			break;

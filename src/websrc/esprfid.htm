@@ -184,15 +184,30 @@
                 </span>
         </div>
         <div class="row form-group">
-            <label class="col-xs-3">Pin code mode<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign"
+            <label class="col-xs-3">User ID storage mode<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign"
                     aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right"
-                    data-content="RFID card only, or pin code after RFID card or pin code only without RFID card. The pin code entered is the uid of the user."></i></label>
+                    data-content="IDs stored in decimal can be entered with pin code only mode. It is potentially more insecure."></i></label>
             <span class="col-xs-9 col-md-5">
-                <select class="form-control input-sm" id="pincodemode">
-                    <option value="rfid-without-pincode">RFID card without asking pin code</option>
-                    <option value="rfid-with-pincode">RFID card with mandatory pin code</option>
-                    <option value="pincode-without-rfid">Pin code without RFID card</option>
+                <select class="form-control input-sm" id="useridStorageMode">
+                    <option value="hexadecimal" selected>Hexadecimal</option>
+                    <option value="decimal">Decimal</option>
                 </select>
+            </span>
+        </div>
+        <div class="row form-group">
+            <label class="col-xs-3">Require pin code after RFID card<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign"
+                    aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right"
+                    data-content="Pin code is required after having swiped the RFID card."></i></label>
+            <span class="col-xs-9 col-md-5">
+                <input type="checkbox" id="requirePinCodeAfterRfid" checked>
+            </span>
+        </div>
+        <div class="row form-group">
+            <label class="col-xs-3">Allow pin code only<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign"
+                    aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right"
+                    data-content="User ID is entered directly with pin pad. Make sure to use long enough IDs to be secure enough."></i></label>
+            <span class="col-xs-9 col-md-5">
+                <input type="checkbox" id="allowPinCodeOnly">
             </span>
         </div>
     </div>
