@@ -522,7 +522,15 @@ function listnetwork() {
     document.getElementById("gateway").value = config.network.gateway;
     handleSTA();
   }
-  document.getElementById("fallbackmode").value = config.network.fallbackmode;
+    
+  if (config.network.fallbackmode) {
+    $("input[name=\"fallbackmode\"][value=\"1\"]").prop("checked", true);
+    $("input[name=\"fallbackmode\"][value=\"0\"]").prop("checked", false);
+  } else {
+    $("input[name=\"fallbackmode\"][value=\"1\"]").prop("checked", false);
+    $("input[name=\"fallbackmode\"][value=\"0\"]").prop("checked", true);
+  }
+
   document.getElementById("disable_wifi_after_seconds").value = config.network.offtime;
 
 }
