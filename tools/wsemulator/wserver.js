@@ -88,6 +88,7 @@ var users = [{
         "pincode": "1234",
         "username": "Nikki Kidd",
         "acctype": 0,
+        "validsince": 0,
         "validuntil": 4562316475
     },
     {
@@ -95,6 +96,7 @@ var users = [{
         "pincode": "1234",
         "username": "Maria Cohen",
         "acctype": 1,
+        "validsince": 0,
         "validuntil": 1048061447
     },
     {
@@ -102,6 +104,7 @@ var users = [{
         "pincode": "1234",
         "username": "Hilda Whitaker",
         "acctype": 1,
+        "validsince": 0,
         "validuntil": 9154328938
     },
     {
@@ -109,6 +112,7 @@ var users = [{
         "pincode": "1234",
         "username": "Eloise Floyd",
         "acctype": 1,
+        "validsince": 0,
         "validuntil": 7903845677
     },
     {
@@ -116,6 +120,7 @@ var users = [{
         "pincode": "1234",
         "username": "Grimes Davenport",
         "acctype": 0,
+        "validsince": 0,
         "validuntil": 4362181899
     },
     {
@@ -123,6 +128,7 @@ var users = [{
         "pincode": "1234",
         "username": "Wanda Jones",
         "acctype": 1,
+        "validsince": 0,
         "validuntil": 8077084354
     },
     {
@@ -130,6 +136,7 @@ var users = [{
         "pincode": "1234",
         "username": "Weaver Sampson",
         "acctype": 0,
+        "validsince": 0,
         "validuntil": 9712710211
     },
     {
@@ -137,6 +144,7 @@ var users = [{
         "pincode": "1234",
         "username": "Nash Hernandez",
         "acctype": 1,
+        "validsince": 0,
         "validuntil": 8752373818
     },
     {
@@ -144,6 +152,7 @@ var users = [{
         "pincode": "1234",
         "username": "Elvia Vance",
         "acctype": 1,
+        "validsince": 0,
         "validuntil": 1956504821
     },
     {
@@ -151,6 +160,7 @@ var users = [{
         "pincode": "1234",
         "username": "Lucinda Fischer",
         "acctype": 1,
+        "validsince": 0,
         "validuntil": 3697215988
     },
     {
@@ -158,6 +168,7 @@ var users = [{
         "pincode": "1234",
         "username": "Gregory Cline",
         "acctype": 1,
+        "validsince": 0,
         "validuntil": 4515022519
     },
     {
@@ -165,6 +176,7 @@ var users = [{
         "pincode": "1234",
         "username": "Lidia Hancock",
         "acctype": 1,
+        "validsince": 0,
         "validuntil": 2333382745
     },
     {
@@ -172,6 +184,7 @@ var users = [{
         "pincode": "1234",
         "username": "Lina George",
         "acctype": 0,
+        "validsince": 0,
         "validuntil": 8146061670
     },
     {
@@ -179,6 +192,7 @@ var users = [{
         "pincode": "1234",
         "username": "Fields Macdonald",
         "acctype": 0,
+        "validsince": 0,
         "validuntil": 8564191761
     },
     {
@@ -186,6 +200,7 @@ var users = [{
         "pincode": "1234",
         "username": "Mollie Dean",
         "acctype": 1,
+        "validsince": 0,
         "validuntil": 3201049552
     },
     {
@@ -193,6 +208,7 @@ var users = [{
         "pincode": "1234",
         "username": "Silva Lawrence",
         "acctype": 0,
+        "validsince": 0,
         "validuntil": 3967606320
     },
     {
@@ -200,6 +216,7 @@ var users = [{
         "pincode": "1234",
         "username": "Tyler Gonzalez",
         "acctype": 0,
+        "validsince": 0,
         "validuntil": 7258523602
     },
     {
@@ -207,6 +224,7 @@ var users = [{
         "pincode": "1234",
         "username": "Summers Whitehead",
         "acctype": 0,
+        "validsince": 0,
         "validuntil": 3326998231
     },
     {
@@ -214,6 +232,7 @@ var users = [{
         "pincode": "1234",
         "username": "Misty Williams",
         "acctype": 1,
+        "validsince": 0,
         "validuntil": 1760784347
     },
     {
@@ -221,6 +240,7 @@ var users = [{
         "pincode": "1234",
         "username": "Sanchez Osborn",
         "acctype": 1,
+        "validsince": 0,
         "validuntil": 9210015456
     },
     {
@@ -228,6 +248,7 @@ var users = [{
         "pincode": "1234",
         "username": "Brown Glover",
         "acctype": 0,
+        "validsince": 0,
         "validuntil": 6616351487
     },
     {
@@ -235,6 +256,7 @@ var users = [{
         "pincode": "1234",
         "username": "Pat Flowers",
         "acctype": 1,
+        "validsince": 0,
         "validuntil": 2176624484
     },
     {
@@ -242,6 +264,7 @@ var users = [{
         "pincode": "1234",
         "username": "Tanya Mcmillan",
         "acctype": 1,
+        "validsince": 0,
         "validuntil": 7135500634
     },
     {
@@ -249,6 +272,7 @@ var users = [{
         "pincode": "1234",
         "username": "Norma Perry",
         "acctype": 0,
+        "validsince": 0,
         "validuntil": 8382065121
     },
     {
@@ -256,6 +280,7 @@ var users = [{
         "pincode": "1234",
         "username": "Etta Mooney",
         "acctype": 1,
+        "validsince": 0,
         "validuntil": 5466868107
     },
     {
@@ -263,6 +288,7 @@ var users = [{
         "pincode": "1234",
         "username": "Marissa Waller",
         "acctype": 0,
+        "validsince": 0,
         "validuntil": 8998269761
     },
     {
@@ -270,6 +296,7 @@ var users = [{
         "pincode": "1234",
         "username": "Kari Gutierrez",
         "acctype": 1,
+        "validsince": 0,
         "validuntil": 3100510208
     }
 ]
@@ -344,6 +371,7 @@ function updateuser(obj) {
     newdata.pincode = obj.pincode;
     newdata.username = obj.user;
     newdata.acctype = obj.acctype;
+    newdata.validsince = obj.validsince;
     newdata.validuntil = obj.validuntil;
     console.log("[ INFO ] New User settings: " + JSON.stringify(newdata));
     users.push(newdata);
@@ -354,7 +382,6 @@ function updateuser(obj) {
     };
     wss.broadcast(res);
 }
-
 
 function sendUserList(page) {
     var datatosend = {};

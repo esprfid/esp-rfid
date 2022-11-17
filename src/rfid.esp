@@ -326,11 +326,12 @@ void rfidProcess()
 
 	if (accountType == ACCESS_GRANTED)
 	{
-		unsigned long validL = json["validuntil"];
+		unsigned long validSinceL = json["validsince"];
+		unsigned long validUntilL = json["validuntil"];
 		unsigned long nowL = now();
 		int hourTz = hour() + config.timeZone;
 		bool officeHour = config.openingHours[weekdayFromMonday(weekday())][hourTz] == '1';
-		if (validL < nowL)
+		if (validUntilL < nowL || validSinceL > nowL)
 		{
 			processingState = expired;
 		} else if (!officeHour)
