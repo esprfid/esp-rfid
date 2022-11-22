@@ -293,7 +293,11 @@ function savegeneral() {
   }
   config.general.pswd = a;
   config.general.hostnm = document.getElementById("hostname").value;
-  config.general.restart = parseInt(document.getElementById("autorestart").value);
+  if(document.getElementById("autorestart").value == "custom") {
+    config.general.restart = parseInt(document.getElementById("autorestart-custom").value);
+  } else {
+    config.general.restart = parseInt(document.getElementById("autorestart").value);
+  }
   config.general.openinghours = extractOpeningHours();
   uncommited();
 }
@@ -494,7 +498,6 @@ function handleSTA() {
   document.getElementById("dhcp").style.display = "block";
   if (config.network.dhcp === 0) {
     $("input[name=\"dhcpenabled\"][value=\"0\"]").prop("checked", true);
-    //$("input[name=dhcpenabled][value=\"0\"]").attr("checked", "checked");
   }
   handleDHCP();
 }
@@ -507,7 +510,6 @@ function listnetwork() {
     document.getElementById("wmodeap").checked = true;
     if (config.network.hide === 1) {
       $("input[name=\"hideapenable\"][value=\"1\"]").prop("checked", true);
-      //$("input[name=hideapenable][value=\"1\"]").attr("checked", "checked");
     }
     handleAP();
   } else {
@@ -564,6 +566,20 @@ function listgeneral() {
   document.getElementById("adminpwd").value = config.general.pswd;
   document.getElementById("hostname").value = config.general.hostnm;
   document.getElementById("autorestart").value = config.general.restart;
+  document.getElementById("autorestart-custom").value = config.general.restart;
+  // if value is not same as the restart option, it's custom
+  var checkedOption = document.querySelector("#content #autorestart option:checked");
+  if(!checkedOption || parseInt(checkedOption.value) != config.general.restart) {
+    $("#autorestart-custom").removeClass("hidden");
+    document.getElementById("autorestart").value = "custom";
+  }
+  $("#autorestart").on("change", function() {
+    if (this.value == "custom") {
+      $("#autorestart-custom").removeClass("hidden");
+    } else {
+      $("#autorestart-custom").addClass("hidden");
+    }
+  });
   populateOpeningHours();
 }
 

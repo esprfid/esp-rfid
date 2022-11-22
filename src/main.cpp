@@ -98,7 +98,7 @@ unsigned long openDoorMillis = 0;
 unsigned long previousLoopMillis = 0;
 unsigned long previousMillis = 0;
 bool shouldReboot = false;
-unsigned long uptime = 0;
+unsigned long uptimeSeconds = 0;
 unsigned long wifiPinBlink = millis();
 unsigned long wiFiUptimeMillis = 0;
 
@@ -173,7 +173,7 @@ void ICACHE_RAM_ATTR loop()
 {
 	currentMillis = millis();
 	deltaTime = currentMillis - previousLoopMillis;
-	uptime = NTP.getUptimeSec();
+	uptimeSeconds = NTP.getUptimeSec();
 	previousLoopMillis = currentMillis;
 
 	openLockButton.update();
@@ -267,7 +267,7 @@ void ICACHE_RAM_ATTR loop()
 		ESP.restart();
 	}
 
-	if (config.autoRestartIntervalSeconds > 0 && uptime > config.autoRestartIntervalSeconds * 1000)
+	if (config.autoRestartIntervalSeconds > 0 && uptimeSeconds > config.autoRestartIntervalSeconds)
 	{
 		writeEvent("WARN", "sys", "Auto restarting...", "");
 		shouldReboot = true;
@@ -305,7 +305,7 @@ void ICACHE_RAM_ATTR loop()
 	{
 		if ((unsigned)now() > nextbeat)
 		{
-			mqttPublishHeartbeat(now(), uptime);
+			mqttPublishHeartbeat(now(), uptimeSeconds);
 			nextbeat = (unsigned)now() + config.mqttInterval;
 #ifdef DEBUG
 			Serial.print("[ INFO ] Nextbeat=");
