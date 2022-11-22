@@ -64,12 +64,33 @@ void wiegandRead()
 			// user exists, we should wait for pincode
 			if (f)
 			{
-				if (config.pinCodeRequested)
+				size_t size = f.size();
+				std::unique_ptr<char[]> buf(new char[size]);
+				f.readBytes(buf.get(), size);
+				f.close();
+				DynamicJsonDocument json(512);
+				auto error = deserializeJson(json, buf.get());
+				if (error)
 				{
-					keyTimer = millis();
-					ledWaitingOn();
+					processingState = notValid;
+#ifdef DEBUG
+					Serial.println("");
+					Serial.println(F("[ WARN ] Failed to parse User Data"));
+#endif
+					return;
 				}
 				rfidState = cardSwiped;
+				if (config.pinCodeRequested)
+				{
+					if(json["pincode"] == "")
+					{
+						rfidState = pinCodeEntered;
+					} else
+					{
+						keyTimer = millis();
+						ledWaitingOn();
+					}
+				}
 			} else
 			{
 				cooldown = millis() + COOLDOWN_MILIS;
@@ -282,7 +303,7 @@ void rfidProcess()
 
 	// if the pin code is wrong we deny access
 	// pinCode is equal to uid if we allow pin code only access
-	if(config.pinCodeRequested && pinCode != json["pincode"] && pinCode != uid)
+	if(config.pinCodeRequested && pinCode != json["pincode"] && pinCode != uid && json["pincode"] != "")
 	{
 		processingState = wrongPincode;
 #ifdef DEBUG
