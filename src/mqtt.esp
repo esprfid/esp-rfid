@@ -533,12 +533,7 @@ void onMqttConnect(bool sessionPresent)
 
 	String stopic(config.mqttTopic);
 	stopic = stopic + "/cmd";
-	uint16_t packetIdSub = mqttClient.subscribe(stopic.c_str(), 2);
-
-#ifdef DEBUG
-	Serial.print("[ INFO ] Subscribing at QoS 2, packetId: ");
-	Serial.println(packetIdSub);
-#endif
+	mqttClient.subscribe(stopic.c_str(), 2);
 
 	if (config.mqttHA)
 	{
