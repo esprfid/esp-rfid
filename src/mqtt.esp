@@ -76,7 +76,7 @@ void mqttPublishEvent(JsonDocument *root, String topic)
 	if (config.mqttEnabled && mqttClient.connected())
 	{
 		String stopic(config.mqttTopic);
-		stopic = stopic + topic;
+		stopic = stopic + "/" + topic;
 		String mqttBuffer;
 		serializeJson(*root, mqttBuffer);
 		mqttClient.publish(stopic.c_str(), 0, false, mqttBuffer.c_str());
@@ -95,7 +95,7 @@ void mqttPublishEventHA(JsonDocument *root, String topic)
 		stopic = stopic + topic;
 		String mqttBuffer;
 		serializeJson(*root, mqttBuffer);
-		mqttClient.publish(stopic.c_str(), 0, false, mqttBuffer.c_str());
+		mqttClient.publish(stopic.c_str(), 0, true, mqttBuffer.c_str());
 #ifdef DEBUG
 		Serial.print("[ INFO ] Mqtt Publish:");
 		Serial.println(mqttBuffer);
@@ -105,7 +105,7 @@ void mqttPublishEventHA(JsonDocument *root, String topic)
 
 void mqttPublishEvent(JsonDocument *root)
 {
-	mqttPublishEvent(root, "/send");
+	mqttPublishEvent(root, "send");
 }
 
 void mqttPublishAck(String command)
@@ -130,7 +130,7 @@ void mqttPublishBoot(time_t boot_time)
 
 void mqttPublishDiscovery()
 {
-	String topicHA = "homeassistant";
+	String mtopic(config.mqttTopic);
 	String topic;
 	String deviceName = config.deviceHostname;
 	String deviceIP = WiFi.localIP().toString();
@@ -150,11 +150,11 @@ void mqttPublishDiscovery()
 		topic = "lock/" + deviceName + "/lock" + num + "/config";
 		root["name"] = deviceName + " Lock" + num;
 		root["uniq_id"] = deviceName + "/lock" + num;
-		root["stat_t"] = topicHA + "/io/lock" + num;
-		root["cmd_t"] = topicHA + "/cmd";
+		root["stat_t"] = mtopic + "/io/lock" + num;
+		root["cmd_t"] = mtopic + "/cmd";
 		root["pl_unlk"] = "{cmd:'open', door:'" + num + "', doorip:'" + deviceIP + "'}";
 		root["pl_lock"] = "{cmd:'close', door:'" + num + "', doorip:'" + deviceIP + "'}";
-		root["avty_t"] = topicHA + "/avty";
+		root["avty_t"] = mtopic + "/avty";
 		if (n == 0)
 		{
 			root["dev"] = dev;
@@ -172,8 +172,8 @@ void mqttPublishDiscovery()
 		topic = "binary_sensor/" + deviceName + "/door/config";
 		door["name"] = "Door";
 		door["uniq_id"] = deviceName + "/door";
-		door["stat_t"] = topicHA + "/io/door";
-		door["avty_t"] = topicHA + "/avty";
+		door["stat_t"] = mtopic + "/io/door";
+		door["avty_t"] = mtopic + "/avty";
 		door["dev_cla"] = "door";
 		door["dev"] = via;
 		mqttPublishEventHA(&door, topic);
@@ -182,8 +182,8 @@ void mqttPublishDiscovery()
 		topic = "binary_sensor/" + deviceName + "/tamper/config";
 		tamper["name"] = "Door tamper";
 		tamper["uniq_id"] = deviceName + "/tamper";
-		tamper["stat_t"] = topicHA + "/io/tamper";
-		tamper["avty_t"] = topicHA + "/avty";
+		tamper["stat_t"] = mtopic + "/io/tamper";
+		tamper["avty_t"] = mtopic + "/avty";
 		tamper["dev_cla"] = "safety";
 		tamper["dev"] = via;
 		mqttPublishEventHA(&tamper, topic);
@@ -195,8 +195,8 @@ void mqttPublishDiscovery()
 		topic = "binary_sensor/" + deviceName + "/doorbell/config";
 		doorbell["name"] = "Doorbell";
 		doorbell["uniq_id"] = deviceName + "/doorbell";
-		doorbell["stat_t"] = topicHA + "/io/doorbell";
-		doorbell["avty_t"] = topicHA + "/avty";
+		doorbell["stat_t"] = mtopic + "/io/doorbell";
+		doorbell["avty_t"] = mtopic + "/avty";
 		doorbell["dev_cla"] = "sound";
 		doorbell["icon"] = "mdi:bell";
 		doorbell["dev"] = via;
@@ -207,10 +207,10 @@ void mqttPublishDiscovery()
 	topic = "sensor/" + deviceName + "/tag/config";
 	tag["name"] = "Tag";
 	tag["uniq_id"] = deviceName + "/tag";
-	tag["stat_t"] = topicHA + "/tag";
-	tag["avty_t"] = topicHA + "/avty";
+	tag["stat_t"] = mtopic + "/tag";
+	tag["avty_t"] = mtopic + "/avty";
 	tag["val_tpl"] = "{{ value_json.uid }}";
-	tag["json_attr_t"] = topicHA + "/tag";
+	tag["json_attr_t"] = mtopic + "/tag";
 	tag["icon"] = "mdi:key";
 	tag["dev"] = via;
 	mqttPublishEventHA(&tag, topic);
@@ -219,10 +219,10 @@ void mqttPublishDiscovery()
 	topic = "sensor/" + deviceName + "/user/config";
 	user["name"] = "User";
 	user["uniq_id"] = deviceName + "/name";
-	user["stat_t"] = topicHA + "/tag";
-	user["avty_t"] = topicHA + "/avty";
+	user["stat_t"] = mtopic + "/tag";
+	user["avty_t"] = mtopic + "/avty";
 	user["val_tpl"] = "{{ value_json.username }}";
-	user["json_attr_t"] = topicHA + "/tag";
+	user["json_attr_t"] = mtopic + "/tag";
 	user["icon"] = "mdi:human";
 	user["dev"] = via;
 	mqttPublishEventHA(&user, topic);
@@ -231,20 +231,21 @@ void mqttPublishDiscovery()
 	topic = "button/" + deviceName + "/dellog/config";
 	dellog["name"] = deviceName + " Delete Log";
 	dellog["uniq_id"] = deviceName + "/deletlog";
-	dellog["cmd_t"] = topicHA + "/cmd";
-	dellog["payload_press"] = "{cmd:'deletlog',doorip:'" + deviceIP + "'}";
-	dellog["avty_t"] = topicHA + "/avty";
+	dellog["cmd_t"] = mtopic + "/cmd";
+	dellog["payload_press"] = "{cmd:'deletlog', doorip:'" + deviceIP + "'}";
+	dellog["avty_t"] = mtopic + "/avty";
 	dellog["dev"] = via;
 	mqttPublishEventHA(&dellog, topic);
 }
 
 void mqttPublishAvty()
 {
-	String avty_topic = "homeassistant/avty";
+	String mtopic(config.mqttTopic);
+	String avty_topic = mtopic + "/avty";
 	String payloadString = "online";
 	mqttClient.publish(avty_topic.c_str(), 0, true, payloadString.c_str());
 #ifdef DEBUG
-	Serial.println("[ INFO ] Mqtt Publish: online @ homeassistant/avty");
+	Serial.println("[ INFO ] Mqtt Publish: online @ " + avty_topic);
 #endif
 }
 
@@ -292,7 +293,7 @@ void mqttPublishAccess(time_t accesstime, String const &isknown, String const &t
 	}
 	else
 	{
-		mqttPublishEventHA(&root, "tag");
+		mqttPublishEvent(&root, "tag");
 	}
 }
 
@@ -300,13 +301,14 @@ void mqttPublishIo(String const &io, String const &state)
 {
 	if (config.mqttHA && config.mqttEnabled && mqttClient.connected())
 	{
-		String stopic = "homeassistant/io/" + io;
+		String mtopic(config.mqttTopic);
+		String topic = mtopic + "/io/" + io;
 
-		mqttClient.publish(stopic.c_str(), 0, false, state.c_str());
+		mqttClient.publish(topic.c_str(), 0, false, state.c_str());
 
 #ifdef DEBUG
 		Serial.print("[ INFO ] Mqtt Publish: ");
-		Serial.println(state + " @ " + stopic);
+		Serial.println(state + " @ " + topic);
 #endif
 	}
 }
@@ -636,7 +638,8 @@ void setupMqtt()
 #endif
 	if (config.mqttHA)
 	{
-		String topicString = "homeassistant/avty";
+		String stopic(config.mqttTopic);
+		String topicString = stopic + "/avty";
 		String payloadString = "offline";
 		char *topicLWT = strdup(topicString.c_str());
 		char *payloadLWT = strdup(payloadString.c_str());
