@@ -98,6 +98,13 @@ void ICACHE_FLASH_ATTR fallbacktoAPMode()
 	if (WiFi.softAP(ssid))
 	{
 		ledWifiOn();
+#ifdef DEBUG
+		IPAddress myIP = WiFi.softAPIP();
+
+		Serial.print(F("[ INFO ] AP IP address: "));
+		Serial.println(myIP);
+		Serial.printf("[ INFO ] AP SSID: %s\n", ssid);
+#endif
 	}
 }
 

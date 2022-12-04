@@ -207,11 +207,15 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 
 	ws.setAuthentication("admin", config.httpPass);
 
-	if (general["openinghours"])
+	for (int d = 0; d < 7; d++)
 	{
-		for (int d=0; d<7; d++)
+		if (general["openinghours"])
 		{
 			config.openingHours[d] = strdup(general["openinghours"][d].as<const char *>());
+		}
+		else
+		{
+			config.openingHours[d] = strdup("111111111111111111111111");
 		}
 	}
 
