@@ -115,6 +115,7 @@ void mfrc522Read()
 	for (int i = 0; i < mfrc522.uid.size; ++i)
 	{
 		uid += String(mfrc522.uid.uidByte[i], HEX);
+		rfidState = cardSwiped;
 	}
 #ifdef DEBUG
 	Serial.print(uid);
@@ -141,6 +142,7 @@ void pn532Read()
 		for (uint8_t i = 0; i < u8_UidLength; i++)
 		{
 			uid += String(pnuid[i], HEX);
+			rfidState = cardSwiped;
 		}
 #ifdef DEBUG
 		Serial.print(uid);
@@ -159,6 +161,7 @@ void genericRead()
 	{
 		uid = RFIDr.GetHexID();
 		type = RFIDr.GetTagType();
+		rfidState = cardSwiped;
 		cooldown = millis() + COOLDOWN_MILIS;
 #ifdef DEBUG
 		Serial.print(F("[ INFO ] PICC's UID: "));
@@ -330,11 +333,10 @@ void rfidProcess()
 		unsigned long validUntilL = json["validuntil"];
 		unsigned long nowL = now();
 		int hourTz = hour() + config.timeZone;
-		bool officeHour = config.openingHours[weekdayFromMonday(weekday())][hourTz] == '1';
 		if (validUntilL < nowL || validSinceL > nowL)
 		{
 			processingState = expired;
-		} else if (!officeHour)
+		} else if (config.openingHours[weekdayFromMonday(weekday())][hourTz] != '1')
 		{
 			processingState = notValid;
 		} else
