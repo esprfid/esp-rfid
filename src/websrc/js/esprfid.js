@@ -6,7 +6,6 @@ var utcSeconds;
 var timezone;
 var data = [];
 var ajaxobj;
-var isOfficialBoard = false;
 
 var maxNumRelays=4;
 var numRelays=1;
@@ -168,42 +167,27 @@ function listhardware() {
   document.getElementById("allowPinCodeOnly").checked = config.hardware.allowPinCodeOnly;
   document.getElementById("ledwaitingpin").value = config.hardware.ledwaitingpin;
   document.getElementById("beeperpin").value = config.hardware.beeperpin;
-  if (isOfficialBoard) {
-    document.getElementById("readertype").value = 1;
-    document.getElementById("wg0pin").value = 5;
-    document.getElementById("wg1pin").value = 4;
-    document.getElementById("gpiorly").value = 13;
-    document.getElementById("wg0pin").disabled = true;
-    document.getElementById("wg1pin").disabled = true;
-    document.getElementById("gpiorly").disabled = true;
-    document.getElementById("readertype").disabled = true;
-  } else {
-    document.getElementById("readertype").value = config.hardware.readertype;
-    document.getElementById("wg0pin").value = config.hardware.wgd0pin;
-    document.getElementById("wg1pin").value = config.hardware.wgd1pin;
-    document.getElementById("gpioss").value = config.hardware.sspin;
-    document.getElementById("gain").value = config.hardware.rfidgain;
-    document.getElementById("gpiorly").value = config.hardware.rpin;
-    document.getElementById("numrlys").value = numRelays;
-    updateRelayForm();
-    updateUserModalForm();
+  document.getElementById("readertype").value = config.hardware.readertype;
+  document.getElementById("wg0pin").value = config.hardware.wgd0pin;
+  document.getElementById("wg1pin").value = config.hardware.wgd1pin;
+  document.getElementById("gpioss").value = config.hardware.sspin;
+  document.getElementById("gain").value = config.hardware.rfidgain;
+  document.getElementById("gpiorly").value = config.hardware.rpin;
+  document.getElementById("numrlys").value = numRelays;
+  updateRelayForm();
+  updateUserModalForm();
 
-
-    for (var i = 2; i<=numRelays; i++)
-    {
-
-      document.getElementById("gpiorly"+i).value = config.hardware["relay"+i].rpin;
-      document.getElementById("lockType"+i).value = config.hardware["relay"+i].ltype;
-      document.getElementById("typerly"+i).value = config.hardware["relay"+i].rtype;
-      document.getElementById("delay"+i).value = config.hardware["relay"+i].rtime;
-    }  
+  for (var i = 2; i<=numRelays; i++) {
+    document.getElementById("gpiorly"+i).value = config.hardware["relay"+i].rpin;
+    document.getElementById("lockType"+i).value = config.hardware["relay"+i].ltype;
+    document.getElementById("typerly"+i).value = config.hardware["relay"+i].rtype;
+    document.getElementById("delay"+i).value = config.hardware["relay"+i].rtime;
   }
   handleReader();
   handleLock();
 }
 
 function listlog() {
-//  websock.send("{\"command\":\"getlatestlog\", \"page\":" + page + "}");
   websock.send("{\"command\":\"getlatestlog\", \"page\":" + page + ", \"filename\":\"" + theCurrentLogFile +"\"}");
 }
 
@@ -836,20 +820,15 @@ function restoreSet() {
 
 function restore1by1(i, len, data) {
   var part = 100 / len;
-  var uid, pincode, user, acc, valid;
   document.getElementById("dynamic").style.width = part * (i + 1) + "%";
   var datatosend = {};
-  uid = data[i].uid;
-  pincode = data[i].pincode;
-  user = data[i].username;
-  acc = data[i].acctype;
-  valid = data[i].validuntil;
   datatosend.command = "userfile";
-  datatosend.uid = uid;
-  datatosend.pincode = pincode;
-  datatosend.user = user;
-  datatosend.acctype = acc;
-  datatosend.validuntil = valid;
+  datatosend.uid = data[i].uid;
+  datatosend.pincode = data[i].pincode;
+  datatosend.user = data[i].username;
+  datatosend.acctype = data[i].acctype;
+  datatosend.validsince = data[i].validsince;
+  datatosend.validuntil = data[i].validuntil;
   websock.send(JSON.stringify(datatosend));
   slot++;
   if (slot === len) {
@@ -1097,7 +1076,7 @@ function initEventTable() {
           "parser": function(value) {
             if (value < 1520665101) {
               return value;
-            } else {
+            } else {  
               var comp = new Date();
               value = Math.floor(value + ((comp.getTimezoneOffset() * 60) * -1));
               var vuepoch = new Date(value * 1000);
@@ -1294,6 +1273,21 @@ function initUserTable() {
             },
           },
           {
+            "name": "validsince",
+            "title": "Valid Since",
+            "breakpoints": "xs sm",
+            "parser": function(value) {
+              console.log(value)
+              var comp = new Date();
+              value = Math.floor(value + ((comp.getTimezoneOffset() * 60) * -1));
+              var vuepoch = new Date(value * 1000);
+              var formatted = vuepoch.getFullYear() +
+                "-" + twoDigits(vuepoch.getMonth() + 1) +
+                "-" + twoDigits(vuepoch.getDate());
+              return formatted;
+            },
+          },
+          {
             "name": "validuntil",
             "title": "Valid Until",
             "breakpoints": "xs sm",
@@ -1305,7 +1299,7 @@ function initUserTable() {
                 "-" + twoDigits(vuepoch.getMonth() + 1) +
                 "-" + twoDigits(vuepoch.getDate());
               return formatted;
-            },
+            }
           }
         ],
         rows: data,
@@ -1338,6 +1332,7 @@ function initUserTable() {
             $editor.find("#acctype2").val(giveAccType(2));
             $editor.find("#acctype3").val(giveAccType(3));
             $editor.find("#acctype4").val(giveAccType(4));
+            $editor.find("#validsince").val(values.validsince);
             $editor.find("#validuntil").val(values.validuntil);
             $modal.data("row", row);
             $editorTitle.text("Edit User # " + values.username);
@@ -1372,8 +1367,10 @@ function initUserTable() {
           acctype2: parseInt($editor.find("#acctype2").val()),
           acctype3: parseInt($editor.find("#acctype3").val()),
           acctype4: parseInt($editor.find("#acctype4").val()),
+          validsince: (new Date($editor.find("#validsince").val()).getTime() / 1000),
           validuntil: (new Date($editor.find("#validuntil").val()).getTime() / 1000)
         };
+      console.log(values.validuntil);
       if (row instanceof window.FooTable.Row) {
         row.delete();
         values.id = uid++;
@@ -1391,6 +1388,9 @@ function initUserTable() {
       datatosend.acctype2 = parseInt($editor.find("#acctype2").val());
       datatosend.acctype3 = parseInt($editor.find("#acctype3").val());
       datatosend.acctype4 = parseInt($editor.find("#acctype4").val());
+      var validsince = $editor.find("#validsince").val();
+      var vsepoch = (new Date(validsince).getTime() / 1000);
+      datatosend.validsince = vsepoch;
       var validuntil = $editor.find("#validuntil").val();
       var vuepoch = (new Date(validuntil).getTime() / 1000);
       datatosend.validuntil = vuepoch;
@@ -1426,9 +1426,6 @@ function socketMessageListener(evt) {
   if (obj.hasOwnProperty("command")) {
     switch (obj.command) {
       case "status":
-        if (obj.hasOwnProperty("board")) {
-          isOfficialBoard = true;
-        }
         ajaxobj = obj;
         getContent("#statuscontent");
         break;

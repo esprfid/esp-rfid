@@ -61,6 +61,7 @@ A list of messages like the following will be sent, one for each user:
     "acctype2": null,
     "acctype3": null,
     "acctype4": null,
+    "validsince": 0,
     "validuntil": 1608336000
 }
 ```
@@ -130,6 +131,7 @@ Command:
      "uid": "(The PIN as String)",
      "user": "(User Name as String)",
      "acctype": "1",
+     "validsince": "0",
      "validuntil": "1608466200"
 }
 ```
@@ -138,9 +140,14 @@ Command:
   * 1 = Always
   * 99 = Admin
 
+* _validsince_
+  * User valid since date/time as Unix epoch timestamp
+  * Can send calculations based on now:
+    * ```validsince: {{ (as_timestamp(now()) + (2*24*3600)) }}```
+
 * _validuntil_
   * Expiration date/time as Unix epoch timestamp
-  * Can send caculations based on now:
+  * Can send calculations based on now:
     * ```validuntil: {{ (as_timestamp(now()) + (2*24*3600)) }}```
 
 Response will be an acknowledgment to let the other party know that the message was processed:
