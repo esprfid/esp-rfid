@@ -1,11 +1,13 @@
-char mqttBuffer[512];
+#define MAX_MQTT_BUFFER 2048
+
+char mqttBuffer[MAX_MQTT_BUFFER];
 
 struct MqttMessage {
 	char command[20];
 	char uid[20];
 	char user[64];
-	char serializedMessage[512];
 	char door[20];
+	char serializedMessage[MAX_MQTT_BUFFER];
 	MqttMessage *nextMessage = NULL;
 };
 
@@ -394,12 +396,13 @@ void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties 
 	Serial.println(mqttBuffer);
 #endif
 
-	StaticJsonDocument<512> mqttIncomingJson;
-	auto error = deserializeJson(mqttIncomingJson, mqttBuffer);
+	DynamicJsonDocument mqttIncomingJson(4096);
+	// cast to const char to avoid modification in place of mqttBuffer
+	auto error = deserializeJson(mqttIncomingJson, (const char *)mqttBuffer);
 	if (error)
 	{
 #ifdef DEBUG
-		Serial.print("[ INFO ] Failed parse MQTT message: ");
+		Serial.print("[ INFO ] Failed parsing MQTT message: ");
 		Serial.println(mqttBuffer);
 #endif
 		return;
@@ -425,7 +428,7 @@ void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties 
 		return;
 	}
 
-	if(ESP.getFreeHeap() < 2000)
+	if(ESP.getFreeHeap() < 2048)
 	{
 #ifdef DEBUG
 		Serial.println("Dropping MQTT message, out of memory");
@@ -435,7 +438,6 @@ void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties 
 	}
 
 	MqttMessage* incomingMessage = new MqttMessage;
-
 	strlcpy(incomingMessage->command, mqttIncomingJson["cmd"], sizeof(incomingMessage->command));
 	if (mqttIncomingJson.containsKey("uid")) {
 		strlcpy(incomingMessage->uid, mqttIncomingJson["uid"], sizeof(incomingMessage->uid));
@@ -446,7 +448,7 @@ void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties 
 	if (mqttIncomingJson.containsKey("door")) {
 		strlcpy(incomingMessage->door, mqttIncomingJson["door"], sizeof(incomingMessage->door));
 	}
-	serializeJson(mqttIncomingJson, incomingMessage->serializedMessage);
+	strlcpy(incomingMessage->serializedMessage, mqttBuffer, sizeof(mqttBuffer));
 
 	MqttMessage* lastMessage = messageQueue;
 	if(lastMessage == NULL)
@@ -472,7 +474,6 @@ void processMqttMessage(MqttMessage *incomingMessage)
 #endif
 		getUserList();
 	}
-
 	else if (strcmp(command, "opendoor") == 0)
 	{
 #ifdef DEBUG
@@ -526,7 +527,6 @@ void processMqttMessage(MqttMessage *incomingMessage)
 		deleteAllUserFiles();
 		mqttPublishAck(command);
 	}
-
 	else if (strcmp(command, "deletuid") == 0)
 	{
 #ifdef DEBUG
@@ -536,7 +536,6 @@ void processMqttMessage(MqttMessage *incomingMessage)
 		deleteUserID(uid);
 		mqttPublishAck(command);
 	}
-
 	else if (strcmp(command, "adduser") == 0)
 	{
 #ifdef DEBUG
@@ -562,6 +561,55 @@ void processMqttMessage(MqttMessage *incomingMessage)
 		logMaintenance("delete", "/eventlog.json");
 		logMaintenance("rollover", "/latestlog.json");
 		mqttPublishAck(command);
+	}
+	else if (strcmp(command, "getconf") == 0)
+	{
+#ifdef DEBUG
+		Serial.println("[ INFO ] Get configuration");
+#endif
+		File f = SPIFFS.open("/config.json", "r");
+		char *buf;
+		if (f)
+		{
+			int fileSize = f.size();
+			buf = (char *)malloc(fileSize + 1);
+			f.readBytes(buf, fileSize);
+			f.close();
+			buf[fileSize] = '\0';
+
+			DynamicJsonDocument root(2048);
+			root["type"] = "getconf";
+			root["ip"] = WiFi.localIP().toString();
+			root["hostname"] = config.deviceHostname;
+			DynamicJsonDocument configFile(2048);
+			deserializeJson(configFile, buf, fileSize + 1);
+			root["configfile"] = configFile;
+			mqttPublishEvent(&root);
+			free(buf);
+		}
+	}
+	else if (strcmp(command, "updateconf") == 0)
+	{
+#ifdef DEBUG
+		Serial.println("[ INFO ] Update configuration");
+#endif
+		DynamicJsonDocument mqttIncomingJson(4096);
+		auto error = deserializeJson(mqttIncomingJson, incomingMessage->serializedMessage);
+		if (error)
+		{
+#ifdef DEBUG
+			Serial.println("[ INFO ] Failed parsing MQTT message!!!");
+#endif
+			return;
+		}
+		File f = SPIFFS.open("/config.json", "w");
+		if (f)
+		{
+			serializeJsonPretty(mqttIncomingJson["configfile"], f);
+			f.close();
+			mqttPublishAck("updateconf");
+			shouldReboot = true;
+		}
 	}
 
 	free(incomingMessage);
