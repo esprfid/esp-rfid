@@ -46,6 +46,9 @@ var config = {
         "openlockpin": 255,
         "doorbellpin": 255,
         "accessdeniedpin": 255,
+        "useridstoragemode": "hexadecimal",
+        "requirepincodeafterrfid": 1,
+        "allowpincodeonly": 0,
         "doorstatpin": 255,
         "beeperpin" : 255,
         "ledwaitingpin" : 255,
@@ -162,9 +165,9 @@ function listhardware() {
   document.getElementById("doorbellpin").value = config.hardware.doorbellpin;
   document.getElementById("openlockpin").value = config.hardware.openlockpin;
   document.getElementById("accessdeniedpin").value = config.hardware.accessdeniedpin;
-  document.getElementById("useridStorageMode").value = config.hardware.useridStorageMode;
-  document.getElementById("requirePinCodeAfterRfid").checked = config.hardware.requirePinCodeAfterRfid;
-  document.getElementById("allowPinCodeOnly").checked = config.hardware.allowPinCodeOnly;
+  document.getElementById("useridstoragemode").value = config.hardware.useridstoragemode;
+  document.getElementById("requirepincodeafterrfid").checked = config.hardware.requirepincodeafterrfid;
+  document.getElementById("allowpincodeonly").checked = config.hardware.allowpincodeonly;
   document.getElementById("ledwaitingpin").value = config.hardware.ledwaitingpin;
   document.getElementById("beeperpin").value = config.hardware.beeperpin;
   document.getElementById("readertype").value = config.hardware.readertype;
@@ -221,9 +224,9 @@ function savehardware() {
   config.hardware.readertype = parseInt(document.getElementById("readertype").value);
   config.hardware.wgd0pin = parseInt(document.getElementById("wg0pin").value);
   config.hardware.wgd1pin = parseInt(document.getElementById("wg1pin").value);
-  config.hardware.useridStorageMode = document.getElementById("useridStorageMode").value;
-  config.hardware.requirePinCodeAfterRfid = document.getElementById("requirePinCodeAfterRfid").checked;
-  config.hardware.allowPinCodeOnly = document.getElementById("allowPinCodeOnly").checked;
+  config.hardware.useridstoragemode = document.getElementById("useridstoragemode").value;
+  config.hardware.requirepincodeafterrfid = document.getElementById("requirepincodeafterrfid").checked;
+  config.hardware.allowpincodeonly = document.getElementById("allowpincodeonly").checked;
   config.hardware.sspin = parseInt(document.getElementById("gpioss").value);
   config.hardware.rfidgain = parseInt(document.getElementById("gain").value);
   config.hardware.rtype = parseInt(document.getElementById("typerly").value);
