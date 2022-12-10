@@ -30,6 +30,7 @@ struct Config {
     char *mqttPass = NULL;
     int mqttPort;
     char *mqttTopic = NULL;
+    bool mqttAutoTopic = false;
     char *mqttUser = NULL;
     bool networkHidden = false;
     char *ntpServer = NULL;

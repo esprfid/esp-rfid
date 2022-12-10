@@ -73,6 +73,7 @@ var config = {
         "host": "",
         "port": 1883,
         "topic": "",
+        "autotopic": 0,
         "user": "",
         "pswd": "",
         "syncrate": 180,
@@ -301,13 +302,14 @@ function savemqtt() {
     else{
       config.mqtt.enabled = 0;
     } 
-    config.mqtt.host     = document.getElementById("mqtthost").value;
-    config.mqtt.port     = parseInt(document.getElementById("mqttport").value);
-    config.mqtt.topic    = document.getElementById("mqtttopic").value;
-    config.mqtt.user     = document.getElementById("mqttuser").value;
-    config.mqtt.pswd     = document.getElementById("mqttpwd").value;
-    config.mqtt.syncrate = document.getElementById("syncrate").value;
-    config.mqtt.mqttlog = 0;
+    config.mqtt.host      = document.getElementById("mqtthost").value;
+    config.mqtt.port      = parseInt(document.getElementById("mqttport").value);
+    config.mqtt.topic     = document.getElementById("mqtttopic").value;
+    config.mqtt.autotopic = document.getElementById("mqttautotopic").checked;
+    config.mqtt.user      = document.getElementById("mqttuser").value;
+    config.mqtt.pswd      = document.getElementById("mqttpwd").value;
+    config.mqtt.syncrate  = document.getElementById("syncrate").value;
+    config.mqtt.mqttlog   = 0;
     if (parseInt($("input[name=\"mqttlog\"]:checked").val()) === 1) {
         config.mqtt.mqttlog = 1;
     }
@@ -581,6 +583,7 @@ function listmqtt() {
     document.getElementById("mqtthost").value = config.mqtt.host;
     document.getElementById("mqttport").value = config.mqtt.port;
     document.getElementById("mqtttopic").value = config.mqtt.topic;
+    document.getElementById("mqttautotopic").checked = config.hardware.autotopic;
     document.getElementById("mqttuser").value = config.mqtt.user;
     document.getElementById("mqttpwd").value = config.mqtt.pswd;
     document.getElementById("syncrate").value = config.mqtt.syncrate;

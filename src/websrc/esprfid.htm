@@ -555,11 +555,22 @@
         <br>
     </div>
     <div class="row form-group">
-        <label class="col-xs-3">Topic<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="MQTT topic"></i></label>
+        <label class="col-xs-3">Topic prefix<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true"
+                data-toggle="popover" data-trigger="hover" data-placement="right"
+                data-content="Prefix applied to all MQTT topics"></i></label>
         <span class="col-xs-9">
-            <input class="form-control input-sm" placeholder="MQTT topic" value="" style="display:inline;max-width:185px" id="mqtttopic" type="text">
+            <input class="form-control input-sm" placeholder="MQTT topic" value="" style="display:inline;max-width:185px"
+                id="mqtttopic" type="text">
         </span>
         <br>
+    </div>
+    <div class="row form-group">
+        <label class="col-xs-3">Auto topic<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign"
+                aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right"
+                data-content="Automatically add a unique identifier (last 6 digits of MAC address) to the MQTT topic prefix"></i></label>
+        <span class="col-xs-9 col-md-5">
+            <input type="checkbox" id="mqttautotopic">
+        </span>
     </div>
     <div class="row form-group">   
         <label class="col-xs-3">Sync Time(sec)<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="Sync rate"></i></label>
