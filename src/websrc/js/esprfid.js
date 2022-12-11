@@ -50,8 +50,6 @@ var config = {
         "requirepincodeafterrfid": 1,
         "allowpincodeonly": 0,
         "doorstatpin": 255,
-        "beeperpin" : 255,
-        "ledwaitingpin" : 255,
         "maxOpenDoorTime": 0
     },
     "general": {
@@ -583,7 +581,7 @@ function listmqtt() {
     document.getElementById("mqtthost").value = config.mqtt.host;
     document.getElementById("mqttport").value = config.mqtt.port;
     document.getElementById("mqtttopic").value = config.mqtt.topic;
-    document.getElementById("mqttautotopic").checked = config.hardware.autotopic;
+    document.getElementById("mqttautotopic").checked = config.mqtt.autotopic;
     document.getElementById("mqttuser").value = config.mqtt.user;
     document.getElementById("mqttpwd").value = config.mqtt.pswd;
     document.getElementById("syncrate").value = config.mqtt.syncrate;
