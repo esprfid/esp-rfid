@@ -159,6 +159,54 @@ Response will be an acknowledgment to let the other party know that the message 
 }
 ```
 
+### Get configuration
+Get the global configuration.
+
+Command:
+```
+{
+     "cmd":"getconf",
+     "doorip":"(The ESP-RFID IP address as String)"
+}
+```
+
+Response will be an object with a `configfile` key which holds the entire configuration object. The same object that you can download from the "Backup & Restore" section.
+```
+{
+  "type":"getconf",
+  "ip":"192.168.1.xxx",
+  "hostname":"your esp-rfid hostname",
+  "configfile": {
+    // the entire configuration object
+  }
+}
+```
+
+### Update configuration
+Update the global configuration. You can pass a configuration object, which will be used as the new configuration. Then the system will restart to load the new configuration.
+
+Command:
+```
+{
+     "cmd":"updateconf",
+     "doorip":"(The ESP-RFID IP address as String)",
+     "configfile": {
+      // the entire configuration object
+     }
+}
+```
+
+Response will be an acknowledgment to let the other party know that the message was processed:
+```
+{
+  "type":"updateconf",
+  "ip":"192.168.1.xxx",
+  "hostname":"your esp-rfid hostname"
+}
+```
+
+Then the system will automatically restart to use the new configuration.
+
 ## Messages sent by ESP-RFID
 ESP-RFID sends a set of MQTT messages for the most significant actions that it does, plus can be configured to send all the logs over MQTT, instead of keeping them locally.
 

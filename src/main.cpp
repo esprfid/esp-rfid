@@ -119,7 +119,7 @@ unsigned long wiFiUptimeMillis = 0;
 void ICACHE_FLASH_ATTR setup()
 {
 #ifdef DEBUG
-	Serial.begin(9600);
+	Serial.begin(115200);
 	Serial.println();
 
 	Serial.print(F("[ INFO ] ESP RFID v"));

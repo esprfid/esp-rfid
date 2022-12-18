@@ -11,7 +11,7 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 	size_t size = configFile.size();
 	std::unique_ptr<char[]> buf(new char[size]);
 	configFile.readBytes(buf.get(), size);
-	DynamicJsonDocument json(8192);
+	DynamicJsonDocument json(2048);
 	auto error = deserializeJson(json, buf.get());
 	if (error)
 	{
@@ -138,10 +138,6 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 		rfidss = hardware["sspin"];
 		setupPN532Reader(rfidss);
 	}
-#ifndef DEBUG
-	if (config.readertype > 2)
-		Serial.begin(9600);
-#endif
 	config.fallbackMode = network["fallbackmode"] == 1;
 	config.autoRestartIntervalSeconds = general["restart"];
 	config.wifiTimeout = network["offtime"];

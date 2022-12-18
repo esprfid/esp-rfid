@@ -28,15 +28,13 @@ void ICACHE_FLASH_ATTR procMsg(AsyncWebSocketClient *client, size_t sz)
 	}
 	else if (strcmp(command, "configfile") == 0)
 	{
-		File f = SPIFFS.open("/config.json", "w+");
+		File f = SPIFFS.open("/config.json", "w");
 		if (f)
 		{
 			size_t len = measureJsonPretty(root);
 			serializeJsonPretty(root, f);
-			//f.print(msg);
 			f.close();
 			shouldReboot = true;
-			//ESP.restart();
 			writeEvent("INFO", "sys", "Config stored in the SPIFFS", String(len) + " bytes");
 		}
 	}
