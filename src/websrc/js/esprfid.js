@@ -46,9 +46,10 @@ var config = {
         "openlockpin": 255,
         "doorbellpin": 255,
         "accessdeniedpin": 255,
+        "useridstoragemode": "hexadecimal",
+        "requirepincodeafterrfid": 1,
+        "allowpincodeonly": 0,
         "doorstatpin": 255,
-        "beeperpin" : 255,
-        "ledwaitingpin" : 255,
         "maxOpenDoorTime": 0
     },
     "general": {
@@ -70,6 +71,7 @@ var config = {
         "host": "",
         "port": 1883,
         "topic": "",
+        "autotopic": 0,
         "user": "",
         "pswd": "",
         "syncrate": 180,
@@ -162,9 +164,9 @@ function listhardware() {
   document.getElementById("doorbellpin").value = config.hardware.doorbellpin;
   document.getElementById("openlockpin").value = config.hardware.openlockpin;
   document.getElementById("accessdeniedpin").value = config.hardware.accessdeniedpin;
-  document.getElementById("useridStorageMode").value = config.hardware.useridStorageMode;
-  document.getElementById("requirePinCodeAfterRfid").checked = config.hardware.requirePinCodeAfterRfid;
-  document.getElementById("allowPinCodeOnly").checked = config.hardware.allowPinCodeOnly;
+  document.getElementById("useridstoragemode").value = config.hardware.useridstoragemode;
+  document.getElementById("requirepincodeafterrfid").checked = config.hardware.requirepincodeafterrfid;
+  document.getElementById("allowpincodeonly").checked = config.hardware.allowpincodeonly;
   document.getElementById("ledwaitingpin").value = config.hardware.ledwaitingpin;
   document.getElementById("beeperpin").value = config.hardware.beeperpin;
   document.getElementById("readertype").value = config.hardware.readertype;
@@ -221,9 +223,9 @@ function savehardware() {
   config.hardware.readertype = parseInt(document.getElementById("readertype").value);
   config.hardware.wgd0pin = parseInt(document.getElementById("wg0pin").value);
   config.hardware.wgd1pin = parseInt(document.getElementById("wg1pin").value);
-  config.hardware.useridStorageMode = document.getElementById("useridStorageMode").value;
-  config.hardware.requirePinCodeAfterRfid = document.getElementById("requirePinCodeAfterRfid").checked;
-  config.hardware.allowPinCodeOnly = document.getElementById("allowPinCodeOnly").checked;
+  config.hardware.useridstoragemode = document.getElementById("useridstoragemode").value;
+  config.hardware.requirepincodeafterrfid = document.getElementById("requirepincodeafterrfid").checked;
+  config.hardware.allowpincodeonly = document.getElementById("allowpincodeonly").checked;
   config.hardware.sspin = parseInt(document.getElementById("gpioss").value);
   config.hardware.rfidgain = parseInt(document.getElementById("gain").value);
   config.hardware.rtype = parseInt(document.getElementById("typerly").value);
@@ -298,13 +300,14 @@ function savemqtt() {
     else{
       config.mqtt.enabled = 0;
     } 
-    config.mqtt.host     = document.getElementById("mqtthost").value;
-    config.mqtt.port     = parseInt(document.getElementById("mqttport").value);
-    config.mqtt.topic    = document.getElementById("mqtttopic").value;
-    config.mqtt.user     = document.getElementById("mqttuser").value;
-    config.mqtt.pswd     = document.getElementById("mqttpwd").value;
-    config.mqtt.syncrate = document.getElementById("syncrate").value;
-    config.mqtt.mqttlog = 0;
+    config.mqtt.host      = document.getElementById("mqtthost").value;
+    config.mqtt.port      = parseInt(document.getElementById("mqttport").value);
+    config.mqtt.topic     = document.getElementById("mqtttopic").value;
+    config.mqtt.autotopic = document.getElementById("mqttautotopic").checked;
+    config.mqtt.user      = document.getElementById("mqttuser").value;
+    config.mqtt.pswd      = document.getElementById("mqttpwd").value;
+    config.mqtt.syncrate  = document.getElementById("syncrate").value;
+    config.mqtt.mqttlog   = 0;
     if (parseInt($("input[name=\"mqttlog\"]:checked").val()) === 1) {
         config.mqtt.mqttlog = 1;
     }
@@ -578,6 +581,7 @@ function listmqtt() {
     document.getElementById("mqtthost").value = config.mqtt.host;
     document.getElementById("mqttport").value = config.mqtt.port;
     document.getElementById("mqtttopic").value = config.mqtt.topic;
+    document.getElementById("mqttautotopic").checked = config.mqtt.autotopic;
     document.getElementById("mqttuser").value = config.mqtt.user;
     document.getElementById("mqttpwd").value = config.mqtt.pswd;
     document.getElementById("syncrate").value = config.mqtt.syncrate;

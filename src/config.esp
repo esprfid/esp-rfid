@@ -118,9 +118,9 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 	{
 		int wgd0pin = hardware["wgd0pin"];
 		int wgd1pin = hardware["wgd1pin"];
-		config.pinCodeRequested = hardware["requirePinCodeAfterRfid"];
-		config.pinCodeOnly = hardware["allowPinCodeOnly"];
-		config.wiegandReadHex = hardware["useridStorageMode"] == "hexadecimal";
+		config.pinCodeRequested = hardware["requirepincodeafterrfid"];
+		config.pinCodeOnly = hardware["allowpincodeonly"];
+		config.wiegandReadHex = hardware["useridstoragemode"] == "hexadecimal";
 		setupWiegandReader(wgd0pin, wgd1pin); // also some other settings like weather to use keypad or not, LED pin, BUZZER pin, Wiegand 26/34 version
 	}
 	else if (config.readertype == READER_MFRC522 || config.readertype == READER_MFRC522_RDM6300)
@@ -228,6 +228,18 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 		config.mqttPass = strdup(mpasString.c_str());
 		String mqttTopicString = mqtt["topic"];
 		config.mqttTopic = strdup(mqttTopicString.c_str());
+		config.mqttAutoTopic = mqtt["autotopic"];
+		if (config.mqttAutoTopic)
+		{
+			uint8_t macAddr[6];
+			WiFi.softAPmacAddress(macAddr);
+			char topicSuffix[7];
+			sprintf(topicSuffix, "-%02x%02x%02x", macAddr[3], macAddr[4], macAddr[5]);
+			char *newTopic = (char *)malloc(sizeof(char) * 80);
+			strcpy(newTopic, config.mqttTopic);
+			strcat(newTopic, topicSuffix);
+			config.mqttTopic = newTopic;
+		}
 		config.mqttInterval = mqtt["syncrate"];
 
 		if (mqtt["mqttlog"] == 1)

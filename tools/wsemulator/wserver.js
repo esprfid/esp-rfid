@@ -311,14 +311,17 @@ var configfile = {
         "offtime": "180"
     },
     "hardware": {
-        "readertype": "0",
+        "readertype": "1",
         "wgd0pin": "4",
         "wgd1pin": "5",
         "sspin": "15",
         "rfidgain": "32",
         "rtype": "1",
         "rpin": "16",
-        "rtime": "300"
+        "rtime": "300",
+        "useridstoragemode": "hexadecimal",
+        "requirepincodeafterrfid": 1,
+        "allowpincodeonly": 0,
     },
     "general": {
         "hostnm": "esp-rfid",

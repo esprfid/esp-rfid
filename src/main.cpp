@@ -278,6 +278,7 @@ void ICACHE_RAM_ATTR loop()
 	if (shouldReboot)
 	{
 		writeEvent("INFO", "sys", "System is going to reboot", "");
+		SPIFFS.end();
 		ESP.restart();
 	}
 
