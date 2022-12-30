@@ -395,9 +395,9 @@ function savenetwork() {
   config.network.pswd = document.getElementById("wifipass").value;
 
     if (parseInt(document.querySelector("input[name=\"fallbackmode\"]:checked").value) === 0) {
-        config.network.fallbackmode = 1;
-    } else {
         config.network.fallbackmode = 0;
+    } else {
+        config.network.fallbackmode = 1;
     }
   config.network.offtime = parseInt(document.getElementById("disable_wifi_after_seconds").value);
   uncommited();
@@ -514,7 +514,7 @@ function listnetwork() {
     document.getElementById("gateway").value = config.network.gateway;
     handleSTA();
   }
-  document.getElementById("fallbackmode").value = config.network.fallbackmode;
+  document.forms.fallbackmodeForm.fallbackmode.value = config.network.fallbackmode;
   document.getElementById("disable_wifi_after_seconds").value = config.network.offtime;
 
 }
