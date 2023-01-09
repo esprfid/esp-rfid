@@ -55,8 +55,8 @@ void ICACHE_FLASH_ATTR sendUserList(int page, AsyncWebSocketClient *client)
 		serializeJson(root, (char *)buffer->get(), len + 1);
 		if (client)
 		{
-			ws.textAll(buffer);
-			ws.textAll("{\"command\":\"result\",\"resultof\":\"userlist\",\"result\": true}");
+			client->text(buffer);
+			client->text("{\"command\":\"result\",\"resultof\":\"userlist\",\"result\": true}");
 		}
 		else
 		{
@@ -65,7 +65,7 @@ void ICACHE_FLASH_ATTR sendUserList(int page, AsyncWebSocketClient *client)
 	}
 }
 
-void ICACHE_FLASH_ATTR sendStatus()
+void ICACHE_FLASH_ATTR sendStatus(AsyncWebSocketClient *client)
 {
 	struct ip_info info;
 	FSInfo fsinfo;
@@ -118,7 +118,14 @@ void ICACHE_FLASH_ATTR sendStatus()
 	if (buffer)
 	{
 		serializeJson(root, (char *)buffer->get(), len + 1);
-		ws.textAll(buffer);
+		if (client)
+		{
+			client->text(buffer);
+		}
+		else
+		{
+			ws.textAll(buffer);
+		}
 	}
 }
 
@@ -166,7 +173,7 @@ void ICACHE_FLASH_ATTR printScanResult(int networksFound)
 	WiFi.scanDelete();
 }
 
-void ICACHE_FLASH_ATTR sendTime()
+void ICACHE_FLASH_ATTR sendTime(AsyncWebSocketClient *client)
 {
 	DynamicJsonDocument root(512);
 	root["command"] = "gettime";
@@ -177,6 +184,13 @@ void ICACHE_FLASH_ATTR sendTime()
 	if (buffer)
 	{
 		serializeJson(root, (char *)buffer->get(), len + 1);
-		ws.textAll(buffer);
+		if (client)
+		{
+			client->text(buffer);
+		}
+		else
+		{
+			ws.textAll(buffer);
+		}
 	}
 }

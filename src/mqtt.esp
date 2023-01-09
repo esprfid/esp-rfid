@@ -597,9 +597,9 @@ void processMqttMessage(MqttMessage *incomingMessage)
 	}
 	else if (strcmp(command, "deletlog") == 0)
 	{
-		logMaintenance("delete", "/latestlog.json.1");
-		logMaintenance("delete", "/eventlog.json");
-		logMaintenance("rollover", "/latestlog.json");
+		logMaintenance("delete", "/latestlog.json.1", nullptr);
+		logMaintenance("delete", "/eventlog.json", nullptr);
+		logMaintenance("rollover", "/latestlog.json", nullptr);
 		mqttPublishAck(command);
 	}
 	else if (strcmp(command, "getconf") == 0)

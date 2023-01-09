@@ -46,7 +46,7 @@ size_t lastPos; // position counter for fast seek
 #define FILES_PER_PAGE 10.0
 #define MIN_SPIFF_BYTES 4096
 
-void ICACHE_FLASH_ATTR sendLogFile(int page, String fileName, int logFileType)
+void ICACHE_FLASH_ATTR sendLogFile(int page, String fileName, int logFileType, AsyncWebSocketClient *client)
 {
 
 	// if we are reading the first page then we reset
@@ -110,15 +110,15 @@ void ICACHE_FLASH_ATTR sendLogFile(int page, String fileName, int logFileType)
 	if (buffer)
 	{
 		serializeJson(root, (char *)buffer->get(), len + 1);
-		ws.textAll(buffer);
+		client->text(buffer);
 		if (logFileType == LOGTYPE_EVENTLOG)
-			ws.textAll("{\"command\":\"result\",\"resultof\":\"eventlist\",\"result\": true}");
+			client->text("{\"command\":\"result\",\"resultof\":\"eventlist\",\"result\": true}");
 		if (logFileType == LOGTYPE_LATESTLOG)
-			ws.textAll("{\"command\":\"result\",\"resultof\":\"latestlist\",\"result\": true}");
+			client->text("{\"command\":\"result\",\"resultof\":\"latestlist\",\"result\": true}");
 	}
 }
 
-void ICACHE_FLASH_ATTR logMaintenance(String action, String filename)
+void ICACHE_FLASH_ATTR logMaintenance(String action, String filename, AsyncWebSocketClient *client)
 {
 #ifdef DEBUG
 	Serial.printf("[DEBUG] Log Maintenance Action: %s on %s\n", action.c_str(), filename.c_str());
@@ -170,7 +170,10 @@ void ICACHE_FLASH_ATTR logMaintenance(String action, String filename)
 
 		if ((fs_info.totalBytes - fs_info.usedBytes) < (logFile.size() + MIN_SPIFF_BYTES))
 		{
-			ws.textAll("{\"command\":\"result\",\"resultof\":\"logfileMaintenance\",\"result\": false,\"message\":\"Not enough space on SPIFF Filesystem\"}");
+			if (client)
+			{
+				client->text("{\"command\":\"result\",\"resultof\":\"logfileMaintenance\",\"result\": false,\"message\":\"Not enough space on SPIFF Filesystem\"}");
+			}
 		}
 		else
 		{
@@ -207,10 +210,13 @@ void ICACHE_FLASH_ATTR logMaintenance(String action, String filename)
 	}
 
 	ESP.wdtEnable(5000);
-	ws.textAll("{\"command\":\"result\",\"resultof\":\"logfileMaintenance\",\"result\": true}");
+	if (client)
+	{
+		client->text("{\"command\":\"result\",\"resultof\":\"logfileMaintenance\",\"result\": true}");
+	}
 }
 
-void ICACHE_FLASH_ATTR sendFileList(int page)
+void ICACHE_FLASH_ATTR sendFileList(int page, AsyncWebSocketClient *client)
 {
 
 	DynamicJsonDocument root(512);
@@ -249,21 +255,21 @@ void ICACHE_FLASH_ATTR sendFileList(int page)
 	if (buffer)
 	{
 		serializeJson(root, (char *)buffer->get(), len + 1);
-		ws.textAll(buffer);
-		ws.textAll("{\"command\":\"result\",\"resultof\":\"listfiles\",\"result\": true}");
+		client->text(buffer);
+		client->text("{\"command\":\"result\",\"resultof\":\"listfiles\",\"result\": true}");
 	}
 }
 
-void ICACHE_FLASH_ATTR sendEventLog(int page, String fileName)
+void ICACHE_FLASH_ATTR sendEventLog(int page, String fileName, AsyncWebSocketClient *client)
 {
 	if (fileName.length() == 0)
 		fileName = "/eventlog.json";
-	sendLogFile(page, fileName, LOGTYPE_EVENTLOG);
+	sendLogFile(page, fileName, LOGTYPE_EVENTLOG, client);
 }
 
-void ICACHE_FLASH_ATTR sendLatestLog(int page, String fileName)
+void ICACHE_FLASH_ATTR sendLatestLog(int page, String fileName, AsyncWebSocketClient *client)
 {
 	if (fileName.length() == 0)
 		fileName = "/latestlog.json";
-	sendLogFile(page, fileName, LOGTYPE_LATESTLOG);
+	sendLogFile(page, fileName, LOGTYPE_LATESTLOG, client);
 }
