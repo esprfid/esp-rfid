@@ -55,8 +55,8 @@ void ICACHE_FLASH_ATTR sendUserList(int page, AsyncWebSocketClient *client)
 		serializeJson(root, (char *)buffer->get(), len + 1);
 		if (client)
 		{
-			client->text(buffer);
-			client->text("{\"command\":\"result\",\"resultof\":\"userlist\",\"result\": true}");
+			ws.textAll(buffer);
+			ws.textAll("{\"command\":\"result\",\"resultof\":\"userlist\",\"result\": true}");
 		}
 		else
 		{

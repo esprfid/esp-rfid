@@ -317,4 +317,9 @@ void ICACHE_RAM_ATTR loop()
 		}
 		processMqttQueue();
 	}
+
+	processWsQueue();
+
+	// clean unused websockets
+	ws.cleanupClients();
 }
