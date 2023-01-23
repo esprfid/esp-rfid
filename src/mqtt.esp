@@ -342,7 +342,7 @@ void getUserList()
 		auto error = deserializeJson(json, buf.get());
 		if (!error)
 		{
-			mqttPublishEvent(&root);
+			mqttPublishEvent(&json);
 		}
 	}
 }
