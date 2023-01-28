@@ -50,7 +50,12 @@ function espRfidJsGzh(cb) {
 }
 
 function scriptsConcat() {
-    return gulp.src(['../../src/websrc/3rdparty/js/jquery-1.12.4.min.js', '../../src/websrc/3rdparty/js/bootstrap-3.3.7.min.js', '../../src/websrc/3rdparty/js/footable-3.1.6.min.js'])
+    return gulp.src([
+            '../../src/websrc/3rdparty/js/jquery-1.12.4.min.js',
+            '../../src/websrc/3rdparty/js/bootstrap-3.3.7.min.js',
+            '../../src/websrc/3rdparty/js/footable-3.1.6.min.js',
+            '../../src/websrc/3rdparty/js/tui-pagination.min.js',
+        ])
         .pipe(concat({
             path: 'required.js',
             stat: {
@@ -90,7 +95,12 @@ function scripts(cb) {
 }
 
 function stylesConcat() {
-    return gulp.src(['../../src/websrc/3rdparty/css/bootstrap-3.3.7.min.css', '../../src/websrc/3rdparty/css/footable.bootstrap-3.1.6.min.css', '../../src/websrc/3rdparty/css/sidebar.css'])
+    return gulp.src([
+            '../../src/websrc/3rdparty/css/bootstrap-3.3.7.min.css',
+            '../../src/websrc/3rdparty/css/footable.bootstrap-3.1.6.min.css',
+            '../../src/websrc/3rdparty/css/sidebar.css',
+            '../../src/websrc/3rdparty/css/tui-pagination.min.css',
+        ])
         .pipe(concat({
             path: 'required.css',
             stat: {

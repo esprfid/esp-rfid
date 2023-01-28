@@ -5,8 +5,8 @@ void ICACHE_FLASH_ATTR sendUserList(int page, AsyncWebSocketClient *client)
 	root["page"] = page;
 	JsonArray users = root.createNestedArray("list");
 	Dir dir = SPIFFS.openDir("/P/");
-	int first = (page - 1) * 15;
-	int last = page * 15;
+	int first = (page - 1) * 10;
+	int last = page * 10;
 	int i = 0;
 	while (dir.next())
 	{
@@ -45,8 +45,9 @@ void ICACHE_FLASH_ATTR sendUserList(int page, AsyncWebSocketClient *client)
 			}
 		}
 		i++;
+		yield();
 	}
-	float pages = i / 15.0;
+	float pages = i / 10.0;
 	root["haspages"] = ceil(pages);
 	size_t len = measureJson(root);
 	AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);

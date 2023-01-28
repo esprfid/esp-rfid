@@ -390,10 +390,10 @@ function sendUserList(page) {
     var datatosend = {};
     datatosend.command = "userlist"
     datatosend.page = page;
-    datatosend.haspages = Math.ceil(users.length / 15);
+    datatosend.haspages = Math.ceil(users.length / 10);
     datatosend.list = [];
     var zero = 0;
-    for (var i = ((page - 1) * 15); i < (page * 15); i++) {
+    for (var i = ((page - 1) * 10); i < (page * 10); i++) {
         if (typeof users[i] !== "undefined") {
             datatosend.list[zero++] = users[i];
         }

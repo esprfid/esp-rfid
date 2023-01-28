@@ -5,6 +5,8 @@ var wsUri = "ws://" + window.location.host + "/ws";
 var utcSeconds;
 var timezone;
 var data = [];
+var ft;
+var pagination;
 var ajaxobj;
 
 var maxNumRelays=4;
@@ -641,6 +643,11 @@ function getUsers() {
   websock.send("{\"command\":\"userlist\", \"page\":" + page + "}");
 }
 
+function getUsersPage(i) {
+  page = i;
+  websock.send("{\"command\":\"userlist\", \"page\":" + page + "}");
+}
+
 function getEvents() {
   websock.send("{\"command\":\"geteventlog\", \"page\":" + page + ", \"filename\":\"" + theCurrentLogFile +"\"}");
 }
@@ -685,6 +692,10 @@ function getnextpage(mode) {
 
 function builddata(obj) {
   data = data.concat(obj.list);
+}
+
+function buildUserData(obj) {
+  data = obj.list;
 }
 
 function testRelay(xnum) {
@@ -763,9 +774,13 @@ function getContent(contentname) {
           listlog();
           break;
         case "#userscontent":
+          initUserTable();
+          document.getElementById("loading-img").style.display = "none";
+          $(".footable-show").click();
+          $(".fooicon-remove").click();
           page = 1;
           data = [];
-          getUsers();
+          getUsersPage(page);
           break;
         case "#eventcontent":
           page = 1;
@@ -1399,6 +1414,24 @@ function initUserTable() {
   });
 
   ft=FooTable.get('#usertable');
+  pagination = new tui.Pagination('tui-pagination-container', {
+    itemsPerPage: 10,
+    visiblePages: 5,
+    template: {
+      page: '<li><a href="#">{{page}}</a></li>',
+      currentPage: '<li class="active"><a href="#">{{page}}</a></li>',
+      moveButton:
+        '<li><a href="#" aria-label="{{type}}"><span aria-hidden="true">{{type}}</span></a></li>',
+      disabledMoveButton:
+        '<li class="disabled"><a href="#" aria-label="{{type}}"><span aria-hidden="true">{{type}}</span></a></li>',
+      moreButton:
+        '<li><a href="#">...</a></li>',
+    },
+  });
+
+  pagination.on('beforeMove', function(eventData) {
+      getUsersPage(eventData.page);
+  });
 
   for (var i=2; i<= maxNumRelays; i++)
   {
@@ -1428,16 +1461,13 @@ function socketMessageListener(evt) {
         break;
       case "userlist":
         haspages = obj.haspages;
-        if (haspages === 0) {
-          if (!backupstarted) {
-            document.getElementById("loading-img").style.display = "none";
-            initUserTable();
-            $(".footable-show").click();
-            $(".fooicon-remove").click();
-          }
-          break;
+        pagination.setTotalItems(haspages * 10);
+        if(page == 1) {
+          // needed to draw the page numbers depending on the haspages
+          pagination.reset();
         }
-        builddata(obj);
+        buildUserData(obj);
+        ft.loadRows(data);
         break;
       case "eventlist":
         haspages = obj.haspages;
@@ -1501,15 +1531,9 @@ function socketMessageListener(evt) {
         break;
       case "userlist":
         if (page < haspages && obj.result === true) {
-          getnextpage("userlist");
+          // getnextpage("userlist");
         } else if (page === haspages) {
-          if (!backupstarted) {
-            initUserTable();
-            document.getElementById("loading-img").style.display = "none";
-
-            $(".footable-show").click();
-            $(".fooicon-remove").click();
-          } else {
+          if (backupstarted) {
             file.type = "esp-rfid-userbackup";
             file.version = "v0.6";
             file.list = data;
