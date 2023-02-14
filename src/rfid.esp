@@ -50,8 +50,8 @@ void wiegandRead()
 {
 	if (wiegandAvailable && rfidState == waitingRfid)
 	{
-		// if we get 26 or 34 bit burst then we have a scanned PICC
-		if (wg.getWiegandType() == WIEGANDTYPE_PICC26 || wg.getWiegandType() == WIEGANDTYPE_PICC34)
+		// if we get anything between 24 or 34 bit burst then we have a scanned PICC
+		if (wg.getWiegandType() >= WIEGANDTYPE_PICC24 && wg.getWiegandType() <= WIEGANDTYPE_PICC34)
 		{
 			uid = String(wg.getCode(), config.wiegandReadHex ? HEX : DEC);
 			type = String(wg.getWiegandType(), DEC);
