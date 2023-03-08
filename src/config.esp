@@ -114,6 +114,8 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 
 	config.readertype = hardware["readertype"];
 	int rfidss;
+	config.pinCodeRequested = false;
+	config.pinCodeOnly = false;
 	if (config.readertype == READER_WIEGAND || config.readertype == READER_WIEGAND_RDM6300)
 	{
 		int wgd0pin = hardware["wgd0pin"];
