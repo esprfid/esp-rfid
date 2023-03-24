@@ -511,9 +511,9 @@ void ICACHE_FLASH_ATTR ShowMFRC522ReaderDetails()
 }
 #endif
 
-void ICACHE_FLASH_ATTR setupWiegandReader(int d0, int d1)
+void ICACHE_FLASH_ATTR setupWiegandReader(int d0, int d1, bool removeParityBits)
 {
-	wg.begin(d0, d1);
+	wg.begin(d0, d1, removeParityBits);
 	rfidState = waitingRfid;
 }
 

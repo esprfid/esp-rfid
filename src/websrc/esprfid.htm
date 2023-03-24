@@ -210,6 +210,14 @@
                 <input type="checkbox" id="allowpincodeonly">
             </span>
         </div>
+        <div class="row form-group">
+            <label class="col-xs-3">Remove parity bits<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign"
+                    aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right"
+                    data-content="In the Wiegand protocol the first and last bits of a card are parity bits that should be removed. In certain cases you might want to read the entire card number, with parity bits not removed."></i></label>
+            <span class="col-xs-9 col-md-5">
+                <input type="checkbox" id="removeparitybits">
+            </span>
+        </div>
     </div>
     <div class="" id="mfrc522Form" style="display:none">
         <div class="row form-group">
