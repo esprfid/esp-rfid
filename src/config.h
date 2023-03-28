@@ -44,6 +44,7 @@ struct Config {
     bool present = false;
     int readertype;
     int relayType[MAX_NUM_RELAYS];
+    bool removeParityBits;
     IPAddress subnetIp;
     const char *ssid;
     int timeZone = 0;

@@ -49,6 +49,7 @@ var config = {
         "useridstoragemode": "hexadecimal",
         "requirepincodeafterrfid": 1,
         "allowpincodeonly": 0,
+        "removeparitybits": 1,
         "doorstatpin": 255,
         "maxOpenDoorTime": 0
     },
@@ -167,6 +168,7 @@ function listhardware() {
   document.getElementById("useridstoragemode").value = config.hardware.useridstoragemode;
   document.getElementById("requirepincodeafterrfid").checked = config.hardware.requirepincodeafterrfid;
   document.getElementById("allowpincodeonly").checked = config.hardware.allowpincodeonly;
+  document.getElementById("removeparitybits").checked = config.hardware.removeparitybits;
   document.getElementById("ledwaitingpin").value = config.hardware.ledwaitingpin;
   document.getElementById("beeperpin").value = config.hardware.beeperpin;
   document.getElementById("readertype").value = config.hardware.readertype;
@@ -226,6 +228,7 @@ function savehardware() {
   config.hardware.useridstoragemode = document.getElementById("useridstoragemode").value;
   config.hardware.requirepincodeafterrfid = document.getElementById("requirepincodeafterrfid").checked;
   config.hardware.allowpincodeonly = document.getElementById("allowpincodeonly").checked;
+  config.hardware.removeparitybits = document.getElementById("removeparitybits").checked;
   config.hardware.sspin = parseInt(document.getElementById("gpioss").value);
   config.hardware.rfidgain = parseInt(document.getElementById("gain").value);
   config.hardware.rtype = parseInt(document.getElementById("typerly").value);

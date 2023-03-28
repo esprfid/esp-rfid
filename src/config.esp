@@ -122,8 +122,9 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 		int wgd1pin = hardware["wgd1pin"];
 		config.pinCodeRequested = hardware["requirepincodeafterrfid"];
 		config.pinCodeOnly = hardware["allowpincodeonly"];
+		config.removeParityBits = hardware["removeparitybits"];
 		config.wiegandReadHex = hardware["useridstoragemode"] == "hexadecimal";
-		setupWiegandReader(wgd0pin, wgd1pin); // also some other settings like weather to use keypad or not, LED pin, BUZZER pin, Wiegand 26/34 version
+		setupWiegandReader(wgd0pin, wgd1pin, config.removeParityBits); // also some other settings like weather to use keypad or not, LED pin, BUZZER pin, Wiegand 26/34 version
 	}
 	else if (config.readertype == READER_MFRC522 || config.readertype == READER_MFRC522_RDM6300)
 	{
