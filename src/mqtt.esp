@@ -438,7 +438,14 @@ void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties 
 	}
 
 	MqttMessage* incomingMessage = new MqttMessage;
-	strlcpy(incomingMessage->command, mqttIncomingJson["cmd"], sizeof(incomingMessage->command));
+	if (mqttIncomingJson.containsKey("cmd")) {
+		strlcpy(incomingMessage->command, mqttIncomingJson["cmd"], sizeof(incomingMessage->command));
+	} else {
+#ifdef DEBUG
+		Serial.println("[ INFO ] No cmd key in MQTT message");
+#endif
+		return;
+	}
 	if (mqttIncomingJson.containsKey("uid")) {
 		strlcpy(incomingMessage->uid, mqttIncomingJson["uid"], sizeof(incomingMessage->uid));
 	}
