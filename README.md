@@ -130,15 +130,16 @@ When testing locally, use the password ```neo``` for admin capabilities.
 
 The following table shows the typical pin layout used for connecting readers hardware to ESP:
 
-| ESP8266 | NodeMcu/WeMos | Wiegand | PN532 | MFRC522 | RDM6300 | 
-|--------:|:-------------:|:-------:|:-----:|:-------:|:-------:|
-| GPIO-15 | D8            |         | SS    | SDA/SS  |         |
-| GPIO-13 | D7            | D0      | MOSI  | MOSI    |         |
-| GPIO-12 | D6            | D1      | MISO  | MISO    |         |
-| GPIO-14 | D5            |         | SCK   | SCK     |         |
-| GPIO-04 | D2            |         |       |         |         |
-| GPIO-05 | D1            |         |       |         |         |
-| GPIO-03 | RX            |         |       |         | TX      |
+| ESP8266 | NodeMcu/WeMos | Wiegand | PN532         | MFRC522 | RDM6300 |
+|--------:|:-------------:|:-------:|:-------------:|:-------:|:-------:|
+| GPIO-16 | D0            |         | SS (Wemos D1) | SDA/SS  |         |
+| GPIO-15 | D8            |         |               | SDA/SS  |         |
+| GPIO-13 | D7            | D0      | MOSI          | MOSI    |         |
+| GPIO-12 | D6            | D1      | MISO          | MISO    |         |
+| GPIO-14 | D5            |         | SCK           | SCK     |         |
+| GPIO-04 | D2            |         |               |         |         |
+| GPIO-05 | D1            |         | SS            |         |         |
+| GPIO-03 | RX            |         |               |         | TX      |
 
 For Wiegand based readers, you can configure D0 and D1 pins via settings page. By default, D0 is GPIO-4 and D1 is GPIO-5
 
