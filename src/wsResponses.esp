@@ -1,6 +1,6 @@
 void ICACHE_FLASH_ATTR sendUserList(int page, AsyncWebSocketClient *client)
 {
-	DynamicJsonDocument root(4096);
+	DynamicJsonDocument root(2048);
 	root["command"] = "userlist";
 	root["page"] = page;
 	JsonArray users = root.createNestedArray("list");
@@ -56,8 +56,10 @@ void ICACHE_FLASH_ATTR sendUserList(int page, AsyncWebSocketClient *client)
 		serializeJson(root, (char *)buffer->get(), len + 1);
 		if (client)
 		{
-			client->text(buffer);
-			client->text("{\"command\":\"result\",\"resultof\":\"userlist\",\"result\": true}");
+			wsMessageTicker.once_ms_scheduled(50, [client, buffer]() {
+				client->text(buffer);
+				client->text("{\"command\":\"result\",\"resultof\":\"userlist\",\"result\": true}");
+			});
 		}
 		else
 		{

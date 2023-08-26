@@ -1,4 +1,4 @@
-#define MAX_WS_BUFFER 4096
+#define MAX_WS_BUFFER 2048
 
 char wsBuffer[MAX_WS_BUFFER];
 
@@ -23,24 +23,25 @@ void addWsMessageToQueue(AsyncWebSocketClient *client, int messageSize)
 	incomingMessage->client = client;
 
 	WsMessage *lastMessage = wsMessageQueue;
+	// process only one message at the time
 	if (lastMessage == NULL)
 	{
 		wsMessageQueue = incomingMessage;
 	}
-	else
-	{
-		while (lastMessage->nextMessage != NULL)
-		{
-			lastMessage = lastMessage->nextMessage;
-		}
-		lastMessage->nextMessage = incomingMessage;
-	}
+	// else
+	// {
+	// 	while (lastMessage->nextMessage != NULL)
+	// 	{
+	// 		lastMessage = lastMessage->nextMessage;
+	// 	}
+	// 	lastMessage->nextMessage = incomingMessage;
+	// }
 }
 
 void ICACHE_FLASH_ATTR processWsMessage(WsMessage *incomingMessage)
 {
 	// We should always get a JSON object (stringfied) from browser, so parse it
-	DynamicJsonDocument root(8192);
+	DynamicJsonDocument root(2048);
 	AsyncWebSocketClient *client = incomingMessage->client;
 	// cast to const char * to avoid in-place editing of serializedMessage
 	auto error = deserializeJson(root, (const char *)incomingMessage->serializedMessage);
@@ -50,6 +51,7 @@ void ICACHE_FLASH_ATTR processWsMessage(WsMessage *incomingMessage)
 #ifdef DEBUG
 		Serial.println(F("[ WARN ] Couldn't parse WebSocket message"));
 #endif
+		free(incomingMessage->serializedMessage);
 		free(incomingMessage);
 		return;
 	}
@@ -204,6 +206,7 @@ void ICACHE_FLASH_ATTR processWsMessage(WsMessage *incomingMessage)
 	}
 	free(incomingMessage->serializedMessage);
 	free(incomingMessage);
+	yield();
 }
 
 // Handles WebSocket Events
