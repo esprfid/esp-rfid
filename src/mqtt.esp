@@ -265,32 +265,54 @@ void mqttPublishHeartbeat(time_t heartbeat, time_t uptime)
 void mqttPublishAccess(time_t accesstime, String const &isknown, String const &type, String const &user, String const &uid)
 {
 	DynamicJsonDocument root(512);
-	// log to MQTT adding cmd command
 	if (config.mqttEvents)
 	{
 		root["cmd"] = "log";
 	}
 
-	if (!config.mqttHA)
-	{
-		root["type"] = "access";
-		root["time"] = accesstime;
-		root["isKnown"] = isknown;
-		root["access"] = type;
-		root["username"] = user;
-		root["uid"] = uid;
-		root["hostname"] = config.deviceHostname;
-	}
-	else
-	{
-		root["uid"] = uid;
-		root["username"] = user;
-		root["access"] = type;
-		root["time"] = accesstime;
-	}
+	root["uid"] = uid;
+	root["username"] = user;
+	root["access"] = type;
+	root["time"] = accesstime;
+	root["doorName"] = config.doorName[0];
 
 	if (!config.mqttHA)
 	{
+		root["type"] = "access";
+		root["isKnown"] = isknown;
+		root["hostname"] = config.deviceHostname;
+		mqttPublishEvent(&root);
+	}
+	else
+	{
+		mqttPublishEvent(&root, "tag");
+	}
+}
+
+void mqttPublishAccess(time_t accesstime, String const &isknown, int types[MAX_NUM_RELAYS], String const &user, String const &uid)
+{
+	DynamicJsonDocument root(512);
+	JsonArray access = root["access"].createNestedArray();
+	JsonArray doorNames = root["doorName"].createNestedArray();
+	if (config.mqttEvents)
+	{
+		root["cmd"] = "log";
+	}
+
+	for (int i=0; i<MAX_NUM_RELAYS; i++) {
+		access.add(types[i]);
+		doorNames.add(config.doorName[i]);
+	}
+
+	root["uid"] = uid;
+	root["username"] = user;
+	root["time"] = accesstime;
+
+	if (!config.mqttHA)
+	{
+		root["type"] = "access";
+		root["isKnown"] = isknown;
+		root["hostname"] = config.deviceHostname;
 		mqttPublishEvent(&root);
 	}
 	else
