@@ -177,7 +177,7 @@ void ICACHE_RAM_ATTR loop()
 	previousLoopMillis = currentMillis;
 
 	openLockButton.update();
-	if (openLockButton.fell())
+	if (config.openlockpin != 255 && openLockButton.fell())
 	{
 		writeLatest(" ", "Button", 1);
 		mqttPublishAccess(now(), "true", "Always", "Button", " ");
