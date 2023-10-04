@@ -358,10 +358,11 @@ void rfidProcess()
 		{
 			if (currentRelay == 0) {
 				activateRelay[currentRelay] = true;
+				accountTypes[currentRelay] = json["acctype"];
 			} else {
 				bool isRelayActive = accountTypes[currentRelay] == ACCESS_GRANTED;
-				accountTypes[currentRelay] = json["acctype" + String(currentRelay + 1)];
 				activateRelay[currentRelay] = isRelayActive;
+				accountTypes[currentRelay] = json["acctype" + String(currentRelay + 1)];
 			}
 			if (processingState == validAdmin)
 			{

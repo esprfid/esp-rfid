@@ -292,15 +292,26 @@ void mqttPublishAccess(time_t accesstime, String const &isknown, String const &t
 void mqttPublishAccess(time_t accesstime, String const &isknown, int types[MAX_NUM_RELAYS], String const &user, String const &uid)
 {
 	DynamicJsonDocument root(512);
-	JsonArray access = root["access"].createNestedArray();
-	JsonArray doorNames = root["doorName"].createNestedArray();
+	JsonArray access = root.createNestedArray("access");
+	JsonArray doorNames = root.createNestedArray("doorName");
 	if (config.mqttEvents)
 	{
 		root["cmd"] = "log";
 	}
 
-	for (int i=0; i<MAX_NUM_RELAYS; i++) {
-		access.add(types[i]);
+	for (int i=0; i<config.numRelays; i++) {
+		switch (types[i])
+		{
+		case 0:
+			access.add("Disabled");
+			break;
+		case 1:
+			access.add("Always");
+			break;
+		case 99:
+			access.add("Admin");
+			break;
+		}
 		doorNames.add(config.doorName[i]);
 	}
 
