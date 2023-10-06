@@ -78,7 +78,7 @@ void ICACHE_FLASH_ATTR sendStatus(AsyncWebSocketClient *client)
 		Serial.print(F("[ WARN ] Error getting info on SPIFFS"));
 #endif
 	}
-	DynamicJsonDocument root(1024);
+	DynamicJsonDocument root(512);
 	root["command"] = "status";
 	root["heap"] = ESP.getFreeHeap();
 	root["chipid"] = String(ESP.getChipId(), HEX);
