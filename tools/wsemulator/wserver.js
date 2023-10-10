@@ -46,42 +46,95 @@ var networks = {
     ]
 }
 
-var latestlog = {
-    "command": "latestlist",
-    "page": 1,
-    "haspages": 1,
-    "list": [
-        "{\"timestamp\":1518198383,\"uid\":\"8ab424c10\",\"username\":\"Moody Bond\",\"acctype\":1}",
-        "{\"timestamp\":1514952461,\"uid\":\"4de212c96\",\"username\":\"Unknown\",\"acctype\":0}",
-        "{\"timestamp\":1516598710,\"uid\":\"8de284c27\",\"username\":\"Marta Cooley\",\"acctype\":99}",
-        "{\"timestamp\":1516649998,\"uid\":\"4db504c86\",\"username\":\"Simmons Sosa\",\"acctype\":1}",
-        "{\"timestamp\":1517133201,\"uid\":\"9db178a36\",\"username\":\"Jimmie Sheppard\",\"acctype\":1}",
-        "{\"timestamp\":1516257556,\"uid\":\"4cf690a75\",\"username\":\"Rutledge Murray\",\"acctype\":1}",
-        "{\"timestamp\":1515661586,\"uid\":\"4ab792d39\",\"username\":\"Unknown\",\"acctype\":0}",
-        "{\"timestamp\":1515524537,\"uid\":\"9cf869a85\",\"username\":\"Rollins Villarreal\",\"acctype\":1}",
-        "{\"timestamp\": 1515823122,\"uid\":\"9db221c40\",\"username\": \"Hayden Baird\",\"acctype\": 1}",
-        "{\"timestamp\": 1515066066,\"uid\": \"8cb891d34\",\"username\": \"Tucker Boyer\",\"acctype\": 1}"
-    ]
-}
+var latestlog = [
+    {"timestamp":1518198383,"uid":"8ab424c10","username":"Moody Bond","acctype":1},
+    {"timestamp":1514952461,"uid":"4de212c96","username":"Unknown","acctype":0},
+    {"timestamp":1516598710,"uid":"8de284c27","username":"Marta Cooley","acctype":99},
+    {"timestamp":1516649998,"uid":"4db504c86","username":"Simmons Sosa","acctype":1},
+    {"timestamp":1517133201,"uid":"9db178a36","username":"Jimmie Sheppard","acctype":1},
+    {"timestamp":1516257556,"uid":"4cf690a75","username":"Rutledge Murray","acctype":1},
+    {"timestamp":1515661586,"uid":"4ab792d39","username":"Unknown","acctype":0},
+    {"timestamp":1515524537,"uid":"9cf869a85","username":"Rollins Villarreal","acctype":1},
+    {"timestamp": 1515823122,"uid":"9db221c40","username": "Hayden Baird","acctype": 1},
+    {"timestamp": 1515066066,"uid": "8cb891d34","username": "Tucker Boyer","acctype": 1},
+    {"timestamp":1518198383,"uid":"8ab424c10","username":"Moody Bond","acctype":1},
+    {"timestamp":1514952461,"uid":"4de212c96","username":"Unknown","acctype":0},
+    {"timestamp":1516598710,"uid":"8de284c27","username":"Marta Cooley","acctype":99},
+    {"timestamp":1516649998,"uid":"4db504c86","username":"Simmons Sosa","acctype":1},
+    {"timestamp":1517133201,"uid":"9db178a36","username":"Jimmie Sheppard","acctype":1},
+    {"timestamp":1516257556,"uid":"4cf690a75","username":"Rutledge Murray","acctype":1},
+    {"timestamp":1515661586,"uid":"4ab792d39","username":"Unknown","acctype":0},
+    {"timestamp":1515524537,"uid":"9cf869a85","username":"Rollins Villarreal","acctype":1},
+    {"timestamp": 1515823122,"uid":"9db221c40","username": "Hayden Baird","acctype": 1},
+    {"timestamp": 1515066066,"uid": "8cb891d34","username": "Tucker Boyer","acctype": 1},
+    {"timestamp":1518198383,"uid":"8ab424c10","username":"Moody Bond","acctype":1},
+    {"timestamp":1514952461,"uid":"4de212c96","username":"Unknown","acctype":0},
+    {"timestamp":1516598710,"uid":"8de284c27","username":"Marta Cooley","acctype":99},
+    {"timestamp":1516649998,"uid":"4db504c86","username":"Simmons Sosa","acctype":1},
+    {"timestamp":1517133201,"uid":"9db178a36","username":"Jimmie Sheppard","acctype":1},
+    {"timestamp":1516257556,"uid":"4cf690a75","username":"Rutledge Murray","acctype":1},
+    {"timestamp":1515661586,"uid":"4ab792d39","username":"Unknown","acctype":0},
+    {"timestamp":1515524537,"uid":"9cf869a85","username":"Rollins Villarreal","acctype":1},
+    {"timestamp": 1515823122,"uid":"9db221c40","username": "Hayden Baird","acctype": 1},
+    {"timestamp": 1515066066,"uid": "8cb891d34","username": "Tucker Boyer","acctype": 1},
+    {"timestamp":1518198383,"uid":"8ab424c10","username":"Moody Bond","acctype":1},
+    {"timestamp":1514952461,"uid":"4de212c96","username":"Unknown","acctype":0},
+    {"timestamp":1516598710,"uid":"8de284c27","username":"Marta Cooley","acctype":99},
+    {"timestamp":1516649998,"uid":"4db504c86","username":"Simmons Sosa","acctype":1},
+    {"timestamp":1517133201,"uid":"9db178a36","username":"Jimmie Sheppard","acctype":1},
+    {"timestamp":1516257556,"uid":"4cf690a75","username":"Rutledge Murray","acctype":1},
+    {"timestamp":1515661586,"uid":"4ab792d39","username":"Unknown","acctype":0},
+    {"timestamp":1515524537,"uid":"9cf869a85","username":"Rollins Villarreal","acctype":1},
+    {"timestamp": 1515823122,"uid":"9db221c40","username": "Hayden Baird","acctype": 1},
+    {"timestamp": 1515066066,"uid": "8cb891d34","username": "Tucker Boyer","acctype": 1},
+];
 
-var eventlog = {
-    "command": "eventlist",
-    "page": 1,
-    "haspages": 1,
-    "list": [
-        "{ \"type\": \"WARN\", \"src\": \"sys\", \"desc\": \"Event log cleared!\", \"data\": \"\", \"time\": 1520523010 }",
-        "{ \"type\": \"WARN\", \"src\": \"sys\", \"desc\": \"Event log cleared!\", \"data\": \"\", \"time\": 1520523010 }",
-        "{ \"type\": \"INFO\", \"src\": \"wifi\", \"desc\": \"WiFi is connected\", \"data\": \"SMC\", \"time\": 13 }",
-        "{ \"type\": \"INFO\", \"src\": \"sys\", \"desc\": \"System setup completed, running\", \"data\": \"\", \"time\": 13 }",
-        "{ \"type\": \"INFO\", \"src\": \"wifi\", \"desc\": \"WiFi is connected\", \"data\": \"SMC\", \"time\": 13 }",
-        "{ \"type\": \"INFO\", \"src\": \"sys\", \"desc\": \"System setup completed, running\", \"data\": \"\", \"time\": 13 }",
-        "{ \"type\": \"WARN\", \"src\": \"websrv\", \"desc\": \"New login attempt\", \"data\": \"\", \"time\": 1520578744 }",
-        "{ \"type\": \"INFO\", \"src\": \"websrv\", \"desc\": \"Login success!\", \"data\": \"\", \"time\": 1520578744 }",
-        "{ \"type\": \"INFO\", \"src\": \"wifi\", \"desc\": \"WiFi is connected\", \"data\": \"SMC\", \"time\": 13 }",
-        "{ \"type\": \"INFO\", \"src\": \"sys\", \"desc\": \"System setup completed, running\", \"data\": \"\", \"time\": 13 }",
-        "{ \"type\": \"WARN\", \"src\": \"websrv\", \"desc\": \"New login attempt\", \"data\": \"\", \"time\": 1520583560 }"
-    ]
-}
+var eventlog = [
+    { "type": "WARN", "src": "sys", "desc": "Event log cleared!", "data": "", "time": 1520523010 },
+    { "type": "WARN", "src": "sys", "desc": "Event log cleared!", "data": "", "time": 1520523010 },
+    { "type": "INFO", "src": "wifi", "desc": "WiFi is connected", "data": "SMC", "time": 13 },
+    { "type": "INFO", "src": "sys", "desc": "System setup completed, running", "data": "", "time": 13 },
+    { "type": "INFO", "src": "wifi", "desc": "WiFi is connected", "data": "SMC", "time": 13 },
+    { "type": "INFO", "src": "sys", "desc": "System setup completed, running", "data": "", "time": 13 },
+    { "type": "WARN", "src": "websrv", "desc": "New login attempt", "data": "", "time": 1520578744 },
+    { "type": "INFO", "src": "websrv", "desc": "Login success!", "data": "", "time": 1520578744 },
+    { "type": "INFO", "src": "wifi", "desc": "WiFi is connected", "data": "SMC", "time": 13 },
+    { "type": "INFO", "src": "sys", "desc": "System setup completed, running", "data": "", "time": 13 },
+    { "type": "WARN", "src": "websrv", "desc": "New login attempt", "data": "", "time": 1520583560 },
+    { "type": "WARN", "src": "sys", "desc": "Event log cleared!", "data": "", "time": 1520523010 },
+    { "type": "WARN", "src": "sys", "desc": "Event log cleared!", "data": "", "time": 1520523010 },
+    { "type": "INFO", "src": "wifi", "desc": "WiFi is connected", "data": "SMC", "time": 13 },
+    { "type": "INFO", "src": "sys", "desc": "System setup completed, running", "data": "", "time": 13 },
+    { "type": "INFO", "src": "wifi", "desc": "WiFi is connected", "data": "SMC", "time": 13 },
+    { "type": "INFO", "src": "sys", "desc": "System setup completed, running", "data": "", "time": 13 },
+    { "type": "WARN", "src": "websrv", "desc": "New login attempt", "data": "", "time": 1520578744 },
+    { "type": "INFO", "src": "websrv", "desc": "Login success!", "data": "", "time": 1520578744 },
+    { "type": "INFO", "src": "wifi", "desc": "WiFi is connected", "data": "SMC", "time": 13 },
+    { "type": "INFO", "src": "sys", "desc": "System setup completed, running", "data": "", "time": 13 },
+    { "type": "WARN", "src": "websrv", "desc": "New login attempt", "data": "", "time": 1520583560 },
+    { "type": "WARN", "src": "sys", "desc": "Event log cleared!", "data": "", "time": 1520523010 },
+    { "type": "WARN", "src": "sys", "desc": "Event log cleared!", "data": "", "time": 1520523010 },
+    { "type": "INFO", "src": "wifi", "desc": "WiFi is connected", "data": "SMC", "time": 13 },
+    { "type": "INFO", "src": "sys", "desc": "System setup completed, running", "data": "", "time": 13 },
+    { "type": "INFO", "src": "wifi", "desc": "WiFi is connected", "data": "SMC", "time": 13 },
+    { "type": "INFO", "src": "sys", "desc": "System setup completed, running", "data": "", "time": 13 },
+    { "type": "WARN", "src": "websrv", "desc": "New login attempt", "data": "", "time": 1520578744 },
+    { "type": "INFO", "src": "websrv", "desc": "Login success!", "data": "", "time": 1520578744 },
+    { "type": "INFO", "src": "wifi", "desc": "WiFi is connected", "data": "SMC", "time": 13 },
+    { "type": "INFO", "src": "sys", "desc": "System setup completed, running", "data": "", "time": 13 },
+    { "type": "WARN", "src": "websrv", "desc": "New login attempt", "data": "", "time": 1520583560 },
+    { "type": "WARN", "src": "sys", "desc": "Event log cleared!", "data": "", "time": 1520523010 },
+    { "type": "WARN", "src": "sys", "desc": "Event log cleared!", "data": "", "time": 1520523010 },
+    { "type": "INFO", "src": "wifi", "desc": "WiFi is connected", "data": "SMC", "time": 13 },
+    { "type": "INFO", "src": "sys", "desc": "System setup completed, running", "data": "", "time": 13 },
+    { "type": "INFO", "src": "wifi", "desc": "WiFi is connected", "data": "SMC", "time": 13 },
+    { "type": "INFO", "src": "sys", "desc": "System setup completed, running", "data": "", "time": 13 },
+    { "type": "WARN", "src": "websrv", "desc": "New login attempt", "data": "", "time": 1520578744 },
+    { "type": "INFO", "src": "websrv", "desc": "Login success!", "data": "", "time": 1520578744 },
+    { "type": "INFO", "src": "wifi", "desc": "WiFi is connected", "data": "SMC", "time": 13 },
+    { "type": "INFO", "src": "sys", "desc": "System setup completed, running", "data": "", "time": 13 },
+    { "type": "WARN", "src": "websrv", "desc": "New login attempt", "data": "", "time": 1520583560 },
+];
 
 var users = [{
         "uid": "12c9298d",
@@ -299,7 +352,7 @@ var users = [{
         "validsince": 0,
         "validuntil": 3100510208
     }
-]
+];
 
 var configfile = {
     "command": "configfile",
@@ -407,11 +460,43 @@ function sendUserList(page) {
     wss.broadcast(res);
 }
 
-function sendEventLog() {
-    wss.broadcast(eventlog);
+function sendEventLog(page) {
+    var datatosend = {};
+    datatosend.command = "eventlist"
+    datatosend.page = page;
+    datatosend.haspages = Math.ceil(eventlog.length / 10);
+    datatosend.list = [];
+    var zero = 0;
+    for (var i = ((page - 1) * 10); i < (page * 10); i++) {
+        if (typeof eventlog[i] !== "undefined") {
+            datatosend.list[zero++] = JSON.stringify(eventlog[i]);
+        }
+    }
+    wss.broadcast(datatosend);
     var res = {
         "command": "result",
         "resultof": "eventlist",
+        "result": true
+    };
+    wss.broadcast(res);
+}
+
+function sendLatestLog(page) {
+    var datatosend = {};
+    datatosend.command = "latestlist"
+    datatosend.page = page;
+    datatosend.haspages = Math.ceil(latestlog.length / 10);
+    datatosend.list = [];
+    var zero = 0;
+    for (var i = ((page - 1) * 10); i < (page * 10); i++) {
+        if (typeof latestlog[i] !== "undefined") {
+            datatosend.list[zero++] = JSON.stringify(latestlog[i]);
+        }
+    }
+    wss.broadcast(datatosend);
+    var res = {
+        "command": "result",
+        "resultof": "latestlist",
         "result": true
     };
     wss.broadcast(res);
@@ -469,14 +554,8 @@ wss.on('connection', function connection(ws) {
                 process.stderr.write("\007");
                 break;
             case "getlatestlog":
-                console.log("[ INFO ] Sending latest log file");
-                wss.broadcast(latestlog);
-                var res = {
-                    "command": "result",
-                    "resultof": "latestlist",
-                    "result": true
-                };
-                wss.broadcast(res);
+                console.log("[ INFO ] Sending latest log file, page: " + obj.page);
+                sendLatestLog(obj.page);
                 break;
             case "scan":
                 console.log("[ INFO ] Sending Fake Wireless Networks");
@@ -503,8 +582,8 @@ wss.on('connection', function connection(ws) {
                 wss.broadcast(configfile);
                 break;
             case "geteventlog":
-                console.log("[ INFO ] Sending eventlog");
-                sendEventLog();
+                console.log("[ INFO ] Sending eventlog, page: " + obj.page);
+                sendEventLog(obj.page);
                 break;
             default:
                 console.log("[ WARN ] Unknown command ");
