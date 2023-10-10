@@ -1227,7 +1227,7 @@ function initUserTable() {
           },
           {
             "name": "acctype2",
-            "title": "Access Door " + config.hardware.relay2.doorname || "2",
+            "title": "Access Door " + config.hardware.relay2?.doorname || "2",
             "breakpoints": "xs",
             "visible": false,
             "parser": function(value) {
@@ -1243,7 +1243,7 @@ function initUserTable() {
           },
           {
             "name": "acctype3",
-            "title": "Access Door " + config.hardware.relay3.doorname || "3",
+            "title": "Access Door " + config.hardware.relay3?.doorname || "3",
             "breakpoints": "xs",
             "visible": false,
             "parser": function(value) {
@@ -1259,7 +1259,7 @@ function initUserTable() {
           },
           {
             "name": "acctype4",
-            "title": "Access Door " + config.hardware.relay4.doorname || "4",
+            "title": "Access Door " + config.hardware.relay4?.doorname || "4",
             "breakpoints": "xs",
             "visible": false,
             "parser": function(value) {
