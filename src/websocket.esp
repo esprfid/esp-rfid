@@ -28,14 +28,14 @@ void addWsMessageToQueue(AsyncWebSocketClient *client, int messageSize)
 	{
 		wsMessageQueue = incomingMessage;
 	}
-	// else
-	// {
-	// 	while (lastMessage->nextMessage != NULL)
-	// 	{
-	// 		lastMessage = lastMessage->nextMessage;
-	// 	}
-	// 	lastMessage->nextMessage = incomingMessage;
-	// }
+	else
+	{
+		while (lastMessage->nextMessage != NULL)
+		{
+			lastMessage = lastMessage->nextMessage;
+		}
+		lastMessage->nextMessage = incomingMessage;
+	}
 }
 
 void ICACHE_FLASH_ATTR processWsMessage(WsMessage *incomingMessage)

@@ -6,7 +6,6 @@ var utcSeconds;
 var timezone;
 var data = [];
 var ft;
-var pagination;
 var ajaxobj;
 
 var maxNumRelays=4;
@@ -123,8 +122,7 @@ function retrySendWebsocket() {
   if(websocketMessagesToRetry.length > 0) {
     var now = Date.now();
     var oldestMessage = websocketMessagesToRetry[0];
-    if(now - oldestMessage.timestamp > 5000) {
-      console.log("Retrying websocket message: " + oldestMessage.message);
+    if(now - oldestMessage.timestamp > 10000) {
       sendWebsocketWithRetry(oldestMessage.message);
       websocketMessagesToRetry.shift();
     }
@@ -672,11 +670,6 @@ function getUsers() {
   sendWebsocketWithRetry("{\"command\":\"userlist\", \"page\":" + page + "}");
 }
 
-function getUsersPage(i) {
-  page = i;
-  sendWebsocketWithRetry("{\"command\":\"userlist\", \"page\":" + page + "}");
-}
-
 function getEvents() {
   sendWebsocketWithRetry("{\"command\":\"geteventlog\", \"page\":" + page + ", \"filename\":\"" + theCurrentLogFile +"\"}");
 }
@@ -725,10 +718,6 @@ function getnextpage(mode) {
 
 function builddata(obj) {
   data = data.concat(obj.list);
-}
-
-function buildUserData(obj) {
-  data = obj.list;
 }
 
 function testRelay(xnum) {
@@ -815,13 +804,9 @@ function getContent(contentname) {
           listlog();
           break;
         case "#userscontent":
-          initUserTable();
-          document.getElementById("loading-img").style.display = "none";
-          $(".footable-show").click();
-          $(".fooicon-remove").click();
           page = 1;
           data = [];
-          getUsersPage(page);
+          getUsers();
           break;
         case "#eventcontent":
           page = 1;
@@ -955,7 +940,7 @@ function twoDigits(value) {
 
 function initFileListTable() {
   jQuery(function($) {
-    window.FooTable.init("#spifftable", {
+    ft = window.FooTable.init("#spifftable", {
       columns: [{
           "name": "filename",
           "title": "File Name",
@@ -1067,8 +1052,6 @@ function initFileListTable() {
       }
     }
   });
-
-
 }
 
 function initEventTable() {
@@ -1102,7 +1085,7 @@ function initEventTable() {
 
   }
   jQuery(function($) {
-    window.FooTable.init("#eventtable", {
+    ft = window.FooTable.init("#eventtable", {
       columns: [{
           "name": "uid",
           "title": "ID",
@@ -1192,7 +1175,7 @@ function initLatestLogTable() {
 
   }
   jQuery(function($) {
-    window.FooTable.init("#latestlogtable", {
+    ft = window.FooTable.init("#latestlogtable", {
       columns: [{
           "name": "timestamp",
           "title": "Date",
@@ -1406,6 +1389,9 @@ function initUserTable() {
             }
           }
         },
+        paging: {
+          size: 10
+        },
         components: {
           filtering: window.FooTable.MyFiltering
         }
@@ -1456,26 +1442,7 @@ function initUserTable() {
     });
   });
 
-  ft=FooTable.get('#usertable');
-  pagination = new tui.Pagination('tui-pagination-container', {
-    itemsPerPage: 10,
-    visiblePages: 5,
-    template: {
-      page: '<li><a href="#">{{page}}</a></li>',
-      currentPage: '<li class="active"><a href="#">{{page}}</a></li>',
-      moveButton:
-        '<li><a href="#" aria-label="{{type}}"><span aria-hidden="true">{{type}}</span></a></li>',
-      disabledMoveButton:
-        '<li class="disabled"><a href="#" aria-label="{{type}}"><span aria-hidden="true">{{type}}</span></a></li>',
-      moreButton:
-        '<li><a href="#">...</a></li>',
-    },
-  });
-
-  pagination.on('beforeMove', function(eventData) {
-      getUsersPage(eventData.page);
-  });
-
+  ft = FooTable.get('#usertable');
   for (var i=2; i<= maxNumRelays; i++)
   {
     if (i<= numRelays) 
@@ -1504,17 +1471,16 @@ function socketMessageListener(evt) {
         break;
       case "userlist":
         haspages = obj.haspages;
-        if (backupstarted) {
-          builddata(obj);
-        } else {
-          pagination.setTotalItems(haspages * 10);
-          if(page == 1) {
-            // needed to draw the page numbers depending on the haspages
-            pagination.reset();
+        if (haspages === 0) {
+          if (!backupstarted) {
+            document.getElementById("loading-img").style.display = "none";
+            initUserTable();
+            $(".footable-show").click();
+            $(".fooicon-remove").click();
           }
-          buildUserData(obj);
-          ft.loadRows(data);
+          break;
         }
+        builddata(obj);
         break;
       case "eventlist":
         haspages = obj.haspages;
@@ -1578,21 +1544,27 @@ function socketMessageListener(evt) {
         }
         break;
       case "userlist":
-        if(backupstarted) {
-          if (page < haspages && obj.result === true) {
-            getnextpage("userlist");
-          } else if (page === haspages) {
+        if (page < haspages && obj.result === true) {
+          getnextpage("userlist");
+        } else if (page === haspages) {
+          if (!backupstarted) {
+            initUserTable();
+            document.getElementById("loading-img").style.display = "none";
+
+            $(".footable-show").click();
+            $(".fooicon-remove").click();
+          } else {
             file.type = "esp-rfid-userbackup";
             file.version = "v0.6";
             file.list = data;
             piccBackup(file);
-            break;
           }
+          break;
         }
         break;
       case "eventlist":
-        document.getElementById("saveeventlogbtn").disabled=true; 
-        document.getElementById("cleareventlogbtn").disabled=true; 
+        document.getElementById("saveeventlogbtn").disabled=true;
+        document.getElementById("cleareventlogbtn").disabled=true;
         if (page < haspages && obj.result === true) {
           getnextpage("geteventlog");
         } else if (page === haspages) {
@@ -1600,10 +1572,9 @@ function socketMessageListener(evt) {
           document.getElementById("saveeventlogbtn").disabled=false;
           // only enable delete button for main event log
           // others need to be done from the maintenance section
-          if (theCurrentLogFile === "/eventlog.json")
-          {
-            document.getElementById("cleareventlogbtn").disabled=false; 
-          } 
+          if (theCurrentLogFile === "/eventlog.json") {
+            document.getElementById("cleareventlogbtn").disabled=false;
+          }
           document.getElementById("loading-img").style.display = "none";
         }
         break;
