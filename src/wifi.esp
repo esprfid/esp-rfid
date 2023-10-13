@@ -172,7 +172,10 @@ bool ICACHE_FLASH_ATTR connectSTA(const char *ssid, const char *password, byte b
 		data += " " + WiFi.localIP().toString();
 		writeEvent("INFO", "wifi", "WiFi is connected", data);
 		Serial.println("[ INFO ] Trying to setup NTP Server");
-		NTP.Ntp(config.ntpServer, config.timeZone, config.ntpInterval * 60);
+		configTime(0, 0, config.ntpServer);
+		// See https://github.com/nayarsystems/posix_tz_db/blob/master/zones.csv for Timezone codes for your region
+		setenv("TZ", config.tzInfo, 1);
+		getNTPtime(10);
 		return true;
 	}
 	else

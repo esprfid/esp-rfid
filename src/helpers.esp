@@ -17,27 +17,23 @@ void ICACHE_FLASH_ATTR parseBytes(const char *str, char sep, byte *bytes, int ma
 	}
 }
 
-String ICACHE_FLASH_ATTR generateUid(int type = 0, int length = 12)
+// This is part of the latest releases of Arduino for ESP8266
+// https://github.com/SensorsIot/NTP-time-for-ESP8266-and-ESP32/
+bool getNTPtime(int sec)
 {
-
-	// nardev: this could be implemented in config, to choose default type of UID;
-
-	String uid;
-	if (type)
+	uint32_t start = millis();
+	time_t previousEpoch = epoch;
+	do
 	{
-		uid = now();
-	}
-	else
+		time(&epoch);
+		localtime_r(&epoch, &timeinfo);
+		delay(10);
+	} while (((millis() - start) <= (1000 * sec)) && (timeinfo.tm_year < (2016 - 1900)));
+	if (timeinfo.tm_year <= (2016 - 1900))
 	{
-		// char *characters = "abcdefghijklmnopqrstuvwxyz0123456789"; small letters, ordered
-		// char *characters = "ABSDEFGHIJKLMNOPQRSTUVWXYZ0123456789"; uppercase, ordered
-		const char *characters = "SN07YXRGP9DBOUVLJK6IEH1FWMT8Q4SA3Z52"; // randomized, uppercase
-
-		for (int i = 0; i < length; i++)
-		{
-			uid = uid + characters[random(0, 36)];
-		}
+		epoch = previousEpoch; // fallback to previous value, so that you can use the manually set time
+		return false; // the NTP call was not successful
 	}
 
-	return uid;
+	return true;
 }

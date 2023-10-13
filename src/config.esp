@@ -171,7 +171,10 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 		config.ntpServer = strdup(ntp["server"]);
 	}
 	config.ntpInterval = ntp["interval"];
-	config.timeZone = ntp["timezone"];
+	if (ntp.containsKey("tzinfo"))
+	{
+		config.tzInfo = strdup(ntp["tzinfo"]);
+	}
 	config.activateTime[0] = hardware["rtime"];
 	config.lockType[0] = hardware["ltype"];
 	config.relayType[0] = hardware["rtype"];

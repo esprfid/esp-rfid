@@ -48,7 +48,7 @@ struct Config {
     bool removeParityBits = true;
     IPAddress subnetIp;
     const char *ssid;
-    int timeZone = 0;
+    char *tzInfo = (char *)"";
     const char *wifiApIp = NULL;
     const char *wifiApSubnet = NULL;
 	uint8_t wifipin = 255;
