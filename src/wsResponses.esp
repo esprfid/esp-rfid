@@ -1,12 +1,12 @@
 void ICACHE_FLASH_ATTR sendUserList(int page, AsyncWebSocketClient *client)
 {
-	DynamicJsonDocument root(4096);
+	DynamicJsonDocument root(2048);
 	root["command"] = "userlist";
 	root["page"] = page;
 	JsonArray users = root.createNestedArray("list");
 	Dir dir = SPIFFS.openDir("/P/");
-	int first = (page - 1) * 15;
-	int last = page * 15;
+	int first = (page - 1) * 10;
+	int last = page * 10;
 	int i = 0;
 	while (dir.next())
 	{
@@ -45,8 +45,9 @@ void ICACHE_FLASH_ATTR sendUserList(int page, AsyncWebSocketClient *client)
 			}
 		}
 		i++;
+		yield();
 	}
-	float pages = i / 15.0;
+	float pages = i / 10.0;
 	root["haspages"] = ceil(pages);
 	size_t len = measureJson(root);
 	AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
@@ -55,8 +56,10 @@ void ICACHE_FLASH_ATTR sendUserList(int page, AsyncWebSocketClient *client)
 		serializeJson(root, (char *)buffer->get(), len + 1);
 		if (client)
 		{
-			client->text(buffer);
-			client->text("{\"command\":\"result\",\"resultof\":\"userlist\",\"result\": true}");
+			wsMessageTicker.once_ms_scheduled(50, [client, buffer]() {
+				client->text(buffer);
+				client->text("{\"command\":\"result\",\"resultof\":\"userlist\",\"result\": true}");
+			});
 		}
 		else
 		{
@@ -65,7 +68,7 @@ void ICACHE_FLASH_ATTR sendUserList(int page, AsyncWebSocketClient *client)
 	}
 }
 
-void ICACHE_FLASH_ATTR sendStatus()
+void ICACHE_FLASH_ATTR sendStatus(AsyncWebSocketClient *client)
 {
 	struct ip_info info;
 	FSInfo fsinfo;
@@ -75,7 +78,7 @@ void ICACHE_FLASH_ATTR sendStatus()
 		Serial.print(F("[ WARN ] Error getting info on SPIFFS"));
 #endif
 	}
-	DynamicJsonDocument root(1024);
+	DynamicJsonDocument root(512);
 	root["command"] = "status";
 	root["heap"] = ESP.getFreeHeap();
 	root["chipid"] = String(ESP.getChipId(), HEX);
@@ -118,7 +121,14 @@ void ICACHE_FLASH_ATTR sendStatus()
 	if (buffer)
 	{
 		serializeJson(root, (char *)buffer->get(), len + 1);
-		ws.textAll(buffer);
+		if (client)
+		{
+			client->text(buffer);
+		}
+		else
+		{
+			ws.textAll(buffer);
+		}
 	}
 }
 
@@ -166,7 +176,7 @@ void ICACHE_FLASH_ATTR printScanResult(int networksFound)
 	WiFi.scanDelete();
 }
 
-void ICACHE_FLASH_ATTR sendTime()
+void ICACHE_FLASH_ATTR sendTime(AsyncWebSocketClient *client)
 {
 	DynamicJsonDocument root(512);
 	root["command"] = "gettime";
@@ -177,6 +187,13 @@ void ICACHE_FLASH_ATTR sendTime()
 	if (buffer)
 	{
 		serializeJson(root, (char *)buffer->get(), len + 1);
-		ws.textAll(buffer);
+		if (client)
+		{
+			client->text(buffer);
+		}
+		else
+		{
+			ws.textAll(buffer);
+		}
 	}
 }

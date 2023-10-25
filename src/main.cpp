@@ -22,7 +22,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
-#define VERSION "2.0.0-dev.1"
+#define VERSION "2.0.0-dev.2"
 
 #include "Arduino.h"
 #include <ESP8266WiFi.h>
@@ -70,6 +70,7 @@ NtpClient NTP;
 AsyncMqttClient mqttClient;
 Ticker mqttReconnectTimer;
 Ticker wifiReconnectTimer;
+Ticker wsMessageTicker;
 WiFiEventHandler wifiDisconnectHandler, wifiConnectHandler, wifiOnStationModeGotIPHandler;
 Bounce openLockButton;
 
@@ -317,4 +318,9 @@ void ICACHE_RAM_ATTR loop()
 		}
 		processMqttQueue();
 	}
+
+	processWsQueue();
+
+	// clean unused websockets
+	ws.cleanupClients();
 }

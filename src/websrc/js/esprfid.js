@@ -5,6 +5,7 @@ var wsUri = "ws://" + window.location.host + "/ws";
 var utcSeconds;
 var timezone;
 var data = [];
+var ft;
 var ajaxobj;
 
 var maxNumRelays=4;
@@ -99,6 +100,34 @@ var gotInitialData = false;
 var wsConnectionPresent = false;
 
 var esprfidcontent;
+var websocketMessagesToRetry = [];
+
+function sendWebsocket(msg) {
+  websock.send(msg);
+}
+
+function sendWebsocketWithRetry(msg) {
+  websock.send(msg);
+  websocketMessagesToRetry.push({
+    message: msg,
+    timestamp: Date.now()
+  });
+
+  setTimeout(function(){
+    retrySendWebsocket();
+  }, 5000);
+}
+
+function retrySendWebsocket() {
+  if(websocketMessagesToRetry.length > 0) {
+    var now = Date.now();
+    var oldestMessage = websocketMessagesToRetry[0];
+    if(now - oldestMessage.timestamp > 10000) {
+      sendWebsocketWithRetry(oldestMessage.message);
+      websocketMessagesToRetry.shift();
+    }
+  }
+}
 
 function browserTime() {
   var d = new Date(0);
@@ -121,7 +150,7 @@ function syncBrowserTime() {
   var datatosend = {};
   datatosend.command = "settime";
   datatosend.epoch = timestamp;
-  websock.send(JSON.stringify(datatosend));
+  sendWebsocket(JSON.stringify(datatosend));
   $("#ntp").click();
 }
 
@@ -195,11 +224,11 @@ function listhardware() {
 }
 
 function listlog() {
-  websock.send("{\"command\":\"getlatestlog\", \"page\":" + page + ", \"filename\":\"" + theCurrentLogFile +"\"}");
+  sendWebsocket("{\"command\":\"getlatestlog\", \"page\":" + page + ", \"filename\":\"" + theCurrentLogFile +"\"}");
 }
 
 function listntp() {
-  websock.send("{\"command\":\"gettime\"}");
+  sendWebsocket("{\"command\":\"gettime\"}");
 
   document.getElementById("ntpserver").value = config.ntp.server;
   document.getElementById("intervals").value = config.ntp.interval;
@@ -440,13 +469,13 @@ function inProgress(callback) {
           });
           break;
         case "commit":
-          websock.send(JSON.stringify(config));
+          sendWebsocket(JSON.stringify(config));
           break;
         case "destroy":
-          websock.send("{\"command\":\"destroy\"}");
+          sendWebsocket("{\"command\":\"destroy\"}");
           break;
         case "restart":
-          websock.send("{\"command\":\"restart\"}");
+          sendWebsocket("{\"command\":\"restart\"}");
           break;
         default:
           break;
@@ -603,7 +632,7 @@ function listmqtt() {
 }
 
 function getFileList() {
-    websock.send("{\"command\":\"listfiles\", \"page\":" + page + "}");
+    sendWebsocket("{\"command\":\"listfiles\", \"page\":" + page + "}");
 }
 
 function listBSSID() {
@@ -627,7 +656,7 @@ function listSSID(obj) {
 }
 
 function scanWifi() {
-  websock.send("{\"command\":\"scan\"}");
+  sendWebsocket("{\"command\":\"scan\"}");
   document.getElementById("scanb").innerHTML = "...";
   document.getElementById("inputtohide").style.display = "none";
   var node = document.getElementById("ssid");
@@ -638,11 +667,11 @@ function scanWifi() {
 }
 
 function getUsers() {
-  websock.send("{\"command\":\"userlist\", \"page\":" + page + "}");
+  sendWebsocketWithRetry("{\"command\":\"userlist\", \"page\":" + page + "}");
 }
 
 function getEvents() {
-  websock.send("{\"command\":\"geteventlog\", \"page\":" + page + ", \"filename\":\"" + theCurrentLogFile +"\"}");
+  sendWebsocketWithRetry("{\"command\":\"geteventlog\", \"page\":" + page + ", \"filename\":\"" + theCurrentLogFile +"\"}");
 }
 
 function isVisible(e) {
@@ -671,6 +700,8 @@ function getnextpage(mode) {
     document.getElementById("loadpages").innerHTML = "Loading " + page + "/" + haspages;
   }
 
+  // check received previous page
+
   if (page < haspages) {
     page = page + 1;
     var commandtosend = {};
@@ -679,7 +710,9 @@ function getnextpage(mode) {
     if ((mode === "geteventlog") || (mode === "getlatestlog")) { 
       commandtosend.filename = theCurrentLogFile;
     }
-    websock.send(JSON.stringify(commandtosend));
+    sendWebsocketWithRetry(JSON.stringify(commandtosend));
+  } else if (page == haspages) {
+    backupstarted = false;
   }
 }
 
@@ -688,7 +721,7 @@ function builddata(obj) {
 }
 
 function testRelay(xnum) {
-  websock.send("{\"command\":\"testrelay" + xnum + "\"}");
+  sendWebsocket("{\"command\":\"testrelay" + xnum + "\"}");
 }
 
 function colorStatusbar(ref) {
@@ -702,7 +735,15 @@ function colorStatusbar(ref) {
   }
 }
 
+function removeModal() {
+  $("#restoremodal").modal("hide");
+  $("body").removeClass("modal-open");
+  $("body").css("padding-right", "0px");
+  $(".modal-backdrop").remove();
+}
+
 function listStats() {
+  removeModal();
   version = ajaxobj.version;
   document.getElementById("chip").innerHTML = ajaxobj.chipid;
   document.getElementById("cpu").innerHTML = ajaxobj.cpu + " Mhz";
@@ -790,7 +831,7 @@ function backupuser() {
   var commandtosend = {};
   commandtosend.command = "userlist";
   commandtosend.page = page;
-  websock.send(JSON.stringify(commandtosend));
+  sendWebsocketWithRetry(JSON.stringify(commandtosend));
 }
 
 function backupset() {
@@ -841,7 +882,7 @@ function restore1by1(i, len, data) {
   datatosend.acctype = data[i].acctype;
   datatosend.validsince = data[i].validsince;
   datatosend.validuntil = data[i].validuntil;
-  websock.send(JSON.stringify(datatosend));
+  sendWebsocketWithRetry(JSON.stringify(datatosend));
   slot++;
   if (slot === len) {
     document.getElementById("dynamic").className = "progress-bar progress-bar-success";
@@ -850,6 +891,7 @@ function restore1by1(i, len, data) {
     restorestarted = false;
     completed = true;
     slot = 0;
+    recordstorestore = 0;
     document.getElementById("restoreclose").style.display = "block";
   }
 }
@@ -875,6 +917,7 @@ function restoreUser() {
             recordstorestore = json.list.length;
             data = json.list;
             restorestarted = true;
+            completed = false;
             $("#restoremodal").modal({
               backdrop: "static",
               keyboard: false
@@ -897,7 +940,7 @@ function twoDigits(value) {
 
 function initFileListTable() {
   jQuery(function($) {
-    window.FooTable.init("#spifftable", {
+    ft = window.FooTable.init("#spifftable", {
       columns: [{
           "name": "filename",
           "title": "File Name",
@@ -982,11 +1025,11 @@ function initFileListTable() {
     });
     function rollover(e)
     { 
-      websock.send("{\"command\":\"logMaintenance\" , \"action\":\"rollover\", \"filename\":\"" + this.getAttribute('filename') + "\"}");
+      sendWebsocket("{\"command\":\"logMaintenance\" , \"action\":\"rollover\", \"filename\":\"" + this.getAttribute('filename') + "\"}");
     }
     function splitfile(e)
     { 
-      websock.send("{\"command\":\"logMaintenance\" , \"action\":\"split\", \"filename\":\"" + this.getAttribute('filename') + "\"}");
+      sendWebsocket("{\"command\":\"logMaintenance\" , \"action\":\"split\", \"filename\":\"" + this.getAttribute('filename') + "\"}");
     }
     function viewfile(e)
     { 
@@ -1005,12 +1048,10 @@ function initFileListTable() {
     { 
       if (confirm("Really delete " + this.getAttribute('filename') + " ? This can not be undone!"))
       {
-        websock.send("{\"command\":\"logMaintenance\" , \"action\":\"delete\", \"filename\":\"" + this.getAttribute('filename') + "\"}");
+        sendWebsocket("{\"command\":\"logMaintenance\" , \"action\":\"delete\", \"filename\":\"" + this.getAttribute('filename') + "\"}");
       }
     }
   });
-
-
 }
 
 function initEventTable() {
@@ -1044,7 +1085,7 @@ function initEventTable() {
 
   }
   jQuery(function($) {
-    window.FooTable.init("#eventtable", {
+    ft = window.FooTable.init("#eventtable", {
       columns: [{
           "name": "uid",
           "title": "ID",
@@ -1134,7 +1175,7 @@ function initLatestLogTable() {
 
   }
   jQuery(function($) {
-    window.FooTable.init("#latestlogtable", {
+    ft = window.FooTable.init("#latestlogtable", {
       columns: [{
           "name": "timestamp",
           "title": "Date",
@@ -1278,7 +1319,6 @@ function initUserTable() {
             "title": "Valid Since",
             "breakpoints": "xs sm",
             "parser": function(value) {
-              console.log(value)
               var comp = new Date();
               value = Math.floor(value + ((comp.getTimezoneOffset() * 60) * -1));
               var vuepoch = new Date(value * 1000);
@@ -1344,10 +1384,13 @@ function initUserTable() {
             var username = row.value.username;
             if (confirm("This will remove " + uid + " : " + username + " from database. Are you sure?")) {
               var jsontosend = "{\"uid\":\"" + uid + "\",\"command\":\"remove\"}";
-              websock.send(jsontosend);
+              sendWebsocket(jsontosend);
               row.delete();
             }
           }
+        },
+        paging: {
+          size: 10
         },
         components: {
           filtering: window.FooTable.MyFiltering
@@ -1371,7 +1414,6 @@ function initUserTable() {
           validsince: (new Date($editor.find("#validsince").val()).getTime() / 1000),
           validuntil: (new Date($editor.find("#validuntil").val()).getTime() / 1000)
         };
-      console.log(values.validuntil);
       if (row instanceof window.FooTable.Row) {
         row.delete();
         values.id = uid++;
@@ -1395,19 +1437,16 @@ function initUserTable() {
       var validuntil = $editor.find("#validuntil").val();
       var vuepoch = (new Date(validuntil).getTime() / 1000);
       datatosend.validuntil = vuepoch;
-      websock.send(JSON.stringify(datatosend));
+      sendWebsocket(JSON.stringify(datatosend));
       $modal.modal("hide");
     });
   });
 
-  ft=FooTable.get('#usertable');
-  
-
+  ft = FooTable.get('#usertable');
   for (var i=2; i<= maxNumRelays; i++)
   {
     if (i<= numRelays) 
     {
-      //FooTable.get('#usertable').draw();
       ft.columns.get("acctype"+i).visible=true;
     }
     else
@@ -1470,7 +1509,7 @@ function socketMessageListener(evt) {
           }
           builddata(obj);
           break;
-        case "gettime":
+      case "gettime":
         utcSeconds = obj.epoch;
         timezone = obj.timezone;
         deviceTime();
@@ -1495,8 +1534,7 @@ function socketMessageListener(evt) {
     }
   }
   if (obj.hasOwnProperty("resultof")) {
-
-
+    websocketMessagesToRetry.shift();
     switch (obj.resultof) {
       case "latestlog":
         if (obj.result === false) {
@@ -1525,8 +1563,8 @@ function socketMessageListener(evt) {
         }
         break;
       case "eventlist":
-        document.getElementById("saveeventlogbtn").disabled=true; 
-        document.getElementById("cleareventlogbtn").disabled=true; 
+        document.getElementById("saveeventlogbtn").disabled=true;
+        document.getElementById("cleareventlogbtn").disabled=true;
         if (page < haspages && obj.result === true) {
           getnextpage("geteventlog");
         } else if (page === haspages) {
@@ -1534,10 +1572,9 @@ function socketMessageListener(evt) {
           document.getElementById("saveeventlogbtn").disabled=false;
           // only enable delete button for main event log
           // others need to be done from the maintenance section
-          if (theCurrentLogFile === "/eventlog.json")
-          {
-            document.getElementById("cleareventlogbtn").disabled=false; 
-          } 
+          if (theCurrentLogFile === "/eventlog.json") {
+            document.getElementById("cleareventlogbtn").disabled=false;
+          }
           document.getElementById("loading-img").style.display = "none";
         }
         break;
@@ -1556,48 +1593,45 @@ function socketMessageListener(evt) {
           document.getElementById("loading-img").style.display = "none";
         }
         break;
-        case "listfiles":
-          if (page < haspages && obj.result === true) {
-            getnextpage("listfiles");
-          } else if (page === haspages) {
-            initFileListTable();
-            document.getElementById("loading-img").style.display = "none";
-          }
-          break;
-        case "logfileMaintenance":
-          if (obj.result === false) 
+      case "listfiles":
+        if (page < haspages && obj.result === true) {
+          getnextpage("listfiles");
+        } else if (page === haspages) {
+          initFileListTable();
+          document.getElementById("loading-img").style.display = "none";
+        }
+        break;
+      case "logfileMaintenance":
+        if (obj.result === false) 
+        {
+          if (obj.hasOwnProperty("message"))
           {
-            if (obj.hasOwnProperty("message"))
-            {
-              alert (obj.message);
-            } else 
-            {
-              alert ("Operation failed")
-            }
-          } else
+            alert (obj.message);
+          } else 
           {
-            $("#logmaintenance").click();
+            alert ("Operation failed")
           }
-          break;
-        case "userfile":
+        } else
+        {
+          $("#logmaintenance").click();
+        }
+        break;
+      case "userfile":
         if (restorestarted) {
           if (!completed && obj.result === true) {
             restore1by1(slot, recordstorestore, data);
           }
         }
         break;
-
-
       default:
         break;
     }
   }
-
 }
 
 function clearevent() {
   if (confirm('Deleting the Event log file can not be undone - delete ?')) {
-    websock.send("{\"command\":\"clearevent\"}");
+    sendWebsocket("{\"command\":\"clearevent\"}");
     $("#eventlog").click();
   }
 }
@@ -1624,7 +1658,7 @@ function savelatest() {
 
 function clearlatest() {
   if (confirm('Deleting the Access log file can not be undone - delete ?')) {
-    websock.send("{\"command\":\"clearlatest\"}");
+    sendWebsocket("{\"command\":\"clearlatest\"}");
     $("#latestlog").click();
   }
 }
@@ -1746,7 +1780,7 @@ $("#sidebarCollapse").on("click", function() {
 });
 
 $("#status").click(function() {
-  websock.send("{\"command\":\"status\"}");
+  sendWebsocket("{\"command\":\"status\"}");
   return false;
 });
 
@@ -1914,8 +1948,12 @@ function logout() {
 
 function wsConnectionActive() {
   wsConnectionPresent = true;
-  websock.send("{\"command\":\"status\"}");
   $("#ws-connection-status").slideUp();
+  if (!gotInitialData) {
+    sendWebsocket("{\"command\":\"status\"}");
+    sendWebsocket("{\"command\":\"getconf\"}");
+    gotInitialData = true;
+  }
 }
 
 function wsConnectionClosed() {
@@ -1945,10 +1983,6 @@ function connectWS() {
   websock.addEventListener("message", socketMessageListener);
 
   websock.onopen = function(evt) {
-    if (!gotInitialData) {
-      websock.send("{\"command\":\"getconf\"}");
-      gotInitialData = true;
-    }
     wsConnectionActive();
   };
 

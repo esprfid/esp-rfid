@@ -11,7 +11,7 @@ struct MqttMessage {
 	MqttMessage *nextMessage = NULL;
 };
 
-MqttMessage *messageQueue = NULL;
+MqttMessage *mqttMessageQueue = NULL;
 
 void connectToMqtt()
 {
@@ -429,7 +429,7 @@ void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties 
 	Serial.println(mqttBuffer);
 #endif
 
-	DynamicJsonDocument mqttIncomingJson(4096);
+	DynamicJsonDocument mqttIncomingJson(2048);
 	// cast to const char to avoid modification in place of mqttBuffer
 	auto error = deserializeJson(mqttIncomingJson, (const char *)mqttBuffer);
 	if (error)
@@ -490,10 +490,10 @@ void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties 
 	}
 	strlcpy(incomingMessage->serializedMessage, mqttBuffer, sizeof(mqttBuffer));
 
-	MqttMessage* lastMessage = messageQueue;
+	MqttMessage* lastMessage = mqttMessageQueue;
 	if(lastMessage == NULL)
 	{
-		messageQueue = incomingMessage;
+		mqttMessageQueue = incomingMessage;
 	}
 	else {
 		while(lastMessage->nextMessage != NULL)
@@ -597,9 +597,9 @@ void processMqttMessage(MqttMessage *incomingMessage)
 	}
 	else if (strcmp(command, "deletlog") == 0)
 	{
-		logMaintenance("delete", "/latestlog.json.1");
-		logMaintenance("delete", "/eventlog.json");
-		logMaintenance("rollover", "/latestlog.json");
+		logMaintenance("delete", "/latestlog.json.1", nullptr);
+		logMaintenance("delete", "/eventlog.json", nullptr);
+		logMaintenance("rollover", "/latestlog.json", nullptr);
 		mqttPublishAck(command);
 	}
 	else if (strcmp(command, "getconf") == 0)
@@ -633,7 +633,7 @@ void processMqttMessage(MqttMessage *incomingMessage)
 #ifdef DEBUG
 		Serial.println("[ INFO ] Update configuration");
 #endif
-		DynamicJsonDocument mqttIncomingJson(4096);
+		DynamicJsonDocument mqttIncomingJson(2048);
 		auto error = deserializeJson(mqttIncomingJson, incomingMessage->serializedMessage);
 		if (error)
 		{
@@ -707,9 +707,10 @@ void onMqttConnect(bool sessionPresent)
 
 void processMqttQueue()
 {
-	while(messageQueue != NULL) {
-		MqttMessage *messageToProcess = messageQueue;
-		messageQueue = messageToProcess->nextMessage;
+	while (mqttMessageQueue != NULL)
+	{
+		MqttMessage *messageToProcess = mqttMessageQueue;
+		mqttMessageQueue = messageToProcess->nextMessage;
 		processMqttMessage(messageToProcess);
 	}
 }

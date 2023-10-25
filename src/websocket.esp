@@ -1,18 +1,58 @@
-void ICACHE_FLASH_ATTR procMsg(AsyncWebSocketClient *client, size_t sz)
+#define MAX_WS_BUFFER 2048
+
+char wsBuffer[MAX_WS_BUFFER];
+
+struct WsMessage
+{
+	char *serializedMessage;
+	AsyncWebSocketClient *client;
+	WsMessage *nextMessage = NULL;
+};
+
+WsMessage *wsMessageQueue = NULL;
+
+// messageSize needs to be one char bigger than the string to contain the string terminator
+void addWsMessageToQueue(AsyncWebSocketClient *client, int messageSize)
+{
+	WsMessage *incomingMessage = new WsMessage;
+	incomingMessage->serializedMessage = (char *)malloc(messageSize);
+	strlcpy(incomingMessage->serializedMessage, (const char *)client->_tempObject, messageSize);
+	free(client->_tempObject);
+	client->_tempObject = NULL;
+
+	incomingMessage->client = client;
+
+	WsMessage *lastMessage = wsMessageQueue;
+	// process only one message at the time
+	if (lastMessage == NULL)
+	{
+		wsMessageQueue = incomingMessage;
+	}
+	else
+	{
+		while (lastMessage->nextMessage != NULL)
+		{
+			lastMessage = lastMessage->nextMessage;
+		}
+		lastMessage->nextMessage = incomingMessage;
+	}
+}
+
+void ICACHE_FLASH_ATTR processWsMessage(WsMessage *incomingMessage)
 {
 	// We should always get a JSON object (stringfied) from browser, so parse it
-	DynamicJsonDocument root(8192);
-	char json[sz + 1];
-	memcpy(json, (char *)(client->_tempObject), sz);
-	json[sz] = '\0';
-	auto error = deserializeJson(root, json);
+	DynamicJsonDocument root(2048);
+	AsyncWebSocketClient *client = incomingMessage->client;
+	// cast to const char * to avoid in-place editing of serializedMessage
+	auto error = deserializeJson(root, (const char *)incomingMessage->serializedMessage);
+
 	if (error)
 	{
 #ifdef DEBUG
 		Serial.println(F("[ WARN ] Couldn't parse WebSocket message"));
 #endif
-		free(client->_tempObject);
-		client->_tempObject = NULL;
+		free(incomingMessage->serializedMessage);
+		free(incomingMessage);
 		return;
 	}
 	// Web Browser sends some commands, check which command is given
@@ -31,8 +71,12 @@ void ICACHE_FLASH_ATTR procMsg(AsyncWebSocketClient *client, size_t sz)
 		File f = SPIFFS.open("/config.json", "w");
 		if (f)
 		{
-			size_t len = measureJsonPretty(root);
-			serializeJsonPretty(root, f);
+			size_t len = 0;
+			while (incomingMessage->serializedMessage[len] != '\0' && len < MAX_WS_BUFFER)
+			{
+				len++;
+			}
+			f.write(incomingMessage->serializedMessage, len);
 			f.close();
 			shouldReboot = true;
 			writeEvent("INFO", "sys", "Config stored in the SPIFFS", String(len) + " bytes");
@@ -41,11 +85,11 @@ void ICACHE_FLASH_ATTR procMsg(AsyncWebSocketClient *client, size_t sz)
 	else if (strcmp(command, "userlist") == 0)
 	{
 		int page = root["page"];
-		sendUserList(page, client);
+		sendUserList(page, incomingMessage->client);
 	}
 	else if (strcmp(command, "status") == 0)
 	{
-		sendStatus();
+		sendStatus(client);
 	}
 	else if (strcmp(command, "restart") == 0)
 	{
@@ -59,22 +103,22 @@ void ICACHE_FLASH_ATTR procMsg(AsyncWebSocketClient *client, size_t sz)
 	{
 		int page = root["page"];
 		const char *xfileName = root["filename"];
-		sendEventLog(page,xfileName);
+		sendEventLog(page, xfileName, client);
 	}
 	else if (strcmp(command, "getlatestlog") == 0)
 	{
 		int page = root["page"];
 		const char *xfileName = root["filename"];
-		sendLatestLog(page,xfileName);
+		sendLatestLog(page, xfileName, client);
 	}
 	else if (strcmp(command, "listfiles") == 0)
 	{
 		int page = root["page"];
-		sendFileList(page);
+		sendFileList(page, client);
 	}
 	else if (strcmp(command, "logMaintenance") == 0)
 	{
-		logMaintenance(root["action"],root["filename"]);
+		logMaintenance(root["action"],root["filename"], client);
 	}
 	else if (strcmp(command, "clearevent") == 0)
 	{
@@ -105,31 +149,31 @@ void ICACHE_FLASH_ATTR procMsg(AsyncWebSocketClient *client, size_t sz)
 #endif
 		}
 		f.close();
-		ws.textAll("{\"command\":\"result\",\"resultof\":\"userfile\",\"result\": true}");
+		client->text("{\"command\":\"result\",\"resultof\":\"userfile\",\"result\": true}");
 	}
 	else if (strcmp(command, "testrelay1") == 0)
 	{
 		activateRelay[0] = true;
 		previousMillis = millis();
-		ws.textAll("{\"command\":\"giveAccess\"}");
+		client->text("{\"command\":\"giveAccess\"}");
 	}
 	else if (strcmp(command, "testrelay2") == 0)
 	{
 		activateRelay[1] = true;
 		previousMillis = millis();
-		ws.textAll("{\"command\":\"giveAccess\"}");
+		client->text("{\"command\":\"giveAccess\"}");
 	}
 	else if (strcmp(command, "testrelay3") == 0)
 	{
 		activateRelay[2] = true;
 		previousMillis = millis();
-		ws.textAll("{\"command\":\"giveAccess\"}");
+		client->text("{\"command\":\"giveAccess\"}");
 	}
 	else if (strcmp(command, "testrelay4") == 0)
 	{
 		activateRelay[3] = true;
 		previousMillis = millis();
-		ws.textAll("{\"command\":\"giveAccess\"}");
+		client->text("{\"command\":\"giveAccess\"}");
 	}
 	else if (strcmp(command, "scan") == 0)
 	{
@@ -137,13 +181,13 @@ void ICACHE_FLASH_ATTR procMsg(AsyncWebSocketClient *client, size_t sz)
 	}
 	else if (strcmp(command, "gettime") == 0)
 	{
-		sendTime();
+		sendTime(client);
 	}
 	else if (strcmp(command, "settime") == 0)
 	{
 		time_t t = root["epoch"];
 		setTime(t);
-		sendTime();
+		sendTime(client);
 	}
 	else if (strcmp(command, "getconf") == 0)
 	{
@@ -155,13 +199,14 @@ void ICACHE_FLASH_ATTR procMsg(AsyncWebSocketClient *client, size_t sz)
 			if (buffer)
 			{
 				configFile.readBytes((char *)buffer->get(), len + 1);
-				ws.textAll(buffer);
+				client->text(buffer);
 			}
 			configFile.close();
 		}
 	}
-	free(client->_tempObject);
-	client->_tempObject = NULL;
+	free(incomingMessage->serializedMessage);
+	free(incomingMessage);
+	yield();
 }
 
 // Handles WebSocket Events
@@ -176,39 +221,44 @@ void ICACHE_FLASH_ATTR onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *c
 	else if (type == WS_EVT_DATA)
 	{
 		AwsFrameInfo *info = (AwsFrameInfo *)arg;
-		uint64_t index = info->index;
-		uint64_t infolen = info->len;
-		if (info->final && info->index == 0 && infolen == len)
+		if (info->final && info->index == 0 && info->len == len)
 		{
 			//the whole message is in a single frame and we got all of it's data
-			client->_tempObject = malloc(len);
-			if (client->_tempObject != NULL)
-			{
-				memcpy((uint8_t *)(client->_tempObject), data, len);
-			}
-			procMsg(client, infolen);
+			client->_tempObject = malloc(info->len);
+			memcpy((uint8_t *)(client->_tempObject), data, len);
+			addWsMessageToQueue(client, info->len + 1);
 		}
 		else
 		{
 			//message is comprised of multiple frames or the frame is split into multiple packets
-			if (index == 0)
+			if (info->index == 0)
 			{
 				if (info->num == 0 && client->_tempObject == NULL)
 				{
-					client->_tempObject = malloc(infolen);
+					client->_tempObject = malloc(info->len);
 				}
 			}
 			if (client->_tempObject != NULL)
 			{
-				memcpy((uint8_t *)(client->_tempObject) + index, data, len);
+				memcpy((uint8_t *)(client->_tempObject) + info->index, data, len);
 			}
-			if ((index + len) == infolen)
+			if ((info->index + len) == info->len)
 			{
 				if (info->final)
 				{
-					procMsg(client, infolen);
+					addWsMessageToQueue(client, info->len + 1);
 				}
 			}
 		}
+	}
+}
+
+void processWsQueue()
+{
+	while (wsMessageQueue != NULL)
+	{
+		WsMessage *messageToProcess = wsMessageQueue;
+		wsMessageQueue = messageToProcess->nextMessage;
+		processWsMessage(messageToProcess);
 	}
 }
