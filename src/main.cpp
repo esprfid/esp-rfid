@@ -46,11 +46,13 @@ Config config;
 #include "PN532.h"
 #include <Wiegand.h>
 #include "rfid125kHz.h"
+#include <SoftwareSerial.h>
 
 MFRC522 mfrc522 = MFRC522();
 PN532 pn532;
 WIEGAND wg;
 RFID_Reader RFIDr;
+SoftwareSerial *rdm6300_sw_serial = NULL;
 
 // relay specific variables
 bool activateRelay[MAX_NUM_RELAYS] = {false, false, false, false};

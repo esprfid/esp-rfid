@@ -26,6 +26,10 @@
 #define WIEGANDTYPE_PICC24 24
 #define WIEGANDTYPE_PICC34 34
 
+#define RDM6300_BAUDRATE 9600
+#define RDM6300_READ_TIMEOUT 20
+#define RDM6300_RX_PIN 4
+
 // hardware defines
 
 #define MAX_NUM_RELAYS 4
