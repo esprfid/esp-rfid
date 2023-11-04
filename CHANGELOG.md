@@ -37,6 +37,7 @@ All notable changes to this project will be documented in this file.
 - [firmware] Added button to open door and door status pin @nardev
 
 #### Changed
+- [firmware] Changed timezone support to add daylight saving management #604 @matjack1
 - [firmware] Refactor WiFi connection #495 #497 #536 @matjack1
     - Option to disable access point mode for production usage
     - Automatic retries when connection drops

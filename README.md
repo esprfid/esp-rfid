@@ -143,9 +143,9 @@ You can integrate ESP-RFID with other systems using MQTT. Read the [additional d
 * Please also check [GitHub issues](https://github.com/esprfid/esp-rfid/issues).
 
 #### Time
-We are syncing time from a NTP Server (in Client -aka infrastructure- Mode). This will require ESP to have an Internet connection. Additionally your ESP can also work without Internet connection too (Access Point -aka Ad-Hoc- Mode),  without giving up functionality.
-This will require you to do syncing manually. ESP can store and hold time for you approximately 51 days without a major issue, device time can drift from actual time depending on usage, temperature, etc.
-So you have to login to settings page and sync it in a timely fashion.
+We are syncing time from a NTP Server (in Client -aka infrastructure- Mode). This will require ESP to have an Internet connection. Additionally your ESP can also work without Internet connection (Access Point -aka Ad-Hoc- Mode), without giving up functionality.
+This will require you to sync time manually. ESP can store and hold time for you approximately 51 days without major issues, device time can drift from actual time depending on usage, temperature, etc. so you have to login to settings page and sync it in a timely fashion.
+Timezones are supported with automatic switch to and from daylight saving time.
 
 ## **Security**
 We assume **ESP-RFID** project -as a whole- does not offer strong security. There are PICCs available that their UID (Unique Identification Numbers) can be set manually (Currently esp-rfid relies only UID to identify its users). Also there may be a bug in the code that may result free access to your belongings. And also, like every other network connected device esp-rfid is vulnerable to many attacks including Man-in-the-middle, Brute-force, etc.
