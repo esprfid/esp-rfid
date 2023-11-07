@@ -253,8 +253,11 @@ void pinCodeRead()
 				if (config.pinCodeOnly && rfidState == waitingRfid)
 				{
 					uid = pinCode;
+					rfidState = cardSwiped;
+				} else
+				{
+					rfidState = pinCodeEntered;
 				}
-				rfidState = pinCodeEntered;
 #ifdef DEBUG
 				Serial.println("Stop capture keycode . . .");
 				Serial.print(F("[ INFO ] PICC's pin code: "));
@@ -444,8 +447,7 @@ void rfidOutsideMessaging()
 		mqttPublishAccess(now(), "false", "Denied", "Unknown", uid);
 		ledAccessDeniedOn();
 		beeperAccessDenied();
-	}
-	if (uid != "" && processingState != waitingProcessing)
+	} else if (uid != "" && processingState != waitingProcessing)
 	{
 		writeLatest(uid, username, accountType);
 		DynamicJsonDocument root(512);
