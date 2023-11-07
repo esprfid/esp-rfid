@@ -1,10 +1,10 @@
 # ESP RFID - Access Control with ESP8266, RC522 PN532 Wiegand RDM6300
 
-[![Chat at https://gitter.im/esp-rfid/Lobby](https://badges.gitter.im/esp-rfid.svg)](https://gitter.im/esp-rfid/Lobby) [![Backers on Open Collective](https://opencollective.com/esp-rfid/backers/badge.svg)](#backers) [![Sponsors on Open Collective](https://opencollective.com/esp-rfid/sponsors/badge.svg)](#sponsors) [![Bountysource](https://api.bountysource.com/badge/team?team_id=242217)](https://salt.bountysource.com/checkout/amount?team=esp-rfid)
+[![Chat at https://gitter.im/esp-rfid/Lobby](https://badges.gitter.im/esp-rfid.svg)](https://gitter.im/esp-rfid/Lobby) [![Backers on Open Collective](https://opencollective.com/esp-rfid/backers/badge.svg)](#backers) [![Sponsors on Open Collective](https://opencollective.com/esp-rfid/sponsors/badge.svg)](#sponsors)
 
 Access Control system using a cheap MFRC522, PN532 RFID, RDM6300 readers or Wiegand RFID readers and Espressif's ESP8266 Microcontroller. 
 
-[![Showcase Gif](https://raw.githubusercontent.com/esprfid/esp-rfid/stable/demo/showcase.gif)](https://bitadvise.com/esp-rfid/)[![Board](https://raw.githubusercontent.com/esprfid/esp-rfid/stable/demo/board.jpg)](https://www.tindie.com/products/nardev/esp-rfid-relay-board-12v-in-esp8266-board/)
+![Showcase Gif](https://raw.githubusercontent.com/esprfid/esp-rfid/stable/demo/showcase.gif)[![Board](https://raw.githubusercontent.com/esprfid/esp-rfid/stable/demo/board.jpg)](https://www.tindie.com/products/nardev/esp-rfid-relay-blue-board/)
 
 ## Features
 ### For Users
@@ -36,7 +36,7 @@ Access Control system using a cheap MFRC522, PN532 RFID, RDM6300 readers or Wieg
 * Fits in an universal enclosures with DIN mount
 * Open Source Hardware
 
-Get more information and see accessory options from [Tindie Store](https://www.tindie.com/products/nardev/esp-rfid-relay-board-12v-in-esp8266-board/)
+Get more information and see accessory options from [Tindie Store](https://www.tindie.com/products/nardev/esp-rfid-relay-blue-board/)
 
 | What are others saying about esp-rfid? |
 | ---- |
@@ -59,7 +59,7 @@ This project still in its development phase. New features (and also bugs) are in
 
 ### What You Will Need
 ### Hardware
-* [Official ESP-RFID Relay Board](https://www.tindie.com/products/nardev/esp-rfid-relay-board-12v-in-esp8266-board/)
+* [Official ESP-RFID Relay Board](https://www.tindie.com/products/nardev/esp-rfid-relay-blue-board/)
 or
 * An ESP8266 module or a development board like **WeMos D1 mini** or **NodeMcu 1.0** with at least **32Mbit Flash (equals to 4MBytes)** (ESP32 is not supported for now)
 * A MFRC522 RFID PCD Module or PN532 NFC Reader Module or RDM6300 125KHz RFID Module Wiegand based RFID reader
@@ -75,7 +75,7 @@ https://github.com/esprfid/esp-rfid/releases
 On Windows you can use **"flash.bat"**, it will ask you which COM port that ESP is connected and then flashes it. You can use any flashing tool and do the flashing manually. The flashing process itself has been described at numerous places on Internet.
 
 #### Building With PlatformIO
-##### Backend
+
 The build environment is based on [PlatformIO](http://platformio.org). Follow the instructions found here: http://platformio.org/#!/get-started for installing it but skip the ```platform init``` step as this has already been done, modified and it is included in this repository. In summary:
 
 ```
@@ -96,34 +96,9 @@ When you run ```platformio run``` for the first time, it will download the toolc
 
 The resulting (built) image(s) can be found in the directory ```/bin``` created during the build process.
 
-##### Frontend
-You cannot simply edit Web UI files because you will need to convert them to C arrays, which can be done automatically by a gulp script that can be found in tools directory or you can use compiled executables at the same directory as well (for Windows PCs only).
+##### How to modify the project
 
-If you want to edit esp-rfid's Web UI you will need (unless using compiled executables):
-* NodeJS
-* npm (comes with NodeJS installer)
-* Gulp (can be installed with npm)
-
-Gulp script also minifies HTML and JS files and compresses (gzip) them.
-
-To minify and compress the frontend, enter the folder ```tools/webfilesbuilder``` and:
-* Run ```npm install``` to install dependencies
-* Run ```npm start``` to compress the web UI to make it ready for the ESP
-
-In order to test your changes without flashing the firmware you can launch websocket emulator which is included in tools directory.
-* You will need to Node JS for websocket emulator.
-* Run ```npm install``` to install dependencies
-* Run emulator  ```node wserver.js```
-
-There are two alternative ways to test the UI
-1. you can launch your browser with CORS disabled:
-  ```chrome.exe --args --disable-web-security -–allow-file-access-from-files --user-data-dir="C:\Users\USERNAME"```
-  and then open the HTML files directly (Get more information [here](https://stackoverflow.com/questions/3102819/disable-same-origin-policy-in-chrome))
-2. alternatively, you can launch a web server from the ```src/websrc``` folder, for example with Python, like this:
-  ```python3 -m http.server```
-  and then visit ```http://0.0.0.0:8000/```
-
-When testing locally, use the password ```neo``` for admin capabilities.
+If you want to modify the code, you can read more info in the [CONTRIBUTING](./CONTRIBUTING.md) file.
 
 
 ### Pin Layout
@@ -207,13 +182,14 @@ At least 1000 unique User (RFID Tag) can be handled, the test were performed on 
 * Reliability on Flash (these NOR Flash have limited write cycle on their cells). It depends on manufacturer choice of Flash Chip and usage.
 
 ## Community
-* [![Chat at https://gitter.im/esp-rfid/Lobby](https://badges.gitter.im/esp-rfid.svg)](https://gitter.im/esp-rfid/Lobby) Join community chat on Gitter
 
-### Projects that is based on esp-rfid
+[![Chat at https://gitter.im/esp-rfid/Lobby](https://badges.gitter.im/esp-rfid.svg)](https://gitter.im/esp-rfid/Lobby) Join community chat on Gitter
+
+### Projects that are based on esp-rfid
+
 * [ESP-IO](https://github.com/Pako2/EventGhostPlugins/tree/master/ESP-IO) Project to manipulate GPIOs with EventGhost
 * [ESP-RCM](https://github.com/Pako2/esp-rcm) Room Climate Monitor with ESP8266, HTU21D, Si7021, AM2320
-
-[ESP-RFID-PY](https://github.com/esprfid/esp-rfid-py) Micro-Python implementation of esp-rfid is also made available by @iBobik
+* [ESP-RFID-PY](https://github.com/esprfid/esp-rfid-py) Micro-Python implementation of esp-rfid is also made available by @iBobik
 
 ### Acknowledgements
 
@@ -246,29 +222,6 @@ Donations **transparently** processed by **[Open Collective](https://opencollect
 
 This project exists thanks to all the people who contribute. 
 <a href="https://github.com/esprfid/esp-rfid/graphs/contributors"><img src="https://opencollective.com/esp-rfid/contributors.svg?width=890&button=false" /></a>
-
-
-## Backers
-
-Thank you to all our backers! 🙏 [[Become a backer](https://opencollective.com/esp-rfid#backer)]
-
-<a href="https://opencollective.com/esp-rfid#backers" target="_blank"><img src="https://opencollective.com/esp-rfid/backers.svg?width=890"></a>
-
-
-## Sponsors
-
-Support this project by becoming a sponsor. Your logo will show up here with a link to your website. [[Become a sponsor](https://opencollective.com/esp-rfid#sponsor)]
-
-<a href="https://opencollective.com/esp-rfid/sponsor/0/website" target="_blank"><img src="https://opencollective.com/esp-rfid/sponsor/0/avatar.svg"></a>
-<a href="https://opencollective.com/esp-rfid/sponsor/1/website" target="_blank"><img src="https://opencollective.com/esp-rfid/sponsor/1/avatar.svg"></a>
-<a href="https://opencollective.com/esp-rfid/sponsor/2/website" target="_blank"><img src="https://opencollective.com/esp-rfid/sponsor/2/avatar.svg"></a>
-<a href="https://opencollective.com/esp-rfid/sponsor/3/website" target="_blank"><img src="https://opencollective.com/esp-rfid/sponsor/3/avatar.svg"></a>
-<a href="https://opencollective.com/esp-rfid/sponsor/4/website" target="_blank"><img src="https://opencollective.com/esp-rfid/sponsor/4/avatar.svg"></a>
-<a href="https://opencollective.com/esp-rfid/sponsor/5/website" target="_blank"><img src="https://opencollective.com/esp-rfid/sponsor/5/avatar.svg"></a>
-<a href="https://opencollective.com/esp-rfid/sponsor/6/website" target="_blank"><img src="https://opencollective.com/esp-rfid/sponsor/6/avatar.svg"></a>
-<a href="https://opencollective.com/esp-rfid/sponsor/7/website" target="_blank"><img src="https://opencollective.com/esp-rfid/sponsor/7/avatar.svg"></a>
-<a href="https://opencollective.com/esp-rfid/sponsor/8/website" target="_blank"><img src="https://opencollective.com/esp-rfid/sponsor/8/avatar.svg"></a>
-<a href="https://opencollective.com/esp-rfid/sponsor/9/website" target="_blank"><img src="https://opencollective.com/esp-rfid/sponsor/9/avatar.svg"></a>
 
 ## License
 The code parts written by ESP-RFID project's authors are licensed under [MIT License](https://github.com/esprfid/esp-rfid/blob/stable/LICENSE), 3rd party libraries that are used by this project are licensed under different license schemes, please check them out as well.

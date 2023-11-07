@@ -17,7 +17,7 @@ This has been added so far:
 ## Broker settings
 You can add all the broker details in the web UI:
 
-![MQTT settings](./demo/mqtt-settings.png)
+![MQTT settings](./demo/mqtt-settings.png) <- to update
 
 ## Using MQTT Topics
 For the MQTT communication some additional TOPICs have been added internally. The default Topic is configured in the web UI. If you use more then one device, every device should have the same `TOPIC` name configured. All MQTT communication is done with JSON Payload as MQTT Message.
@@ -34,6 +34,12 @@ TOPIC---+---/send
   * /rfid
   * /rfid/send
   * /rfid/cmd
+
+### Auto-topic
+
+If auto-topic option is selected, esp-rfid will add the last 6 characters from the device MAC address to the MQTT topic.
+
+This can be useful to deploy a batch of esp-rfid in one go. By knowing the MAC addresses in advance you can setup them all with a standard configuration and each one will talk on a separate topic.
 
 ## Commands received by ESP-RFID
 The message format is JSON.
@@ -260,7 +266,8 @@ If the UID is in the users list, there can be a set of possible "access" configu
   "access":"the access state",
   "username":"username",
   "uid":"token UID",
-  "hostname":"your esp-rfid hostname"
+  "hostname":"your esp-rfid hostname",
+  "doorName":"your door name"
 }
 ```
 If instead the UID is not present in the users list the message will be:
@@ -288,6 +295,21 @@ If the tag is unknown the message will be different:
   "time":1605991375,
   "cmd":"event",
   "hostname":"your esp-rfid hostname"
+}
+```
+
+In case of multiple doors managed by one esp-rfid, you'll get an array for doorname and for access:
+
+```
+{
+  "type":"access",
+  "time":1605991375,
+  "isKnown":"true",
+  "access":["the access state door 1", "access state door 2"],
+  "username":"username",
+  "uid":"token UID",
+  "hostname":"your esp-rfid hostname",
+  "doorName":["door 1", "door 2"]
 }
 ```
 

@@ -8,12 +8,19 @@ All notable changes to this project will be documented in this file.
 - [firmware] MQTT endpoints have been changed to be more consistent and complete #501 @matjack1
 
 #### Added
-- [webui] Improvoed support for websocket reconnection #502 @matjack1
+- [firmware] Moved to native Arduino support for timezone and NTP to support daylight saving time #604 @matjack1
+- [firmware] Added door name, to send via MQTT access type and door name for setups with multiple doors #598 @matjack1
+- [firmware] Added more options for Wiegand readers on which bits to read #582 @matjack1
+- [firmware] Added support for MQTT auto-topic with topic postfixed with 6 characters from MAC address #566 @matjack1
+- [firmware] Added support to read/write configuration via MQTT #565 @matjack1
+- [firmware] Added valid-since date for user validity #562 @matjack1
+- [firmware] Added support for pincode only option to open door #551 @matjack1
+- [webui] Improved support for websocket reconnection #502 @matjack1
 - [firmware] Added opening hours with an hourly granularity #499 @matjack1
 - [firmware] Added LED to signal that we are waiting for pincode and beeper support #490 @matjack1
     - beeper for valid, denied or admin access 
 - [firmware] Added different pincode for each user after a card swipe #477 @matjack1
-- [firmware] Improvements in MQTT including AutoDiscovery for the Home Assistant #449 @xyzroe
+- [firmware] Improvements in MQTT including AutoDiscovery for the Home Assistant #449 #559 @xyzroe
 - [firmware] Added anti-tamper support #449 @xyzroe
 - [firmware] Added pin to give users feedback when access denied #426 @matjack1
 - [firmware] Added ability to delete a single user over MQTT via UID #424 @baden02
@@ -30,7 +37,7 @@ All notable changes to this project will be documented in this file.
 - [firmware] Added button to open door and door status pin @nardev
 
 #### Changed
-- [firmware] Refactor WiFi connection #495 #497 @matjack1
+- [firmware] Refactor WiFi connection #495 #497 #536 @matjack1
     - Option to disable access point mode for production usage
     - Automatic retries when connection drops
 - [firmware] Refactor configuration #485 @matjack1
