@@ -25,7 +25,11 @@ void ICACHE_FLASH_ATTR sendUserList(int page, AsyncWebSocketClient *client)
 			if (!error)
 			{
 				String username = json["user"];
-				String pincode = json["pincode"];
+				const char * pincode = "";
+				if(json.containsKey("pincode"))
+				{
+					pincode = json["pincode"];
+				}
 				for (int x = 1; x <= MAX_NUM_RELAYS; x++)
 				{
 					String theKey = String();
@@ -36,7 +40,7 @@ void ICACHE_FLASH_ATTR sendUserList(int page, AsyncWebSocketClient *client)
 					int AccType = json[theKey];
 					item[theKey] = AccType;
 				}
-				unsigned long validsince = json["validsince"];
+				unsigned long validsince = json.containsKey("validsince") ? json["validsince"] : 0;
 				unsigned long validuntil = json["validuntil"];
 				item["username"] = username;
 				item["validsince"] = validsince;

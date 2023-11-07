@@ -621,7 +621,7 @@ function listmqtt() {
     document.getElementById("mqttautotopic").checked = config.mqtt.autotopic;
     document.getElementById("mqttuser").value = config.mqtt.user;
     document.getElementById("mqttpwd").value = config.mqtt.pswd;
-    document.getElementById("syncrate").value = config.mqtt.syncrate;
+    document.getElementById("syncrate").value = config.mqtt.syncrate || 180;
     if (config.mqtt.mqttlog === 1) {
         $("input[name=\"mqttlog\"][value=\"1\"]").prop("checked", true);
     }
@@ -1320,8 +1320,13 @@ function initUserTable() {
             "breakpoints": "xs sm",
             "parser": function(value) {
               var comp = new Date();
-              value = Math.floor(value + ((comp.getTimezoneOffset() * 60) * -1));
-              var vuepoch = new Date(value * 1000);
+              var vuepoch;
+              if (value) {
+                value = Math.floor(value + ((comp.getTimezoneOffset() * 60) * -1));
+                vuepoch = new Date(value * 1000);
+              } else {
+                vuepoch = new Date(0);
+              }
               var formatted = vuepoch.getFullYear() +
                 "-" + twoDigits(vuepoch.getMonth() + 1) +
                 "-" + twoDigits(vuepoch.getDate());
@@ -1527,6 +1532,10 @@ function socketMessageListener(evt) {
         if (!('maxOpenDoorTime' in config.hardware)) config.hardware.maxOpenDoorTime = 0;
         if (!('doorbellpin' in config.hardware)) config.hardware.doorbellpin = 255;
         if (!('accessdeniedpin' in config.hardware)) config.hardware.accessdeniedpin = 255;
+        if (!('openlockpin' in config.hardware)) config.hardware.openlockpin = 255;
+        if (!('beeperpin' in config.hardware)) config.hardware.beeperpin = 255;
+        if (!('ledwaitingpin' in config.hardware)) config.hardware.ledwaitingpin = 255;
+        if (!('ltype' in config.hardware)) config.hardware.ltype = 0;
         if ('numrelays' in config.hardware) numRelays = config.hardware["numrelays"]; else config.hardware["numrelays"] = numRelays;
         break;
       default:

@@ -23,6 +23,7 @@ struct Config {
     uint8_t ledwaitingpin = 255;
     int lockType[MAX_NUM_RELAYS];
     uint8_t maxOpenDoorTime = 0;
+    bool mqttAutoTopic = false;
     bool mqttEnabled = false;
     bool mqttEvents = false;	  // Sends events over MQTT disables SPIFFS file logging
     bool mqttHA = false; // Sends events over simple MQTT topics and AutoDiscovery
@@ -31,7 +32,6 @@ struct Config {
     char *mqttPass = NULL;
     int mqttPort;
     char *mqttTopic = NULL;
-    bool mqttAutoTopic = false;
     char *mqttUser = NULL;
     bool networkHidden = false;
     char *ntpServer = NULL;
@@ -39,13 +39,13 @@ struct Config {
     int numRelays = 1;
     char *openingHours[7];
     uint8_t openlockpin = 255;
-    bool pinCodeRequested = true;
+    bool pinCodeRequested = false;
     bool pinCodeOnly = false;
     bool wiegandReadHex = true;
     bool present = false;
     int readertype;
     int relayType[MAX_NUM_RELAYS];
-    bool removeParityBits;
+    bool removeParityBits = true;
     IPAddress subnetIp;
     const char *ssid;
     int timeZone = 0;

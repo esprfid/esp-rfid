@@ -41,7 +41,7 @@ void addWsMessageToQueue(AsyncWebSocketClient *client, int messageSize)
 void ICACHE_FLASH_ATTR processWsMessage(WsMessage *incomingMessage)
 {
 	// We should always get a JSON object (stringfied) from browser, so parse it
-	DynamicJsonDocument root(2048);
+	DynamicJsonDocument root(2448);
 	AsyncWebSocketClient *client = incomingMessage->client;
 	// cast to const char * to avoid in-place editing of serializedMessage
 	auto error = deserializeJson(root, (const char *)incomingMessage->serializedMessage);
