@@ -186,7 +186,7 @@ void ICACHE_FLASH_ATTR processWsMessage(WsMessage *incomingMessage)
 	else if (strcmp(command, "settime") == 0)
 	{
 		time_t t = root["epoch"];
-		setTime(t);
+		epoch = t;
 		sendTime(client);
 	}
 	else if (strcmp(command, "getconf") == 0)

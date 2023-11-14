@@ -520,7 +520,7 @@ void processMqttMessage(MqttMessage *incomingMessage)
 		Serial.println("[ INFO ] Door open");
 #endif
 		writeLatest(" ", "MQTT", 1);
-		mqttPublishAccess(now(), "true", "Always", "MQTT", " ");
+		mqttPublishAccess(epoch, "true", "Always", "MQTT", " ");
 		for (int currentRelay = 0; currentRelay < config.numRelays; currentRelay++)
 		{
 			activateRelay[currentRelay] = true;
@@ -533,7 +533,7 @@ void processMqttMessage(MqttMessage *incomingMessage)
 		Serial.println("[ INFO ] Door open");
 #endif
 		writeLatest(" ", "MQTT", 1);
-		mqttPublishAccess(now(), "true", "Always", "MQTT", " ");
+		mqttPublishAccess(epoch, "true", "Always", "MQTT", " ");
 		const char *door = incomingMessage->door;
 		String stringDoor = String(door);
 		int currentRelay = stringDoor.toInt();
@@ -549,7 +549,7 @@ void processMqttMessage(MqttMessage *incomingMessage)
 		Serial.println("[ INFO ] Door close");
 #endif
 		writeLatest(" ", "MQTT", 1);
-		mqttPublishAccess(now(), "true", "Always", "MQTT", " ");
+		mqttPublishAccess(epoch, "true", "Always", "MQTT", " ");
 		const char *door = incomingMessage->door;
 		String stringDoor = String(door);
 		int currentRelay = stringDoor.toInt();
@@ -679,7 +679,7 @@ void onMqttConnect(bool sessionPresent)
 #endif
 		writeEvent("INFO", "mqtt", "Connected to MQTT Server", "Session Present");
 	}
-	mqttPublishBoot(now());
+	mqttPublishBoot(epoch);
 
 	String stopic(config.mqttTopic);
 	stopic = stopic + "/cmd";

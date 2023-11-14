@@ -3,7 +3,6 @@ var version = "";
 var websock = null;
 var wsUri = "ws://" + window.location.host + "/ws";
 var utcSeconds;
-var timezone;
 var data = [];
 var ft;
 var ajaxobj;
@@ -83,7 +82,7 @@ var config = {
     "ntp": {
         "server": "pool.ntp.org",
         "interval": 30,
-        "timezone": 0
+        "tzinfo": ""
     }
 };
 
@@ -129,19 +128,9 @@ function retrySendWebsocket() {
   }
 }
 
-function browserTime() {
-  var d = new Date(0);
-  var c = new Date();
-  var timestamp = Math.floor((c.getTime() / 1000) + ((c.getTimezoneOffset() * 60) * -1));
-  d.setUTCSeconds(timestamp);
-  document.getElementById("rtc").innerHTML = d.toUTCString().slice(0, -3);
-}
-
 function deviceTime() {
-  var t = new Date(0); // The 0 there is the key, which sets the date to the epoch,
-  var devTime = Math.floor(utcSeconds + (config.ntp.timezone * 60 * 60));
-  t.setUTCSeconds(devTime);
-  document.getElementById("utc").innerHTML = t.toUTCString().slice(0, -3);
+  var t = new Date(utcSeconds * 1000); // milliseconds from epoch
+  document.getElementById("device-time").innerHTML = t.toString();
 }
 
 function syncBrowserTime() {
@@ -232,8 +221,7 @@ function listntp() {
 
   document.getElementById("ntpserver").value = config.ntp.server;
   document.getElementById("intervals").value = config.ntp.interval;
-  document.getElementById("DropDownTimezone").value = config.ntp.timezone;
-  browserTime();
+  document.getElementById("DropDownTimezone").value = config.ntp.tzinfo;
   deviceTime();
 }
 
@@ -292,7 +280,7 @@ function savehardware() {
 function saventp() {
   config.ntp.server = document.getElementById("ntpserver").value;
   config.ntp.interval = parseInt(document.getElementById("intervals").value);
-  config.ntp.timezone = parseInt(document.getElementById("DropDownTimezone").value);
+  config.ntp.tzinfo = document.getElementById("DropDownTimezone").value;
 
   uncommited();
 }
@@ -1516,7 +1504,6 @@ function socketMessageListener(evt) {
           break;
       case "gettime":
         utcSeconds = obj.epoch;
-        timezone = obj.timezone;
         deviceTime();
         break;
       case "piccscan":

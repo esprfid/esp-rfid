@@ -7,7 +7,7 @@ void ICACHE_FLASH_ATTR writeEvent(String type, String src, String desc, String d
 	root["src"] = src;
 	root["desc"] = desc;
 	root["data"] = data;
-	root["time"] = now();
+	root["time"] = epoch;
 	if (config.mqttEvents && config.mqttEnabled) // log to MQTT
 	{
 		root["cmd"] = "event";
@@ -32,7 +32,7 @@ void ICACHE_FLASH_ATTR writeLatest(String uid, String username, int acctype)
 	root["uid"] = uid;
 	root["username"] = username;
 	root["acctype"] = acctype;
-	root["timestamp"] = now();
+	root["timestamp"] = epoch;
 	File latestlog = SPIFFS.open("/latestlog.json", "a");
 	serializeJson(root, latestlog);
 	latestlog.print("\n");

@@ -91,7 +91,7 @@ void ICACHE_FLASH_ATTR sendStatus(AsyncWebSocketClient *client)
 	root["availsize"] = ESP.getFreeSketchSpace();
 	root["availspiffs"] = fsinfo.totalBytes - fsinfo.usedBytes;
 	root["spiffssize"] = fsinfo.totalBytes;
-	root["uptime"] = NTP.getDeviceUptimeString();
+	root["uptime"] = uptimeSeconds;
 	root["version"] = VERSION;
 
 	if (config.accessPointMode)
@@ -184,8 +184,7 @@ void ICACHE_FLASH_ATTR sendTime(AsyncWebSocketClient *client)
 {
 	DynamicJsonDocument root(512);
 	root["command"] = "gettime";
-	root["epoch"] = now();
-	root["timezone"] = config.timeZone;
+	root["epoch"] = epoch;
 	size_t len = measureJson(root);
 	AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
 	if (buffer)

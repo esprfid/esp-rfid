@@ -1,0 +1,14 @@
+# TODO
+
+- bug da papà di Giutrec
+Oggi ho fatto delle prove con la scheda apriporta di prova
+se si setta la lettura del tag in decimale e si flaggano le due opzioni, si verifica un problema serio
+a) se si inseriscono i pin apre
+b) se si passa il tag e poi il pin: apre
+ma se si digita il codice decimale del tag apre senza digitare il pin
+
+Ho in test il primo degli ultimi codici 
+1 problema: il log segnala solo i tag errati, non i pin errati, quindi se qualcuno si mette a giocare con la tastiera non registra nulla. 
+2 problema: se si imposta una data di scadenza non permette tutti gli ingressi dalle 00:00 alle 00:59, inoltre se si imposta una data esempio oggi 19/03 già dalle 00:01 del 19 non permette l’accesso.
+
+“però in esadecimale, lasciando flaggate le due opzioni, ogni tanto fa casino e non legge nulla ed occorre riavviare la scheda e talvolta non serve neanche quello. Bisogna aspettare un po’ e poi riprende a funzionare. Accade specialmente se si inserisce un nuovo tag o un nuovo pin.”

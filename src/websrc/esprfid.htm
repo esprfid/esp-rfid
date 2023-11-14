@@ -750,12 +750,8 @@
     <h6 class="text-muted">Small differences between device time and local time can be ignored. Please see <a href="https://github.com/esprfid/esp-rfid#time">documentation</a> for additional information.</h6>
 	<br>
     <div class="row form-group">
-        <label class="col-xs-3">Device Time</label>
-        <span id="utc" class="col-xs-9 col-md-5"></span>
-    </div>
-    <div class="row form-group">
-        <label class="col-xs-3">Browser Time</label>
-        <span id="rtc" class="col-xs-9 col-md-5"></span>
+        <label class="col-xs-3">Device Time (adjusted to local timezone)</label>
+        <span id="device-time" class="col-xs-9 col-md-5"></span>
     </div>
     <div class="row form-group">
         <div class="col-xs-3">
@@ -780,37 +776,33 @@
         <label class="col-xs-3">Time Zone</label>
         <span class="col-xs-9 col-md-5">
                 <select class="form-control input-sm" name="DropDownTimezone" id="DropDownTimezone">
-                  <option value="-12">(GMT -12:00) Eniwetok, Kwajalein</option>
-                  <option value="-11">(GMT -11:00) Midway Island, Samoa</option>
-                  <option value="-10">(GMT -10:00) Hawaii</option>
-                  <option value="-9">(GMT -9:00) Alaska</option>
-                  <option value="-8">(GMT -8:00) Pacific Time (US &amp; Canada)</option>
-                  <option value="-7">(GMT -7:00) Mountain Time (US &amp; Canada)</option>
-                  <option value="-6">(GMT -6:00) Central Time (US &amp; Canada), Mexico City</option>
-                  <option value="-5">(GMT -5:00) Eastern Time (US &amp; Canada), Bogota, Lima</option>
-                  <option value="-4">(GMT -4:00) Atlantic Time (Canada), Caracas, La Paz</option>
-                  <option value="-3.5">(GMT -3:30) Newfoundland</option>
-                  <option value="-3">(GMT -3:00) Brazil, Buenos Aires, Georgetown</option>
-                  <option value="-2">(GMT -2:00) Mid-Atlantic</option>
-                  <option value="-1">(GMT -1:00 hour) Azores, Cape Verde Islands</option>
-                  <option selected="selected" value="0">(GMT) Western Europe Time, London, Lisbon, Casablanca</option>
-                  <option value="1">(GMT +1:00 hour) Brussels, Copenhagen, Madrid, Paris</option>
-                  <option value="2">(GMT +2:00) Kaliningrad, South Africa</option>
-                  <option value="3">(GMT +3:00) Baghdad, Riyadh, Moscow, St. Petersburg</option>
-                  <option value="3.5">(GMT +3:30) Tehran</option>
-                  <option value="4">(GMT +4:00) Abu Dhabi, Muscat, Baku, Tbilisi</option>
-                  <option value="4.5">(GMT +4:30) Kabul</option>
-                  <option value="5">(GMT +5:00) Ekaterinburg, Islamabad, Karachi, Tashkent</option>
-                  <option value="5.5">(GMT +5:30) Bombay, Calcutta, Madras, New Delhi</option>
-                  <option value="5.75">(GMT +5:45) Kathmandu</option>
-                  <option value="6">(GMT +6:00) Almaty, Dhaka, Colombo</option>
-                  <option value="7">(GMT +7:00) Bangkok, Hanoi, Jakarta</option>
-                  <option value="8">(GMT +8:00) Beijing, Perth, Singapore, Hong Kong</option>
-                  <option value="9">(GMT +9:00) Tokyo, Seoul, Osaka, Sapporo, Yakutsk</option>
-                  <option value="9.5">(GMT +9:30) Adelaide, Darwin</option>
-                  <option value="10">(GMT +10:00) Eastern Australia, Guam, Vladivostok</option>
-                  <option value="11">(GMT +11:00) Magadan, Solomon Islands, New Caledonia</option>
-                  <option value="12">(GMT +12:00) Auckland, Wellington, Fiji, Kamchatka</option>
+                    <option value="WIB-7">Asia/Jakarta</option>
+                    <option value="GMT+2">Asia/Jerusalem</option>
+                    <option value="SGT-8">Asia/Singapore</option>
+                    <option value="ULAT-8ULAST,M3.5.0/2,M9.5.0/2">Asia/Ulaanbaatar, Mongolia</option>
+                    <option value="AST4ADT">Atlantic/Atlantic Time</option>
+                    <option value="EST-10EDT-11,M10.5.0/02:00:00,M3.5.0/03:00:00">Australia/Melbourne, Canberra, Sydney</option>
+                    <option value="WST-8">Australia/Perth</option>
+                    <option value="EST-10">Australia/Brisbane</option>
+                    <option value="CST-9:30CDT-10:30,M10.5.0/02:00:00,M3.5.0/03:00:00">Australia/Adelaide</option>
+                    <option value="CST-9:30">Australia/Darwin</option>
+                    <option value="BRST+3BRDT+2,M10.3.0,M2.3.0">Central and South America/Brazil, Sao Paulo</option>
+                    <option value="UTC+3">Central and South America/Argentina</option>
+                    <option value="CST+6">Central and South America/Central America</option>
+                    <option value="CET-1CEST-2,M3.5.0/02:00:00,M10.5.0/03:00:00">Europe/Central</option>
+                    <option value="EET-2EEST-3,M3.5.0/03:00:00,M10.5.0/04:00:00">Europe/Eastern</option>
+                    <option value="GMT+0BST-1,M3.5.0/01:00:00,M10.5.0/02:00:00">Europe/Western</option>
+                    <option value="EET-2EEST,M3.5.0/3,M10.5.0/4">Europe/Kyiv, Ukraine</option>
+                    <option value="MSK-3MSD,M3.5.0/2,M10.5.0/3">Europe/Moscow, Russia</option>
+                    <option value="MST-3MDT,M3.5.0/2,M10.5.0/3">Europe/St.Petersburg, Russia</option>
+                    <option value="NZST-12NZDT-13,M9.4.0/02:00:00,M4.1.0/03:00:00">New Zealand/Auckland, Wellington</option>
+                    <option value="HAW10">USA & Canada/Hawaii Time</option>
+                    <option value="AKST9AKDT">USA & Canada/Alaska Time</option>
+                    <option value="PST8PDT">USA & Canada/Pacific Time</option>
+                    <option value="MST7MDT">USA & Canada/Mountain Time</option>
+                    <option value="MST7">USA & Canada/Mountain Time (Arizona, no DST)</option>
+                    <option value="CST6CDT">USA & Canada/Central Time</option>
+                    <option value="EST5EDT">USA & Canada/Eastern Time</option>
                 </select>
               </span>
         <br>
