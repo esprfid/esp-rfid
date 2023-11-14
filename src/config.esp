@@ -171,26 +171,29 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 		config.ntpServer = strdup(ntp["server"]);
 	}
 	config.ntpInterval = ntp["interval"];
-	if (ntp.containsKey("tzinfo"))
-	{
-		config.tzInfo = strdup(ntp["tzinfo"]);
-	}
+	
 	// support for old config
 	if (ntp.containsKey("timezone"))
 	{
+		config.tzInfo = (char *) malloc(10 * sizeof(char));
 		float tz = ntp["timezone"];
 		if(tz > 0)
 		{
-			sprintf(config.tzInfo, "UTC+%f", tz);
+			snprintf(config.tzInfo, 10, "UTC+%.2f", tz);
 		}
 		else if(tz < 0)
 		{
-			sprintf(config.tzInfo, "UTC-%f", tz);
+			snprintf(config.tzInfo, 10, "UTC-%.2f", tz);
 		}
 		else
 		{
-			sprintf(config.tzInfo, "UTC");
+			snprintf(config.tzInfo, 10, "UTC");
 		}
+	}
+	if (ntp.containsKey("tzinfo"))
+	{
+		config.tzInfo = (char *) malloc(strlen(ntp["tzinfo"]) * sizeof(char));
+		config.tzInfo = strdup(ntp["tzinfo"]);
 	}
 	config.activateTime[0] = hardware["rtime"];
 	config.lockType[0] = hardware["ltype"];
