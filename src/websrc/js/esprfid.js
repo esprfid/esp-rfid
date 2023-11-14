@@ -1523,6 +1523,8 @@ function socketMessageListener(evt) {
         if (!('beeperpin' in config.hardware)) config.hardware.beeperpin = 255;
         if (!('ledwaitingpin' in config.hardware)) config.hardware.ledwaitingpin = 255;
         if (!('ltype' in config.hardware)) config.hardware.ltype = 0;
+        if (!('useridstoragemode' in config.hardware)) config.hardware.useridstoragemode = "hexadecimal";
+        if (!('removeparitybits' in config.hardware)) config.hardware.removeparitybits = true;
         if ('numrelays' in config.hardware) numRelays = config.hardware["numrelays"]; else config.hardware["numrelays"] = numRelays;
         break;
       default:
