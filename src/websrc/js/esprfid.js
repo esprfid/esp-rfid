@@ -114,7 +114,7 @@ function sendWebsocketWithRetry(msg) {
 
   setTimeout(function(){
     retrySendWebsocket();
-  }, 5000);
+  }, 10000);
 }
 
 function retrySendWebsocket() {
@@ -125,6 +125,10 @@ function retrySendWebsocket() {
       sendWebsocketWithRetry(oldestMessage.message);
       websocketMessagesToRetry.shift();
     }
+
+    setTimeout(function(){
+      retrySendWebsocket();
+    }, 10000);
   }
 }
 
