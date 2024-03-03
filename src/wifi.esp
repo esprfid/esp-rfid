@@ -175,7 +175,7 @@ bool ICACHE_FLASH_ATTR connectSTA(const char *ssid, const char *password, byte b
 		configTime(0, 0, config.ntpServer);
 		// See https://github.com/nayarsystems/posix_tz_db/blob/master/zones.csv for Timezone codes for your region
 		setenv("TZ", config.tzInfo, 1);
-		getNTPtime(10);
+		trySyncNTPtime(10);
 		return true;
 	}
 	else

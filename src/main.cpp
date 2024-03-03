@@ -95,6 +95,8 @@ uint8_t lastDoorState = 0;
 uint8_t lastTamperState = 0;
 unsigned long nextbeat = 0;
 time_t epoch;
+time_t lastNTPepoch;
+unsigned long lastNTPSync = 0;
 unsigned long openDoorMillis = 0;
 unsigned long previousLoopMillis = 0;
 unsigned long previousMillis = 0;
@@ -177,7 +179,8 @@ void ICACHE_RAM_ATTR loop()
 	deltaTime = currentMillis - previousLoopMillis;
 	uptimeSeconds = currentMillis / 1000;
 	previousLoopMillis = currentMillis;
-	getNTPtime(10);
+	
+	trySyncNTPtime(10);
 
 	openLockButton.update();
 	if (config.openlockpin != 255 && openLockButton.fell())
