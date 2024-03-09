@@ -253,6 +253,10 @@ void rfidRead()
 	}
 }
 
+
+/*
+ *  Try and read a PIN code from Wiegand hardware
+ */
 void pinCodeRead()
 {
 	if (config.readertype != READER_WIEGAND ||
@@ -320,6 +324,11 @@ int weekdayFromMonday(int weekdayFromSunday) {
 	return ( weekdayFromSunday + 5 ) % 7;
 }
 
+
+/*
+ *  If we have successfully read an RFID card, check if access
+ *  should be granted
+ */
 void rfidProcess()
 {
 	if (rfidState == waitingRfid ||
@@ -328,12 +337,14 @@ void rfidProcess()
 		return;
 	}
 
+	/* Each user has a file named after the RFID UID */
 	File f = SPIFFS.open("/P/" + uid, "r");
 
 	/*
 	 *  If the file was not found then this is an unknown user, so no more
-	 *  processing to be done. However, we do a secondary check here to see
-	 *  if an old esp-rfid v1 uid exists and if so use that.
+	 *  processing to be done. However, for backwards compatibility we do a
+	 *  secondary check here to see if an old esp-rfid v1 uid exists and if
+	 *  so use that.
 	 */
 	if (!f)
 	{
@@ -352,6 +363,9 @@ void rfidProcess()
 #endif
 	}
 
+	/*
+	 *  Read the user's settings
+	 */
 	size_t size = f.size();
 	std::unique_ptr<char[]> buf(new char[size]);
 	f.readBytes(buf.get(), size);
@@ -359,6 +373,9 @@ void rfidProcess()
 	DynamicJsonDocument json(512);
 	auto error = deserializeJson(json, buf.get(), size);
 
+	/*
+	 *  Corrupt user data file, so return invalid user
+	 */
 	if (error)
 	{
 		processingState = notValid;
@@ -380,24 +397,32 @@ void rfidProcess()
 		return;
 	}
 
+	/*
+	 *  Get account type (for FIRST relay only) and username from user's data
+	 */
 	accountType = json["acctype"];
 	username = json["user"].as<String>();
 
 #ifdef DEBUG
 	Serial.println(" = known PICC");
-	Serial.print("[ INFO ] User Name: ");
+	Serial.print("[ INFO ] User Name: '");
 	if (username == "undefined")
 		Serial.print(uid);
 	else
 		Serial.print(username);
+	Serial.print("'");
 #endif
 
 	if (accountType == ACCESS_GRANTED)
 	{
+		/*
+		 *  Normal user - relay but no admin access
+		 */
 		unsigned long validSinceL = json["validsince"];
 		unsigned long validUntilL = json["validuntil"];
 		unsigned long nowL = epoch;
 		int hourTz = timeinfo.tm_hour;
+
 		if (validUntilL < nowL || validSinceL > nowL)
 		{
 			processingState = expired;
@@ -410,9 +435,15 @@ void rfidProcess()
 		}
 	} else if (accountType == ACCESS_ADMIN)
 	{
+		/*
+		 *  Admin user - enable relay (with no time limits) and wifi
+		 */
 		doEnableWifi = true;
 		processingState = validAdmin;
 	} else {
+		/*
+		 *  User exists but does not have access
+		 */
 		processingState = notValid;
 	}
 
