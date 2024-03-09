@@ -357,17 +357,25 @@ void rfidProcess()
 		processingState = notValid;
 	}
 
+	/*
+	 *  If user is valid and opening hour time is allowed, go through each relay
+	 *  in turn to see if it needs to be activated
+	 */
 	if (processingState == valid || processingState == validAdmin)
 	{
 		for (int currentRelay = 0; currentRelay < config.numRelays; currentRelay++)
 		{
+			// Get user data JSON access type entry for this relay
 			if (currentRelay == 0) {
-				activateRelay[currentRelay] = true;
 				accountTypes[currentRelay] = json["acctype"];
 			} else {
 				accountTypes[currentRelay] = json["acctype" + String(currentRelay + 1)];
-				activateRelay[currentRelay] = (accountTypes[currentRelay] == ACCESS_GRANTED);
 			}
+
+			// Enable activation if permissions are correct
+			activateRelay[currentRelay] = (accountTypes[currentRelay] == ACCESS_GRANTED);
+
+			// ...except Admin, which always activates everything
 			if (processingState == validAdmin)
 			{
 				activateRelay[currentRelay] = true;
