@@ -21,7 +21,7 @@ void ICACHE_FLASH_ATTR sendUserList(int page, AsyncWebSocketClient *client)
 			std::unique_ptr<char[]> buf(new char[size]);
 			f.readBytes(buf.get(), size);
 			DynamicJsonDocument json(512);
-			auto error = deserializeJson(json, buf.get());
+			auto error = deserializeJson(json, buf.get(), size);
 			if (!error)
 			{
 				String username = json["user"];

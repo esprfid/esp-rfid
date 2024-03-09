@@ -372,7 +372,7 @@ void getUserList()
 		std::unique_ptr<char[]> buf(new char[size]);
 		f.readBytes(buf.get(), size);
 		DynamicJsonDocument json(512);
-		auto error = deserializeJson(json, buf.get());
+		auto error = deserializeJson(json, buf.get(), size);
 		if (!error)
 		{
 			mqttPublishEvent(&json);

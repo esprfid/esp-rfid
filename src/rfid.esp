@@ -70,7 +70,7 @@ void wiegandRead()
 				f.readBytes(buf.get(), size);
 				f.close();
 				DynamicJsonDocument json(512);
-				auto error = deserializeJson(json, buf.get());
+				auto error = deserializeJson(json, buf.get(), size);
 				if (error)
 				{
 					processingState = notValid;
@@ -299,7 +299,8 @@ void rfidProcess()
 	f.readBytes(buf.get(), size);
 	f.close();
 	DynamicJsonDocument json(512);
-	auto error = deserializeJson(json, buf.get());
+	auto error = deserializeJson(json, buf.get(), size);
+
 	if (error)
 	{
 		processingState = notValid;
