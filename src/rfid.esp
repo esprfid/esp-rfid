@@ -163,8 +163,16 @@ void pn532Read()
 	}
 }
 
+
+/*
+ *  Try first to read from RDM6300 hardware. If that received
+ *  nothing, check the other configured reader.
+ */
 void genericRead()
 {
+	/*
+	 *  Test RDM6300 125khz reader
+	 */
 	while (Serial.available() > 0)
 	{
 		RFIDr.rfidSerial(Serial.read());
@@ -181,42 +189,66 @@ void genericRead()
 #endif
 	}
 
-	if (config.readertype == READER_MFRC522_RDM6300 && uid.length() == 0)
-	{
-		mfrc522Read();
-	}
+	/*
+	 *  If nothing read from the RDM6300, check the other hardware
+	 */
+	if (uid.length() == 0) {
+		if (config.readertype == READER_MFRC522_RDM6300)
+		{
+			mfrc522Read();
+		}
 
-	else if (config.readertype == READER_WIEGAND_RDM6300 && uid.length() == 0)
-	{
-		wiegandRead();
-	}
+		else if (config.readertype == READER_WIEGAND_RDM6300)
+		{
+			wiegandRead();
+		}
 
-	else if (config.readertype == READER_PN532_RDM6300 && uid.length() == 0)
-	{
-		pn532Read();
+		else if (config.readertype == READER_PN532_RDM6300)
+		{
+			pn532Read();
+		}
 	}
 }
 
+
+/*
+ *  Main function to read RFID cards. This function will call the
+ *  correct reader function depending on the configured hardware,
+ *  or otherwise call genericRead to read both RDM6300 and another
+ *  configured reader.
+ */
 void rfidRead()
 {
+	/*
+	 *  Do not try and read if we are already processing a card
+	 */
 	if (rfidState == cardSwiped)
 	{
 		return;
 	}
+
+	/*
+	 *  Call the appropriate function based on the configured
+	 *  hardware
+	 */
 	if (config.readertype == READER_MFRC522)
 	{
 		mfrc522Read();
 	}
+
 	else if (config.readertype == READER_WIEGAND)
 	{
 		wiegandRead();
 	}
+
 	else if (config.readertype == READER_PN532)
 	{
 		pn532Read();
 	}
+
 	else if (config.readertype > READER_PN532)
 	{
+		// This is a combination of RDM6300 and one of the above
 		genericRead();
 	}
 }
