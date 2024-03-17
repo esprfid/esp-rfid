@@ -111,9 +111,6 @@ void mfrc522Read()
 	}
 	mfrc522.PICC_HaltA();
 	cooldown = millis() + COOLDOWN_MILIS;
-#ifdef DEBUG
-	Serial.print(F("[ INFO ] PICC's UID: "));
-#endif
 
 	/*
 	 *  Convert RC522 UID into string
@@ -122,18 +119,21 @@ void mfrc522Read()
 	 *  later checking in case old users exist in the config.
 	 */
 	for (byte i = 0; i < mfrc522.uid.size; i++) 
- 	 {
-     		uid+=(String(mfrc522.uid.uidByte[i] < 0x10 ? "0" : ""));
-     		uid+=(String(mfrc522.uid.uidByte[i], HEX));
+	{
+		uid+=(String(mfrc522.uid.uidByte[i] < 0x10 ? "0" : ""));
+		uid+=(String(mfrc522.uid.uidByte[i], HEX));
 		v1uid+=(String(mfrc522.uid.uidByte[i], HEX));
-  	}
+	}
 	rfidState = cardSwiped;
 
 #ifdef DEBUG
+	Serial.print(F("[ INFO ] PICC's UID: "));
 	Serial.print(uid);
 #endif
+
 	MFRC522::PICC_Type piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
 	type = mfrc522.PICC_GetTypeName(piccType);
+
 #ifdef DEBUG
 	Serial.print(" " + type);
 #endif
