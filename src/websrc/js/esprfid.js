@@ -1746,6 +1746,8 @@ function updateUserModalForm(){
         str=str.replace ("<option value=\"99\">Admin</option>", "");
         cloneObj.innerHTML=str;
         accParent[0].appendChild(cloneObj);
+        var rname = config.hardware["relay"+i]?.doorname || "Relay "+i;
+        $("#useracctype"+i+" label").text("Access to " + rname);
       }
     } else {
       var removeAccForm = document.getElementById("useracctype" + i);
