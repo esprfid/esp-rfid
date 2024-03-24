@@ -4,6 +4,7 @@ String currentInput = "";
 String pinCode = "";
 String type = "";
 String uid = "";
+String v1uid = "";
 String username = "";
 bool wiegandAvailable = false;
 
@@ -110,21 +111,29 @@ void mfrc522Read()
 	}
 	mfrc522.PICC_HaltA();
 	cooldown = millis() + COOLDOWN_MILIS;
-#ifdef DEBUG
-	Serial.print(F("[ INFO ] PICC's UID: "));
-#endif
+
+	/*
+	 *  Convert RC522 UID into string
+	 *  esp-rfid v1 had a bug where the UID string may miss some '0's. To
+	 *  maintain compatibility, calculate incorrect UID here as well for
+	 *  later checking in case old users exist in the config.
+	 */
 	for (byte i = 0; i < mfrc522.uid.size; i++) 
- 	 {
-     		uid+=(String(mfrc522.uid.uidByte[i] < 0x10 ? "0" : ""));
-     		uid+=(String(mfrc522.uid.uidByte[i], HEX));
-  	}
+	{
+		uid+=(String(mfrc522.uid.uidByte[i] < 0x10 ? "0" : ""));
+		uid+=(String(mfrc522.uid.uidByte[i], HEX));
+		v1uid+=(String(mfrc522.uid.uidByte[i], HEX));
+	}
 	rfidState = cardSwiped;
 
 #ifdef DEBUG
+	Serial.print(F("[ INFO ] PICC's UID: "));
 	Serial.print(uid);
 #endif
+
 	MFRC522::PICC_Type piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
 	type = mfrc522.PICC_GetTypeName(piccType);
+
 #ifdef DEBUG
 	Serial.print(" " + type);
 #endif
@@ -288,10 +297,27 @@ void rfidProcess()
 	}
 
 	File f = SPIFFS.open("/P/" + uid, "r");
+
+	/*
+	 *  If the file was not found then this is an unknown user, so no more
+	 *  processing to be done. However, we do a secondary check here to see
+	 *  if an old esp-rfid v1 uid exists and if so use that.
+	 */
 	if (!f)
 	{
-		processingState = unknown;
-		return;
+		/* Test to see if there was a uid in v1 format */
+		f = SPIFFS.open("/P/" + v1uid, "r");
+		if (!f)
+		{
+			processingState = unknown;
+			return;
+		}
+		uid = v1uid;
+#ifdef DEBUG
+		Serial.print(" (found uid in v1 format: ");
+		Serial.print(v1uid);
+		Serial.print(")");
+#endif
 	}
 
 	size_t size = f.size();
@@ -494,6 +520,7 @@ void cleanRfidLoop()
 		currentInput = "";
 		type = "";
 		uid = "";
+		v1uid = "";
 		rfidState = waitingRfid;
 		processingState = waitingProcessing;
 		ledWaitingOff();
