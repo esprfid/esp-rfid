@@ -1,0 +1,69 @@
+unsigned int beeperInterval = 0;
+unsigned int beeperOffTime = 0;
+
+void beeperBeep()
+{
+	if (config.beeperpin != 255)
+	{
+		if (currentMillis > beeperOffTime && digitalRead(config.beeperpin) == BEEPERon)
+		{
+			digitalWrite(config.beeperpin, BEEPERoff);
+#ifdef DEBUG
+			Serial.println("Beeper OFF");
+#endif
+			beeperInterval = 0;
+		}
+		else if (beeperInterval != 0)
+		{
+			int beeperState = digitalRead(config.beeperpin); 
+			if (currentMillis - previousMillis >= beeperInterval) 
+			{
+    			previousMillis = currentMillis;
+				if (beeperState == BEEPERon) {
+					beeperState = BEEPERoff;
+#ifdef DEBUG
+					Serial.println("Beeper OFF");
+#endif
+				} else {
+					beeperState = BEEPERon;
+#ifdef DEBUG
+					Serial.println("Beeper ON");
+#endif
+				}
+				digitalWrite(config.beeperpin, beeperState);
+			}
+		}
+	}
+}
+
+void beeperValidAccess()
+{
+	if (config.beeperpin != 255)
+	{
+		beeperOffTime = currentMillis + 2000;
+		digitalWrite(config.beeperpin, BEEPERon);
+#ifdef DEBUG
+		Serial.println("Beeper ON");
+#endif
+	}
+}
+
+void beeperAdminAccess()
+{
+	if (config.beeperpin != 255) {
+		beeperOffTime = currentMillis + 3000;
+		digitalWrite(config.beeperpin, BEEPERon);
+#ifdef DEBUG
+		Serial.println("Beeper ON");
+#endif
+	}
+}
+
+void beeperAccessDenied()
+{
+	if (config.beeperpin != 255)
+	{
+		beeperOffTime = currentMillis + 1000;
+		beeperInterval = 200;
+	}
+}

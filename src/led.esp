@@ -1,0 +1,89 @@
+unsigned long accessdeniedOffTime = 0;
+
+void ledWaitingOn()
+{
+	if (config.ledwaitingpin != 255)
+	{
+		digitalWrite(config.ledwaitingpin, LEDon);
+#ifdef DEBUG
+		Serial.println("LED waiting ON");
+#endif
+	}
+}
+
+void ledWaitingOff()
+{
+	if (config.ledwaitingpin != 255)
+	{
+		digitalWrite(config.ledwaitingpin, HIGH);
+#ifdef DEBUG
+		Serial.println("LED waiting OFF");
+#endif
+	}
+}
+
+void ledWifiOn()
+{
+	if (config.wifipin != 255)
+	{
+		digitalWrite(config.wifipin, LEDon);
+#ifdef DEBUG
+		Serial.println("LED WiFi ON");
+#endif
+	}
+}
+
+void ledWifiOff()
+{
+	if (config.wifipin != 255)
+	{
+		digitalWrite(config.wifipin, LEDoff);
+#ifdef DEBUG
+		Serial.println("LED WiFi OFF");
+#endif
+	}
+}
+
+// blink when not connected, on when connected
+void ledWifiStatus()
+{
+	if (config.wifipin != 255 && !config.accessPointMode)
+	{
+		if (!WiFi.isConnected())
+		{
+			if ((currentMillis - wifiPinBlink) > 500)
+			{
+				wifiPinBlink = currentMillis;
+				digitalWrite(config.wifipin, !digitalRead(config.wifipin));
+			}
+		}
+		else
+		{
+			if (!(digitalRead(config.wifipin) == LEDon))
+				digitalWrite(config.wifipin, LEDon);
+		}
+	}
+}
+
+void ledAccessDeniedOff()
+{
+	if (config.accessdeniedpin != 255 && currentMillis > accessdeniedOffTime && digitalRead(config.accessdeniedpin) == LEDon)
+	{
+		digitalWrite(config.accessdeniedpin, LEDoff);
+#ifdef DEBUG
+		Serial.println("LED access denied OFF");
+#endif
+	}
+}
+
+void ledAccessDeniedOn()
+{
+	if (config.accessdeniedpin != 255)
+	{
+		accessdeniedOffTime = currentMillis + 1000;
+		digitalWrite(config.accessdeniedpin, LEDon);
+#ifdef DEBUG
+		Serial.println("LED access denied ON");
+#endif
+	}
+}

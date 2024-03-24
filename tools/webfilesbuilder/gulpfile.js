@@ -8,25 +8,23 @@ var htmlmin = require('gulp-htmlmin');
 var uglify = require('gulp-uglify');
 var pump = require('pump');
 
-gulp.task('esprfidjsminify', function (cb) {
-  pump([
+function espRfidJsMinify (cb) {
+    return pump([
         gulp.src('../../src/websrc/js/esprfid.js'),
         uglify(),
         gulp.dest('../../src/websrc/gzipped/js/'),
-    ],
-    cb
-    );
-});
+    ] );
+}
 
-gulp.task("esprfidjsgz", ["esprfidjsminify"], function() {
+function espRfidJsGz() {
     return gulp.src("../../src/websrc/gzipped/js/esprfid.js")
         .pipe(gzip({
             append: true
         }))
     .pipe(gulp.dest('../../src/websrc/gzipped/js/'));
-});
+}
 
-gulp.task('esprfidjsgzh', ["esprfidjsgz"] , function() {
+function espRfidJsGzh(cb) {
     var source = "../../src/websrc/gzipped/js/" + "esprfid.js.gz";
     var destination = "../../src/webh/" + "esprfid.js.gz.h";
  
@@ -48,12 +46,29 @@ gulp.task('esprfidjsgzh', ["esprfidjsgz"] , function() {
  
     wstream.write('\n};')
     wstream.end();
-});
+    cb();
+}
 
+function scriptsConcat() {
+    return gulp.src([
+            '../../src/websrc/3rdparty/js/jquery-1.12.4.min.js',
+            '../../src/websrc/3rdparty/js/bootstrap-3.3.7.min.js',
+            '../../src/websrc/3rdparty/js/footable-3.1.6.min.js',
+        ])
+        .pipe(concat({
+            path: 'required.js',
+            stat: {
+                mode: 0666
+            }
+        }))
+        .pipe(gulp.dest('../../src/websrc/js/'))
+        .pipe(gzip({
+           append: true
+        }))
+        .pipe(gulp.dest('../../src/websrc/gzipped/js/'));
+}
 
-
-gulp.task("scripts", ["scripts-concat"], function() {
-
+function scripts(cb) {
     var source = "../../src/websrc/gzipped/js/" + "required.js.gz";
     var destination = "../../src/webh/" + "required.js.gz.h";
  
@@ -75,28 +90,15 @@ gulp.task("scripts", ["scripts-concat"], function() {
  
     wstream.write('\n};')
     wstream.end();
-	
-});
+    cb();
+}
 
-gulp.task('scripts-concat', ["esprfidjsgzh"], function() {
-    return gulp.src(['../../src/websrc/3rdparty/js/jquery-1.12.4.min.js', '../../src/websrc/3rdparty/js/bootstrap-3.3.7.min.js', '../../src/websrc/3rdparty/js/footable-3.1.6.min.js'])
-        .pipe(concat({
-            path: 'required.js',
-            stat: {
-                mode: 0666
-            }
-        }))
-        .pipe(gulp.dest('../../src/websrc/js/'))
-        .pipe(gzip({
-            append: true
-        }))
-        .pipe(gulp.dest('../../src/websrc/gzipped/js/'));
-});
-
-
-
-gulp.task('styles-concat', function() {
-    return gulp.src(['../../src/websrc/3rdparty/css/bootstrap-3.3.7.min.css', '../../src/websrc/3rdparty/css/footable.bootstrap-3.1.6.min.css', '../../src/websrc/3rdparty/css/sidebar.css'])
+function stylesConcat() {
+    return gulp.src([
+            '../../src/websrc/3rdparty/css/bootstrap-3.3.7.min.css',
+            '../../src/websrc/3rdparty/css/footable.bootstrap-3.1.6.min.css',
+            '../../src/websrc/3rdparty/css/sidebar.css',
+        ])
         .pipe(concat({
             path: 'required.css',
             stat: {
@@ -108,12 +110,9 @@ gulp.task('styles-concat', function() {
             append: true
         }))
         .pipe(gulp.dest('../../src/websrc/gzipped/css/'));
-});
+}
 
-
-
-gulp.task("styles", ["styles-concat"], function() {
-
+function styles(cb) {
     var source = "../../src/websrc/gzipped/css/" + "required.css.gz";
     var destination = "../../src/webh/" + "required.css.gz.h";
  
@@ -135,20 +134,19 @@ gulp.task("styles", ["styles-concat"], function() {
  
     wstream.write('\n};')
     wstream.end();
-	
-});
+    cb();	
+}
 
-
-gulp.task("fontgz", function() {
+function fontgz() {
 	return gulp.src("../../src/websrc/3rdparty/fonts/*.*")
-	.pipe(gulp.dest("../../src/websrc/fonts/"))
-        .pipe(gzip({
-            append: true
-        }))
-    .pipe(gulp.dest('../../src/websrc/gzipped/fonts/'));
-});
+        .pipe(gulp.dest("../../src/websrc/fonts/"))
+            .pipe(gzip({
+                append: true
+            }))
+        .pipe(gulp.dest('../../src/websrc/gzipped/fonts/'));
+}
 
-gulp.task("fonts", ["fontgz"], function() {
+function fonts() {
     return gulp.src("../../src/websrc/gzipped/fonts/*.*")
         .pipe(flatmap(function(stream, file) {
 			var filename = path.basename(file.path);
@@ -171,9 +169,9 @@ gulp.task("fonts", ["fontgz"], function() {
 
             return stream;
         }));
-});
+}
 
-gulp.task('htmlsprep', function() {
+function htmlsPrep() {
     return gulp.src('../../src/websrc/*.htm*')
         .pipe(htmlmin({collapseWhitespace: true, minifyJS: true}))
         .pipe(gulp.dest('../../src/websrc/gzipped/'))
@@ -181,17 +179,17 @@ gulp.task('htmlsprep', function() {
             append: true
         }))
         .pipe(gulp.dest('../../src/websrc/gzipped/'));
-});
+}
 
-gulp.task("htmlsgz", ["htmlsprep"], function() {
+function htmlsGz() {
     return gulp.src("../../src/websrc/*.htm*")
         .pipe(gzip({
             append: true
         }))
     .pipe(gulp.dest('../../src/websrc/gzipped/'));
-});
+}
 
-gulp.task("htmls", ["htmlsgz"], function() {
+function htmls() {
     return gulp.src("../../src/websrc/gzipped/*.gz")
         .pipe(flatmap(function(stream, file) {
             var filename = path.basename(file.path);
@@ -214,6 +212,15 @@ gulp.task("htmls", ["htmlsgz"], function() {
 
             return stream;
         }));
-});
+}
 
-gulp.task('default', ['scripts', 'styles', "fonts", "htmls"]);
+async function runner() {
+    const scriptTasks = gulp.series(espRfidJsMinify, espRfidJsGz, espRfidJsGzh, scriptsConcat, scripts);
+    const styleTasks = gulp.series(stylesConcat, styles);
+    const fontTasks = gulp.series(fontgz, fonts);
+    const htmlTasks = gulp.series(htmlsGz, htmlsPrep, htmls);
+    const parallel = await gulp.parallel(scriptTasks, styleTasks, fontTasks, htmlTasks);
+    return await parallel();
+}
+
+exports.default = runner;

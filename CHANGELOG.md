@@ -1,6 +1,88 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [2.0.0] - 2023-11-14
+
+#### Breaking changes
+- [firmware] Removed build flag for `OFFICIALBOARD` #533 @matjack1
+- [firmware] MQTT endpoints have been changed to be more consistent and complete #501 @matjack1
+
+#### Added
+- [firmware] Moved to native Arduino support for timezone and NTP to support daylight saving time #604 @matjack1
+- [firmware] Added door name, to send via MQTT access type and door name for setups with multiple doors #598 @matjack1
+- [firmware] Added more options for Wiegand readers on which bits to read #582 @matjack1
+- [firmware] Added support for MQTT auto-topic with topic postfixed with 6 characters from MAC address #566 @matjack1
+- [firmware] Added support to read/write configuration via MQTT #565 @matjack1
+- [firmware] Added valid-since date for user validity #562 @matjack1
+- [firmware] Added support for pincode only option to open door #551 @matjack1
+- [webui] Improved support for websocket reconnection #502 @matjack1
+- [firmware] Added opening hours with an hourly granularity #499 @matjack1
+- [firmware] Added LED to signal that we are waiting for pincode and beeper support #490 @matjack1
+    - beeper for valid, denied or admin access 
+- [firmware] Added different pincode for each user after a card swipe #477 @matjack1
+- [firmware] Improvements in MQTT including AutoDiscovery for the Home Assistant #449 #559 @xyzroe
+- [firmware] Added anti-tamper support #449 @xyzroe
+- [firmware] Added pin to give users feedback when access denied #426 @matjack1
+- [firmware] Added ability to delete a single user over MQTT via UID #424 @baden02
+- [docs] improved MQTT documentation #416 #423 @matjack1 @baden03
+- [firmware] added doorbell support #415 @matjack1
+- [firmware] improved decoding of Wiegand keypresses #360 @christofkac
+- [firmware] added support for multiple relays #318 @frenchie71
+- [firmware] optional BSSID for wifi connections #307 @frenchie71
+- [firmware] Initial support for Wiegand Keypads @frenchie71
+- [firmware] Initial support for OTP (TOTP) @frenchie71
+- [webui] Added Download function for log files @frenchie71
+- [webui] Log file options on WebUI @frenchie71
+- [firmware] Log Maintenance Split, Rollover, View, Delete @frenchie7
+- [firmware] Added button to open door and door status pin @nardev
+
+#### Changed
+- [firmware] Changed timezone support to add daylight saving management #604 @matjack1
+- [firmware] Refactor WiFi connection #495 #497 #536 @matjack1
+    - Option to disable access point mode for production usage
+    - Automatic retries when connection drops
+- [firmware] Refactor configuration #485 @matjack1
+- [firmware] Upgrade to ArduinoJSON v6 #483 @matjack1
+- [tools] Added Github Actions instead of Travis CI for building esp-rfid and ancillary tools #478 #482 @matjack1
+- [firmware] Improved MQTT support #475 #476 #484 #487 #488 @matjack1
+    - added queue for message processing to avoid watchdog timeout
+    - ACK message on processing, to enable throttling of incoming messages
+    - better reconnection on WiFi reconnections
+- [firmware] Refactor RFID reading #471 #491 #496 @matjack1
+    - separate reading card, reading pincode, processing
+    - better support for external feedback, LEDs, beeper
+- [tools] updated Gulp scripts for building web UI #414 #473 @matjack1
+- [firmware] improved wifi handling #374 #375 @ingeninge
+- [firmware] Wi-Fi connection routine is now improved @frenchie71
+- [firmware] Log file operations are now more robust @frenchie71
+
+## [1.3.3] Test-Release 2019-06-22
+#### Fixed
+* PlatformIO **ISR not in IRAM!** Hotfix
+
+## [1.3.1] Test-Release 2019-06-21
+#### Added
+- [firmware] Support for Door Status tracking with log and mqtt options @nardev
+- [firmware] adding mqtt_publish_info, generateUid functions @nardev
+- [firmware] MQTT functionality is greatly improved thanks to @marelab 
+
+Reading all user data over MQTT
+Sending User data to RFID-DOOR/ESP-RFID over MQTT
+Sending door open command over MQTT
+Sending door status over MQTT as event
+Sending Sync of a RFID-DOOR (IP/Hostname) over MQTT
+Configure Sync interval over ESP-RFID GUI
+Deleting all User of a ESP-RFID device over MQTT
+Sending log event & access data over MQTT
+
+#### Changed
+- [firmware] Renaming some variable names @nardev
+- [firmware] order of settings in web and hr lines @nardev
+
+#### Fixed
+- [webui] Make possible to connect WebUI behind NAT-ed network @Pako2 @abdulhanananwari
+- [firmware] Issue #240 "Backup User Data only returns some users" @nardev
+
 ## [1.0.2] 2019-01-28
 
 ### BREAKING CHANGES (These changes will break your data on device, please make sure made a backup, also you can not use your old settings on this release but only can restore user data)
@@ -13,7 +95,7 @@ All notable changes to this project will be documented in this file.
 - [firmware] #189 Flash layout changed to 2MB Firmware / 2MB SPIFFS Data @Pako2
 - [firmware] Support for RDM6300 RFID readers (125kHz, UART) #163 @arduino12 / concurrently by @Pako2
 - [firmware] debug firmware for debugging purposes
-- [tools] executables for tools (no longer need to have node js and gulp for web ui development - **only lightly tested**) 
+- [tools] executables for tools (no longer need to have node js and gulp for web ui development - **only lightly tested**)
 - [firmware] LED_BUILTIN lights up while wifi connected and flashes when it waits for wifi @Pako2
 - [webui] IP address choice option in AP mode @Pako2
 - [webui] favicon.ico @Pako2
@@ -26,14 +108,14 @@ All notable changes to this project will be documented in this file.
 - [firmware] avoid double Serial.begin @Pako2
 - [firmware] removing redundant terminating null character  @Pako2
 - [firmware] fix the loadconfiguration loop @Pako2
-- [firmware] not able to connect MQTT server #157 @fivosg 
-- [firmware] a MQTT message typo #157 @wamboin23 
-- [webui] some breaks on web pages 
+- [firmware] not able to connect MQTT server #157 @fivosg
+- [firmware] a MQTT message typo #157 @wamboin23
+- [webui] some breaks on web pages
 - [webui] usage of !important CSS rule
 - [firmware] #191 relay type inversion @Pako2
 - [firmware] #190 Increase PN532::WaitReady debug level @Pako2
 - [firmware] validuntil is being ignored #151
-- [firmware] the boot loop when ssid is empty on configuration file (actually more a workaround than a fix) #154 
+- [firmware] the boot loop when ssid is empty on configuration file (actually more a workaround than a fix) #154
 
 #### Changed
 - [firmware] unify output format debug print of PICC @Pako2
@@ -57,22 +139,22 @@ All notable changes to this project will be documented in this file.
 
 #### Changed
 - [firmware] do not initialize serial output unless we are debugging
-- [build] slice main.cpp to multiple parts for better readability 
+- [build] slice main.cpp to multiple parts for better readability
 - [webui] Access Type Active to Always
 - [firmware] more reliable activation of relay
 
 ## [0.8.0]
 #### Breaking Changes
 - [firmware] Flash partition is changed to 1+3 !!! You need to backup your settings and users before updating to this version
-- [firmware] For wiegand readers card id's changed hexadecimal to decimal !!! You need to change hexadecimal values to decimal values on your user backup file 
+- [firmware] For wiegand readers card id's changed hexadecimal to decimal !!! You need to change hexadecimal values to decimal values on your user backup file
 
 #### Added
-- [build] Optimize code for official board 
+- [build] Optimize code for official board
 - [firmware] mqtt boot, hearthbeat, access message added
 
 #### Fixed
 - [firmware] #128 Do not retain MQTT publishes
-- [firmware] Compiller warnings fixed 
+- [firmware] Compiller warnings fixed
 
 #### Changed
 - [webui] Default wifi type to AP

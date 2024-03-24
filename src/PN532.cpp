@@ -1,4 +1,3 @@
-#ifndef OFFICIALBOARD
 /**************************************************************************
     @file     PN532.cpp
     @author   Adafruit Industries, Elmü
@@ -51,11 +50,11 @@
 **************************************************************************/
 PN532::PN532()
 {
-    mu8_ClkPin     = 0;
-    mu8_MisoPin    = 0;  
-    mu8_MosiPin    = 0;  
-    mu8_SselPin    = 0;  
-    mu8_ResetPin   = 0;
+    mu8_ClkPin = 0;
+    mu8_MisoPin = 0;
+    mu8_MosiPin = 0;
+    mu8_SselPin = 0;
+    mu8_ResetPin = 0;
 }
 
 /**************************************************************************
@@ -63,11 +62,11 @@ PN532::PN532()
     param  reset     The RSTPD_N pin
 **************************************************************************/
 #if USE_HARDWARE_I2C
-    void PN532::InitI2C(byte u8_Reset)
-    {
-        mu8_ResetPin = u8_Reset;
-        Utils::SetPinMode(mu8_ResetPin, OUTPUT);
-    }
+void PN532::InitI2C(byte u8_Reset)
+{
+    mu8_ResetPin = u8_Reset;
+    Utils::SetPinMode(mu8_ResetPin, OUTPUT);
+}
 #endif
 
 /**************************************************************************
@@ -79,20 +78,20 @@ PN532::PN532()
     param  reset     Location of the RSTPD_N pin
 **************************************************************************/
 #if USE_SOFTWARE_SPI
-    void PN532::InitSoftwareSPI(byte u8_Clk, byte u8_Miso, byte u8_Mosi, byte u8_Sel, byte u8_Reset)
-    {
-        mu8_ClkPin     = u8_Clk;
-        mu8_MisoPin    = u8_Miso;
-        mu8_MosiPin    = u8_Mosi;
-        mu8_SselPin    = u8_Sel;
-        mu8_ResetPin   = u8_Reset;
-    
-        Utils::SetPinMode(mu8_ResetPin, OUTPUT);  
-        Utils::SetPinMode(mu8_SselPin,  OUTPUT);
-        Utils::SetPinMode(mu8_ClkPin,   OUTPUT);   
-        Utils::SetPinMode(mu8_MosiPin,  OUTPUT);
-        Utils::SetPinMode(mu8_MisoPin,  INPUT);
-    }
+void PN532::InitSoftwareSPI(byte u8_Clk, byte u8_Miso, byte u8_Mosi, byte u8_Sel, byte u8_Reset)
+{
+    mu8_ClkPin = u8_Clk;
+    mu8_MisoPin = u8_Miso;
+    mu8_MosiPin = u8_Mosi;
+    mu8_SselPin = u8_Sel;
+    mu8_ResetPin = u8_Reset;
+
+    Utils::SetPinMode(mu8_ResetPin, OUTPUT);
+    Utils::SetPinMode(mu8_SselPin, OUTPUT);
+    Utils::SetPinMode(mu8_ClkPin, OUTPUT);
+    Utils::SetPinMode(mu8_MosiPin, OUTPUT);
+    Utils::SetPinMode(mu8_MisoPin, INPUT);
+}
 #endif
 
 /**************************************************************************
@@ -101,35 +100,36 @@ PN532::PN532()
     param  reset     Location of the RSTPD_N pin
 **************************************************************************/
 #if USE_HARDWARE_SPI
-    void PN532::InitHardwareSPI(byte u8_Sel, byte u8_Reset)
-    {
-        mu8_SselPin  = u8_Sel;
-        mu8_ResetPin = u8_Reset;
-    
-        Utils::SetPinMode(mu8_ResetPin, OUTPUT);
-        Utils::SetPinMode(mu8_SselPin,  OUTPUT);
-    }
+void PN532::InitHardwareSPI(byte u8_Sel, byte u8_Reset)
+{
+    mu8_SselPin = u8_Sel;
+    mu8_ResetPin = u8_Reset;
+
+    Utils::SetPinMode(mu8_ResetPin, OUTPUT);
+    Utils::SetPinMode(mu8_SselPin, OUTPUT);
+}
 #endif
 
 /**************************************************************************
     Reset the PN532, wake up and start communication
 **************************************************************************/
-void PN532::begin() 
+void PN532::begin()
 {
-    if (mu8_DebugLevel > 0) Utils::Print("\r\n*** begin()\r\n");
+    if (mu8_DebugLevel > 0)
+        Utils::Print("\r\n*** begin()\r\n");
 
     Utils::WritePin(mu8_ResetPin, HIGH);
     Utils::DelayMilli(10);
     Utils::WritePin(mu8_ResetPin, LOW);
     Utils::DelayMilli(400);
     Utils::WritePin(mu8_ResetPin, HIGH);
-    Utils::DelayMilli(10);  // Small delay required before taking other actions after reset. See datasheet section 12.23, page 209.
-  
-    #if (USE_HARDWARE_SPI || USE_SOFTWARE_SPI) 
+    Utils::DelayMilli(10); // Small delay required before taking other actions after reset. See datasheet section 12.23, page 209.
+
+#if (USE_HARDWARE_SPI || USE_SOFTWARE_SPI)
     {
-        #if USE_HARDWARE_SPI
-            SpiClass::Begin(PN532_HARD_SPI_CLOCK);
-        #endif
+#if USE_HARDWARE_SPI
+        SpiClass::Begin(PN532_HARD_SPI_CLOCK);
+#endif
 
         // Wake up the PN532 (chapter 7.2.11) -> send a sequence of 0x55 (dummy bytes)
         byte u8_Buffer[20];
@@ -142,11 +142,11 @@ void PN532::begin()
             Utils::PrintHexBuf(u8_Buffer, sizeof(u8_Buffer), LF);
         }
     }
-    #elif USE_HARDWARE_I2C
+#elif USE_HARDWARE_I2C
     {
         I2cClass::Begin();
     }
-    #endif
+#endif
 }
 
 /**************************************************************************
@@ -167,10 +167,11 @@ void PN532::SetDebugLevel(byte level)
     pFlags, bit 1 = Support of ISO 14443B
     pFlags, bit 2 = Support of ISO 18092
 **************************************************************************/
-bool PN532::GetFirmwareVersion(byte* pIcType, byte* pVersionHi, byte* pVersionLo, byte* pFlags) 
+bool PN532::GetFirmwareVersion(byte *pIcType, byte *pVersionHi, byte *pVersionLo, byte *pFlags)
 {
-    if (mu8_DebugLevel > 0) Utils::Print("\r\n*** GetFirmwareVersion()\r\n");
-    
+    if (mu8_DebugLevel > 0)
+        Utils::Print("\r\n*** GetFirmwareVersion()\r\n");
+
     mu8_PacketBuffer[0] = PN532_COMMAND_GETFIRMWAREVERSION;
     if (!SendCommandCheckAck(mu8_PacketBuffer, 1))
         return 0;
@@ -182,10 +183,10 @@ bool PN532::GetFirmwareVersion(byte* pIcType, byte* pVersionHi, byte* pVersionLo
         return false;
     }
 
-    *pIcType    = mu8_PacketBuffer[2];
+    *pIcType = mu8_PacketBuffer[2];
     *pVersionHi = mu8_PacketBuffer[3];
     *pVersionLo = mu8_PacketBuffer[4];
-    *pFlags     = mu8_PacketBuffer[5];    
+    *pFlags = mu8_PacketBuffer[5];
     return true;
 }
 
@@ -194,16 +195,17 @@ bool PN532::GetFirmwareVersion(byte* pIcType, byte* pVersionHi, byte* pVersionLo
 **************************************************************************/
 bool PN532::SamConfig(void)
 {
-    if (mu8_DebugLevel > 0) Utils::Print("\r\n*** SamConfig()\r\n");
-  
+    if (mu8_DebugLevel > 0)
+        Utils::Print("\r\n*** SamConfig()\r\n");
+
     mu8_PacketBuffer[0] = PN532_COMMAND_SAMCONFIGURATION;
     mu8_PacketBuffer[1] = 0x01; // normal mode;
     mu8_PacketBuffer[2] = 0x14; // timeout 50ms * 20 = 1 second
     mu8_PacketBuffer[3] = 0x01; // use IRQ pin!
-  
+
     if (!SendCommandCheckAck(mu8_PacketBuffer, 4))
         return false;
-  
+
     byte len = ReadData(mu8_PacketBuffer, 9);
     if (len != 2 || mu8_PacketBuffer[1] != PN532_COMMAND_SAMCONFIGURATION + 1)
     {
@@ -216,19 +218,20 @@ bool PN532::SamConfig(void)
 /**************************************************************************
     Sets the amount of reties that the PN532 tries to activate a target
 **************************************************************************/
-bool PN532::SetPassiveActivationRetries() 
+bool PN532::SetPassiveActivationRetries()
 {
-    if (mu8_DebugLevel > 0) Utils::Print("\r\n*** SetPassiveActivationRetries()\r\n");
-  
+    if (mu8_DebugLevel > 0)
+        Utils::Print("\r\n*** SetPassiveActivationRetries()\r\n");
+
     mu8_PacketBuffer[0] = PN532_COMMAND_RFCONFIGURATION;
     mu8_PacketBuffer[1] = 5;    // Config item 5 (MaxRetries)
     mu8_PacketBuffer[2] = 0xFF; // MxRtyATR (default = 0xFF)
     mu8_PacketBuffer[3] = 0x01; // MxRtyPSL (default = 0x01)
     mu8_PacketBuffer[4] = 3;    // one retry is enough for Mifare Classic but Desfire is slower (if you modify this, you must also modify PN532_TIMEOUT!)
-    
+
     if (!SendCommandCheckAck(mu8_PacketBuffer, 5))
         return false;
-  
+
     byte len = ReadData(mu8_PacketBuffer, 9);
     if (len != 2 || mu8_PacketBuffer[1] != PN532_COMMAND_RFCONFIGURATION + 1)
     {
@@ -244,17 +247,18 @@ bool PN532::SetPassiveActivationRetries()
     When the field is off, the PN532 consumes approx 18 mA
     The RF field is turned on again by ReadPassiveTargetID().
 **************************************************************************/
-bool PN532::SwitchOffRfField() 
+bool PN532::SwitchOffRfField()
 {
-    if (mu8_DebugLevel > 0) Utils::Print("\r\n*** SwitchOffRfField()\r\n");
-  
+    if (mu8_DebugLevel > 0)
+        Utils::Print("\r\n*** SwitchOffRfField()\r\n");
+
     mu8_PacketBuffer[0] = PN532_COMMAND_RFCONFIGURATION;
     mu8_PacketBuffer[1] = 1; // Config item 1 (RF Field)
     mu8_PacketBuffer[2] = 0; // Field Off
-    
+
     if (!SendCommandCheckAck(mu8_PacketBuffer, 3))
         return false;
-  
+
     byte len = ReadData(mu8_PacketBuffer, 9);
     if (len != 2 || mu8_PacketBuffer[1] != PN532_COMMAND_RFCONFIGURATION + 1)
     {
@@ -290,22 +294,23 @@ bool PN532::SwitchOffRfField()
 /**************************************************************************/
 bool PN532::WriteGPIO(bool P30, bool P31, bool P33, bool P35)
 {
-    if (mu8_DebugLevel > 0) Utils::Print("\r\n*** WriteGPIO()\r\n");
-  
+    if (mu8_DebugLevel > 0)
+        Utils::Print("\r\n*** WriteGPIO()\r\n");
+
     byte pinState = (P30 ? PN532_GPIO_P30 : 0) |
                     (P31 ? PN532_GPIO_P31 : 0) |
-                           PN532_GPIO_P32      |
+                    PN532_GPIO_P32 |
                     (P33 ? PN532_GPIO_P33 : 0) |
-                           PN532_GPIO_P34      |
+                    PN532_GPIO_P34 |
                     (P35 ? PN532_GPIO_P35 : 0);
 
     mu8_PacketBuffer[0] = PN532_COMMAND_WRITEGPIO;
-    mu8_PacketBuffer[1] = PN532_GPIO_VALIDATIONBIT | pinState;  // P3 Pins
-    mu8_PacketBuffer[2] = 0x00;                                 // P7 GPIO Pins (not used ... taken by SPI)
-                    
+    mu8_PacketBuffer[1] = PN532_GPIO_VALIDATIONBIT | pinState; // P3 Pins
+    mu8_PacketBuffer[2] = 0x00;                                // P7 GPIO Pins (not used ... taken by SPI)
+
     if (!SendCommandCheckAck(mu8_PacketBuffer, 3))
         return false;
-  
+
     byte len = ReadData(mu8_PacketBuffer, 9);
     if (len != 2 || mu8_PacketBuffer[1] != PN532_COMMAND_WRITEGPIO + 1)
     {
@@ -314,7 +319,6 @@ bool PN532::WriteGPIO(bool P30, bool P31, bool P33, bool P35)
     }
     return true;
 }
-
 
 /**************************************************************************
     Waits for an ISO14443A target to enter the field.
@@ -328,20 +332,21 @@ bool PN532::WriteGPIO(bool P30, bool P31, bool P33, bool P35)
     returns true and *UidLength = 0 if no card was found
     returns true and *UidLength > 0 if a card has been read successfully
 **************************************************************************/
-bool PN532::ReadPassiveTargetID(byte* u8_UidBuffer, byte* pu8_UidLength, eCardType* pe_CardType) 
+bool PN532::ReadPassiveTargetID(byte *u8_UidBuffer, byte *pu8_UidLength, eCardType *pe_CardType)
 {
-    if (mu8_DebugLevel > 0) Utils::Print("\r\n*** ReadPassiveTargetID()\r\n");
+    if (mu8_DebugLevel > 0)
+        Utils::Print("\r\n*** ReadPassiveTargetID()\r\n");
 
     *pu8_UidLength = 0;
-    *pe_CardType   = CARD_Unknown;
-    memset(u8_UidBuffer, 0, 8);   
+    *pe_CardType = CARD_Unknown;
+    memset(u8_UidBuffer, 0, 8);
     mu8_PacketBuffer[0] = PN532_COMMAND_INLISTPASSIVETARGET;
-    mu8_PacketBuffer[1] = 1;  // read data of 1 card (The PN532 can read max 2 targets at the same time)
+    mu8_PacketBuffer[1] = 1;                         // read data of 1 card (The PN532 can read max 2 targets at the same time)
     mu8_PacketBuffer[2] = CARD_TYPE_106KB_ISO14443A; // This function currently does not support other card types.
 
     if (!SendCommandCheckAck(mu8_PacketBuffer, 3))
         return false; // Error (no valid ACK received or timeout)
-  
+
     /* 
     ISO14443A card response:
     mu8_PacketBuffer Description
@@ -356,19 +361,19 @@ bool PN532::ReadPassiveTargetID(byte* u8_UidBuffer, byte* pu8_UidLength, eCardTy
     b8..Length       UID (4 or 7 bytes)
     nn               ATS Length     (Desfire only)
     nn..Length-1     ATS data bytes (Desfire only)
-    */ 
+    */
     byte len = ReadData(mu8_PacketBuffer, 28);
     if (len < 3 || mu8_PacketBuffer[1] != PN532_COMMAND_INLISTPASSIVETARGET + 1)
     {
         Utils::Print("ReadPassiveTargetID failed\r\n");
         return false;
-    }   
+    }
 
-    byte cardsFound = mu8_PacketBuffer[2]; 
+    byte cardsFound = mu8_PacketBuffer[2];
     if (mu8_DebugLevel > 0)
     {
-        Utils::Print("Cards found: "); 
-        Utils::PrintDec(cardsFound, LF); 
+        Utils::Print("Cards found: ");
+        Utils::PrintDec(cardsFound, LF);
     }
     if (cardsFound != 1)
         return true; // no card found -> this is not an error!
@@ -377,20 +382,22 @@ bool PN532::ReadPassiveTargetID(byte* u8_UidBuffer, byte* pu8_UidLength, eCardTy
     if (u8_IdLength != 4 && u8_IdLength != 7)
     {
         Utils::Print("Card has unsupported UID length: ");
-        Utils::PrintDec(u8_IdLength, LF); 
+        Utils::PrintDec(u8_IdLength, LF);
         return true; // unsupported card found -> this is not an error!
-    }   
+    }
 
-    memcpy(u8_UidBuffer, mu8_PacketBuffer + 8, u8_IdLength);    
+    memcpy(u8_UidBuffer, mu8_PacketBuffer + 8, u8_IdLength);
     *pu8_UidLength = u8_IdLength;
 
     // See "Mifare Identification & Card Types.pdf" in the ZIP file
     uint16_t u16_ATQA = ((uint16_t)mu8_PacketBuffer[4] << 8) | mu8_PacketBuffer[5];
-    byte     u8_SAK   = mu8_PacketBuffer[6];
+    byte u8_SAK = mu8_PacketBuffer[6];
 
-    if (u8_IdLength == 7 && u8_UidBuffer[0] != 0x80 && u16_ATQA == 0x0344 && u8_SAK == 0x20) *pe_CardType = CARD_Desfire;
-    if (u8_IdLength == 4 && u8_UidBuffer[0] == 0x80 && u16_ATQA == 0x0304 && u8_SAK == 0x20) *pe_CardType = CARD_DesRandom;
-    
+    if (u8_IdLength == 7 && u8_UidBuffer[0] != 0x80 && u16_ATQA == 0x0344 && u8_SAK == 0x20)
+        *pe_CardType = CARD_Desfire;
+    if (u8_IdLength == 4 && u8_UidBuffer[0] == 0x80 && u16_ATQA == 0x0304 && u8_SAK == 0x20)
+        *pe_CardType = CARD_DesRandom;
+
     if (mu8_DebugLevel > 0)
     {
         Utils::Print("Card UID:    ");
@@ -408,9 +415,11 @@ bool PN532::ReadPassiveTargetID(byte* u8_UidBuffer, byte* pu8_UidLength, eCardTy
         char s8_Buf[80];
         sprintf(s8_Buf, "Card Type:   ATQA= 0x%04X, SAK= 0x%02X", u16_ATQA, u8_SAK);
 
-        if (*pe_CardType == CARD_Desfire)   strcat(s8_Buf, " (Desfire Default)");
-        if (*pe_CardType == CARD_DesRandom) strcat(s8_Buf, " (Desfire RandomID)");
-            
+        if (*pe_CardType == CARD_Desfire)
+            strcat(s8_Buf, " (Desfire Default)");
+        if (*pe_CardType == CARD_DesRandom)
+            strcat(s8_Buf, " (Desfire RandomID)");
+
         Utils::Print(s8_Buf, LF);
     }
     return true;
@@ -422,14 +431,15 @@ bool PN532::ReadPassiveTargetID(byte* u8_UidBuffer, byte* pu8_UidLength, eCardTy
 **************************************************************************/
 bool PN532::SelectCard()
 {
-    if (mu8_DebugLevel > 0) Utils::Print("\r\n*** SelectCard()\r\n");
-  
+    if (mu8_DebugLevel > 0)
+        Utils::Print("\r\n*** SelectCard()\r\n");
+
     mu8_PacketBuffer[0] = PN532_COMMAND_INSELECT;
     mu8_PacketBuffer[1] = 1; // Target 1
 
     if (!SendCommandCheckAck(mu8_PacketBuffer, 2))
         return false;
-  
+
     byte len = ReadData(mu8_PacketBuffer, 10);
     if (len < 3 || mu8_PacketBuffer[1] != PN532_COMMAND_INSELECT + 1)
     {
@@ -451,14 +461,15 @@ bool PN532::SelectCard()
 **************************************************************************/
 bool PN532::DeselectCard()
 {
-    if (mu8_DebugLevel > 0) Utils::Print("\r\n*** DeselectCard()\r\n");
-  
+    if (mu8_DebugLevel > 0)
+        Utils::Print("\r\n*** DeselectCard()\r\n");
+
     mu8_PacketBuffer[0] = PN532_COMMAND_INDESELECT;
     mu8_PacketBuffer[1] = 0; // Deselect all cards
 
     if (!SendCommandCheckAck(mu8_PacketBuffer, 2))
         return false;
-  
+
     byte len = ReadData(mu8_PacketBuffer, 10);
     if (len < 3 || mu8_PacketBuffer[1] != PN532_COMMAND_INDESELECT + 1)
     {
@@ -476,14 +487,15 @@ bool PN532::DeselectCard()
 **************************************************************************/
 bool PN532::ReleaseCard()
 {
-    if (mu8_DebugLevel > 0) Utils::Print("\r\n*** ReleaseCard()\r\n");
-  
+    if (mu8_DebugLevel > 0)
+        Utils::Print("\r\n*** ReleaseCard()\r\n");
+
     mu8_PacketBuffer[0] = PN532_COMMAND_INRELEASE;
     mu8_PacketBuffer[1] = 0; // Deselect all cards
 
     if (!SendCommandCheckAck(mu8_PacketBuffer, 2))
         return false;
-  
+
     byte len = ReadData(mu8_PacketBuffer, 10);
     if (len < 3 || mu8_PacketBuffer[1] != PN532_COMMAND_INRELEASE + 1)
     {
@@ -514,87 +526,87 @@ bool PN532::CheckPN532Status(byte u8_Status)
 
     switch (u8_Status)
     {
-        case 0x01: 
-            Utils::Print("Timeout\r\n");
-            return false;
-        case 0x02: 
-            Utils::Print("CRC error\r\n");
-            return false;
-        case 0x03: 
-            Utils::Print("Parity error\r\n");
-            return false;
-        case 0x04: 
-            Utils::Print("Wrong bit count during anti-collision\r\n");
-            return false;
-        case 0x05: 
-            Utils::Print("Framing error\r\n");
-            return false;
-        case 0x06: 
-            Utils::Print("Abnormal bit collision\r\n");
-            return false;
-        case 0x07: 
-            Utils::Print("Insufficient communication buffer\r\n");
-            return false;
-        case 0x09: 
-            Utils::Print("RF buffer overflow\r\n");
-            return false;
-        case 0x0A: 
-            Utils::Print("RF field has not been switched on\r\n");
-            return false;
-        case 0x0B: 
-            Utils::Print("RF protocol error\r\n");
-            return false;
-        case 0x0D: 
-            Utils::Print("Overheating\r\n");
-            return false;
-        case 0x0E: 
-            Utils::Print("Internal buffer overflow\r\n");
-            return false;
-        case 0x10: 
-            Utils::Print("Invalid parameter\r\n");
-            return false;
-        case 0x12: 
-            Utils::Print("Command not supported\r\n");
-            return false;
-        case 0x13: 
-            Utils::Print("Wrong data format\r\n");
-            return false;
-        case 0x14:
-            Utils::Print("Authentication error\r\n");
-            return false;
-        case 0x23:
-            Utils::Print("Wrong UID check byte\r\n");
-            return false;
-        case 0x25:
-            Utils::Print("Invalid device state\r\n");
-            return false;
-        case 0x26:
-            Utils::Print("Operation not allowed\r\n");
-            return false;
-        case 0x27:
-            Utils::Print("Command not acceptable\r\n");
-            return false;
-        case 0x29:
-            Utils::Print("Target has been released\r\n");
-            return false;
-        case 0x2A:
-            Utils::Print("Card has been exchanged\r\n");
-            return false;
-        case 0x2B:
-            Utils::Print("Card has disappeared\r\n");
-            return false;
-        case 0x2C:
-            Utils::Print("NFCID3 initiator/target mismatch\r\n");
-            return false;
-        case 0x2D:
-            Utils::Print("Over-current\r\n");
-            return false;
-        case 0x2E:
-            Utils::Print("NAD msssing\r\n");
-            return false;
-        default:
-            Utils::Print("Undocumented error\r\n");
-            return false;
+    case 0x01:
+        Utils::Print("Timeout\r\n");
+        return false;
+    case 0x02:
+        Utils::Print("CRC error\r\n");
+        return false;
+    case 0x03:
+        Utils::Print("Parity error\r\n");
+        return false;
+    case 0x04:
+        Utils::Print("Wrong bit count during anti-collision\r\n");
+        return false;
+    case 0x05:
+        Utils::Print("Framing error\r\n");
+        return false;
+    case 0x06:
+        Utils::Print("Abnormal bit collision\r\n");
+        return false;
+    case 0x07:
+        Utils::Print("Insufficient communication buffer\r\n");
+        return false;
+    case 0x09:
+        Utils::Print("RF buffer overflow\r\n");
+        return false;
+    case 0x0A:
+        Utils::Print("RF field has not been switched on\r\n");
+        return false;
+    case 0x0B:
+        Utils::Print("RF protocol error\r\n");
+        return false;
+    case 0x0D:
+        Utils::Print("Overheating\r\n");
+        return false;
+    case 0x0E:
+        Utils::Print("Internal buffer overflow\r\n");
+        return false;
+    case 0x10:
+        Utils::Print("Invalid parameter\r\n");
+        return false;
+    case 0x12:
+        Utils::Print("Command not supported\r\n");
+        return false;
+    case 0x13:
+        Utils::Print("Wrong data format\r\n");
+        return false;
+    case 0x14:
+        Utils::Print("Authentication error\r\n");
+        return false;
+    case 0x23:
+        Utils::Print("Wrong UID check byte\r\n");
+        return false;
+    case 0x25:
+        Utils::Print("Invalid device state\r\n");
+        return false;
+    case 0x26:
+        Utils::Print("Operation not allowed\r\n");
+        return false;
+    case 0x27:
+        Utils::Print("Command not acceptable\r\n");
+        return false;
+    case 0x29:
+        Utils::Print("Target has been released\r\n");
+        return false;
+    case 0x2A:
+        Utils::Print("Card has been exchanged\r\n");
+        return false;
+    case 0x2B:
+        Utils::Print("Card has disappeared\r\n");
+        return false;
+    case 0x2C:
+        Utils::Print("NFCID3 initiator/target mismatch\r\n");
+        return false;
+    case 0x2D:
+        Utils::Print("Over-current\r\n");
+        return false;
+    case 0x2E:
+        Utils::Print("NAD msssing\r\n");
+        return false;
+    default:
+        Utils::Print("Undocumented error\r\n");
+        return false;
     }
 }
 
@@ -602,18 +614,18 @@ bool PN532::CheckPN532Status(byte u8_Status)
 // ####                      LOW LEVEL FUNCTIONS                      #####
 // ########################################################################
 
-
 /**************************************************************************
     Return true if the PN532 is ready with a response.
 **************************************************************************/
-bool PN532::IsReady() 
+bool PN532::IsReady()
 {
-    #if (USE_HARDWARE_SPI || USE_SOFTWARE_SPI) 
+#if (USE_HARDWARE_SPI || USE_SOFTWARE_SPI)
     {
         Utils::WritePin(mu8_SselPin, LOW);
         Utils::DelayMilli(2); // INDISPENSABLE!! Otherwise reads bullshit
 
-        if (mu8_DebugLevel > 2) Utils::Print("IsReady(): write STATUSREAD\r\n");
+        if (mu8_DebugLevel > 2)
+            Utils::Print("IsReady(): write STATUSREAD\r\n");
 
         SpiWrite(PN532_SPI_STATUSREAD);
         byte u8_Ready = SpiRead();
@@ -623,14 +635,14 @@ bool PN532::IsReady()
             Utils::Print("IsReady(): read ");
             Utils::PrintHex8(u8_Ready, LF);
         }
-    
+
         Utils::WritePin(mu8_SselPin, HIGH);
         Utils::DelayMicro(PN532_SOFT_SPI_DELAY);
-        
+
         return u8_Ready == PN532_SPI_READY; // 0x01
     }
-    #elif USE_HARDWARE_I2C
-    { 
+#elif USE_HARDWARE_I2C
+    {
         // After reading this byte, the bus must be released with a Stop condition
         I2cClass::RequestFrom((byte)PN532_I2C_ADDRESS, (byte)1);
 
@@ -640,28 +652,29 @@ bool PN532::IsReady()
         {
             Utils::Print("IsReady(): read ");
             Utils::PrintHex8(u8_Ready, LF);
-        }        
-        
+        }
+
         return u8_Ready == PN532_I2C_READY; // 0x01
     }
-    #endif
+#endif
 }
 
 /**************************************************************************
     Waits until the PN532 is ready.
 **************************************************************************/
-bool PN532::WaitReady() 
+bool PN532::WaitReady()
 {
     uint16_t timer = 0;
-    while (!IsReady()) 
+    while (!IsReady())
     {
-        if (timer >= PN532_TIMEOUT) 
+        if (timer >= PN532_TIMEOUT)
         {
-            if (mu8_DebugLevel > 0) Utils::Print("WaitReady() -> TIMEOUT\r\n");
+            if (mu8_DebugLevel > 0)
+                Utils::Print("WaitReady() -> TIMEOUT\r\n");
             return false;
         }
         Utils::DelayMilli(10);
-        timer += 10;        
+        timer += 10;
     }
     return true;
 }
@@ -674,7 +687,7 @@ bool PN532::WaitReady()
     returns  true  if everything is OK, 
              false if timeout occured before an ACK was recieved
 **************************************************************************/
-bool PN532::SendCommandCheckAck(byte *cmd, byte cmdlen) 
+bool PN532::SendCommandCheckAck(byte *cmd, byte cmdlen)
 {
     WriteCommand(cmd, cmdlen);
     return ReadAck();
@@ -687,33 +700,33 @@ bool PN532::SendCommandCheckAck(byte *cmd, byte cmdlen)
     param  cmd       Command buffer
     param  cmdlen    Command length in bytes
 **************************************************************************/
-void PN532::WriteCommand(byte* cmd, byte cmdlen)
+void PN532::WriteCommand(byte *cmd, byte cmdlen)
 {
     byte TxBuffer[PN532_PACKBUFFSIZE + 10];
-    int P=0;
-    TxBuffer[P++] = PN532_PREAMBLE;    // 00
-    TxBuffer[P++] = PN532_STARTCODE1;  // 00
-    TxBuffer[P++] = PN532_STARTCODE2;  // FF
+    int P = 0;
+    TxBuffer[P++] = PN532_PREAMBLE;   // 00
+    TxBuffer[P++] = PN532_STARTCODE1; // 00
+    TxBuffer[P++] = PN532_STARTCODE2; // FF
     TxBuffer[P++] = cmdlen + 1;
     TxBuffer[P++] = 0xFF - cmdlen;
     TxBuffer[P++] = PN532_HOSTTOPN532; // D4
-    
-    for (byte i=0; i<cmdlen; i++) 
+
+    for (byte i = 0; i < cmdlen; i++)
     {
         TxBuffer[P++] = cmd[i];
     }
 
     byte checksum = 0;
-    for (byte i=0; i<P; i++) 
+    for (byte i = 0; i < P; i++)
     {
-       checksum += TxBuffer[i];
+        checksum += TxBuffer[i];
     }
 
     TxBuffer[P++] = ~checksum;
     TxBuffer[P++] = PN532_POSTAMBLE; // 00
 
     SendPacket(TxBuffer, P);
-   
+
     if (mu8_DebugLevel > 1)
     {
         Utils::Print("Sending:  ");
@@ -724,17 +737,18 @@ void PN532::WriteCommand(byte* cmd, byte cmdlen)
 /**************************************************************************
     Send a data packet
 **************************************************************************/
-void PN532::SendPacket(byte* buff, byte len)
+void PN532::SendPacket(byte *buff, byte len)
 {
-    #if (USE_HARDWARE_SPI || USE_SOFTWARE_SPI) 
+#if (USE_HARDWARE_SPI || USE_SOFTWARE_SPI)
     {
         Utils::WritePin(mu8_SselPin, LOW);
-        Utils::DelayMilli(2);  // INDISPENSABLE!!
+        Utils::DelayMilli(2); // INDISPENSABLE!!
 
-        if (mu8_DebugLevel > 2) Utils::Print("WriteCommand(): write DATAWRITE\r\n");
+        if (mu8_DebugLevel > 2)
+            Utils::Print("WriteCommand(): write DATAWRITE\r\n");
         SpiWrite(PN532_SPI_DATAWRITE);
 
-        for (byte i=0; i<len; i++) 
+        for (byte i = 0; i < len; i++)
         {
             SpiWrite(buff[i]);
         }
@@ -742,28 +756,28 @@ void PN532::SendPacket(byte* buff, byte len)
         Utils::WritePin(mu8_SselPin, HIGH);
         Utils::DelayMicro(PN532_SOFT_SPI_DELAY);
     }
-    #elif USE_HARDWARE_I2C
+#elif USE_HARDWARE_I2C
     {
         Utils::DelayMilli(2); // delay is for waking up the board
-    
+
         I2cClass::BeginTransmission(PN532_I2C_ADDRESS);
-        for (byte i=0; i<len; i++) 
+        for (byte i = 0; i < len; i++)
         {
             I2cClass::Write(buff[i]);
-        }   
+        }
         I2cClass::EndTransmission();
     }
-    #endif
+#endif
 }
 
 /**************************************************************************
     Read the ACK packet (acknowledge)
 **************************************************************************/
-bool PN532::ReadAck() 
+bool PN532::ReadAck()
 {
     const byte Ack[] = {0x00, 0x00, 0xFF, 0x00, 0xFF, 0x00};
     byte ackbuff[sizeof(Ack)];
-    
+
     // ATTENTION: Never read more than 6 bytes here!
     // The PN532 has a bug in SPI mode which results in the first byte of the response missing if more than 6 bytes are read here!
     if (!ReadPacket(ackbuff, sizeof(ackbuff)))
@@ -774,7 +788,7 @@ bool PN532::ReadAck()
         Utils::Print("Read ACK: ");
         Utils::PrintHexBuf(ackbuff, sizeof(ackbuff), LF);
     }
-    
+
     if (memcmp(ackbuff, Ack, sizeof(Ack)) != 0)
     {
         Utils::Print("*** No ACK frame received\r\n");
@@ -789,22 +803,22 @@ bool PN532::ReadAck()
     param  len       Number of bytes to read
     returns the number of bytes that have been copied to buff (< len) or 0 on error
 **************************************************************************/
-byte PN532::ReadData(byte* buff, byte len) 
-{ 
+byte PN532::ReadData(byte *buff, byte len)
+{
     byte RxBuffer[PN532_PACKBUFFSIZE];
-        
+
     const byte MIN_PACK_LEN = 2 /*start bytes*/ + 2 /*length + length checksum */ + 1 /*checksum*/;
     if (len < MIN_PACK_LEN || len > PN532_PACKBUFFSIZE)
     {
         Utils::Print("ReadData(): len is invalid\r\n");
         return 0;
     }
-    
+
     if (!ReadPacket(RxBuffer, len))
         return 0; // timeout
 
     // The following important validity check was completely missing in Adafruit code (added by Elmü)
-    // PN532 documentation says (chapter 6.2.1.6): 
+    // PN532 documentation says (chapter 6.2.1.6):
     // Before the start code (0x00 0xFF) there may be any number of additional bytes that must be ignored.
     // After the checksum there may be any number of additional bytes that must be ignored.
     // This function returns ONLY the pure data bytes:
@@ -819,17 +833,17 @@ byte PN532::ReadData(byte* buff, byte len)
     // postamble         -> skipped (optional, the PN532 may not send it!)
     // any bytes behind  -> skipped (never seen, but documentation says to ignore them)
 
-    const char* Error = NULL;
+    const char *Error = NULL;
     int Brace1 = -1;
     int Brace2 = -1;
     int dataLength = 0;
     do
     {
         int startCode = -1;
-        for (int i=0; i<=len-MIN_PACK_LEN; i++)
+        for (int i = 0; i <= len - MIN_PACK_LEN; i++)
         {
-            if (RxBuffer[i]   == PN532_STARTCODE1 && 
-                RxBuffer[i+1] == PN532_STARTCODE2)
+            if (RxBuffer[i] == PN532_STARTCODE1 &&
+                RxBuffer[i + 1] == PN532_STARTCODE2)
             {
                 startCode = i;
                 break;
@@ -841,16 +855,16 @@ byte PN532::ReadData(byte* buff, byte len)
             Error = "ReadData() -> No Start Code\r\n";
             break;
         }
-        
+
         int pos = startCode + 2;
-        dataLength      = RxBuffer[pos++];
+        dataLength = RxBuffer[pos++];
         int lengthCheck = RxBuffer[pos++];
         if ((dataLength + lengthCheck) != 0x100)
         {
             Error = "ReadData() -> Invalid length checksum\r\n";
             break;
         }
-    
+
         if (len < startCode + MIN_PACK_LEN + dataLength)
         {
             Error = "ReadData() -> Packet is longer than requested length\r\n";
@@ -858,32 +872,31 @@ byte PN532::ReadData(byte* buff, byte len)
         }
 
         Brace1 = pos;
-        for (int i=0; i<dataLength; i++)
+        for (int i = 0; i < dataLength; i++)
         {
             buff[i] = RxBuffer[pos++]; // copy the pure data bytes in the packet
         }
         Brace2 = pos;
 
         // All returned data blocks must start with PN532TOHOST (0xD5)
-        if (dataLength < 1 || buff[0] != PN532_PN532TOHOST) 
+        if (dataLength < 1 || buff[0] != PN532_PN532TOHOST)
         {
             Error = "ReadData() -> Invalid data (no PN532TOHOST)\r\n";
             break;
         }
-    
+
         byte checkSum = 0;
-        for (int i=startCode; i<pos; i++)
+        for (int i = startCode; i < pos; i++)
         {
             checkSum += RxBuffer[i];
         }
-    
+
         if (checkSum != (byte)(~RxBuffer[pos]))
         {
             Error = "ReadData() -> Invalid checksum\r\n";
             break;
         }
-    }
-    while(false); // This is not a loop. Avoids using goto by using break.
+    } while (false); // This is not a loop. Avoids using goto by using break.
 
     // Always print the package, even if it was invalid.
     if (mu8_DebugLevel > 1)
@@ -891,7 +904,7 @@ byte PN532::ReadData(byte* buff, byte len)
         Utils::Print("Response: ");
         Utils::PrintHexBuf(RxBuffer, len, LF, Brace1, Brace2);
     }
-    
+
     if (Error)
     {
         Utils::Print(Error);
@@ -906,35 +919,36 @@ byte PN532::ReadData(byte* buff, byte len)
     param  buff      Pointer to the buffer where data will be written
     param  len       Number of bytes to read
 **************************************************************************/
-bool PN532::ReadPacket(byte* buff, byte len)
-{ 
+bool PN532::ReadPacket(byte *buff, byte len)
+{
     if (!WaitReady())
         return false;
-        
-    #if (USE_HARDWARE_SPI || USE_SOFTWARE_SPI) 
+
+#if (USE_HARDWARE_SPI || USE_SOFTWARE_SPI)
     {
         Utils::WritePin(mu8_SselPin, LOW);
         Utils::DelayMilli(2); // INDISPENSABLE!! Otherwise reads bullshit
 
-        if (mu8_DebugLevel > 2)  Utils::Print("ReadPacket(): write DATAREAD\r\n");
+        if (mu8_DebugLevel > 2)
+            Utils::Print("ReadPacket(): write DATAREAD\r\n");
         SpiWrite(PN532_SPI_DATAREAD);
-    
-        for (byte i=0; i<len; i++) 
+
+        for (byte i = 0; i < len; i++)
         {
             Utils::DelayMilli(1);
             buff[i] = SpiRead();
         }
-    
+
         Utils::WritePin(mu8_SselPin, HIGH);
         Utils::DelayMicro(PN532_SOFT_SPI_DELAY);
         return true;
     }
-    #elif USE_HARDWARE_I2C
+#elif USE_HARDWARE_I2C
     {
         Utils::DelayMilli(2);
-    
+
         // read (n+1 to take into account leading Ready byte)
-        I2cClass::RequestFrom((byte)PN532_I2C_ADDRESS, (byte)(len+1));
+        I2cClass::RequestFrom((byte)PN532_I2C_ADDRESS, (byte)(len + 1));
 
         // PN532 Manual chapter 6.2.4: Before the data bytes the chip sends a Ready byte.
         // It is ignored here because it has been checked already in isready()
@@ -943,66 +957,66 @@ bool PN532::ReadPacket(byte* buff, byte len)
         {
             Utils::Print("ReadPacket(): read ");
             Utils::PrintHex8(u8_Ready, LF);
-        }        
-        
-        for (byte i=0; i<len; i++) 
+        }
+
+        for (byte i = 0; i < len; i++)
         {
             Utils::DelayMilli(1);
             buff[i] = I2cClass::Read();
         }
         return true;
     }
-    #endif
+#endif
 }
 
 /**************************************************************************
     SPI write one byte
 **************************************************************************/
-void PN532::SpiWrite(byte c) 
+void PN532::SpiWrite(byte c)
 {
-    #if USE_HARDWARE_SPI
+#if USE_HARDWARE_SPI
     {
         SpiClass::Transfer(c);
     }
-    #elif USE_SOFTWARE_SPI
+#elif USE_SOFTWARE_SPI
     {
         Utils::WritePin(mu8_ClkPin, HIGH);
         Utils::DelayMicro(PN532_SOFT_SPI_DELAY);
-    
-        for (int i=1; i<=128; i<<=1) 
+
+        for (int i = 1; i <= 128; i <<= 1)
         {
             Utils::WritePin(mu8_ClkPin, LOW);
             Utils::DelayMicro(PN532_SOFT_SPI_DELAY);
-            
+
             byte level = (c & i) ? HIGH : LOW;
             Utils::WritePin(mu8_MosiPin, level);
-            Utils::DelayMicro(PN532_SOFT_SPI_DELAY);        
-      
+            Utils::DelayMicro(PN532_SOFT_SPI_DELAY);
+
             Utils::WritePin(mu8_ClkPin, HIGH);
             Utils::DelayMicro(PN532_SOFT_SPI_DELAY);
         }
     }
-    #endif
+#endif
 }
 
 /**************************************************************************
     SPI read one byte
 **************************************************************************/
-byte PN532::SpiRead(void) 
+byte PN532::SpiRead(void)
 {
-    #if USE_HARDWARE_SPI 
+#if USE_HARDWARE_SPI
     {
         return SpiClass::Transfer(0x00);
     }
-    #elif USE_SOFTWARE_SPI
+#elif USE_SOFTWARE_SPI
     {
         Utils::WritePin(mu8_ClkPin, HIGH);
         Utils::DelayMicro(PN532_SOFT_SPI_DELAY);
 
-        int x=0;    
-        for (int i=1; i<=128; i<<=1) 
+        int x = 0;
+        for (int i = 1; i <= 128; i <<= 1)
         {
-            if (Utils::ReadPin(mu8_MisoPin)) 
+            if (Utils::ReadPin(mu8_MisoPin))
             {
                 x |= i;
             }
@@ -1013,11 +1027,9 @@ byte PN532::SpiRead(void)
         }
         return x;
     }
-    #else
+#else
     {
         return 0; // This code will never execute. Just for the compiler not to complain.
     }
-    #endif
-}
-
 #endif
+}

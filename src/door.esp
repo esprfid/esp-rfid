@@ -1,0 +1,62 @@
+// door lock
+// nardev -> functions in relation to opening doors with card or with door opening button, should be moved here
+
+// door status
+void doorStatus(/* arguments */)
+{
+  if (config.doorstatpin == 255)
+	{
+    return;
+  }
+
+  // if this changes and if mqtt and mqtt logging enabled, push the message, also to a web socket!
+  if ((digitalRead(config.doorstatpin) == HIGH) && (lastDoorState == 0))
+  {
+    writeEvent("INFO", "door", "Door Closed", "");
+    if (lastTamperState == 1)
+    {
+      lastTamperState = 0;
+      mqttPublishIo("tamper", "OFF");
+    }
+    mqttPublishIo("door", "OFF");
+    lastDoorState = 1;
+  }
+
+  if ((digitalRead(config.doorstatpin) == LOW) && (lastDoorState == 1))
+  {
+    writeEvent("INFO", "door", "Door Open", "");
+    if (digitalRead(config.relayPin[0]) == !config.relayType[0])
+    {
+      writeEvent("WARN", "tamper", "Door was tampered!", "");
+      lastTamperState = 1;
+      mqttPublishIo("tamper", "ON");
+    }
+    else
+    {
+      openDoorMillis = currentMillis;
+#ifdef DEBUG
+      Serial.print("openDoorMillis : ");
+      Serial.println(openDoorMillis);
+#endif
+    }
+    mqttPublishIo("door", "ON");
+    lastDoorState = 0;
+  }
+  if (config.maxOpenDoorTime != 0 && (lastDoorState == 0) && (lastTamperState == 0))
+	{
+		if (currentMillis - openDoorMillis >= config.maxOpenDoorTime*1000)
+		{
+#ifdef DEBUG
+      Serial.print("currentMillis : ");
+      Serial.println(currentMillis);
+      Serial.print("delta millis : ");
+      Serial.println(currentMillis - openDoorMillis);
+#endif
+
+			writeEvent("WARN", "tamper", "Door wasn't closed within max open time!", "");
+			lastTamperState = 1;
+			mqttPublishIo("tamper", "ON");
+		}
+	}
+  delayMicroseconds(500);
+}

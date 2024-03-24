@@ -1,14 +1,39 @@
-String ICACHE_FLASH_ATTR printIP(IPAddress adress) {
+String ICACHE_FLASH_ATTR printIP(IPAddress adress)
+{
 	return (String)adress[0] + "." + (String)adress[1] + "." + (String)adress[2] + "." + (String)adress[3];
 }
 
-void ICACHE_FLASH_ATTR parseBytes(const char *str, char sep, byte *bytes, int maxBytes, int base) {
-	for (int i = 0; i < maxBytes; i++) {
+void ICACHE_FLASH_ATTR parseBytes(const char *str, char sep, byte *bytes, int maxBytes, int base)
+{
+	for (int i = 0; i < maxBytes; i++)
+	{
 		bytes[i] = strtoul(str, NULL, base); // Convert byte
-		str = strchr(str, sep);              // Find next separator
-		if (str == NULL || *str == '\0') {
+		str = strchr(str, sep);				 // Find next separator
+		if (str == NULL || *str == '\0')
+		{
 			break; // No more separators, exit
 		}
 		str++; // Point to next character after separator
 	}
+}
+
+// This is part of the latest releases of Arduino for ESP8266
+// https://github.com/SensorsIot/NTP-time-for-ESP8266-and-ESP32/
+bool getNTPtime(int sec)
+{
+	uint32_t start = millis();
+	time_t previousEpoch = epoch;
+	do
+	{
+		time(&epoch);
+		localtime_r(&epoch, &timeinfo);
+		delay(10);
+	} while (((millis() - start) <= (1000 * sec)) && (timeinfo.tm_year < (2016 - 1900)));
+	if (timeinfo.tm_year <= (2016 - 1900))
+	{
+		epoch = previousEpoch; // fallback to previous value, so that you can use the manually set time
+		return false; // the NTP call was not successful
+	}
+
+	return true;
 }

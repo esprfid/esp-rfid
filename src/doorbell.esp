@@ -1,0 +1,23 @@
+// doorbell support
+
+void doorbellStatus()
+{
+      if (config.doorbellpin == 255)
+      {
+            return;
+      }
+      // if this changes and if mqtt and mqtt logging enabled, push the message, also to a web socket!
+      if ((digitalRead(config.doorbellpin) == HIGH) && (lastDoorbellState == 0))
+      {
+            writeEvent("INFO", "doorbell", "Doorbell ringing", "");
+            mqttPublishIo("doorbell", "ON");
+            lastDoorbellState = 1;
+      }
+
+      if ((digitalRead(config.doorbellpin) == LOW) && (lastDoorbellState == 1))
+      {
+            mqttPublishIo("doorbell", "OFF");
+            lastDoorbellState = 0;
+      }
+      delayMicroseconds(500);
+}

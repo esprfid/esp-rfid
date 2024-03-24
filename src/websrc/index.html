@@ -11,6 +11,17 @@
     <title>esp-rfid</title>
     <!-- Bootstrap core CSS -->
     <link href="css/required.css" rel="stylesheet">
+    <style>
+        #openinghours th {
+            text-align: center;
+        }
+        #openinghours td {
+            padding: 2px;
+        }
+        #openinghours td:nth-child(2n), #openinghours th:nth-child(2n) {
+            background-color: #bbb;
+        }
+    </style>>
 </head>
 
 <body>
@@ -60,6 +71,9 @@
                         <li>
                             <a href="#" id="eventlog"><i  class="glyphicon glyphicon-transfer"></i>Event Log</a>
                         </li>
+                        <li>
+                            <a href="#" id="logmaintenance"><i  class="glyphicon glyphicon-wrench"></i>Logfile Maintenance</a>
+                        </li>
                     </ul>
                 </li>
                 <li>
@@ -94,6 +108,12 @@
                 <i class="glyphicon glyphicon-menu-hamburger"></i>
                 <span>Menu</span>
             </button>
+            <div class="pull-right" id="ws-connection-status">
+                <div class="alert alert-warning" role="alert">
+                    <i class="glyphicon glyphicon-warning-sign"></i>
+                    <span>Connection with esp-rfid absent. Reconnecting...</span>
+                </div>
+            </div>
             <div id="ajaxcontent">
             </div>
             <div id="revcommit" class="modal fade" role="dialog">
@@ -193,7 +213,7 @@
                                     <div style="clear:both;">
                                         <br>
                                     </div>
-                                    <pre id="releasebody">Getting update information from GitHub...</pre>
+                                    <!-- <pre id="releasebody">Getting update information from GitHub...</pre> -->
                                     <div class="pull-right">
                                         <a class="pull-right" id="downloadupdate">
                                             <button type="button" class="btn btn-primary">Download</button>

@@ -10,14 +10,11 @@ void ICACHE_FLASH_ATTR setupWebServer() {
 		response->addHeader("Connection", "close");
 		request->send(response);
 	}, [](AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
-		if (!request->authenticate(http_username, http_pass)) {
+		if (!request->authenticate(httpUsername, config.httpPass)) {
 			return;
 		}
 		if (!index) {
 			writeEvent("INFO", "updt", "Firmware update started", filename.c_str());
-#ifdef DEBUG
-			Serial.printf("[ UPDT ] Firmware update started: %s\n", filename.c_str());
-#endif
 			Update.runAsync(true);
 			if (!Update.begin((ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000)) {
 				writeEvent("ERRO", "updt", "Not enough space to update","");
@@ -82,12 +79,12 @@ void ICACHE_FLASH_ATTR setupWebServer() {
 		request->send(response);
 	});
 
-	if (http_pass == NULL) {
-		http_pass = strdup("admin");
+	if (config.httpPass == NULL) {
+		config.httpPass = strdup("admin");
 	}
 	server.on("/login", HTTP_GET, [](AsyncWebServerRequest *request) {
 		String remoteIP = printIP(request->client()->remoteIP());
-		if (!request->authenticate(http_username, http_pass)) {
+		if (!request->authenticate(httpUsername, config.httpPass)) {
 			writeEvent("WARN", "websrv", "New login attempt", remoteIP);
 			return request->requestAuthentication();
 		}

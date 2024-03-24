@@ -1,10 +1,10 @@
 # ESP RFID - Access Control with ESP8266, RC522 PN532 Wiegand RDM6300
 
-[![Chat at https://gitter.im/esp-rfid/Lobby](https://badges.gitter.im/esp-rfid.svg)](https://gitter.im/esp-rfid/Lobby) [![Build Status](https://travis-ci.org/esprfid/esp-rfid.svg?branch=stable)](https://travis-ci.org/esprfid/esp-rfid) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/d475052a09bd4865bc2654f524614cba)](https://www.codacy.com/app/omersiar/esp-rfid?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=esprfid/esp-rfid&amp;utm_campaign=Badge_Grade) [![BCH compliance](https://bettercodehub.com/edge/badge/esprfid/esp-rfid?branch=stable)](https://bettercodehub.com/) [![Bountysource](https://api.bountysource.com/badge/team?team_id=242217)](https://salt.bountysource.com/checkout/amount?team=esp-rfid)
+[![Chat at https://gitter.im/esp-rfid/Lobby](https://badges.gitter.im/esp-rfid.svg)](https://gitter.im/esp-rfid/Lobby) [![Backers on Open Collective](https://opencollective.com/esp-rfid/backers/badge.svg)](#backers) [![Sponsors on Open Collective](https://opencollective.com/esp-rfid/sponsors/badge.svg)](#sponsors)
 
 Access Control system using a cheap MFRC522, PN532 RFID, RDM6300 readers or Wiegand RFID readers and Espressif's ESP8266 Microcontroller. 
 
-[![Showcase Gif](https://raw.githubusercontent.com/esprfid/esp-rfid/stable/demo/showcase.gif)](https://bitadvise.com/esp-rfid/)[![Board](https://raw.githubusercontent.com/esprfid/esp-rfid/stable/demo/board.jpg)](https://www.tindie.com/products/nardev/esp-rfid-relay-board-12v-in-esp8266-board/)
+![Showcase Gif](https://raw.githubusercontent.com/esprfid/esp-rfid/stable/demo/showcase.gif)[![Board](https://raw.githubusercontent.com/esprfid/esp-rfid/stable/demo/board.jpg)](https://www.tindie.com/products/nardev/esp-rfid-relay-blue-board/)
 
 ## Features
 ### For Users
@@ -36,7 +36,7 @@ Access Control system using a cheap MFRC522, PN532 RFID, RDM6300 readers or Wieg
 * Fits in an universal enclosures with DIN mount
 * Open Source Hardware
 
-Get more information and see accessory options from [Tindie Store](https://www.tindie.com/products/nardev/esp-rfid-relay-board-12v-in-esp8266-board/)
+Get more information and see accessory options from [Tindie Store](https://www.tindie.com/products/nardev/esp-rfid-relay-blue-board/)
 
 | What are others saying about esp-rfid? |
 | ---- |
@@ -52,16 +52,16 @@ Get more information and see accessory options from [Tindie Store](https://www.t
 ## Getting Started
 This project still in its development phase. New features (and also bugs) are introduced often and some functions may become deprecated. Please feel free to comment or give feedback.
 
-* Get the latest release from [here.](https://github.com/esprfid/esp-rfid/releases)
+* Get the latest release from [here](https://github.com/esprfid/esp-rfid/releases).
 * See [Known Issues](https://github.com/esprfid/esp-rfid#known-issues) before starting right away.
 * See [Security](https://github.com/esprfid/esp-rfid#security) for your safety.
 * See [ChangeLog](https://github.com/esprfid/esp-rfid/blob/dev/CHANGELOG.md)
 
 ### What You Will Need
 ### Hardware
-* [Official ESP-RFID Relay Board](https://www.tindie.com/products/nardev/esp-rfid-relay-board-12v-in-esp8266-board/)
+* [Official ESP-RFID Relay Board](https://www.tindie.com/products/nardev/esp-rfid-relay-blue-board/)
 or
-* An ESP8266 module or a development board like **WeMos D1 mini** or **NodeMcu 1.0** with at least **32Mbit Flash (equals to 4MBytes)** (ESP32 does not supported for now)
+* An ESP8266 module or a development board like **WeMos D1 mini** or **NodeMcu 1.0** with at least **32Mbit Flash (equals to 4MBytes)** (ESP32 is not supported for now)
 * A MFRC522 RFID PCD Module or PN532 NFC Reader Module or RDM6300 125KHz RFID Module Wiegand based RFID reader
 * A Relay Module (or you can build your own circuit)
 * n quantity of Mifare Classic 1KB (recommended due to available code base) PICCs (RFID Tags) equivalent to User Number
@@ -71,10 +71,11 @@ or
 #### Using Compiled Binaries
 Download compiled binaries from GitHub Releases page
 https://github.com/esprfid/esp-rfid/releases
+
 On Windows you can use **"flash.bat"**, it will ask you which COM port that ESP is connected and then flashes it. You can use any flashing tool and do the flashing manually. The flashing process itself has been described at numerous places on Internet.
 
 #### Building With PlatformIO
-##### Backend
+
 The build environment is based on [PlatformIO](http://platformio.org). Follow the instructions found here: http://platformio.org/#!/get-started for installing it but skip the ```platform init``` step as this has already been done, modified and it is included in this repository. In summary:
 
 ```
@@ -95,38 +96,25 @@ When you run ```platformio run``` for the first time, it will download the toolc
 
 The resulting (built) image(s) can be found in the directory ```/bin``` created during the build process.
 
-##### Frontend
-You can not simply edit Web UI files because you will need to convert them to C arrays, which can be done automatically by a gulp script that can be found in tools directory or you can use compiled executables at the same directory as well (for Windows PCs only).
+##### How to modify the project
 
-If you want to edit esp-rfid's Web UI you will need (unless using compiled executables):
-* NodeJS
-* npm (comes with NodeJS installer)
-* Gulp (can be installed with npm)
-
-Gulp script also minifies HTML and JS files and compresses (gzip) them. 
-
-In order to test your changes without flashing the firmware you can launch websocket emulator which is included in tools directory.
-* You will need to Node JS for websocket emulator.
-* Run ```npm update``` to install dependencies
-* Run emulator  ```node wserver.js```
-* then you will need to launch your browser with CORS disabled:
-* ```chrome.exe --args --disable-web-security -–allow-file-access-from-files --user-data-dir="C:\Users\USERNAME"```
-
-Get more information here: https://stackoverflow.com/questions/3102819/disable-same-origin-policy-in-chrome
+If you want to modify the code, you can read more info in the [CONTRIBUTING](./CONTRIBUTING.md) file.
 
 
 ### Pin Layout
 
 The following table shows the typical pin layout used for connecting readers hardware to ESP:
 
-| ESP8266 | NodeMcu/WeMos | Wiegand | PN532 | MFRC522 | RDM6300 | 
-|--------:|:-------------:|:-------:|:-----:|:-------:|:-------:|
-| GPIO-15 | D8            |         | SS    | SDA/SS  |         |
-| GPIO-13 | D7            | D0      | MOSI  | MOSI    |         |
-| GPIO-12 | D6            | D1      | MISO  | MISO    |         |
-| GPIO-14 | D5            |         | SCK   | SCK     | TX      |
-| GPIO-04 | D2            |         |       |         |         |
-| GPIO-05 | D1            |         |       |         |         |
+| ESP8266 | NodeMcu/WeMos | Wiegand | PN532         | MFRC522 | RDM6300 |
+|--------:|:-------------:|:-------:|:-------------:|:-------:|:-------:|
+| GPIO-16 | D0            |         | SS (Wemos D1) | SDA/SS  |         |
+| GPIO-15 | D8            |         |               | SDA/SS  |         |
+| GPIO-13 | D7            | D0      | MOSI          | MOSI    |         |
+| GPIO-12 | D6            | D1      | MISO          | MISO    |         |
+| GPIO-14 | D5            |         | SCK           | SCK     |         |
+| GPIO-04 | D2            |         |               |         |         |
+| GPIO-05 | D1            |         | SS            |         |         |
+| GPIO-03 | RX            |         |               |         | TX      |
 
 For Wiegand based readers, you can configure D0 and D1 pins via settings page. By default, D0 is GPIO-4 and D1 is GPIO-5
 
@@ -134,7 +122,7 @@ For Wiegand based readers, you can configure D0 and D1 pins via settings page. B
 * First, flash firmware (you can use /bin/flash.bat on Windows) to your ESP either using Arduino IDE or with your favourite flash tool
 * (optional) Fire up your serial monitor to get informed
 * Search for Wireless Network "esp-rfid-xxxxxx" and connect to it (It should be an open network and does not require password)
-* Open your browser and type either "http://192.168.4.1" or "http://esp-rfid.local" (.local needs Bonjour installed on your computer) on address bar.
+* Open your browser and visit either "http://192.168.4.1" or "http://esp-rfid.local" (.local needs Bonjour installed on your computer).
 * Log on to ESP, default password is "admin"
 * Go to "Settings" page
 * Configure your amazing access control device. Push "Scan" button to join your wireless network, configure RFID hardware, Relay Module.
@@ -147,14 +135,17 @@ For Wiegand based readers, you can configure D0 and D1 pins via settings page. B
 * Click "Add"
 * Congratulations, everything went well, if you encounter any issue feel free to ask help on GitHub.
 
+### MQTT
+You can integrate ESP-RFID with other systems using MQTT. Read the [additional documentation](./README-MQTT.md) for all the details.
+
 ### Known Issues
 * You need to connect your MFRC522 reader to your ESP properly or you will end up with a boot loop
 * Please also check [GitHub issues](https://github.com/esprfid/esp-rfid/issues).
 
 #### Time
-We are syncing time from a NTP Server (in Client -aka infrastructure- Mode). This will require ESP to have an Internet connection. Additionally your ESP can also work without Internet connection too (Access Point -aka Ad-Hoc- Mode),  without giving up functionality.
-This will require you to do syncing manually. ESP can store and hold time for you approximately 51 days without a major issue, device time can drift from actual time depending on usage, temperature, etc.
-So you have to login to settings page and sync it in a timely fashion.
+We are syncing time from a NTP Server (in Client -aka infrastructure- Mode). This will require ESP to have an Internet connection. Additionally your ESP can also work without Internet connection (Access Point -aka Ad-Hoc- Mode), without giving up functionality.
+This will require you to sync time manually. ESP can store and hold time for you approximately 51 days without major issues, device time can drift from actual time depending on usage, temperature, etc. so you have to login to settings page and sync it in a timely fashion.
+Timezones are supported with automatic switch to and from daylight saving time.
 
 ## **Security**
 We assume **ESP-RFID** project -as a whole- does not offer strong security. There are PICCs available that their UID (Unique Identification Numbers) can be set manually (Currently esp-rfid relies only UID to identify its users). Also there may be a bug in the code that may result free access to your belongings. And also, like every other network connected device esp-rfid is vulnerable to many attacks including Man-in-the-middle, Brute-force, etc.
@@ -191,11 +182,14 @@ At least 1000 unique User (RFID Tag) can be handled, the test were performed on 
 * Reliability on Flash (these NOR Flash have limited write cycle on their cells). It depends on manufacturer choice of Flash Chip and usage.
 
 ## Community
-* [![Chat at https://gitter.im/esp-rfid/Lobby](https://badges.gitter.im/esp-rfid.svg)](https://gitter.im/esp-rfid/Lobby) Join community chat on Gitter
 
-### Projects that is based on esp-rfid
+[![Chat at https://gitter.im/esp-rfid/Lobby](https://badges.gitter.im/esp-rfid.svg)](https://gitter.im/esp-rfid/Lobby) Join community chat on Gitter
+
+### Projects that are based on esp-rfid
+
 * [ESP-IO](https://github.com/Pako2/EventGhostPlugins/tree/master/ESP-IO) Project to manipulate GPIOs with EventGhost
 * [ESP-RCM](https://github.com/Pako2/esp-rcm) Room Climate Monitor with ESP8266, HTU21D, Si7021, AM2320
+* [ESP-RFID-PY](https://github.com/esprfid/esp-rfid-py) Micro-Python implementation of esp-rfid is also made available by @iBobik
 
 ### Acknowledgements
 
@@ -206,16 +200,28 @@ At least 1000 unique User (RFID Tag) can be handled, the test were performed on 
 - @romanzava
 - @arduino12
 - @Pako2
+- @marelab
 
 See [ChangeLog](https://github.com/esprfid/esp-rfid/blob/dev/CHANGELOG.md)
 
 ## Donations
-If this project helps you in a way, you can buy us a beer. You can make a donation to the ESP-RFID community with [Bountysource](https://salt.bountysource.com/teams/esp-rfid)
+[![OC](https://opencollective.com/esp-rfid/tiers/esp-rfid-user.svg?avatarHeight=56)](https://opencollective.com/esp-rfid)
+
+Developing fully open, extensively tested embedded software is hard and time consuming work. Please consider making donations to support developers behind this beautiful software.
+
+Donations **transparently** processed by **[Open Collective](https://opencollective.com/how-it-works)** and expenses are being made public by OC's open ledger.
 
 * 2017-10-03 [steinar-t](https://github.com/steinar-t)
 * 2017-12-10 [saschaludwig](https://github.com/saschaludwig)
 * 2018-10-02 Dennis Parsch
 * 2019-01-12 Chris-topher Slater
+* 2019-04-23 Klaus Blum
+* 2019-04-25 Andre Dieteich
+
+## Contributors
+
+This project exists thanks to all the people who contribute. 
+<a href="https://github.com/esprfid/esp-rfid/graphs/contributors"><img src="https://opencollective.com/esp-rfid/contributors.svg?width=890&button=false" /></a>
 
 ## License
 The code parts written by ESP-RFID project's authors are licensed under [MIT License](https://github.com/esprfid/esp-rfid/blob/stable/LICENSE), 3rd party libraries that are used by this project are licensed under different license schemes, please check them out as well.

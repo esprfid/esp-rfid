@@ -1,4 +1,4 @@
-bool ICACHE_FLASH_ATTR loadConfiguration()
+bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 {
 	File configFile = SPIFFS.open("/config.json", "r");
 	if (!configFile)
@@ -11,9 +11,9 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 	size_t size = configFile.size();
 	std::unique_ptr<char[]> buf(new char[size]);
 	configFile.readBytes(buf.get(), size);
-	DynamicJsonBuffer jsonBuffer;
-	JsonObject &json = jsonBuffer.parseObject(buf.get());
-	if (!json.success())
+	DynamicJsonDocument json(2048);
+	auto error = deserializeJson(json, buf.get(), size);
+	if (error)
 	{
 #ifdef DEBUG
 		Serial.println(F("[ WARN ] Failed to parse config file"));
@@ -22,49 +22,123 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 	}
 #ifdef DEBUG
 	Serial.println(F("[ INFO ] Config file found"));
-	json.prettyPrintTo(Serial);
-	Serial.println();
 #endif
-	JsonObject &network = json["network"];
-	JsonObject &hardware = json["hardware"];
-	JsonObject &general = json["general"];
-	JsonObject &mqtt = json["mqtt"];
-	JsonObject &ntp = json["ntp"];
+	JsonObject network = json["network"];
+	JsonObject hardware = json["hardware"];
+	JsonObject general = json["general"];
+	JsonObject mqtt = json["mqtt"];
+	JsonObject ntp = json["ntp"];
 #ifdef DEBUG
 	Serial.println(F("[ INFO ] Trying to setup RFID Hardware"));
 #endif
 	if (hardware.containsKey("wifipin"))
 	{
-		wifipin = hardware["wifipin"];
-		if (wifipin!=255)
+		config.wifipin = hardware["wifipin"];
+		if (config.wifipin != 255)
 		{
-			pinMode(wifipin, OUTPUT);
-			digitalWrite(wifipin, LEDoff);
+			pinMode(config.wifipin, OUTPUT);
+			digitalWrite(config.wifipin, LEDoff);
 		}
 	}
 
-	if (hardware.containsKey("buttonpin"))
+	if (hardware.containsKey("doorstatpin"))
 	{
-		buttonPin = hardware["buttonpin"];
-		if (buttonPin != 255)
+		config.doorstatpin = hardware["doorstatpin"];
+		if (config.doorstatpin != 255)
 		{
-			button = Bounce();
-			button.attach(buttonPin, INPUT_PULLUP);
-			button.interval(30);
+			pinMode(config.doorstatpin, INPUT);
 		}
 	}
-#ifdef OFFICIALBOARD
-	setupWiegandReader(5, 4);
-#endif
-#ifndef OFFICIALBOARD
-	readerType = hardware["readerType"];
-	if (readerType == 1 || readerType == 5)
+
+	if (hardware.containsKey("maxOpenDoorTime"))
+	{
+		config.maxOpenDoorTime = hardware["maxOpenDoorTime"];
+	}
+
+	if (hardware.containsKey("doorbellpin"))
+	{
+		config.doorbellpin = hardware["doorbellpin"];
+		if (config.doorbellpin != 255)
+		{
+			pinMode(config.doorbellpin, INPUT);
+		}
+	}
+
+	if (hardware.containsKey("accessdeniedpin"))
+	{
+		config.accessdeniedpin = hardware["accessdeniedpin"];
+		if (config.accessdeniedpin != 255)
+		{
+			pinMode(config.accessdeniedpin, OUTPUT);
+			digitalWrite(config.accessdeniedpin, LOW);
+		}
+	}
+
+	if (hardware.containsKey("beeperpin"))
+	{
+		config.beeperpin = hardware["beeperpin"];
+		if (config.beeperpin != 255)
+		{
+			pinMode(config.beeperpin, OUTPUT);
+			digitalWrite(config.beeperpin, BEEPERoff);
+		}
+	}
+
+	if (hardware.containsKey("ledwaitingpin"))
+	{
+		config.ledwaitingpin = hardware["ledwaitingpin"];
+		if (config.ledwaitingpin != 255)
+		{
+			pinMode(config.ledwaitingpin, OUTPUT);
+			digitalWrite(config.ledwaitingpin, LEDoff);
+		}
+	}
+
+	if (hardware.containsKey("openlockpin"))
+	{
+		config.openlockpin = hardware["openlockpin"];
+		if (config.openlockpin != 255)
+		{
+			openLockButton = Bounce();
+			openLockButton.attach(config.openlockpin, INPUT_PULLUP);
+			openLockButton.interval(30);
+		}
+	}
+
+	if (hardware.containsKey("numrelays"))
+	{
+		config.numRelays = hardware["numrelays"];
+	}
+	else
+		config.numRelays = 1;
+
+	config.readertype = hardware["readertype"];
+	int rfidss;
+	config.pinCodeRequested = false;
+	config.pinCodeOnly = false;
+	if (config.readertype == READER_WIEGAND || config.readertype == READER_WIEGAND_RDM6300)
 	{
 		int wgd0pin = hardware["wgd0pin"];
 		int wgd1pin = hardware["wgd1pin"];
-		setupWiegandReader(wgd0pin, wgd1pin); // also some other settings like weather to use keypad or not, LED pin, BUZZER pin, Wiegand 26/34 version
+		if (hardware.containsKey("requirepincodeafterrfid"))
+		{
+			config.pinCodeRequested = hardware["requirepincodeafterrfid"];
+		}
+		if (hardware.containsKey("allowpincodeonly"))
+		{
+			config.pinCodeOnly = hardware["allowpincodeonly"];
+		}
+		if (hardware.containsKey("removeparitybits"))
+		{
+			config.removeParityBits = hardware["removeparitybits"];
+		}
+		if (hardware.containsKey("useridstoragemode"))
+		{
+			config.wiegandReadHex = hardware["useridstoragemode"] == "hexadecimal";
+		}
+		setupWiegandReader(wgd0pin, wgd1pin, config.removeParityBits); // also some other settings like weather to use keypad or not, LED pin, BUZZER pin, Wiegand 26/34 version
 	}
-	else if (readerType == 0 || readerType == 4)
+	else if (config.readertype == READER_MFRC522 || config.readertype == READER_MFRC522_RDM6300)
 	{
 		rfidss = 15;
 		if (hardware.containsKey("sspin"))
@@ -74,139 +148,199 @@ bool ICACHE_FLASH_ATTR loadConfiguration()
 		int rfidgain = hardware["rfidgain"];
 		setupMFRC522Reader(rfidss, rfidgain);
 	}
-	else if (readerType == 2 || readerType == 6)
+	else if (config.readertype == READER_PN532 || config.readertype == READER_PN532_RDM6300)
 	{
 		rfidss = hardware["sspin"];
 		setupPN532Reader(rfidss);
 	}
-	#ifndef DEBUG
-	if (readerType>2) Serial.begin(9600);
-	#endif
-#endif
-	autoRestartIntervalSeconds = general["restart"];
-	wifiTimeout = network["offtime"];
-	const char *bssidmac = network["bssid"];
-	byte bssid[6];
-	parseBytes(bssidmac, ':', bssid, 6, 16);
-	deviceHostname = strdup(general["hostnm"]);
-	WiFi.hostname(deviceHostname);
-	if (!MDNS.begin(deviceHostname))
+	if (network.containsKey("fallbackmode"))
 	{
-#ifdef DEBUG
-		Serial.println("[ WARN ]Error setting up MDNS responder!");
-#endif
+		config.fallbackMode = network["fallbackmode"] == 1;
 	}
-	MDNS.addService("http", "tcp", 80);
-	const char *ntpserver = ntp["server"];
-	int ntpinter = ntp["interval"];
-	timeZone = ntp["timezone"];
-	activateTime = hardware["rtime"];
-	lockType = hardware["ltype"];
-	relayType = hardware["rtype"];
-#ifndef OFFICIALBOARD
-	relayPin = hardware["rpin"];
-	pinMode(relayPin, OUTPUT);
-	digitalWrite(relayPin, !relayType);
-#endif
-	const char *ssid = network["ssid"];
-	const char *password = network["pswd"];
-	wmode = network["wmode"];
-	http_pass = strdup(general["pswd"]);
-	ws.setAuthentication("admin", http_pass);
-	if (wmode == 1)
+	config.autoRestartIntervalSeconds = general["restart"];
+	config.wifiTimeout = network["offtime"];
+	const char *bssidmac = network["bssid"];
+	if (strlen(bssidmac) > 0)
+		parseBytes(bssidmac, ':', config.bssid, 6, 16);
+	if (general.containsKey("hostnm"))
 	{
-		int hid = network["hide"];
-#ifdef DEBUG
-		Serial.println(F("[ INFO ] ESP-RFID is running in AP Mode "));
-#endif
-		const char *apipch;
-		if (network.containsKey("apip"))
+		config.deviceHostname = strdup(general["hostnm"]);
+	}
+	if (ntp.containsKey("server"))
+	{
+		config.ntpServer = strdup(ntp["server"]);
+	}
+	config.ntpInterval = ntp["interval"];
+	
+	// support for old config
+	if (ntp.containsKey("timezone"))
+	{
+		config.tzInfo = (char *) malloc(10 * sizeof(char));
+		float tz = ntp["timezone"];
+		if(tz > 0)
 		{
-			apipch = network["apip"];
+			snprintf(config.tzInfo, 10, "UTC+%.2f", tz);
+		}
+		else if(tz < 0)
+		{
+			snprintf(config.tzInfo, 10, "UTC-%.2f", tz);
 		}
 		else
 		{
-			apipch = "192.168.4.1";
+			snprintf(config.tzInfo, 10, "UTC");
 		}
-		const char *apsubnetch;
-		if (network.containsKey("apsubnet"))
+	}
+	if (ntp.containsKey("tzinfo"))
+	{
+		config.tzInfo = (char *) malloc(strlen(ntp["tzinfo"]) * sizeof(char));
+		config.tzInfo = strdup(ntp["tzinfo"]);
+	}
+	config.activateTime[0] = hardware["rtime"];
+	config.lockType[0] = hardware["ltype"];
+	config.relayType[0] = hardware["rtype"];
+	if (hardware.containsKey("doorname"))
+	{
+		config.doorName[0] = strdup(hardware["doorname"]);
+	}
+
+	config.relayPin[0] = hardware["rpin"];
+	pinMode(config.relayPin[0], OUTPUT);
+	digitalWrite(config.relayPin[0], !config.relayType[0]);
+
+	for (int i = 1; i < config.numRelays; i++)
+	{
+		JsonObject relay = hardware["relay" + String((i + 1))];
+		config.activateTime[i] = relay["rtime"];
+		config.lockType[i] = relay["ltype"];
+		config.relayType[i] = relay["rtype"];
+		config.relayPin[i] = relay["rpin"];
+		if (relay.containsKey("doorname"))
 		{
-			apsubnetch = network["apsubnet"];
+			config.doorName[i]= strdup(relay["doorname"]);
 		}
-		else
-		{
-			apsubnetch = "255.255.255.0";
-		}
-		IPAddress apip;
-		IPAddress apsubnet;
-		apip.fromString(apipch);
-		apsubnet.fromString(apsubnetch);
-		return startAP(apip, apsubnet, hid, ssid, password);
+		pinMode(config.relayPin[i], OUTPUT);
+		digitalWrite(config.relayPin[i], !config.relayType[i]);
+	}
+
+	if (network.containsKey("ssid"))
+	{
+		config.ssid = strdup(network["ssid"]);
+	}
+	if (network.containsKey("pswd"))
+	{
+		config.wifiPassword = strdup(network["pswd"]);
+	}
+	config.accessPointMode = network["wmode"] == 1;
+	if (network.containsKey("apip"))
+	{
+		config.wifiApIp = strdup(network["apip"]);
+	}
+	if (network.containsKey("apsubnet"))
+	{
+		config.wifiApSubnet = strdup(network["apsubnet"]);
+	}
+	config.networkHidden = network["hide"] == 1;
+	if (general.containsKey("pswd"))
+	{
+		config.httpPass = strdup(general["pswd"]);
+	}
+	config.dhcpEnabled = network["dhcp"] == 1;
+	if (network.containsKey("ip"))
+	{
+		config.ipAddress.fromString(network["ip"].as<const char*>());
+	}
+	if (network.containsKey("subnet"))
+	{
+		config.subnetIp.fromString(network["subnet"].as<const char*>());
+	}
+	if (network.containsKey("gateway"))
+	{
+		config.gatewayIp.fromString(network["gateway"].as<const char*>());
+	}
+	if (network.containsKey("dns"))
+	{
+		config.dnsIp.fromString(network["dns"].as<const char*>());
+	}
+
+	const char *apipch;
+	if (config.wifiApIp)
+	{
+		apipch = config.wifiApIp;
 	}
 	else
 	{
-		if (network["dhcp"] == "0")
+		apipch = "192.168.4.1";
+	}
+	const char *apsubnetch;
+	if (config.wifiApSubnet)
+	{
+		apsubnetch = config.wifiApSubnet;
+	}
+	else
+	{
+		apsubnetch = "255.255.255.0";
+	}
+	config.accessPointIp.fromString(apipch);
+	config.accessPointSubnetIp.fromString(apsubnetch);
+
+	ws.setAuthentication("admin", config.httpPass);
+
+	for (int d = 0; d < 7; d++)
+	{
+		if (general.containsKey("openinghours"))
 		{
-			WiFi.mode(WIFI_STA);
-			const char *clientipch = network["ip"];
-			const char *subnetch = network["subnet"];
-			const char *gatewaych = network["gateway"];
-			const char *dnsch = network["dns"];
-			IPAddress clientip;
-			IPAddress subnet;
-			IPAddress gateway;
-			IPAddress dns;
-			clientip.fromString(clientipch);
-			subnet.fromString(subnetch);
-			gateway.fromString(gatewaych);
-			dns.fromString(dnsch);
-			WiFi.config(clientip, gateway, subnet, dns);
+			config.openingHours[d] = strdup(general["openinghours"][d].as<const char *>());
 		}
-		if (!connectSTA(ssid, password, bssid))
+		else
 		{
-			return false;
+			config.openingHours[d] = strdup("111111111111111111111111");
 		}
 	}
-#ifdef DEBUG
-	Serial.println("[ INFO ] Trying to setup NTP Server");
-#endif
-	/*
-	IPAddress timeserverip;
-	WiFi.hostByName(ntpserver, timeserverip);
-	String ip = printIP(timeserverip);
-	writeEvent("INFO", "ntp", "Connecting NTP Server", ip);
-	*/
-	NTP.Ntp(ntpserver, timeZone, ntpinter * 60);
-	mqttenabled = mqtt["enabled"];
-	if (mqttenabled == 1)
-	{
-#ifdef DEBUG
-		Serial.println("[ INFO ] Trying to setup MQTT");
-#endif
-		String mhsString = mqtt["host"];
-		mhs = strdup(mhsString.c_str());
 
-		mport = mqtt["port"];
-		
+	config.mqttEnabled = mqtt["enabled"] == 1;
+
+	if (config.mqttEnabled)
+	{
+		String mhsString = mqtt["host"];
+		config.mqttHost = strdup(mhsString.c_str());
+		config.mqttPort = mqtt["port"];
 		String muserString = mqtt["user"];
-		muser = strdup(muserString.c_str());
+		config.mqttUser = strdup(muserString.c_str());
 		String mpasString = mqtt["pswd"];
-		mpas = strdup(mpasString.c_str());
+		config.mqttPass = strdup(mpasString.c_str());
 		String mqttTopicString = mqtt["topic"];
-		mqttTopic = strdup(mqttTopicString.c_str());
-		
-		mqttClient.setServer(mhs, mport);
-		mqttClient.setCredentials(muser, mpas);
-		mqttClient.onDisconnect(onMqttDisconnect);
-		mqttClient.onPublish(onMqttPublish);
-		mqttClient.onConnect(onMqttConnect);
-#ifdef DEBUG
-		Serial.println("[ INFO ] try to call mqttconnect ");
-#endif
-		connectToMqtt();
+		config.mqttTopic = strdup(mqttTopicString.c_str());
+		if (mqtt.containsKey("autotopic"))
+		{
+			config.mqttAutoTopic = mqtt["autotopic"];
+		}
+		if (config.mqttAutoTopic)
+		{
+			uint8_t macAddr[6];
+			WiFi.softAPmacAddress(macAddr);
+			char topicSuffix[7];
+			sprintf(topicSuffix, "-%02x%02x%02x", macAddr[3], macAddr[4], macAddr[5]);
+			char *newTopic = (char *)malloc(sizeof(char) * 80);
+			strcpy(newTopic, config.mqttTopic);
+			strcat(newTopic, topicSuffix);
+			config.mqttTopic = newTopic;
+		}
+		if (mqtt.containsKey("syncrate"))
+		{
+			config.mqttInterval = mqtt["syncrate"];
+		}
+		if (mqtt.containsKey("mqttlog"))
+		{
+			config.mqttEvents = mqtt["mqttlog"] == 1;
+		}
+		if (mqtt.containsKey("mqttha"))
+		{
+			config.mqttHA = mqtt["mqttha"] == 1;
+		}
 	}
 #ifdef DEBUG
 	Serial.println(F("[ INFO ] Configuration done."));
 #endif
+	config.present = true;
 	return true;
 }
