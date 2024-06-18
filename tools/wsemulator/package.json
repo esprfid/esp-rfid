@@ -9,6 +9,6 @@
   "author": "esp-rfid developers",
   "license": "UNLICENSED",
   "dependencies": {
-    "ws": "^4.0.0"
+    "ws": "^5.2.4"
   }
 }
