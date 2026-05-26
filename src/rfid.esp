@@ -1,11 +1,13 @@
 int accountType;
 int accountTypes[MAX_NUM_RELAYS];
+int currentRoleId = ACCESS_ROLE_DISABLED;
 String currentInput = "";
 String pinCode = "";
 String type = "";
 String uid = "";
 String v1uid = "";
 String username = "";
+String currentRoleName = "Disabled";
 bool wiegandAvailable = false;
 
 #define WIEGAND_ENT 0xD
@@ -153,6 +155,7 @@ void pn532Read()
 #endif
 		for (uint8_t i = 0; i < u8_UidLength; i++)
 		{
+			uid += (String(pnuid[i] < 0x10 ? "0" : ""));
 			uid += String(pnuid[i], HEX);
 			rfidState = cardSwiped;
 		}
@@ -244,7 +247,9 @@ void rfidRead()
 		pn532Read();
 	}
 
-	else if (config.readertype > READER_PN532)
+	else if (config.readertype == READER_MFRC522_RDM6300 ||
+			 config.readertype == READER_WIEGAND_RDM6300 ||
+			 config.readertype == READER_PN532_RDM6300)
 	{
 		// This is a combination of RDM6300 and one of the above
 		genericRead();
@@ -384,6 +389,14 @@ void rfidProcess()
 		return;
 	}
 
+	JsonObject userObj = json.as<JsonObject>();
+	bool hasRoleId = json.containsKey("role_id") || json.containsKey("role");
+	const AccessRole *role = roles_for_user(userObj);
+	currentRoleId = roles_user_role_id(userObj);
+	currentRoleName = roles_name(role);
+	accountType = hasRoleId ? roles_legacy_access_type(role) : (json["acctype"] | ACCESS_DENIED);
+	username = json["user"].as<String>();
+
 	// if the pin code is wrong we deny access
 	// pinCode is equal to uid if we allow pin code only access
 	if(config.pinCodeRequested && pinCode != json["pincode"] && pinCode != uid && json["pincode"] != "")
@@ -398,9 +411,6 @@ void rfidProcess()
 	/*
 	 *  Get account type (for FIRST relay only) and username from user's data
 	 */
-	accountType = json["acctype"];
-	username = json["user"].as<String>();
-
 #ifdef DEBUG
 	Serial.println(" = known PICC");
 	Serial.print("[ INFO ] User Name: '");
@@ -411,7 +421,42 @@ void rfidProcess()
 	Serial.print("'");
 #endif
 
-	if (accountType == ACCESS_GRANTED)
+	if (hasRoleId)
+	{
+		if (role == NULL || !role->enabled)
+		{
+			processingState = notValid;
+		}
+		else if (role->admin)
+		{
+#ifdef DEBUG
+			Serial.println(" has admin role, enable wifi");
+#endif
+			doEnableWifi = true;
+			processingState = validAdmin;
+		}
+		else
+		{
+			unsigned long validSinceL = json["validsince"] | 0;
+			unsigned long validUntilL = json["validuntil"] | 0;
+			unsigned long nowL = epoch;
+			int hourTz = timeinfo.tm_hour;
+
+			if (validUntilL < nowL || validSinceL > nowL)
+			{
+				processingState = expired;
+			}
+			else if (!roles_is_allowed_now(role, weekdayFromMonday(weekday(epoch)), hourTz))
+			{
+				processingState = notValid;
+			}
+			else
+			{
+				processingState = valid;
+			}
+		}
+	}
+	else if (accountType == ACCESS_GRANTED)
 	{
 		/*
 		 *  Normal user - relay but no admin access
@@ -424,7 +469,7 @@ void rfidProcess()
 		if (validUntilL < nowL || validSinceL > nowL)
 		{
 			processingState = expired;
-		} else if (config.openingHours[weekdayFromMonday(weekday(epoch))][hourTz] != '1')
+		} else if (!roles_is_allowed_now(role, weekdayFromMonday(weekday(epoch)), hourTz))
 		{
 			processingState = notValid;
 		} else
@@ -456,11 +501,19 @@ void rfidProcess()
 	{
 		for (int currentRelay = 0; currentRelay < config.numRelays; currentRelay++)
 		{
-			// Get user data JSON access type entry for this relay
-			if (currentRelay == 0) {
-				accountTypes[currentRelay] = json["acctype"];
-			} else {
-				accountTypes[currentRelay] = json["acctype" + String(currentRelay + 1)];
+			if (hasRoleId)
+			{
+				uint8_t relayMask = roles_relay_mask(role);
+				accountTypes[currentRelay] = (relayMask & (1U << currentRelay)) ? ACCESS_GRANTED : ACCESS_DENIED;
+			}
+			else
+			{
+				// Legacy users keep per-relay acctype fields until edited in the new UI.
+				if (currentRelay == 0) {
+					accountTypes[currentRelay] = json["acctype"];
+				} else {
+					accountTypes[currentRelay] = json["acctype" + String(currentRelay + 1)];
+				}
 			}
 
 			// Enable activation if permissions are correct
@@ -483,9 +536,9 @@ void rfidOutsideMessaging()
 #ifdef DEBUG
 		Serial.println(" has access relay");
 #endif
-		writeLatest(uid, username, accountType, ACCESS_GRANTED);
+		writeLatest(uid, username, accountType, ACCESS_GRANTED, currentRoleName.c_str(), currentRoleId);
 		if (config.numRelays == 1) {
-			mqttPublishAccess(epoch, "true", "Always", username, uid, pinCode);
+			mqttPublishAccess(epoch, "true", currentRoleName, username, uid, pinCode);
 		} else {
 			mqttPublishAccess(epoch, "true", accountTypes, username, uid, pinCode);
 		}
@@ -494,9 +547,9 @@ void rfidOutsideMessaging()
 	if (processingState == validAdmin)
 	{
 		ws.textAll("{\"command\":\"giveAccess\"}");
-		writeLatest(uid, username, accountType, ACCESS_GRANTED);
+		writeLatest(uid, username, accountType, ACCESS_GRANTED, currentRoleName.c_str(), currentRoleId);
 		if (config.numRelays == 1) {
-			mqttPublishAccess(epoch, "true", "Admin", username, uid, pinCode);
+			mqttPublishAccess(epoch, "true", currentRoleName, username, uid, pinCode);
 		} else {
 			mqttPublishAccess(epoch, "true", accountTypes, username, uid, pinCode);
 		}
@@ -507,14 +560,14 @@ void rfidOutsideMessaging()
 #ifdef DEBUG
 		Serial.println(" expired");
 #endif
-		writeLatest(uid, username, accountType, ACCESS_DENIED);
+		writeLatest(uid, username, accountType, ACCESS_DENIED, currentRoleName.c_str(), currentRoleId);
 		mqttPublishAccess(epoch, "true", "Expired", username, uid, pinCode);
 		ledAccessDeniedOn();
 		beeperAccessDenied();
 	}
 	if (processingState == wrongPincode)
 	{
-		writeLatest(uid, username, accountType, ACCESS_DENIED);
+		writeLatest(uid, username, accountType, ACCESS_DENIED, currentRoleName.c_str(), currentRoleId);
 		mqttPublishAccess(epoch, "true", "Wrong pin code", username, uid, pinCode);
 		ledAccessDeniedOn();
 		beeperAccessDenied();
@@ -524,8 +577,8 @@ void rfidOutsideMessaging()
 #ifdef DEBUG
 		Serial.println(" does not have access");
 #endif
-		writeLatest(uid, username, accountType, ACCESS_DENIED);
-		mqttPublishAccess(epoch, "true", "Disabled", username, uid, pinCode);
+		writeLatest(uid, username, accountType, ACCESS_DENIED, currentRoleName.c_str(), currentRoleId);
+		mqttPublishAccess(epoch, "true", currentRoleName, username, uid, pinCode);
 		ledAccessDeniedOn();
 		beeperAccessDenied();
 	}
@@ -539,12 +592,11 @@ void rfidOutsideMessaging()
 		root["uid"] = uid;
 		root["type"] = type;
 		root["known"] = 0;
-		size_t len = measureJson(root);
-		AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
-		if (buffer)
 		{
-			serializeJson(root, (char *)buffer->get(), len + 1);
-			ws.textAll(buffer);
+			String scanStr;
+			serializeJson(root, scanStr);
+			AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer((uint8_t *)scanStr.c_str(), scanStr.length());
+			if (buffer) ws.textAll(buffer);
 		}
 		mqttPublishAccess(epoch, "false", "Denied", "Unknown", uid, " ");
 		ledAccessDeniedOn();
@@ -558,13 +610,14 @@ void rfidOutsideMessaging()
 		root["type"] = type;
 		root["known"] = 1;
 		root["acctype"] = accountType;
+		root["role_id"] = currentRoleId;
+		root["role_name"] = currentRoleName;
 		root["user"] = username;
-		size_t len = measureJson(root);
-		AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
-		if (buffer)
 		{
-			serializeJson(root, (char *)buffer->get(), len + 1);
-			ws.textAll(buffer);
+			String scanStr;
+			serializeJson(root, scanStr);
+			AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer((uint8_t *)scanStr.c_str(), scanStr.length());
+			if (buffer) ws.textAll(buffer);
 		}
 	}
 }
@@ -685,7 +738,16 @@ void ICACHE_FLASH_ATTR setupPN532Reader(int rfidss)
 
 void ICACHE_FLASH_ATTR setupRDM6300Reader(int rmd6300TxPin)
 {
+#if defined(ESP32)
+	#if defined(CONFIG_IDF_TARGET_ESP32C3)
+	rdm6300SwSerial = new HardwareSerial(1);
+	#else
+	rdm6300SwSerial = new HardwareSerial(2);
+	#endif
+	rdm6300SwSerial->begin(RDM6300_BAUDRATE, SERIAL_8N1, rmd6300TxPin, -1);
+#else
 	rdm6300SwSerial = new SoftwareSerial(rmd6300TxPin, -1);
 	rdm6300SwSerial->begin(RDM6300_BAUDRATE);
+#endif
 	rdm6300SwSerial->setTimeout(RDM6300_READ_TIMEOUT);
 }

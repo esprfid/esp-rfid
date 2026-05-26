@@ -3,46 +3,89 @@ void setEnableWifi()
 	doEnableWifi = true;
 }
 
+static bool wifiStationHasIp = false;
+static bool wifiDisconnectRequested = false;
+#if defined(ESP32)
+static uint8_t lastWifiDisconnectReason = 255;
+static unsigned long lastWifiDisconnectLog = 0;
+#endif
+
+#if defined(ESP32)
+void onWifiConnect(WiFiEvent_t event, WiFiEventInfo_t info)
+#else
 void onWifiConnect(const WiFiEventStationModeConnected &event)
+#endif
 {
+#if defined(ESP32)
+	(void)event;
+	(void)info;
+#endif
 #ifdef DEBUG
 	Serial.println(F("[ INFO ] WiFi STA Connected"));
 #endif
 	mqttReconnectTimer.detach();
-	if (!wifiReconnectTimer.active() && !config.fallbackMode)
-	{
-		wifiReconnectTimer.once(300, setEnableWifi);
-	}
 	ledWifiOff();
 }
 
+#if defined(ESP32)
+void onWifiDisconnect(WiFiEvent_t event, WiFiEventInfo_t info)
+#else
 void onWifiDisconnect(const WiFiEventStationModeDisconnected &event)
+#endif
 {
+#if defined(ESP32)
+	(void)event;
+	uint8_t reason = info.wifi_sta_disconnected.reason;
+#else
 	if ( !WiFi.isConnected() )
 	{
 		return;
 	}
+#endif
+	wifiStationHasIp = false;
 #ifdef DEBUG
+	#if defined(ESP32)
+	bool duplicateDisconnectLog = (lastWifiDisconnectReason == reason) && (millis() - lastWifiDisconnectLog < 1000);
+	if (!duplicateDisconnectLog)
+	{
+		Serial.printf("[ INFO ] WiFi STA Disconnected reason=%u\n", reason);
+		lastWifiDisconnectReason = reason;
+		lastWifiDisconnectLog = millis();
+	}
+	#else
 	Serial.println(F("[ INFO ] WiFi STA Disconnected"));
+	#endif
 #endif
 	mqttReconnectTimer.detach();
 	disconnectMqtt();
-	if (!wifiReconnectTimer.active() && !config.fallbackMode)
+	if (!wifiDisconnectRequested && !wifiReconnectTimer.active() && !config.fallbackMode)
 	{
 		wifiReconnectTimer.once(300, setEnableWifi);
 	}
 	ledWifiOff();
 }
 
+#if defined(ESP32)
+void onWifiGotIP(WiFiEvent_t event, WiFiEventInfo_t info)
+#else
 void onWifiGotIP(const WiFiEventStationModeGotIP &event)
+#endif
 {
+#if defined(ESP32)
+	(void)event;
+	(void)info;
+#endif
 #ifdef DEBUG
 	Serial.print("[ INFO ] WiFi IP Connected: ");
 	Serial.println(WiFi.localIP().toString());
 #endif
+	wifiStationHasIp = true;
+	wifiDisconnectRequested = false;
 	wifiReconnectTimer.detach();
 	ledWifiOn();
 	connectToMqtt();
+	configTime(0, 0, config.ntpServer ? config.ntpServer : "pool.ntp.org");
+	tzset();
 }
 
 bool ICACHE_FLASH_ATTR startAP(IPAddress apip, IPAddress apsubnet, bool hidden, const char *ssid, const char *password = NULL)
@@ -95,7 +138,7 @@ void ICACHE_FLASH_ATTR fallbacktoAPMode()
 	WiFi.mode(WIFI_AP);
 	uint8_t macAddr[6];
 	WiFi.softAPmacAddress(macAddr);
-	char ssid[15];
+	char ssid[16];
 	sprintf(ssid, "ESP-RFID-%02x%02x%02x", macAddr[3], macAddr[4], macAddr[5]);
 	if (WiFi.softAP(ssid))
 	{
@@ -115,7 +158,14 @@ bool ICACHE_FLASH_ATTR connectSTA(const char *ssid, const char *password, byte b
 {
 	bool useBSSID = false;
 	WiFi.mode(WIFI_STA);
+#if defined(ESP32)
+	WiFi.setSleep(false);
+	WiFi.setAutoReconnect(true);
+#endif
+	espRfidSetHostname(config.deviceHostname);
 	WiFi.persistent(false);
+	wifiDisconnectRequested = false;
+	wifiStationHasIp = false;
 
 	if (!config.dhcpEnabled)
 	{
@@ -153,7 +203,7 @@ bool ICACHE_FLASH_ATTR connectSTA(const char *ssid, const char *password, byte b
 		WiFi.begin(ssid, password);
 	}
 	unsigned long now = millis();
-	uint8_t timeout = 15; // define when to time out in seconds
+		uint8_t timeout = 30; // define when to time out in seconds
 	do
 	{
 		ledWifiStatus();
@@ -169,6 +219,7 @@ bool ICACHE_FLASH_ATTR connectSTA(const char *ssid, const char *password, byte b
 	// We now out of the while loop, either time is out or we connected. check what happened
 	if (WiFi.isConnected())
 	{
+		wifiStationHasIp = true;
 		String data = ssid;
 		data += " " + WiFi.localIP().toString();
 		writeEvent("INFO", "wifi", "WiFi is connected", data);
@@ -180,21 +231,24 @@ bool ICACHE_FLASH_ATTR connectSTA(const char *ssid, const char *password, byte b
 		Serial.println();
 		Serial.println(F("[ WARN ] Couldn't connect in time"));
 #endif
-		if (!config.fallbackMode)
-		{
-			#ifdef DEBUG
-				Serial.println();
-				Serial.println(F("[ INFO ] trying to reconnect to WiFi"));
-			#endif
-			wifiReconnectTimer.once(300, setEnableWifi);
-		}
-		return false;
+			if (!config.fallbackMode)
+			{
+				#ifdef DEBUG
+					Serial.println();
+					Serial.println(F("[ INFO ] trying to reconnect to WiFi"));
+				#endif
+				WiFi.disconnect(false);
+				wifiReconnectTimer.once(300, setEnableWifi);
+			}
+			return false;
 	}
 }
 
 void ICACHE_FLASH_ATTR disableWifi()
 {
 	wiFiUptimeMillis = 0;
+	wifiDisconnectRequested = true;
+	wifiStationHasIp = false;
 	WiFi.disconnect(true);
 	WiFi.softAPdisconnect(true);
 #ifdef DEBUG
@@ -223,14 +277,20 @@ void setupWifi(bool configured)
 {
 	if (!configured)
 	{
-		WiFi.hostname("esp-rfid");
+		espRfidSetHostname("esp-rfid");
 		fallbacktoAPMode();
 	} else
 	{
+#if defined(ESP32)
+		WiFi.onEvent(onWifiConnect, ARDUINO_EVENT_WIFI_STA_CONNECTED);
+		WiFi.onEvent(onWifiDisconnect, ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
+		WiFi.onEvent(onWifiGotIP, ARDUINO_EVENT_WIFI_STA_GOT_IP);
+#else
 		wifiConnectHandler = WiFi.onStationModeConnected(onWifiConnect);
 		wifiDisconnectHandler = WiFi.onStationModeDisconnected(onWifiDisconnect);
 		wifiOnStationModeGotIPHandler = WiFi.onStationModeGotIP(onWifiGotIP);
-		WiFi.hostname(config.deviceHostname);
+#endif
+		espRfidSetHostname(config.deviceHostname);
 		enableWifi();
 	}
 }

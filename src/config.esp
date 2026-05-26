@@ -1,3 +1,121 @@
+static uint32_t parseConfigUnsigned(JsonVariantConst value, uint32_t fallback)
+{
+	if (value.isNull())
+	{
+		return fallback;
+	}
+
+	if (value.is<const char *>())
+	{
+		const char *raw = value.as<const char *>();
+		if (raw != NULL && raw[0] != '\0')
+		{
+			return strtoul(raw, NULL, 0);
+		}
+	}
+
+	return value.as<uint32_t>();
+}
+
+static bool parseHexKey16(const char *raw, uint8_t out[16])
+{
+	if (raw == NULL)
+	{
+		return false;
+	}
+
+	char filtered[33];
+	size_t filteredLen = 0;
+	for (size_t i = 0; raw[i] != '\0' && filteredLen < sizeof(filtered) - 1; ++i)
+	{
+		if (isxdigit((unsigned char)raw[i]))
+		{
+			filtered[filteredLen++] = raw[i];
+		}
+	}
+	filtered[filteredLen] = '\0';
+
+	if (filteredLen != 32)
+	{
+		return false;
+	}
+
+	for (size_t i = 0; i < 16; ++i)
+	{
+		char hexByte[3] = {filtered[i * 2], filtered[i * 2 + 1], '\0'};
+		out[i] = (uint8_t)strtoul(hexByte, NULL, 16);
+	}
+
+	return true;
+}
+
+static void normalizeSecureReaderConfigForTarget(Config &config)
+{
+	bool hasClassicRs485Defaults =
+		config.secureReader.rs485Uart == 2 &&
+		config.secureReader.rs485TxPin == 17 &&
+		config.secureReader.rs485RxPin == 16 &&
+		config.secureReader.rs485DeRePin == 4;
+	bool hasClassicPn532Defaults =
+		config.secureReader.pn532SckPin == 18 &&
+		config.secureReader.pn532MisoPin == 19 &&
+		config.secureReader.pn532MosiPin == 23 &&
+		config.secureReader.pn532SsPin == 5 &&
+		config.secureReader.pn532ResetPin == 27;
+
+	bool hasC3Rs485Defaults =
+		config.secureReader.rs485Uart == 1 &&
+		config.secureReader.rs485TxPin == 4 &&
+		config.secureReader.rs485RxPin == 5 &&
+		config.secureReader.rs485DeRePin == 3;
+	bool hasC3Pn532Defaults =
+		config.secureReader.pn532SckPin == 6 &&
+		config.secureReader.pn532MisoPin == 2 &&
+		config.secureReader.pn532MosiPin == 7 &&
+		config.secureReader.pn532SsPin == 10 &&
+		config.secureReader.pn532ResetPin == 9;
+
+#if defined(CONFIG_IDF_TARGET_ESP32C3)
+	if (config.secureReader.rs485Uart > 1 || hasClassicRs485Defaults)
+	{
+		config.secureReader.rs485Uart = DEFAULT_RS485_UART;
+		config.secureReader.rs485TxPin = DEFAULT_RS485_TX_PIN;
+		config.secureReader.rs485RxPin = DEFAULT_RS485_RX_PIN;
+		config.secureReader.rs485DeRePin = DEFAULT_RS485_DERE_PIN;
+	}
+	if (hasClassicPn532Defaults)
+	{
+		config.secureReader.pn532SckPin = DEFAULT_PN532_SCK_PIN;
+		config.secureReader.pn532MisoPin = DEFAULT_PN532_MISO_PIN;
+		config.secureReader.pn532MosiPin = DEFAULT_PN532_MOSI_PIN;
+		config.secureReader.pn532SsPin = DEFAULT_PN532_SS_PIN;
+		config.secureReader.pn532ResetPin = DEFAULT_PN532_RST_PIN;
+	}
+#elif defined(ESP32)
+	if (hasC3Rs485Defaults)
+	{
+		config.secureReader.rs485Uart = DEFAULT_RS485_UART;
+		config.secureReader.rs485TxPin = DEFAULT_RS485_TX_PIN;
+		config.secureReader.rs485RxPin = DEFAULT_RS485_RX_PIN;
+		config.secureReader.rs485DeRePin = DEFAULT_RS485_DERE_PIN;
+	}
+	if (hasC3Pn532Defaults)
+	{
+		config.secureReader.pn532SckPin = DEFAULT_PN532_SCK_PIN;
+		config.secureReader.pn532MisoPin = DEFAULT_PN532_MISO_PIN;
+		config.secureReader.pn532MosiPin = DEFAULT_PN532_MOSI_PIN;
+		config.secureReader.pn532SsPin = DEFAULT_PN532_SS_PIN;
+		config.secureReader.pn532ResetPin = DEFAULT_PN532_RST_PIN;
+	}
+#else
+	(void)config;
+	(void)hasClassicRs485Defaults;
+	(void)hasClassicPn532Defaults;
+	(void)hasC3Rs485Defaults;
+	(void)hasC3Pn532Defaults;
+#endif
+}
+
 bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 {
 	File configFile = SPIFFS.open("/config.json", "r");
@@ -11,7 +129,7 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 	size_t size = configFile.size();
 	std::unique_ptr<char[]> buf(new char[size]);
 	configFile.readBytes(buf.get(), size);
-	DynamicJsonDocument json(2048);
+	DynamicJsonDocument json(4096);
 	auto error = deserializeJson(json, buf.get(), size);
 	if (error)
 	{
@@ -28,6 +146,12 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 	JsonObject general = json["general"];
 	JsonObject mqtt = json["mqtt"];
 	JsonObject ntp = json["ntp"];
+	JsonObject secureReader = json["secure_reader"];
+#if defined(ESP32)
+	memcpy(config.secureReader.aesKey, DEFAULT_DESFIRE_AES_KEY, sizeof(config.secureReader.aesKey));
+#else
+	memcpy(config.secureReader.aesKey, DEFAULT_DESFIRE_AES_KEY, sizeof(config.secureReader.aesKey));
+#endif
 #ifdef DEBUG
 	Serial.println(F("[ INFO ] Trying to setup RFID Hardware"));
 #endif
@@ -113,6 +237,7 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 		config.numRelays = 1;
 
 	config.readertype = hardware["readertype"];
+	config.secureReader.enabled = config.readertype == READER_SECURE_ACCESS;
 	int rfidss;
 	config.pinCodeRequested = false;
 	config.pinCodeOnly = false;
@@ -154,11 +279,72 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 		setupPN532Reader(rfidss);
 	}
 	// RDM6300 can be configured alongside the other readers
-	if (config.readertype > READER_PN532)
+	if (config.readertype == READER_MFRC522_RDM6300 ||
+		config.readertype == READER_WIEGAND_RDM6300 ||
+		config.readertype == READER_PN532_RDM6300)
 	{
 		int rmd6300TxPin = hardware["rdm6300pin"];
 		setupRDM6300Reader(rmd6300TxPin);
 	}
+
+	if (!secureReader.isNull())
+	{
+		if (secureReader.containsKey("backend"))
+		{
+			config.secureReader.backendName = strdup(secureReader["backend"].as<const char *>());
+		}
+		if (secureReader.containsKey("reader_id"))
+		{
+			config.secureReader.readerId = strdup(secureReader["reader_id"].as<const char *>());
+		}
+		else if (secureReader.containsKey("readerId"))
+		{
+			config.secureReader.readerId = strdup(secureReader["readerId"].as<const char *>());
+		}
+
+		config.secureReader.desfireAid = parseConfigUnsigned(secureReader["desfire_aid"], config.secureReader.desfireAid);
+		config.secureReader.desfireFileId = (uint8_t)parseConfigUnsigned(secureReader["desfire_file_id"], config.secureReader.desfireFileId);
+		config.secureReader.desfireKeyNumber = (uint8_t)parseConfigUnsigned(secureReader["desfire_key_no"], config.secureReader.desfireKeyNumber);
+		if (secureReader.containsKey("desfire_file_comm_mode"))
+		{
+			config.secureReader.desfireFileCommMode = strdup(secureReader["desfire_file_comm_mode"].as<const char *>());
+		}
+		else if (secureReader.containsKey("desfire_comm_mode"))
+		{
+			config.secureReader.desfireFileCommMode = strdup(secureReader["desfire_comm_mode"].as<const char *>());
+		}
+		config.secureReader.rs485Uart = (int)parseConfigUnsigned(secureReader["rs485_uart"], config.secureReader.rs485Uart);
+		config.secureReader.rs485BaudRate = (int)parseConfigUnsigned(secureReader["rs485_baud"], config.secureReader.rs485BaudRate);
+		config.secureReader.rs485TxPin = (int)parseConfigUnsigned(secureReader["rs485_tx_pin"], config.secureReader.rs485TxPin);
+		config.secureReader.rs485RxPin = (int)parseConfigUnsigned(secureReader["rs485_rx_pin"], config.secureReader.rs485RxPin);
+		config.secureReader.rs485DeRePin = (int)parseConfigUnsigned(secureReader["rs485_dere_pin"], config.secureReader.rs485DeRePin);
+		config.secureReader.pn532SckPin = (int)parseConfigUnsigned(secureReader["pn532_sck_pin"], config.secureReader.pn532SckPin);
+		config.secureReader.pn532MisoPin = (int)parseConfigUnsigned(secureReader["pn532_miso_pin"], config.secureReader.pn532MisoPin);
+		config.secureReader.pn532MosiPin = (int)parseConfigUnsigned(secureReader["pn532_mosi_pin"], config.secureReader.pn532MosiPin);
+		config.secureReader.pn532SsPin = (int)parseConfigUnsigned(secureReader["pn532_ss_pin"], config.secureReader.pn532SsPin);
+		config.secureReader.pn532ResetPin = (int)parseConfigUnsigned(secureReader["pn532_reset_pin"], config.secureReader.pn532ResetPin);
+		config.secureReader.cardDebounceMs = parseConfigUnsigned(secureReader["card_debounce_ms"], config.secureReader.cardDebounceMs);
+		config.secureReader.heartbeatIntervalMs = parseConfigUnsigned(secureReader["heartbeat_interval_ms"], config.secureReader.heartbeatIntervalMs);
+		if (secureReader.containsKey("debug_uid"))
+		{
+			config.secureReader.debugUid = secureReader["debug_uid"];
+		}
+
+		if (secureReader.containsKey("aes_key"))
+		{
+			parseHexKey16(secureReader["aes_key"].as<const char *>(), config.secureReader.aesKey);
+		}
+		else if (secureReader.containsKey("aesKey"))
+		{
+			parseHexKey16(secureReader["aesKey"].as<const char *>(), config.secureReader.aesKey);
+		}
+	}
+
+	if (!config.secureReader.enabled && hardware.containsKey("sspin"))
+	{
+		config.secureReader.pn532SsPin = hardware["sspin"];
+	}
+	normalizeSecureReaderConfigForTarget(config);
 
 	if (network.containsKey("fallbackmode"))
 	{
@@ -199,38 +385,47 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 	}
 	if (ntp.containsKey("tzinfo"))
 	{
-		config.tzInfo = (char *) malloc(strlen(ntp["tzinfo"]) * sizeof(char));
+		if (ntp.containsKey("timezone")) {
+			free(config.tzInfo);
+		}
 		config.tzInfo = strdup(ntp["tzinfo"]);
 	}
-	configTime(0, 0, config.ntpServer);
+	configTime(0, 0, config.ntpServer ? config.ntpServer : "pool.ntp.org");
 	// See https://github.com/nayarsystems/posix_tz_db/blob/master/zones.csv for Timezone codes for your region
 	setenv("TZ", config.tzInfo, 1);
 
-	config.activateTime[0] = hardware["rtime"];
-	config.lockType[0] = hardware["ltype"];
-	config.relayType[0] = hardware["rtype"];
-	if (hardware.containsKey("doorname"))
+	if (config.readertype == READER_SECURE_ACCESS)
 	{
-		config.doorName[0] = strdup(hardware["doorname"]);
+		config.numRelays = 0;
 	}
-
-	config.relayPin[0] = hardware["rpin"];
-	pinMode(config.relayPin[0], OUTPUT);
-	digitalWrite(config.relayPin[0], !config.relayType[0]);
-
-	for (int i = 1; i < config.numRelays; i++)
+	else
 	{
-		JsonObject relay = hardware["relay" + String((i + 1))];
-		config.activateTime[i] = relay["rtime"];
-		config.lockType[i] = relay["ltype"];
-		config.relayType[i] = relay["rtype"];
-		config.relayPin[i] = relay["rpin"];
-		if (relay.containsKey("doorname"))
+		config.activateTime[0] = hardware["rtime"];
+		config.lockType[0] = hardware["ltype"];
+		config.relayType[0] = hardware["rtype"];
+		if (hardware.containsKey("doorname"))
 		{
-			config.doorName[i]= strdup(relay["doorname"]);
+			config.doorName[0] = strdup(hardware["doorname"]);
 		}
-		pinMode(config.relayPin[i], OUTPUT);
-		digitalWrite(config.relayPin[i], !config.relayType[i]);
+
+		config.relayPin[0] = hardware["rpin"];
+		pinMode(config.relayPin[0], OUTPUT);
+		digitalWrite(config.relayPin[0], !config.relayType[0]);
+
+		for (int i = 1; i < config.numRelays; i++)
+		{
+			JsonObject relay = hardware["relay" + String((i + 1))];
+			config.activateTime[i] = relay["rtime"];
+			config.lockType[i] = relay["ltype"];
+			config.relayType[i] = relay["rtype"];
+			config.relayPin[i] = relay["rpin"];
+			if (relay.containsKey("doorname"))
+			{
+				config.doorName[i]= strdup(relay["doorname"]);
+			}
+			pinMode(config.relayPin[i], OUTPUT);
+			digitalWrite(config.relayPin[i], !config.relayType[i]);
+		}
 	}
 
 	if (network.containsKey("ssid"))
@@ -307,6 +502,7 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 			config.openingHours[d] = strdup("111111111111111111111111");
 		}
 	}
+	roles_load((const char **)config.openingHours);
 
 	config.mqttEnabled = mqtt["enabled"] == 1;
 
@@ -329,11 +525,13 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 		{
 			uint8_t macAddr[6];
 			WiFi.softAPmacAddress(macAddr);
-			char topicSuffix[7];
+			char topicSuffix[8];
 			sprintf(topicSuffix, "-%02x%02x%02x", macAddr[3], macAddr[4], macAddr[5]);
-			char *newTopic = (char *)malloc(sizeof(char) * 80);
+			size_t topicLen = strlen(config.mqttTopic) + strlen(topicSuffix) + 1;
+			char *newTopic = (char *)malloc(topicLen);
 			strcpy(newTopic, config.mqttTopic);
 			strcat(newTopic, topicSuffix);
+			free(config.mqttTopic);
 			config.mqttTopic = newTopic;
 		}
 		if (mqtt.containsKey("syncrate"))

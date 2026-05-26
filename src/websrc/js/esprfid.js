@@ -84,6 +84,28 @@ var config = {
         "server": "pool.ntp.org",
         "interval": 30,
         "tzinfo": ""
+    },
+    "secure_reader": {
+        "backend": "PN532_DESFIRE",
+        "reader_id": "door_01",
+        "desfire_aid": "0x564F4C",
+        "desfire_file_id": 1,
+        "desfire_key_no": 0,
+        "desfire_file_comm_mode": "plain",
+        "aes_key": "00112233445566778899AABBCCDDEEFF",
+        "rs485_uart": 1,
+        "rs485_baud": 115200,
+        "rs485_tx_pin": 4,
+        "rs485_rx_pin": 5,
+        "rs485_dere_pin": 3,
+        "pn532_sck_pin": 6,
+        "pn532_miso_pin": 2,
+        "pn532_mosi_pin": 7,
+        "pn532_ss_pin": 10,
+        "pn532_reset_pin": 9,
+        "card_debounce_ms": 1500,
+        "heartbeat_interval_ms": 10000,
+        "debug_uid": false
     }
 };
 
@@ -101,6 +123,422 @@ var wsConnectionPresent = false;
 
 var esprfidcontent;
 var websocketMessagesToRetry = [];
+var firmwareTarget = "esp32c3";
+var maxAccessRoles = 8;
+var accessRoles = [];
+var selectedRoleIndex = 0;
+
+var secureReaderPinProfiles = {
+  esp32c3: {
+    pin_profile: "esp32c3",
+    rs485_uart: 1,
+    rs485_tx_pin: 4,
+    rs485_rx_pin: 5,
+    rs485_dere_pin: 3,
+    pn532_sck_pin: 6,
+    pn532_miso_pin: 2,
+    pn532_mosi_pin: 7,
+    pn532_ss_pin: 10,
+    pn532_reset_pin: 9
+  },
+  esp32: {
+    pin_profile: "esp32",
+    rs485_uart: 2,
+    rs485_tx_pin: 17,
+    rs485_rx_pin: 16,
+    rs485_dere_pin: 4,
+    pn532_sck_pin: 18,
+    pn532_miso_pin: 19,
+    pn532_mosi_pin: 23,
+    pn532_ss_pin: 5,
+    pn532_reset_pin: 27
+  }
+};
+
+function secureReaderPinProfile() {
+  return secureReaderPinProfiles[firmwareTarget] || secureReaderPinProfiles.esp32c3;
+}
+
+function secureReaderPinsMatch(profile) {
+  return config.secure_reader.rs485_uart === profile.rs485_uart &&
+    config.secure_reader.rs485_tx_pin === profile.rs485_tx_pin &&
+    config.secure_reader.rs485_rx_pin === profile.rs485_rx_pin &&
+    config.secure_reader.rs485_dere_pin === profile.rs485_dere_pin &&
+    config.secure_reader.pn532_sck_pin === profile.pn532_sck_pin &&
+    config.secure_reader.pn532_miso_pin === profile.pn532_miso_pin &&
+    config.secure_reader.pn532_mosi_pin === profile.pn532_mosi_pin &&
+    config.secure_reader.pn532_ss_pin === profile.pn532_ss_pin &&
+    config.secure_reader.pn532_reset_pin === profile.pn532_reset_pin;
+}
+
+function applySecureReaderPinProfile(profile) {
+  config.secure_reader.pin_profile = profile.pin_profile;
+  config.secure_reader.rs485_uart = profile.rs485_uart;
+  config.secure_reader.rs485_tx_pin = profile.rs485_tx_pin;
+  config.secure_reader.rs485_rx_pin = profile.rs485_rx_pin;
+  config.secure_reader.rs485_dere_pin = profile.rs485_dere_pin;
+  config.secure_reader.pn532_sck_pin = profile.pn532_sck_pin;
+  config.secure_reader.pn532_miso_pin = profile.pn532_miso_pin;
+  config.secure_reader.pn532_mosi_pin = profile.pn532_mosi_pin;
+  config.secure_reader.pn532_ss_pin = profile.pn532_ss_pin;
+  config.secure_reader.pn532_reset_pin = profile.pn532_reset_pin;
+}
+
+function normalizeSecureReaderPinsForTarget() {
+  var targetProfile = secureReaderPinProfile();
+  var profileNames = Object.keys(secureReaderPinProfiles);
+
+  if (!("pin_profile" in config.secure_reader)) {
+    config.secure_reader.pin_profile = "";
+  }
+
+  for (var i = 0; i < profileNames.length; i++) {
+    var profile = secureReaderPinProfiles[profileNames[i]];
+    if (profile.pin_profile !== targetProfile.pin_profile && secureReaderPinsMatch(profile)) {
+      applySecureReaderPinProfile(targetProfile);
+      return;
+    }
+  }
+
+  if (config.secure_reader.pin_profile &&
+      config.secure_reader.pin_profile !== targetProfile.pin_profile &&
+      secureReaderPinsMatch(secureReaderPinProfiles[config.secure_reader.pin_profile])) {
+    applySecureReaderPinProfile(targetProfile);
+  }
+
+  if (firmwareTarget === "esp32c3" && config.secure_reader.rs485_uart > 1) {
+    config.secure_reader.rs485_uart = targetProfile.rs485_uart;
+  }
+  if (!config.secure_reader.pin_profile && secureReaderPinsMatch(targetProfile)) {
+    config.secure_reader.pin_profile = targetProfile.pin_profile;
+  }
+}
+
+function updateFirmwareTargetUi() {
+  var secureOption = document.querySelector("#readertype option[value='7']");
+  if (secureOption) {
+    secureOption.disabled = firmwareTarget === "esp8266";
+  }
+
+  var uartInput = document.getElementById("secureRs485Uart");
+  if (uartInput) {
+    uartInput.max = firmwareTarget === "esp32c3" ? 1 : 2;
+  }
+}
+
+function ensureSecureReaderConfig() {
+  if (!("secure_reader" in config) || typeof config.secure_reader !== "object" || config.secure_reader === null) {
+    config.secure_reader = {};
+  }
+
+  var pinProfile = secureReaderPinProfile();
+  if (!("backend" in config.secure_reader)) config.secure_reader.backend = "PN532_DESFIRE";
+  if (!("reader_id" in config.secure_reader)) config.secure_reader.reader_id = "door_01";
+  if (!("desfire_aid" in config.secure_reader)) config.secure_reader.desfire_aid = "0x564F4C";
+  if (!("desfire_file_id" in config.secure_reader)) config.secure_reader.desfire_file_id = 1;
+  if (!("desfire_key_no" in config.secure_reader)) config.secure_reader.desfire_key_no = 0;
+  if (!("desfire_file_comm_mode" in config.secure_reader)) config.secure_reader.desfire_file_comm_mode = "plain";
+  if (!("aes_key" in config.secure_reader)) config.secure_reader.aes_key = "00112233445566778899AABBCCDDEEFF";
+  if (!("pin_profile" in config.secure_reader)) config.secure_reader.pin_profile = pinProfile.pin_profile;
+  if (!("rs485_uart" in config.secure_reader)) config.secure_reader.rs485_uart = pinProfile.rs485_uart;
+  if (!("rs485_baud" in config.secure_reader)) config.secure_reader.rs485_baud = 115200;
+  if (!("rs485_tx_pin" in config.secure_reader)) config.secure_reader.rs485_tx_pin = pinProfile.rs485_tx_pin;
+  if (!("rs485_rx_pin" in config.secure_reader)) config.secure_reader.rs485_rx_pin = pinProfile.rs485_rx_pin;
+  if (!("rs485_dere_pin" in config.secure_reader)) config.secure_reader.rs485_dere_pin = pinProfile.rs485_dere_pin;
+  if (!("pn532_sck_pin" in config.secure_reader)) config.secure_reader.pn532_sck_pin = pinProfile.pn532_sck_pin;
+  if (!("pn532_miso_pin" in config.secure_reader)) config.secure_reader.pn532_miso_pin = pinProfile.pn532_miso_pin;
+  if (!("pn532_mosi_pin" in config.secure_reader)) config.secure_reader.pn532_mosi_pin = pinProfile.pn532_mosi_pin;
+  if (!("pn532_ss_pin" in config.secure_reader)) config.secure_reader.pn532_ss_pin = pinProfile.pn532_ss_pin;
+  if (!("pn532_reset_pin" in config.secure_reader)) config.secure_reader.pn532_reset_pin = pinProfile.pn532_reset_pin;
+  if (!("card_debounce_ms" in config.secure_reader)) config.secure_reader.card_debounce_ms = 1500;
+  if (!("heartbeat_interval_ms" in config.secure_reader)) config.secure_reader.heartbeat_interval_ms = 10000;
+  if (!("debug_uid" in config.secure_reader)) config.secure_reader.debug_uid = false;
+  normalizeSecureReaderPinsForTarget();
+}
+
+function fullWeekSchedule() {
+  var schedule = [];
+  for (var d = 0; d < 7; d++) {
+    schedule.push("111111111111111111111111");
+  }
+  return schedule;
+}
+
+function emptyWeekSchedule() {
+  var schedule = [];
+  for (var d = 0; d < 7; d++) {
+    schedule.push("000000000000000000000000");
+  }
+  return schedule;
+}
+
+function standardScheduleFromLegacy() {
+  if (config.general && config.general.openinghours && config.general.openinghours.length === 7) {
+    return config.general.openinghours.slice(0, 7);
+  }
+  return fullWeekSchedule();
+}
+
+function defaultAccessRoles() {
+  return [
+    {id: 0, name: "Disabled", enabled: false, admin: false, relay_mask: 0, schedule: emptyWeekSchedule()},
+    {id: 1, name: "Standard", enabled: true, admin: false, relay_mask: 15, schedule: standardScheduleFromLegacy()},
+    {id: 99, name: "Admin", enabled: true, admin: true, relay_mask: 15, schedule: fullWeekSchedule()}
+  ];
+}
+
+function normalizeRole(role) {
+  if (!role) role = {};
+  role.id = parseInt(role.id);
+  if (isNaN(role.id)) role.id = 0;
+  role.name = role.name || (role.id === 99 ? "Admin" : "Role");
+  role.enabled = !!role.enabled;
+  role.admin = !!role.admin || role.id === 99;
+  role.relay_mask = parseInt(role.relay_mask);
+  if (isNaN(role.relay_mask)) role.relay_mask = role.admin ? 15 : 1;
+  role.relay_mask = role.relay_mask & 15;
+  if (!Array.isArray(role.schedule) || role.schedule.length !== 7) {
+    role.schedule = role.admin ? fullWeekSchedule() : (role.enabled ? fullWeekSchedule() : emptyWeekSchedule());
+  }
+  for (var d = 0; d < 7; d++) {
+    if (typeof role.schedule[d] !== "string" || role.schedule[d].length !== 24) {
+      role.schedule[d] = role.admin ? "111111111111111111111111" : "000000000000000000000000";
+    }
+  }
+  if (role.id === 99) {
+    role.name = "Admin";
+    role.enabled = true;
+    role.admin = true;
+    role.relay_mask = 15;
+    role.schedule = fullWeekSchedule();
+  }
+  return role;
+}
+
+function ensureAccessRoles() {
+  if (!Array.isArray(accessRoles) || accessRoles.length === 0) {
+    accessRoles = defaultAccessRoles();
+  }
+  accessRoles = accessRoles.slice(0, maxAccessRoles).map(normalizeRole);
+  if (!roleById(99)) {
+    if (accessRoles.length >= maxAccessRoles) accessRoles.pop();
+    accessRoles.push(normalizeRole({id: 99, name: "Admin", enabled: true, admin: true, relay_mask: 15, schedule: fullWeekSchedule()}));
+  }
+  if (!roleById(1) && accessRoles.length < maxAccessRoles) {
+    accessRoles.push(normalizeRole({id: 1, name: "Standard", enabled: true, admin: false, relay_mask: 15, schedule: standardScheduleFromLegacy()}));
+  }
+  if (!roleById(0) && accessRoles.length < maxAccessRoles) {
+    accessRoles.push(normalizeRole({id: 0, name: "Disabled", enabled: false, admin: false, relay_mask: 0, schedule: emptyWeekSchedule()}));
+  }
+}
+
+function roleById(id) {
+  id = parseInt(id);
+  for (var i = 0; i < accessRoles.length; i++) {
+    if (parseInt(accessRoles[i].id) === id) return accessRoles[i];
+  }
+  return null;
+}
+
+function roleNameById(id) {
+  var role = roleById(id);
+  return role ? role.name : "Disabled";
+}
+
+function roleIdFromLegacy(acctype) {
+  acctype = parseInt(acctype);
+  if (acctype === 99) return 99;
+  if (acctype === 1) return 1;
+  return 0;
+}
+
+function roleLegacyAccessType(roleId) {
+  var role = roleById(roleId);
+  if (!role || !role.enabled) return 0;
+  if (role.admin) return 99;
+  return 1;
+}
+
+function renderRoleOptions($select, selectedRoleId) {
+  ensureAccessRoles();
+  $select.empty();
+  accessRoles.forEach(function(role) {
+    $select.append($("<option/>").text(role.name).val(role.id));
+  });
+  if (selectedRoleId !== undefined && selectedRoleId !== null) {
+    $select.val(parseInt(selectedRoleId));
+  }
+}
+
+function getRoles() {
+  sendWebsocketWithRetry("{\"command\":\"getroles\"}");
+}
+
+function roleRelayMaskFromEditor() {
+  var mask = 0;
+  for (var i = 1; i <= maxNumRelays; i++) {
+    var checkbox = document.getElementById("roleRelay" + i);
+    if (checkbox && checkbox.checked) {
+      mask |= (1 << (i - 1));
+    }
+  }
+  return mask;
+}
+
+function setRoleRelayChecks(role) {
+  for (var i = 1; i <= maxNumRelays; i++) {
+    var checkbox = document.getElementById("roleRelay" + i);
+    var label = document.getElementById("roleRelayLabel" + i);
+    if (checkbox) {
+      checkbox.checked = (role.relay_mask & (1 << (i - 1))) !== 0;
+      checkbox.disabled = role.admin || !role.enabled || i > numRelays;
+    }
+    if (label) {
+      label.style.display = i <= numRelays ? "inline-block" : "none";
+    }
+  }
+}
+
+function populateRoleHours(schedule) {
+  var table = document.getElementById("rolehours");
+  if (!table) return;
+  table.innerHTML = "";
+  var firstRow = document.createElement("tr");
+  firstRow.appendChild(document.createElement("th"));
+  for (var hour = 0; hour < 24; hour++) {
+    var th = document.createElement("th");
+    th.innerText = hour;
+    firstRow.appendChild(th);
+  }
+  table.appendChild(firstRow);
+  var weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  for (var day = 0; day < 7; day++) {
+    var tr = document.createElement("tr");
+    var firstCol = document.createElement("td");
+    firstCol.innerHTML = "<b>" + weekDays[day] + "</b>";
+    tr.appendChild(firstCol);
+    for (var h = 0; h < 24; h++) {
+      var td = document.createElement("td");
+      var checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.checked = schedule[day][h] === "1";
+      td.appendChild(checkbox);
+      tr.appendChild(td);
+    }
+    table.appendChild(tr);
+  }
+}
+
+function extractRoleHours() {
+  var table = document.getElementById("rolehours");
+  if (!table) return fullWeekSchedule();
+  var days = Array.from(table.getElementsByTagName("tr")).slice(1);
+  var schedule = [];
+  for (var d = 0; d < 7; d++) {
+    var hours = days[d].getElementsByTagName("input");
+    var dayFlags = "";
+    for (var h = 0; h < 24; h++) {
+      dayFlags += hours[h].checked ? "1" : "0";
+    }
+    schedule.push(dayFlags);
+  }
+  return schedule;
+}
+
+function loadRoleEditor() {
+  ensureAccessRoles();
+  if (selectedRoleIndex >= accessRoles.length) selectedRoleIndex = 0;
+  var role = accessRoles[selectedRoleIndex];
+  if (!role) return;
+  document.getElementById("roleName").value = role.name;
+  document.getElementById("roleEnabled").checked = role.enabled;
+  document.getElementById("roleAdmin").checked = role.admin;
+  document.getElementById("roleName").disabled = role.id === 99;
+  document.getElementById("roleEnabled").disabled = role.id === 99;
+  document.getElementById("roleAdmin").disabled = role.id === 99;
+  document.getElementById("deleteRoleBtn").disabled = role.id === 99;
+  setRoleRelayChecks(role);
+  populateRoleHours(role.schedule);
+}
+
+function selectRoleForEdit() {
+  if (document.getElementById("roleName") && accessRoles[selectedRoleIndex]) {
+    saveRoleEditorToMemory();
+  }
+  var selector = document.getElementById("roleSelector");
+  selectedRoleIndex = selector ? parseInt(selector.value) : 0;
+  if (isNaN(selectedRoleIndex)) selectedRoleIndex = 0;
+  loadRoleEditor();
+}
+
+function renderRoleSelector() {
+  ensureAccessRoles();
+  var selector = document.getElementById("roleSelector");
+  if (!selector) return;
+  selector.innerHTML = "";
+  accessRoles.forEach(function(role, index) {
+    var option = document.createElement("option");
+    option.value = index;
+    option.text = role.name;
+    selector.appendChild(option);
+  });
+  if (selectedRoleIndex >= accessRoles.length) selectedRoleIndex = 0;
+  selector.value = selectedRoleIndex;
+}
+
+function listroles() {
+  ensureAccessRoles();
+  renderRoleSelector();
+  loadRoleEditor();
+}
+
+function addRole() {
+  ensureAccessRoles();
+  if (document.getElementById("roleName")) {
+    saveRoleEditorToMemory();
+  }
+  if (accessRoles.length >= maxAccessRoles) {
+    alert("Maximum 8 roles");
+    return;
+  }
+  var nextId = 2;
+  while (roleById(nextId) && nextId < 99) nextId++;
+  accessRoles.push(normalizeRole({id: nextId, name: "Role " + nextId, enabled: true, admin: false, relay_mask: 1, schedule: fullWeekSchedule()}));
+  selectedRoleIndex = accessRoles.length - 1;
+  listroles();
+}
+
+function deleteRole() {
+  ensureAccessRoles();
+  var role = accessRoles[selectedRoleIndex];
+  if (!role || role.id === 99) return;
+  if (!confirm("Remove role " + role.name + "?")) return;
+  accessRoles.splice(selectedRoleIndex, 1);
+  selectedRoleIndex = 0;
+  listroles();
+}
+
+function saveRoleEditorToMemory() {
+  ensureAccessRoles();
+  var role = accessRoles[selectedRoleIndex];
+  if (!role) return;
+  if (role.id !== 99) {
+    role.name = document.getElementById("roleName").value || role.name;
+    role.enabled = document.getElementById("roleEnabled").checked;
+    role.admin = document.getElementById("roleAdmin").checked;
+    role.relay_mask = role.admin ? 15 : roleRelayMaskFromEditor();
+    role.schedule = role.admin ? fullWeekSchedule() : extractRoleHours();
+  }
+  accessRoles[selectedRoleIndex] = normalizeRole(role);
+}
+
+function saveRoles() {
+  if (document.getElementById("roleName")) {
+    saveRoleEditorToMemory();
+  }
+  ensureAccessRoles();
+  sendWebsocketWithRetry(JSON.stringify({command: "rolesfile", roles: accessRoles}));
+}
 
 function sendWebsocket(msg) {
   websock.send(msg);
@@ -150,6 +588,7 @@ function syncBrowserTime() {
 
 function handleReader() {
   var rType = parseInt(document.getElementById("readertype").value);
+  document.getElementById("secureReaderForm").style.display = "none";
   if (rType === 0) {
     document.getElementById("wiegandForm").style.display = "none";
     document.getElementById("mfrc522Form").style.display = "block";
@@ -184,6 +623,12 @@ function handleReader() {
     document.getElementById("mfrc522Form").style.display = "block";
     document.getElementById("rc522gain").style.display = "none";
     document.getElementById("rdm6300").style.display = "block";
+  } else if (rType === 7) {
+    document.getElementById("wiegandForm").style.display = "none";
+    document.getElementById("mfrc522Form").style.display = "block";
+    document.getElementById("rc522gain").style.display = "none";
+    document.getElementById("rdm6300").style.display = "none";
+    document.getElementById("secureReaderForm").style.display = "block";
   }
 }
 
@@ -199,6 +644,8 @@ function handleLock(xnum) {
 }
 
 function listhardware() {
+  ensureSecureReaderConfig();
+  updateFirmwareTargetUi();
   document.getElementById("lockType").value = config.hardware.ltype;
   document.getElementById("typerly").value = config.hardware.rtype;
   document.getElementById("delay").value = config.hardware.rtime;
@@ -220,6 +667,26 @@ function listhardware() {
   document.getElementById("rdm6300pin").value = config.hardware.rdm6300pin;
   document.getElementById("gpioss").value = config.hardware.sspin;
   document.getElementById("gain").value = config.hardware.rfidgain;
+  document.getElementById("secureBackend").value = config.secure_reader.backend;
+  document.getElementById("secureReaderId").value = config.secure_reader.reader_id;
+  document.getElementById("secureDesfireAid").value = config.secure_reader.desfire_aid;
+  document.getElementById("secureDesfireFileId").value = config.secure_reader.desfire_file_id;
+  document.getElementById("secureDesfireKeyNo").value = config.secure_reader.desfire_key_no;
+  document.getElementById("secureDesfireCommMode").value = config.secure_reader.desfire_file_comm_mode;
+  document.getElementById("secureAesKey").value = config.secure_reader.aes_key;
+  document.getElementById("secureRs485Uart").value = config.secure_reader.rs485_uart;
+  document.getElementById("secureRs485Baud").value = config.secure_reader.rs485_baud;
+  document.getElementById("secureRs485Tx").value = config.secure_reader.rs485_tx_pin;
+  document.getElementById("secureRs485Rx").value = config.secure_reader.rs485_rx_pin;
+  document.getElementById("secureRs485Dere").value = config.secure_reader.rs485_dere_pin;
+  document.getElementById("securePn532Sck").value = config.secure_reader.pn532_sck_pin;
+  document.getElementById("securePn532Miso").value = config.secure_reader.pn532_miso_pin;
+  document.getElementById("securePn532Mosi").value = config.secure_reader.pn532_mosi_pin;
+  document.getElementById("securePn532Ss").value = config.secure_reader.pn532_ss_pin;
+  document.getElementById("securePn532Reset").value = config.secure_reader.pn532_reset_pin;
+  document.getElementById("secureCardDebounce").value = config.secure_reader.card_debounce_ms;
+  document.getElementById("secureHeartbeat").value = config.secure_reader.heartbeat_interval_ms;
+  document.getElementById("secureDebugUid").checked = config.secure_reader.debug_uid;
   document.getElementById("gpiorly").value = config.hardware.rpin;
   document.getElementById("doorname").value = config.hardware.doorname || "";
   document.getElementById("numrlys").value = numRelays;
@@ -267,6 +734,7 @@ function uncommited() {
 }
 
 function savehardware() {
+  ensureSecureReaderConfig();
   config.hardware.readertype = parseInt(document.getElementById("readertype").value);
   config.hardware.wgd0pin = parseInt(document.getElementById("wg0pin").value);
   config.hardware.wgd1pin = parseInt(document.getElementById("wg1pin").value);
@@ -277,6 +745,27 @@ function savehardware() {
   config.hardware.removeparitybits = document.getElementById("removeparitybits").checked;
   config.hardware.sspin = parseInt(document.getElementById("gpioss").value);
   config.hardware.rfidgain = parseInt(document.getElementById("gain").value);
+  config.secure_reader.backend = document.getElementById("secureBackend").value;
+  config.secure_reader.pin_profile = firmwareTarget;
+  config.secure_reader.reader_id = document.getElementById("secureReaderId").value;
+  config.secure_reader.desfire_aid = document.getElementById("secureDesfireAid").value;
+  config.secure_reader.desfire_file_id = parseInt(document.getElementById("secureDesfireFileId").value);
+  config.secure_reader.desfire_key_no = parseInt(document.getElementById("secureDesfireKeyNo").value);
+  config.secure_reader.desfire_file_comm_mode = document.getElementById("secureDesfireCommMode").value;
+  config.secure_reader.aes_key = document.getElementById("secureAesKey").value;
+  config.secure_reader.rs485_uart = parseInt(document.getElementById("secureRs485Uart").value);
+  config.secure_reader.rs485_baud = parseInt(document.getElementById("secureRs485Baud").value);
+  config.secure_reader.rs485_tx_pin = parseInt(document.getElementById("secureRs485Tx").value);
+  config.secure_reader.rs485_rx_pin = parseInt(document.getElementById("secureRs485Rx").value);
+  config.secure_reader.rs485_dere_pin = parseInt(document.getElementById("secureRs485Dere").value);
+  config.secure_reader.pn532_sck_pin = parseInt(document.getElementById("securePn532Sck").value);
+  config.secure_reader.pn532_miso_pin = parseInt(document.getElementById("securePn532Miso").value);
+  config.secure_reader.pn532_mosi_pin = parseInt(document.getElementById("securePn532Mosi").value);
+  config.secure_reader.pn532_ss_pin = parseInt(document.getElementById("securePn532Ss").value);
+  config.secure_reader.pn532_reset_pin = parseInt(document.getElementById("securePn532Reset").value);
+  config.secure_reader.card_debounce_ms = parseInt(document.getElementById("secureCardDebounce").value);
+  config.secure_reader.heartbeat_interval_ms = parseInt(document.getElementById("secureHeartbeat").value);
+  config.secure_reader.debug_uid = document.getElementById("secureDebugUid").checked;
   config.hardware.rtype = parseInt(document.getElementById("typerly").value);
   config.hardware.ltype = parseInt(document.getElementById("lockType").value);
   config.hardware.rpin = parseInt(document.getElementById("gpiorly").value);
@@ -312,6 +801,7 @@ function saventp() {
 }
 
 function extractOpeningHours() {
+  if (!document.getElementById("openinghours")) return standardScheduleFromLegacy();
   // removing header row
   var days = Array.from(document.getElementById("openinghours").getElementsByTagName("tr")).slice(1);
   var openingHours = []
@@ -339,7 +829,9 @@ function savegeneral() {
   } else {
     config.general.restart = parseInt(document.getElementById("autorestart").value);
   }
-  config.general.openinghours = extractOpeningHours();
+  if (document.getElementById("openinghours")) {
+    config.general.openinghours = extractOpeningHours();
+  }
   uncommited();
 }
 
@@ -567,11 +1059,12 @@ function listnetwork() {
 }
 
 function populateOpeningHours() {
+  var table = document.getElementById("openinghours");
+  if (!table) return;
   var openingHours = Array(7);
   for(var d=0; d<7; d++) {
     openingHours[d] = "111111111111111111111111";
   }
-  var table = document.getElementById("openinghours");
   if (config.general.openinghours) {
     openingHours = config.general.openinghours.map(function(day) { return day.split("") });
   }
@@ -622,7 +1115,6 @@ function listgeneral() {
       $("#autorestart-custom").addClass("hidden");
     }
   });
-  populateOpeningHours();
 }
 
 function listmqtt() {
@@ -704,7 +1196,7 @@ function listSCAN(obj) {
       document.getElementById("uid").value = obj.uid;
       document.getElementById("picctype").value = obj.type;
       document.getElementById("username").value = obj.user;
-      document.getElementById("acctype").value = obj.acctype;
+      renderRoleOptions($("#roleid"), obj.role_id || roleIdFromLegacy(obj.acctype));
     }
   }
 }
@@ -803,6 +1295,9 @@ function getContent(contentname) {
         case "#generalcontent":
           listgeneral();
           break;
+        case "#rolescontent":
+          listroles();
+          break;
         case "#hardwarecontent":
           listhardware();
           break;
@@ -822,6 +1317,7 @@ function getContent(contentname) {
         case "#userscontent":
           page = 1;
           data = [];
+          ensureAccessRoles();
           getUsers();
           break;
         case "#eventcontent":
@@ -854,6 +1350,11 @@ function backupset() {
   saveLogfile(config,"downloadSet","esp-rfid-settings.json")
 }
 
+function backuproles() {
+  ensureAccessRoles();
+  saveLogfile({type: "esp-rfid-roles", command: "rolesfile", roles: accessRoles}, "downloadRoles", "esp-rfid-roles.json");
+}
+
 function piccBackup(obj) {
   saveLogfile(obj,"downloadUser","esp-rfid-users.json")
   backupstarted = false;
@@ -878,7 +1379,35 @@ function restoreSet() {
           var x = confirm("File seems to be valid, do you wish to continue?");
           if (x) {
             config = json;
+            ensureSecureReaderConfig();
             uncommited();
+          }
+        }
+      };
+      reader.readAsText(input.files[0]);
+    }
+  }
+}
+
+function restoreRoles() {
+  var input = document.getElementById("restoreRoles");
+  var reader = new FileReader();
+  if ("files" in input) {
+    if (input.files.length === 0) {
+      alert("You did not select file to restore!");
+    } else {
+      reader.onload = function() {
+        var json;
+        try {
+          json = JSON.parse(reader.result);
+        } catch (e) {
+          alert("Not a valid backup file!");
+          return;
+        }
+        if (json.command === "rolesfile" && Array.isArray(json.roles)) {
+          if (confirm("File seems to be valid, do you wish to continue?")) {
+            accessRoles = json.roles.map(normalizeRole);
+            saveRoles();
           }
         }
       };
@@ -895,7 +1424,11 @@ function restore1by1(i, len, data) {
   datatosend.uid = data[i].uid;
   datatosend.pincode = data[i].pincode;
   datatosend.user = data[i].username;
-  datatosend.acctype = data[i].acctype;
+  datatosend.role_id = data[i].role_id || roleIdFromLegacy(data[i].acctype);
+  datatosend.acctype = data[i].acctype || roleLegacyAccessType(datatosend.role_id);
+  datatosend.acctype2 = data[i].acctype2 || datatosend.acctype;
+  datatosend.acctype3 = data[i].acctype3 || datatosend.acctype;
+  datatosend.acctype4 = data[i].acctype4 || datatosend.acctype;
   datatosend.validsince = data[i].validsince;
   datatosend.validuntil = data[i].validuntil;
   sendWebsocketWithRetry(JSON.stringify(datatosend));
@@ -1168,6 +1701,9 @@ function initLatestLogTable() {
     {
       var dup = {"uid":0,"acctype":99,"timestamp":0,"username":"Error in logfile entry"}
     }
+    if (!dup.role_name) {
+      dup.role_name = roleNameById(dup.role_id || roleIdFromLegacy(dup.acctype));
+    }
     newlist[i].value = dup;
     var c = dup.access;
     switch (c) {
@@ -1212,21 +1748,11 @@ function initLatestLogTable() {
           "title": "User Name or Label"
         },
         {
-          "name": "acctype",
+          "name": "role_name",
           "title": "Role",
           "breakpoints": "xs sm",
           "parser": function(value) {
-            if (value === 1) {
-              return "Always";
-            } else if (value === 99) {
-              return "Admin";
-            } else if (value === 0) {
-              return "Disabled";
-            } else if (value === 98) {
-              return "Unknown";
-            } else if (value === 2) {
-              return "Expired";
-            }
+            return value || "Legacy";
           }
         },
         {
@@ -1273,67 +1799,17 @@ function initUserTable() {
             "title": "User Name or Label"
           },
           {
-            "name": "acctype",
-            "title": "Access Door " + config.hardware.doorname || "1",
-            "breakpoints": "xs",
-            "parser": function(value) {
-              if (value === 1) {
-                return "Always";
-              } else if (value === 99) {
-                return "Admin";
-              } else if (value === 0) {
-                return "Disabled";
-              }
-              return value;
-            },
+            "name": "role_id",
+            "title": "Role ID",
+            "visible": false
           },
           {
-            "name": "acctype2",
-            "title": "Access Door " + config.hardware.relay2?.doorname || "2",
-            "breakpoints": "xs",
-            "visible": false,
+            "name": "role_name",
+            "title": "Role",
+            "breakpoints": "xs sm",
             "parser": function(value) {
-              if (value === 1) {
-                return "Always";
-              } else if (value === 99) {
-                return "Admin";
-              } else if (value === 0) {
-                return "Disabled";
-              }
-              return value;
-            },
-          },
-          {
-            "name": "acctype3",
-            "title": "Access Door " + config.hardware.relay3?.doorname || "3",
-            "breakpoints": "xs",
-            "visible": false,
-            "parser": function(value) {
-              if (value === 1) {
-                return "Always";
-              } else if (value === 99) {
-                return "Admin";
-              } else if (value === 0) {
-                return "Disabled";
-              }
-              return value;
-            },
-          },
-          {
-            "name": "acctype4",
-            "title": "Access Door " + config.hardware.relay4?.doorname || "4",
-            "breakpoints": "xs",
-            "visible": false,
-            "parser": function(value) {
-              if (value === 1) {
-                return "Always";
-              } else if (value === 99) {
-                return "Admin";
-              } else if (value === 0) {
-                return "Disabled";
-              }
-              return value;
-            },
+              return value || "Disabled";
+            }
           },
           {
             "name": "validsince",
@@ -1375,30 +1851,20 @@ function initUserTable() {
           addText: "New User",
           addRow: function() {
             $editor[0].reset();
+            renderRoleOptions($editor.find("#roleid"), 1);
             $editorTitle.text("Add a new User");
             $modal.modal("show");
           },
           editRow: function(row) {
-            var acctypefinder;
             var values = row.val();
-
-            function giveAccType(xnum){
-              var xval;
-              if (xnum===1) xval = values.acctype;
-              if (xnum===2) xval = values.acctype2;
-              if (xnum===3) xval = values.acctype3;
-              if (xnum===4) xval = values.acctype4;
-              if (xval === "Always")  return 1;
-              if (xval === "Admin")  return 99;
-              if (xval === "Disabled") return 0;
+            var roleId = values.role_id;
+            if (roleId === undefined || roleId === null || roleId === "") {
+              roleId = roleIdFromLegacy(values.acctype);
             }
             $editor.find("#uid").val(values.uid);
             $editor.find("#pincode").val(values.pincode);
             $editor.find("#username").val(values.username);
-            $editor.find("#acctype").val(giveAccType(1));
-            $editor.find("#acctype2").val(giveAccType(2));
-            $editor.find("#acctype3").val(giveAccType(3));
-            $editor.find("#acctype4").val(giveAccType(4));
+            renderRoleOptions($editor.find("#roleid"), roleId);
             $editor.find("#validsince").val(values.validsince);
             $editor.find("#validuntil").val(values.validuntil);
             $modal.data("row", row);
@@ -1428,15 +1894,16 @@ function initUserTable() {
         return;
       }
       e.preventDefault();
+      var selectedRoleId = parseInt($editor.find("#roleid").val());
+      var selectedRole = roleById(selectedRoleId);
+      var selectedLegacyType = roleLegacyAccessType(selectedRoleId);
       var row = $modal.data("row"),
         values = {
           uid: $editor.find("#uid").val(),
           pincode: $editor.find("#pincode").val(),
           username: $editor.find("#username").val(),
-          acctype: parseInt($editor.find("#acctype").val()),
-          acctype2: parseInt($editor.find("#acctype2").val()),
-          acctype3: parseInt($editor.find("#acctype3").val()),
-          acctype4: parseInt($editor.find("#acctype4").val()),
+          role_id: selectedRoleId,
+          role_name: selectedRole ? selectedRole.name : "Disabled",
           validsince: (new Date($editor.find("#validsince").val()).getTime() / 1000),
           validuntil: (new Date($editor.find("#validuntil").val()).getTime() / 1000)
         };
@@ -1453,10 +1920,11 @@ function initUserTable() {
       datatosend.uid = $editor.find("#uid").val();
       datatosend.pincode = $editor.find("#pincode").val();
       datatosend.user = $editor.find("#username").val();
-      datatosend.acctype = parseInt($editor.find("#acctype").val());
-      datatosend.acctype2 = parseInt($editor.find("#acctype2").val());
-      datatosend.acctype3 = parseInt($editor.find("#acctype3").val());
-      datatosend.acctype4 = parseInt($editor.find("#acctype4").val());
+      datatosend.role_id = selectedRoleId;
+      datatosend.acctype = selectedLegacyType;
+      datatosend.acctype2 = selectedLegacyType === 99 ? 1 : selectedLegacyType;
+      datatosend.acctype3 = selectedLegacyType === 99 ? 1 : selectedLegacyType;
+      datatosend.acctype4 = selectedLegacyType === 99 ? 1 : selectedLegacyType;
       var validsince = $editor.find("#validsince").val();
       var vsepoch = (new Date(validsince).getTime() / 1000);
       datatosend.validsince = vsepoch;
@@ -1467,20 +1935,6 @@ function initUserTable() {
       $modal.modal("hide");
     });
   });
-
-  ft = FooTable.get('#usertable');
-  for (var i=2; i<= maxNumRelays; i++)
-  {
-    if (i<= numRelays) 
-    {
-      ft.columns.get("acctype"+i).visible=true;
-    }
-    else
-    {
-      ft.columns.get("acctype"+i).visible=false;
-    }  
-    ft.draw();
-  }
 }
 
 function restartESP() {
@@ -1492,6 +1946,11 @@ function socketMessageListener(evt) {
   if (obj.hasOwnProperty("command")) {
     switch (obj.command) {
       case "status":
+        if (obj.firmware_target) {
+          firmwareTarget = obj.firmware_target;
+          updateFirmwareTargetUi();
+          ensureSecureReaderConfig();
+        }
         ajaxobj = obj;
         getContent("#statuscontent");
         break;
@@ -1507,6 +1966,14 @@ function socketMessageListener(evt) {
           break;
         }
         builddata(obj);
+        break;
+      case "roleslist":
+        maxAccessRoles = obj.max_roles || 8;
+        accessRoles = Array.isArray(obj.roles) ? obj.roles.map(normalizeRole) : defaultAccessRoles();
+        ensureAccessRoles();
+        if (document.getElementById("roleSelector")) {
+          listroles();
+        }
         break;
       case "eventlist":
         haspages = obj.haspages;
@@ -1547,6 +2014,9 @@ function socketMessageListener(evt) {
         break;
       case "configfile":
         config = obj;
+        if (obj.firmware_target) {
+          firmwareTarget = obj.firmware_target;
+        }
         if (!('wifipin' in config.hardware)) config.hardware.wifipin = 255;
         if (!('doorstatpin' in config.hardware)) config.hardware.doorstatpin = 255;
         if (!('maxOpenDoorTime' in config.hardware)) config.hardware.maxOpenDoorTime = 0;
@@ -1559,6 +2029,8 @@ function socketMessageListener(evt) {
         if (!('useridstoragemode' in config.hardware)) config.hardware.useridstoragemode = "hexadecimal";
         if (!('removeparitybits' in config.hardware)) config.hardware.removeparitybits = true;
         if ('numrelays' in config.hardware) numRelays = config.hardware["numrelays"]; else config.hardware["numrelays"] = numRelays;
+        ensureSecureReaderConfig();
+        ensureAccessRoles();
         break;
       default:
         break;
@@ -1652,6 +2124,11 @@ function socketMessageListener(evt) {
           if (!completed && obj.result === true) {
             restore1by1(slot, recordstorestore, data);
           }
+        }
+        break;
+      case "rolesfile":
+        if (obj.result !== true) {
+          alert("Roles save failed");
         }
         break;
       default:
@@ -1753,37 +2230,15 @@ function updateRelayForm() {
 }
 
 function updateUserModalForm(){
-  if(config.hardware.doorname) {
-    $("#useracctype label").text("Access to " + config.hardware.doorname);
-  }
-
+  ensureAccessRoles();
+  $("#useracctype label").text("Role");
+  renderRoleOptions($("#roleid"), 1);
   for (var i=2; i<= maxNumRelays; i++) {
-    var accTypeForm = $("#useracctype");
     var accParent= $("#usermodalbody");
-    if (i<= numRelays) 
+    var removeAccForm = document.getElementById("useracctype" + i);
+    if (removeAccForm)
     {
-      var existingaccTypeForm = document.getElementById("useracctype" + i);
-      if (!(existingaccTypeForm))
-      {
-        var accTypeFormClone = accTypeForm.clone(true);
-        var cloneObj = accTypeFormClone[0];
-        accTypeFormClone.attr("id", "useracctype" + i);
-
-        var str = cloneObj.innerHTML;
-        str=str.replace(/acctype/g, "acctype"+i);
-        str=str.replace("Access Type Relay 1", "Access Type Relay "+i);
-        str=str.replace ("<option value=\"99\">Admin</option>", "");
-        cloneObj.innerHTML=str;
-        accParent[0].appendChild(cloneObj);
-        var rname = config.hardware["relay"+i]?.doorname || "Relay "+i;
-        $("#useracctype"+i+" label").text("Access to " + rname);
-      }
-    } else {
-      var removeAccForm = document.getElementById("useracctype" + i);
-      if (removeAccForm)
-      {
-        accParent[0].removeChild(removeAccForm);
-      }
+      accParent[0].removeChild(removeAccForm);
     }
   }
 }
@@ -1829,6 +2284,10 @@ $("#general").click(function() {
   getContent("#generalcontent");
   return false;
 });
+$("#roles").click(function() {
+  getContent("#rolescontent");
+  return false;
+});
 $("#mqtt").click(function() {
   getContent("#mqttcontent");
   return false;
@@ -1869,9 +2328,8 @@ $(".noimp").on("click", function() {
 window.FooTable.MyFiltering = window.FooTable.Filtering.extend({
   construct: function(instance) {
     this._super(instance);
-    this.acctypes = ["1", "99", "0"];
-    this.acctypesstr = ["Always", "Admin", "Disabled"];
-    this.def = config.hardware.doorname ? "Access to " + config.hardware.doorname : "Access Type";
+    ensureAccessRoles();
+    this.def = "Role";
     this.$acctype = null;
   },
   $create: function() {
@@ -1897,25 +2355,25 @@ window.FooTable.MyFiltering = window.FooTable.Filtering.extend({
       }))
       .appendTo($formgrp);
 
-    $.each(self.acctypes, function(i, acctype) {
-      self.$acctype.append($("<option/>").text(self.acctypesstr[i]).val(self.acctypes[i]));
+    $.each(accessRoles, function(i, role) {
+      self.$acctype.append($("<option/>").text(role.name).val(role.name));
     });
   },
   _onStatusDropdownChanged: function(e) {
     var self = e.data.self,
       selected = $(this).val();
     if (selected !== self.def) {
-      self.addFilter("acctype", selected, ["acctype"]);
+      self.addFilter("role_name", selected, ["role_name"]);
     } else {
-      self.removeFilter("acctype");
+      self.removeFilter("role_name");
     }
     self.filter();
   },
   draw: function() {
     this._super();
-    var acctype = this.find("acctype");
-    if (acctype instanceof window.FooTable.Filter) {
-      this.$acctype.val(acctype.query.val());
+    var roleName = this.find("role_name");
+    if (roleName instanceof window.FooTable.Filter) {
+      this.$acctype.val(roleName.query.val());
     } else {
       this.$acctype.val(this.def);
     }
@@ -1985,6 +2443,7 @@ function wsConnectionActive() {
   if (!gotInitialData) {
     sendWebsocket("{\"command\":\"status\"}");
     sendWebsocket("{\"command\":\"getconf\"}");
+    sendWebsocket("{\"command\":\"getroles\"}");
     gotInitialData = true;
   }
 }

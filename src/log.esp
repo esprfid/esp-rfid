@@ -26,13 +26,21 @@ void ICACHE_FLASH_ATTR writeEvent(String type, String src, String desc, String d
 #endif
 }
 
-void ICACHE_FLASH_ATTR writeLatest(String uid, String username, int acctype, int access = ACCESS_GRANTED)
+void ICACHE_FLASH_ATTR writeLatest(String uid, String username, int acctype, int access = ACCESS_GRANTED, const char *roleName = NULL, int roleId = -1)
 {
 	DynamicJsonDocument root(512);
 	root["uid"] = uid;
 	root["username"] = username;
 	root["acctype"] = acctype;
 	root["access"] = access;
+	if (roleName != NULL)
+	{
+		root["role_name"] = roleName;
+	}
+	if (roleId >= 0)
+	{
+		root["role_id"] = roleId;
+	}
 	root["timestamp"] = epoch;
 	File latestlog = SPIFFS.open("/latestlog.json", "a");
 	serializeJson(root, latestlog);
@@ -106,11 +114,11 @@ void ICACHE_FLASH_ATTR sendLogFile(int page, String fileName, int logFileType, A
 
 	logFile.close();
 	root["haspages"] = ceil(pages);
-	size_t len = measureJson(root);
-	AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
+	String logStr;
+	serializeJson(root, logStr);
+	AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer((uint8_t *)logStr.c_str(), logStr.length());
 	if (buffer)
 	{
-		serializeJson(root, (char *)buffer->get(), len + 1);
 		client->text(buffer);
 		if (logFileType == LOGTYPE_EVENTLOG)
 			client->text("{\"command\":\"result\",\"resultof\":\"eventlist\",\"result\": true}");
@@ -158,8 +166,8 @@ void ICACHE_FLASH_ATTR logMaintenance(String action, String filename, AsyncWebSo
 		File newFile1 = SPIFFS.open(filename + ".split." + rolloverExtension1, "w");
 		File newFile2 = SPIFFS.open(filename + ".split." + rolloverExtension2, "w");
 
-		FSInfo fs_info;
-		SPIFFS.info(fs_info);
+		EspRfidFSInfo fs_info;
+		espRfidSpiffsInfo(fs_info);
 
 		size_t truncatePosition = logFile.size() / 2;
 		logFile.seek(truncatePosition);
@@ -181,8 +189,8 @@ void ICACHE_FLASH_ATTR logMaintenance(String action, String filename, AsyncWebSo
 
 			// mind the watchdog timer - this may take a couple of seconds...
 
-			ESP.wdtDisable();
-			ESP.wdtEnable(1500);
+			espRfidWdtDisable();
+			espRfidWdtEnable(1500);
 
 			// read the first half of the file
 
@@ -191,7 +199,7 @@ void ICACHE_FLASH_ATTR logMaintenance(String action, String filename, AsyncWebSo
 				String item = String();
 				item = logFile.readStringUntil('\n');
 				newFile1.println(item);
-				ESP.wdtFeed(); // tell the watchdog we're still doing stuff
+				espRfidWdtFeed(); // tell the watchdog we're still doing stuff
 			}
 
 			// read the rest
@@ -201,7 +209,7 @@ void ICACHE_FLASH_ATTR logMaintenance(String action, String filename, AsyncWebSo
 				String item = String();
 				item = logFile.readStringUntil('\n');
 				newFile2.println(item);
-				ESP.wdtFeed(); // no reset please ;-)
+				espRfidWdtFeed(); // no reset please ;-)
 			}
 
 			logFile.close();
@@ -210,7 +218,7 @@ void ICACHE_FLASH_ATTR logMaintenance(String action, String filename, AsyncWebSo
 		}
 	}
 
-	ESP.wdtEnable(5000);
+	espRfidWdtEnable(5000);
 	if (client)
 	{
 		client->text("{\"command\":\"result\",\"resultof\":\"logfileMaintenance\",\"result\": true}");
@@ -229,7 +237,7 @@ void ICACHE_FLASH_ATTR sendFileList(int page, AsyncWebSocketClient *client)
 	size_t last = page * FILES_PER_PAGE;
 	size_t numFiles = 0;
 
-	Dir dir = SPIFFS.openDir("/");
+	EspRfidDir dir("/");
 	while (dir.next())
 	{
 
@@ -251,11 +259,11 @@ void ICACHE_FLASH_ATTR sendFileList(int page, AsyncWebSocketClient *client)
 	float pages = numFiles / FILES_PER_PAGE;
 	root["haspages"] = ceil(pages);
 
-	size_t len = measureJson(root);
-	AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
+	String filesStr;
+	serializeJson(root, filesStr);
+	AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer((uint8_t *)filesStr.c_str(), filesStr.length());
 	if (buffer)
 	{
-		serializeJson(root, (char *)buffer->get(), len + 1);
 		client->text(buffer);
 		client->text("{\"command\":\"result\",\"resultof\":\"listfiles\",\"result\": true}");
 	}

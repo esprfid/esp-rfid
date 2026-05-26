@@ -12,13 +12,14 @@
     <!-- Bootstrap core CSS -->
     <link href="css/required.css" rel="stylesheet">
     <style>
-        #openinghours th {
+        #openinghours th, #rolehours th {
             text-align: center;
         }
-        #openinghours td {
+        #openinghours td, #rolehours td {
             padding: 2px;
         }
-        #openinghours td:nth-child(2n), #openinghours th:nth-child(2n) {
+        #openinghours td:nth-child(2n), #openinghours th:nth-child(2n),
+        #rolehours td:nth-child(2n), #rolehours th:nth-child(2n) {
             background-color: #bbb;
         }
     </style>>
@@ -62,6 +63,9 @@
                 </li>
                 <li>
                     <a href="#" id="users"><i  class="glyphicon glyphicon-user"></i>Users</a>
+                </li>
+                <li>
+                    <a href="#" id="roles"><i  class="glyphicon glyphicon-time"></i>Roles</a>
                 </li>
                 <li>
                     <a href="#logsSubmenu" data-toggle="collapse" aria-expanded="false"><i  class="glyphicon glyphicon-folder-open"></i>Logs</a>

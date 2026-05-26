@@ -1,3 +1,69 @@
+#pragma once
+
+#include "Arduino.h"
+#include "IPAddress.h"
+#include "magicnumbers.h"
+
+#ifdef CONFIG_IDF_TARGET_ESP32C3
+#define ESP_RFID_FIRMWARE_TARGET "esp32c3"
+// ESP32-C3: GPIO 11-17 reserved for flash, 18-19 USB, 20-21 UART0
+#define DEFAULT_RS485_UART     1
+#define DEFAULT_RS485_TX_PIN   4
+#define DEFAULT_RS485_RX_PIN   5
+#define DEFAULT_RS485_DERE_PIN 3
+#define DEFAULT_PN532_SCK_PIN  6
+#define DEFAULT_PN532_MISO_PIN 2
+#define DEFAULT_PN532_MOSI_PIN 7
+#define DEFAULT_PN532_SS_PIN   10
+#define DEFAULT_PN532_RST_PIN  9
+#elif defined(ESP32)
+#define ESP_RFID_FIRMWARE_TARGET "esp32"
+#define DEFAULT_RS485_UART     2
+#define DEFAULT_RS485_TX_PIN   17
+#define DEFAULT_RS485_RX_PIN   16
+#define DEFAULT_RS485_DERE_PIN 4
+#define DEFAULT_PN532_SCK_PIN  18
+#define DEFAULT_PN532_MISO_PIN 19
+#define DEFAULT_PN532_MOSI_PIN 23
+#define DEFAULT_PN532_SS_PIN   5
+#define DEFAULT_PN532_RST_PIN  27
+#else
+#define ESP_RFID_FIRMWARE_TARGET "esp8266"
+#define DEFAULT_RS485_UART     2
+#define DEFAULT_RS485_TX_PIN   17
+#define DEFAULT_RS485_RX_PIN   16
+#define DEFAULT_RS485_DERE_PIN 4
+#define DEFAULT_PN532_SCK_PIN  18
+#define DEFAULT_PN532_MISO_PIN 19
+#define DEFAULT_PN532_MOSI_PIN 23
+#define DEFAULT_PN532_SS_PIN   5
+#define DEFAULT_PN532_RST_PIN  27
+#endif
+
+struct SecureReaderConfig {
+    bool enabled = false;
+    const char *backendName = "PN532_DESFIRE";
+    const char *readerId = "door_01";
+    uint32_t desfireAid = 0x564F4C;
+    uint8_t desfireFileId = 0x01;
+    uint8_t desfireKeyNumber = 0;
+    const char *desfireFileCommMode = "plain";
+    uint8_t aesKey[16] = {0};
+    int rs485Uart = DEFAULT_RS485_UART;
+    int rs485BaudRate = 115200;
+    int rs485TxPin = DEFAULT_RS485_TX_PIN;
+    int rs485RxPin = DEFAULT_RS485_RX_PIN;
+    int rs485DeRePin = DEFAULT_RS485_DERE_PIN;
+    int pn532SckPin = DEFAULT_PN532_SCK_PIN;
+    int pn532MisoPin = DEFAULT_PN532_MISO_PIN;
+    int pn532MosiPin = DEFAULT_PN532_MOSI_PIN;
+    int pn532SsPin = DEFAULT_PN532_SS_PIN;
+    int pn532ResetPin = DEFAULT_PN532_RST_PIN;
+    unsigned long cardDebounceMs = 1500;
+    unsigned long heartbeatIntervalMs = 10000;
+    bool debugUid = false;
+};
+
 struct Config {
     int relayPin[MAX_NUM_RELAYS];
     uint8_t accessdeniedpin = 255;
@@ -54,4 +120,5 @@ struct Config {
 	uint8_t wifipin = 255;
     const char *wifiPassword = NULL;
     unsigned long wifiTimeout = 0;
+    SecureReaderConfig secureReader;
 };
