@@ -59,9 +59,11 @@ void onMqttDisconnect(AsyncMqttClientDisconnectReason reason)
 	case (AsyncMqttClientDisconnectReason::MQTT_NOT_AUTHORIZED):
 		reasonstr = "MQTT_NOT_AUTHORIZED";
 		break;
+#if defined(ESP8266)
 	case (AsyncMqttClientDisconnectReason::ESP8266_NOT_ENOUGH_SPACE):
 		reasonstr = "ESP8266_NOT_ENOUGH_SPACE";
 		break;
+#endif
 	default:
 		reasonstr = "Unknown";
 		break;
@@ -411,7 +413,7 @@ void getUserList()
 {
 	DynamicJsonDocument root(512);
 	JsonArray users = root.createNestedArray("list");
-	Dir dir = SPIFFS.openDir("/P/");
+	EspRfidDir dir("/P/");
 #ifdef DEBUG
 	Serial.println("[ INFO ] getUserList");
 #endif
@@ -436,7 +438,7 @@ void getUserList()
 
 void deleteAllUserFiles()
 {
-	Dir dir = SPIFFS.openDir("/P/");
+	EspRfidDir dir("/P/");
 	while (dir.next())
 	{
 		String uid = dir.fileName();
@@ -450,7 +452,7 @@ void deleteUserID(const char *uid)
 	// only do this if a user id has been provided
 	if (uid)
 	{
-		Dir dir = SPIFFS.openDir("/P/");
+		EspRfidDir dir("/P/");
 		while (dir.next())
 		{
 			String user_id = dir.fileName();
@@ -469,9 +471,11 @@ void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties 
 	size_t n = 0;
 	size_t i = index;
 	while(n < len) {
-		mqttBuffer[i] = payload[n];
+		if (i < MAX_MQTT_BUFFER - 1) {
+			mqttBuffer[i] = payload[n];
+			i++;
+		}
 		n++;
-		i++;
 	}
 	if(index + len == total) {
 		mqttBuffer[i] = '\0';
@@ -578,8 +582,8 @@ void processMqttMessage(MqttMessage *incomingMessage)
 		for (int currentRelay = 0; currentRelay < config.numRelays; currentRelay++)
 		{
 			activateRelay[currentRelay] = true;
+			previousRelayMillis[currentRelay] = millis();
 		}
-		previousMillis = millis();
 	}
 	else if (strcmp(command, "open") == 0)
 	{
@@ -594,8 +598,8 @@ void processMqttMessage(MqttMessage *incomingMessage)
 		if (digitalRead(config.relayPin[currentRelay]) == !config.relayType[currentRelay])
 		{
 			activateRelay[currentRelay] = true;
+			previousRelayMillis[currentRelay] = millis();
 		}
-		previousMillis = millis();
 	}
 	else if (strcmp(command, "close") == 0)
 	{
@@ -610,8 +614,8 @@ void processMqttMessage(MqttMessage *incomingMessage)
 		if (digitalRead(config.relayPin[currentRelay]) == config.relayType[currentRelay])
 		{
 			activateRelay[currentRelay] = true;
+			previousRelayMillis[currentRelay] = millis();
 		}
-		previousMillis = millis();
 	}
 	else if (strcmp(command, "deletusers") == 0)
 	{

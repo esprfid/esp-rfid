@@ -1,10 +1,10 @@
 void ICACHE_FLASH_ATTR sendUserList(int page, AsyncWebSocketClient *client)
 {
-	DynamicJsonDocument root(2048);
+	DynamicJsonDocument root(3072);
 	root["command"] = "userlist";
 	root["page"] = page;
 	JsonArray users = root.createNestedArray("list");
-	Dir dir = SPIFFS.openDir("/P/");
+	EspRfidDir dir("/P/");
 	int first = (page - 1) * 10;
 	int last = page * 10;
 	int i = 0;
@@ -20,7 +20,7 @@ void ICACHE_FLASH_ATTR sendUserList(int page, AsyncWebSocketClient *client)
 			size_t size = f.size();
 			std::unique_ptr<char[]> buf(new char[size]);
 			f.readBytes(buf.get(), size);
-			DynamicJsonDocument json(512);
+			DynamicJsonDocument json(768);
 			auto error = deserializeJson(json, buf.get(), size);
 			if (!error)
 			{
@@ -42,6 +42,10 @@ void ICACHE_FLASH_ATTR sendUserList(int page, AsyncWebSocketClient *client)
 				}
 				unsigned long validsince = json.containsKey("validsince") ? json["validsince"] : 0;
 				unsigned long validuntil = json["validuntil"];
+				JsonObject userObj = json.as<JsonObject>();
+				int roleId = roles_user_role_id(userObj);
+				item["role_id"] = roleId;
+				item["role_name"] = roles_name_by_id(roleId);
 				item["username"] = username;
 				item["validsince"] = validsince;
 				item["validuntil"] = validuntil;
@@ -53,17 +57,22 @@ void ICACHE_FLASH_ATTR sendUserList(int page, AsyncWebSocketClient *client)
 	}
 	float pages = i / 10.0;
 	root["haspages"] = ceil(pages);
-	size_t len = measureJson(root);
-	AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
+	String userListStr;
+	serializeJson(root, userListStr);
+	AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer((uint8_t *)userListStr.c_str(), userListStr.length());
 	if (buffer)
 	{
-		serializeJson(root, (char *)buffer->get(), len + 1);
 		if (client)
 		{
+#if defined(ESP8266)
 			wsMessageTicker.once_ms_scheduled(50, [client, buffer]() {
 				client->text(buffer);
 				client->text("{\"command\":\"result\",\"resultof\":\"userlist\",\"result\": true}");
 			});
+#else
+			client->text(buffer);
+			client->text("{\"command\":\"result\",\"resultof\":\"userlist\",\"result\": true}");
+#endif
 		}
 		else
 		{
@@ -72,20 +81,54 @@ void ICACHE_FLASH_ATTR sendUserList(int page, AsyncWebSocketClient *client)
 	}
 }
 
+void ICACHE_FLASH_ATTR sendRoleList(AsyncWebSocketClient *client)
+{
+	if (roles_count() == 0)
+	{
+		roles_init_defaults((const char **)config.openingHours);
+	}
+
+	DynamicJsonDocument root(6144);
+	root["command"] = "roleslist";
+	root["max_roles"] = MAX_ACCESS_ROLES;
+	JsonArray roles = root.createNestedArray("roles");
+	roles_serialize(roles);
+
+	String rolesStr;
+	serializeJson(root, rolesStr);
+	AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer((uint8_t *)rolesStr.c_str(), rolesStr.length());
+	if (buffer)
+	{
+		if (client)
+		{
+			client->text(buffer);
+		}
+		else
+		{
+			ws.textAll(buffer);
+		}
+	}
+}
+
 void ICACHE_FLASH_ATTR sendStatus(AsyncWebSocketClient *client)
 {
-	struct ip_info info;
-	FSInfo fsinfo;
-	if (!SPIFFS.info(fsinfo))
+	EspRfidFSInfo fsinfo;
+	if (!espRfidSpiffsInfo(fsinfo))
 	{
 #ifdef DEBUG
 		Serial.print(F("[ WARN ] Error getting info on SPIFFS"));
 #endif
 	}
-	DynamicJsonDocument root(512);
+	DynamicJsonDocument root(768);
 	root["command"] = "status";
+	root["firmware_target"] = ESP_RFID_FIRMWARE_TARGET;
+#if defined(ESP32)
+	root["secure_reader_supported"] = true;
+#else
+	root["secure_reader_supported"] = false;
+#endif
 	root["heap"] = ESP.getFreeHeap();
-	root["chipid"] = String(ESP.getChipId(), HEX);
+	root["chipid"] = String(espRfidChipId(), HEX);
 	root["cpu"] = ESP.getCpuFreqMHz();
 	root["sketchsize"] = ESP.getSketchSize();
 	root["availsize"] = ESP.getFreeSketchSpace();
@@ -101,39 +144,39 @@ void ICACHE_FLASH_ATTR sendStatus(AsyncWebSocketClient *client)
 	root["uptime"] = uptimebuffer;
 
 	root["version"] = VERSION;
-	root["hostname"] = WiFi.hostname();
+	root["hostname"] = espRfidHostname();
 
+	IPAddress ipaddr;
+	IPAddress gwaddr;
+	IPAddress nmaddr;
 	if (config.accessPointMode)
 	{
-		wifi_get_ip_info(SOFTAP_IF, &info);
-		struct softap_config conf;
-		wifi_softap_get_config(&conf);
-		root["ssid"] = String(reinterpret_cast<char *>(conf.ssid));
+		ipaddr = WiFi.softAPIP();
+		gwaddr = WiFi.softAPIP();
+		nmaddr = config.accessPointSubnetIp;
+		root["ssid"] = WiFi.softAPSSID();
 		root["dns"] = printIP(WiFi.softAPIP());
 		root["mac"] = WiFi.softAPmacAddress();
 	}
 	else
 	{
-		wifi_get_ip_info(STATION_IF, &info);
-		struct station_config conf;
-		wifi_station_get_config(&conf);
-		root["ssid"] = String(reinterpret_cast<char *>(conf.ssid));
+		ipaddr = WiFi.localIP();
+		gwaddr = WiFi.gatewayIP();
+		nmaddr = WiFi.subnetMask();
+		root["ssid"] = WiFi.SSID();
 		root["dns"] = printIP(WiFi.dnsIP());
 		root["mac"] = WiFi.macAddress();
 	}
 
-	IPAddress ipaddr = IPAddress(info.ip.addr);
-	IPAddress gwaddr = IPAddress(info.gw.addr);
-	IPAddress nmaddr = IPAddress(info.netmask.addr);
 	root["ip"] = printIP(ipaddr);
 	root["gateway"] = printIP(gwaddr);
 	root["netmask"] = printIP(nmaddr);
 
-	size_t len = measureJson(root);
-	AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
+	String statusStr;
+	serializeJson(root, statusStr);
+	AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer((uint8_t *)statusStr.c_str(), statusStr.length());
 	if (buffer)
 	{
-		serializeJson(root, (char *)buffer->get(), len + 1);
 		if (client)
 		{
 			client->text(buffer);
@@ -177,13 +220,17 @@ void ICACHE_FLASH_ATTR printScanResult(int networksFound)
 		item["rssi"] = WiFi.RSSI(indices[i]);
 		item["channel"] = WiFi.channel(indices[i]);
 		item["enctype"] = WiFi.encryptionType(indices[i]);
+#if defined(ESP8266)
 		item["hidden"] = WiFi.isHidden(indices[i]) ? true : false;
+#else
+		item["hidden"] = false;
+#endif
 	}
-	size_t len = measureJson(root);
-	AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
+	String scanStr;
+	serializeJson(root, scanStr);
+	AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer((uint8_t *)scanStr.c_str(), scanStr.length());
 	if (buffer)
 	{
-		serializeJson(root, (char *)buffer->get(), len + 1);
 		ws.textAll(buffer);
 	}
 	WiFi.scanDelete();
@@ -194,11 +241,11 @@ void ICACHE_FLASH_ATTR sendTime(AsyncWebSocketClient *client)
 	DynamicJsonDocument root(512);
 	root["command"] = "gettime";
 	root["epoch"] = epoch;
-	size_t len = measureJson(root);
-	AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
+	String timeStr;
+	serializeJson(root, timeStr);
+	AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer((uint8_t *)timeStr.c_str(), timeStr.length());
 	if (buffer)
 	{
-		serializeJson(root, (char *)buffer->get(), len + 1);
 		if (client)
 		{
 			client->text(buffer);

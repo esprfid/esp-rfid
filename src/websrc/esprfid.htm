@@ -10,6 +10,8 @@
                 <a id="downloadUser" style="display:none"></a>
                 <button class="btn btn-link btn-sm" onclick="backupset();">Backup Settings</button>
                 <a id="downloadSet" style="display:none"></a>
+                <button class="btn btn-link btn-sm" onclick="backuproles();">Backup Roles</button>
+                <a id="downloadRoles" style="display:none"></a>
             </div>
             <br>
             <div>
@@ -19,6 +21,8 @@
                 <input id="restoreUser" type="file" accept="text/json" onchange="restoreUser();" style="display:none;">
                 <label for="restoreSet" class="btn btn-link btn-sm">Restore Settings</label>
                 <input id="restoreSet" type="file" accept="text/json" onchange="restoreSet();" style="display:none;">
+                <label for="restoreRoles" class="btn btn-link btn-sm">Restore Roles</label>
+                <input id="restoreRoles" type="file" accept="text/json" onchange="restoreRoles();" style="display:none;">
             </div>
             <br>
             <div>
@@ -111,11 +115,6 @@
         <br>
     </div>
     <div class="row form-group">
-        <label class="col-xs-3">Opening hours<i style="margin-left: 10px;" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="When non-admin users can open the door."></i></label>
-        <span class="col-xs-9 col-md-5">
-            <table id="openinghours"></table>
-        <br>
-        <br>
         <div class="col-xs-9 col-md-8">
             <button onclick="savegeneral()" class="btn btn-primary btn-sm pull-right">Save</button>
         </div>
@@ -127,6 +126,64 @@
 </div>
 <br>
 <br>
+</div>
+<div id="rolescontent">
+    <br>
+    <br>
+    <legend>Roles</legend>
+    <br>
+    <div class="row form-group">
+        <label class="col-xs-3">Role</label>
+        <span class="col-xs-6 col-md-5">
+            <select class="form-control input-sm" id="roleSelector" onchange="selectRoleForEdit();"></select>
+        </span>
+        <span class="col-xs-3">
+            <button type="button" class="btn btn-primary btn-xs" onclick="addRole()">Add</button>
+            <button type="button" class="btn btn-danger btn-xs" id="deleteRoleBtn" onclick="deleteRole()">Delete</button>
+        </span>
+    </div>
+    <div class="row form-group">
+        <label class="col-xs-3">Name</label>
+        <span class="col-xs-9 col-md-5">
+            <input class="form-control input-sm" id="roleName" type="text" maxlength="23">
+        </span>
+    </div>
+    <div class="row form-group">
+        <label class="col-xs-3">Enabled</label>
+        <span class="col-xs-9 col-md-5">
+            <input type="checkbox" id="roleEnabled">
+        </span>
+    </div>
+    <div class="row form-group">
+        <label class="col-xs-3">Admin</label>
+        <span class="col-xs-9 col-md-5">
+            <input type="checkbox" id="roleAdmin">
+        </span>
+    </div>
+    <div class="row form-group">
+        <label class="col-xs-3">Relays</label>
+        <span class="col-xs-9 col-md-5">
+            <label id="roleRelayLabel1" class="checkbox-inline"><input type="checkbox" id="roleRelay1">1</label>
+            <label id="roleRelayLabel2" class="checkbox-inline"><input type="checkbox" id="roleRelay2">2</label>
+            <label id="roleRelayLabel3" class="checkbox-inline"><input type="checkbox" id="roleRelay3">3</label>
+            <label id="roleRelayLabel4" class="checkbox-inline"><input type="checkbox" id="roleRelay4">4</label>
+        </span>
+    </div>
+    <div class="row form-group">
+        <label class="col-xs-3">Schedule</label>
+        <span class="col-xs-9 col-md-8">
+            <table id="rolehours"></table>
+        </span>
+    </div>
+    <div class="row form-group">
+        <div class="col-xs-9 col-md-8">
+            <button onclick="saveRoles()" class="btn btn-primary btn-sm pull-right">Save</button>
+        </div>
+    </div>
+    <div style="clear:both;">
+        <br>
+        <br>
+    </div>
 </div>
 <div id="hardwarecontent">
     <br>
@@ -145,6 +202,7 @@
                 <option value="4">MFRC522 + RDM6300</option>
                 <option value="5">Wiegand + RDM6300</option>
                 <option value="6">PN532 + RDM6300</option>
+                <option value="7">Secure PN532 + RS-485</option>
             </select>
         </div>
     </div>
@@ -264,6 +322,136 @@
                     <option value="0">Min (18 db)</option>
                   </select>
                 </span>
+        </div>
+    </div>
+    <div class="" id="secureReaderForm" style="display:none">
+        <hr>
+        <div class="row form-group">
+            <label class="col-xs-3">Secure backend</label>
+            <span class="col-xs-9 col-md-5">
+                <select class="form-control input-sm" id="secureBackend">
+                    <option value="PN532_DESFIRE">PN532_DESFIRE</option>
+                </select>
+            </span>
+        </div>
+        <div class="row form-group">
+            <label class="col-xs-3">Reader ID</label>
+            <span class="col-xs-9 col-md-5">
+                <input class="form-control input-sm" id="secureReaderId" type="text" placeholder="door_01">
+            </span>
+        </div>
+        <div class="row form-group">
+            <label class="col-xs-3">DESFire AID</label>
+            <span class="col-xs-9 col-md-5">
+                <input class="form-control input-sm" id="secureDesfireAid" type="text" placeholder="0x564F4C">
+            </span>
+        </div>
+        <div class="row form-group">
+            <label class="col-xs-3">DESFire File ID</label>
+            <span class="col-xs-9 col-md-5">
+                <input class="form-control input-sm" id="secureDesfireFileId" type="number" min="0" max="255">
+            </span>
+        </div>
+        <div class="row form-group">
+            <label class="col-xs-3">DESFire Key No</label>
+            <span class="col-xs-9 col-md-5">
+                <input class="form-control input-sm" id="secureDesfireKeyNo" type="number" min="0" max="13">
+            </span>
+        </div>
+        <div class="row form-group">
+            <label class="col-xs-3">File Comm Mode</label>
+            <span class="col-xs-9 col-md-5">
+                <select class="form-control input-sm" id="secureDesfireCommMode">
+                    <option value="auto">Auto</option>
+                    <option value="plain">Plain</option>
+                    <option value="maced">MACed</option>
+                    <option value="full">Full</option>
+                </select>
+            </span>
+        </div>
+        <div class="row form-group">
+            <label class="col-xs-3">AES Key</label>
+            <span class="col-xs-9 col-md-5">
+                <input class="form-control input-sm" id="secureAesKey" type="text" placeholder="32 hex chars">
+            </span>
+        </div>
+        <div class="row form-group">
+            <label class="col-xs-3">RS-485 UART</label>
+            <span class="col-xs-9 col-md-5">
+                <input class="form-control input-sm" id="secureRs485Uart" type="number" min="0" max="2">
+            </span>
+        </div>
+        <div class="row form-group">
+            <label class="col-xs-3">RS-485 Baud</label>
+            <span class="col-xs-9 col-md-5">
+                <input class="form-control input-sm" id="secureRs485Baud" type="number" min="1200" max="1000000">
+            </span>
+        </div>
+        <div class="row form-group">
+            <label class="col-xs-3">RS-485 TX Pin</label>
+            <span class="col-xs-9 col-md-5">
+                <input class="form-control input-sm" id="secureRs485Tx" type="number" min="0" max="48">
+            </span>
+        </div>
+        <div class="row form-group">
+            <label class="col-xs-3">RS-485 RX Pin</label>
+            <span class="col-xs-9 col-md-5">
+                <input class="form-control input-sm" id="secureRs485Rx" type="number" min="0" max="48">
+            </span>
+        </div>
+        <div class="row form-group">
+            <label class="col-xs-3">RS-485 DE/RE Pin</label>
+            <span class="col-xs-9 col-md-5">
+                <input class="form-control input-sm" id="secureRs485Dere" type="number" min="0" max="48">
+            </span>
+        </div>
+        <div class="row form-group">
+            <label class="col-xs-3">PN532 SCK Pin</label>
+            <span class="col-xs-9 col-md-5">
+                <input class="form-control input-sm" id="securePn532Sck" type="number" min="0" max="48">
+            </span>
+        </div>
+        <div class="row form-group">
+            <label class="col-xs-3">PN532 MISO Pin</label>
+            <span class="col-xs-9 col-md-5">
+                <input class="form-control input-sm" id="securePn532Miso" type="number" min="0" max="48">
+            </span>
+        </div>
+        <div class="row form-group">
+            <label class="col-xs-3">PN532 MOSI Pin</label>
+            <span class="col-xs-9 col-md-5">
+                <input class="form-control input-sm" id="securePn532Mosi" type="number" min="0" max="48">
+            </span>
+        </div>
+        <div class="row form-group">
+            <label class="col-xs-3">PN532 SS Pin</label>
+            <span class="col-xs-9 col-md-5">
+                <input class="form-control input-sm" id="securePn532Ss" type="number" min="0" max="48">
+            </span>
+        </div>
+        <div class="row form-group">
+            <label class="col-xs-3">PN532 RSTO Pin</label>
+            <span class="col-xs-9 col-md-5">
+                <input class="form-control input-sm" id="securePn532Reset" type="number" min="0" max="48">
+            </span>
+        </div>
+        <div class="row form-group">
+            <label class="col-xs-3">Card debounce ms</label>
+            <span class="col-xs-9 col-md-5">
+                <input class="form-control input-sm" id="secureCardDebounce" type="number" min="0" max="60000">
+            </span>
+        </div>
+        <div class="row form-group">
+            <label class="col-xs-3">Heartbeat ms</label>
+            <span class="col-xs-9 col-md-5">
+                <input class="form-control input-sm" id="secureHeartbeat" type="number" min="0" max="600000">
+            </span>
+        </div>
+        <div class="row form-group">
+            <label class="col-xs-3">Debug UID</label>
+            <span class="col-xs-9 col-md-5">
+                <input type="checkbox" id="secureDebugUid">
+            </span>
         </div>
     </div>
     <hr>
@@ -999,20 +1187,9 @@
                         </div>
                     </div>
                     <div id=useracctype class="form-group required">
-                        <label for="acctype" class="col-sm-3 control-label">Access Type</label>
+                        <label for="roleid" class="col-sm-3 control-label">Role</label>
                         <div class="col-sm-9">
-                            <select class="form-control" id="acctype" required>
-                                <option selected="selected" value="1">Always</option>
-                                <!--
-                                <option value="2">Within Selected Hours</option>
-                                <option value="3">Within Selected Days</option>
-                                <option value="4">Within Selected Days and Hours</option>
-                                <option value="5">On Weekends</option>
-                                <option value="6">On Weekdays</option>
-                                -->
-                                <option value="0">Disabled</option>
-                                <option value="99">Admin</option>
-                            </select>
+                            <select class="form-control" id="roleid" required></select>
                         </div>
                     </div>
                 </div>

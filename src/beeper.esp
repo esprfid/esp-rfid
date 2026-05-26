@@ -16,9 +16,9 @@ void beeperBeep()
 		else if (beeperInterval != 0)
 		{
 			int beeperState = digitalRead(config.beeperpin); 
-			if (currentMillis - previousMillis >= beeperInterval) 
+			if (currentMillis - beeperPreviousMillis >= beeperInterval) 
 			{
-    			previousMillis = currentMillis;
+    			beeperPreviousMillis = currentMillis;
 				if (beeperState == BEEPERon) {
 					beeperState = BEEPERoff;
 #ifdef DEBUG

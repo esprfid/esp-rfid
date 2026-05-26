@@ -25,7 +25,13 @@ void trySyncNTPtime(unsigned long retrySeconds)
 		epoch = lastNTPepoch + (millis() - lastNTPSync) / 1000;
 		return;
 	}
-	
+
+	if (!WiFi.isConnected())
+	{
+		lastNTPSync = millis();
+		return;
+	}
+		
 	time_t previousEpoch = epoch;
 	time(&epoch);
 	lastNTPSync = millis();
@@ -34,7 +40,12 @@ void trySyncNTPtime(unsigned long retrySeconds)
 	if (timeinfo.tm_year <= (2016 - 1900))
 	{
 #if DEBUG
-		Serial.println("[ WARN ] NTP sync failed");
+		static unsigned long lastNtpFailureLog = 0;
+		if (millis() - lastNtpFailureLog >= 60000)
+		{
+			Serial.println("[ WARN ] NTP sync failed");
+			lastNtpFailureLog = millis();
+		}
 #endif
 
 		epoch = previousEpoch; // fallback to previous value, so that you can use the manually set time

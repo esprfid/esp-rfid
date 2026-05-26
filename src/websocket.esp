@@ -16,7 +16,8 @@ void addWsMessageToQueue(AsyncWebSocketClient *client, int messageSize)
 {
 	WsMessage *incomingMessage = new WsMessage;
 	incomingMessage->serializedMessage = (char *)malloc(messageSize);
-	strlcpy(incomingMessage->serializedMessage, (const char *)client->_tempObject, messageSize);
+	memcpy(incomingMessage->serializedMessage, client->_tempObject, messageSize - 1);
+	incomingMessage->serializedMessage[messageSize - 1] = '\0';
 	free(client->_tempObject);
 	client->_tempObject = NULL;
 
@@ -40,9 +41,41 @@ void addWsMessageToQueue(AsyncWebSocketClient *client, int messageSize)
 
 void ICACHE_FLASH_ATTR processWsMessage(WsMessage *incomingMessage)
 {
-	// We should always get a JSON object (stringfied) from browser, so parse it
-	DynamicJsonDocument root(2448);
 	AsyncWebSocketClient *client = incomingMessage->client;
+
+	// configfile: write raw message to SPIFFS without full JSON parse (message can be large)
+	if (strncmp(incomingMessage->serializedMessage, "{\"command\":\"configfile\"", 23) == 0)
+	{
+		File f = SPIFFS.open("/config.json", "w");
+		if (f)
+		{
+			size_t len = strlen(incomingMessage->serializedMessage);
+			f.write((const uint8_t *)incomingMessage->serializedMessage, len);
+			f.close();
+			shouldReboot = true;
+			writeEvent("INFO", "sys", "Config stored in the SPIFFS", String(len) + " bytes");
+		}
+		free(incomingMessage->serializedMessage);
+		free(incomingMessage);
+		return;
+	}
+
+	if (strncmp(incomingMessage->serializedMessage, "{\"command\":\"rolesfile\"", 22) == 0)
+	{
+		bool ok = roles_save_from_json_string(incomingMessage->serializedMessage);
+		client->text(ok ? "{\"command\":\"result\",\"resultof\":\"rolesfile\",\"result\": true}" :
+						  "{\"command\":\"result\",\"resultof\":\"rolesfile\",\"result\": false}");
+		if (ok)
+		{
+			sendRoleList(client);
+		}
+		free(incomingMessage->serializedMessage);
+		free(incomingMessage);
+		return;
+	}
+
+	// We should always get a JSON object (stringfied) from browser, so parse it
+	DynamicJsonDocument root(4096);
 	// cast to const char * to avoid in-place editing of serializedMessage
 	auto error = deserializeJson(root, (const char *)incomingMessage->serializedMessage);
 
@@ -50,6 +83,7 @@ void ICACHE_FLASH_ATTR processWsMessage(WsMessage *incomingMessage)
 	{
 #ifdef DEBUG
 		Serial.println(F("[ WARN ] Couldn't parse WebSocket message"));
+		Serial.println(incomingMessage->serializedMessage);
 #endif
 		free(incomingMessage->serializedMessage);
 		free(incomingMessage);
@@ -66,26 +100,14 @@ void ICACHE_FLASH_ATTR processWsMessage(WsMessage *incomingMessage)
 		SPIFFS.remove(filename);
 		ws.textAll("{\"command\":\"result\",\"resultof\":\"remove\",\"result\": true}");
 	}
-	else if (strcmp(command, "configfile") == 0)
-	{
-		File f = SPIFFS.open("/config.json", "w");
-		if (f)
-		{
-			size_t len = 0;
-			while (incomingMessage->serializedMessage[len] != '\0' && len < MAX_WS_BUFFER)
-			{
-				len++;
-			}
-			f.write(incomingMessage->serializedMessage, len);
-			f.close();
-			shouldReboot = true;
-			writeEvent("INFO", "sys", "Config stored in the SPIFFS", String(len) + " bytes");
-		}
-	}
 	else if (strcmp(command, "userlist") == 0)
 	{
 		int page = root["page"];
 		sendUserList(page, incomingMessage->client);
+	}
+	else if (strcmp(command, "getroles") == 0)
+	{
+		sendRoleList(client);
 	}
 	else if (strcmp(command, "status") == 0)
 	{
@@ -154,30 +176,34 @@ void ICACHE_FLASH_ATTR processWsMessage(WsMessage *incomingMessage)
 	else if (strcmp(command, "testrelay1") == 0)
 	{
 		activateRelay[0] = true;
-		previousMillis = millis();
+		previousRelayMillis[0] = millis();
 		client->text("{\"command\":\"giveAccess\"}");
 	}
 	else if (strcmp(command, "testrelay2") == 0)
 	{
 		activateRelay[1] = true;
-		previousMillis = millis();
+		previousRelayMillis[1] = millis();
 		client->text("{\"command\":\"giveAccess\"}");
 	}
 	else if (strcmp(command, "testrelay3") == 0)
 	{
 		activateRelay[2] = true;
-		previousMillis = millis();
+		previousRelayMillis[2] = millis();
 		client->text("{\"command\":\"giveAccess\"}");
 	}
 	else if (strcmp(command, "testrelay4") == 0)
 	{
 		activateRelay[3] = true;
-		previousMillis = millis();
+		previousRelayMillis[3] = millis();
 		client->text("{\"command\":\"giveAccess\"}");
 	}
 	else if (strcmp(command, "scan") == 0)
 	{
+#if defined(ESP8266)
 		WiFi.scanNetworksAsync(printScanResult, true);
+#else
+		printScanResult(WiFi.scanNetworks(false, true));
+#endif
 	}
 	else if (strcmp(command, "gettime") == 0)
 	{
@@ -199,7 +225,7 @@ void ICACHE_FLASH_ATTR processWsMessage(WsMessage *incomingMessage)
 			AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
 			if (buffer)
 			{
-				configFile.readBytes((char *)buffer->get(), len + 1);
+				configFile.readBytes((char *)buffer->get(), len);
 				client->text(buffer);
 			}
 			configFile.close();

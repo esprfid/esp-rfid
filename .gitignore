@@ -20,6 +20,9 @@ src/websrc/process
 bin/generic.bin
 bin/forV2Board.bin
 bin/debug.bin
+bin/esp32.bin
+bin/esp32c3.bin
+MODIFICHE_LOCALI.md
 
 # node js
 

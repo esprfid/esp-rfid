@@ -7,6 +7,7 @@
 #define READER_MFRC522_RDM6300 4
 #define READER_WIEGAND_RDM6300 5
 #define READER_PN532_RDM6300 6
+#define READER_SECURE_ACCESS 7
 
 // timing constants
 
@@ -18,6 +19,12 @@
 #define ACCESS_GRANTED 1
 #define ACCESS_ADMIN 99
 #define ACCESS_DENIED 0
+
+#define ACCESS_ROLE_DISABLED 0
+#define ACCESS_ROLE_STANDARD 1
+#define ACCESS_ROLE_ADMIN 99
+#define MAX_ACCESS_ROLES 8
+#define ACCESS_ROLE_NAME_LEN 24
 
 // Reader defines
 

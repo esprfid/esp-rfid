@@ -25,12 +25,23 @@ SOFTWARE.
 #define VERSION "2.0.0"
 
 #include "Arduino.h"
+#if defined(ESP32)
+#include <WiFi.h>
+#include <ESPmDNS.h>
+#include <FS.h>
+#include <SPIFFS.h>
+#include <AsyncTCP.h>
+#if ARDUINO_USB_CDC_ON_BOOT && ARDUINO_USB_MODE
+#include "HWCDC.h"
+#endif
+#else
 #include <ESP8266WiFi.h>
-#include <SPI.h>
 #include <ESP8266mDNS.h>
-#include <ArduinoJson.h>
 #include <FS.h>
 #include <ESPAsyncTCP.h>
+#endif
+#include <SPI.h>
+#include <ArduinoJson.h>
 #include <ESPAsyncWebServer.h>
 #include <TimeLib.h>
 #include <Ticker.h>
@@ -38,7 +49,11 @@ SOFTWARE.
 #include <AsyncMqttClient.h>
 #include <Bounce2.h>
 #include "magicnumbers.h"
+#include "platform_compat.h"
+#include "security_keys.h"
 #include "config.h"
+#include "roles.h"
+#include "access_reader_app.h"
 
 Config config;
 
@@ -46,13 +61,17 @@ Config config;
 #include "PN532.h"
 #include <Wiegand.h>
 #include "rfid125kHz.h"
+#if defined(ESP32)
+HardwareSerial *rdm6300SwSerial = NULL;
+#else
 #include <SoftwareSerial.h>
+SoftwareSerial *rdm6300SwSerial = NULL;
+#endif
 
 MFRC522 mfrc522 = MFRC522();
 PN532 pn532;
 WIEGAND wg;
 RFID_Reader RFIDr;
-SoftwareSerial *rdm6300SwSerial = NULL;
 
 // relay specific variables
 bool activateRelay[MAX_NUM_RELAYS] = {false, false, false, false};
@@ -72,7 +91,9 @@ AsyncMqttClient mqttClient;
 Ticker mqttReconnectTimer;
 Ticker wifiReconnectTimer;
 Ticker wsMessageTicker;
+#if defined(ESP8266)
 WiFiEventHandler wifiDisconnectHandler, wifiConnectHandler, wifiOnStationModeGotIPHandler;
+#endif
 Bounce openLockButton;
 
 AsyncWebServer server(80);
@@ -101,12 +122,18 @@ time_t lastNTPepoch;
 unsigned long lastNTPSync = 0;
 unsigned long openDoorMillis = 0;
 unsigned long previousLoopMillis = 0;
-unsigned long previousMillis = 0;
+unsigned long previousRelayMillis[MAX_NUM_RELAYS] = {0, 0, 0, 0};
+unsigned long beeperPreviousMillis = 0;
 bool shouldReboot = false;
 tm timeinfo;
 unsigned long uptimeSeconds = 0;
 unsigned long wifiPinBlink = millis();
 unsigned long wiFiUptimeMillis = 0;
+
+static inline bool secureReaderModeEnabled()
+{
+	return config.readertype == READER_SECURE_ACCESS;
+}
 
 #include "led.esp"
 #include "beeper.esp"
@@ -126,11 +153,20 @@ void ICACHE_FLASH_ATTR setup()
 {
 #ifdef DEBUG
 	Serial.begin(115200);
+#if ARDUINO_USB_CDC_ON_BOOT
+	delay(3000); // wait for USB CDC to re-enumerate after reset
+#endif
 	Serial.println();
 
 	Serial.print(F("[ INFO ] ESP RFID v"));
 	Serial.println(VERSION);
 
+#if defined(ESP32)
+	Serial.printf("Chip model:      %s rev %u\n", ESP.getChipModel(), ESP.getChipRevision());
+	Serial.printf("Chip cores:      %u\n", ESP.getChipCores());
+	Serial.printf("Flash size:      %u\n", ESP.getFlashChipSize());
+	Serial.printf("Flash speed:     %u\n", ESP.getFlashChipSpeed());
+#else
 	uint32_t realSize = ESP.getFlashChipRealSize();
 	uint32_t ideSize = ESP.getFlashChipSize();
 	FlashMode_t ideMode = ESP.getFlashChipMode();
@@ -151,12 +187,16 @@ void ICACHE_FLASH_ATTR setup()
 		Serial.println("Flash Chip configuration ok.\n");
 	}
 #endif
+#endif
 
 	if (!SPIFFS.begin())
 	{
 		if (SPIFFS.format())
 		{
-			writeEvent("WARN", "sys", "Filesystem formatted", "");
+			if (SPIFFS.begin())
+			{
+				writeEvent("WARN", "sys", "Filesystem formatted", "");
+			}
 		}
 		else
 		{
@@ -170,8 +210,12 @@ void ICACHE_FLASH_ATTR setup()
 	bool configured = false;
 	configured = loadConfiguration(config);
 	setupMqtt();
-	setupWebServer();
 	setupWifi(configured);
+	setupWebServer();
+	if (configured && secureReaderModeEnabled())
+	{
+		access_reader_app_begin();
+	}
 	writeEvent("INFO", "sys", "System setup completed, running", "");
 }
 
@@ -185,27 +229,52 @@ void ICACHE_RAM_ATTR loop()
 	trySyncNTPtime(10);
 
 	openLockButton.update();
-	if (config.openlockpin != 255 && openLockButton.fell())
+	if (!secureReaderModeEnabled() && config.openlockpin != 255 && openLockButton.fell())
 	{
 		writeLatest(" ", "Button", 1);
 		mqttPublishAccess(epoch, "true", "Always", "Button", " ", " ");
-		activateRelay[0] = true;
+		for (int currentRelay = 0; currentRelay < config.numRelays; currentRelay++)
+		{
+			activateRelay[currentRelay] = true;
+		}
 		beeperValidAccess();
-		// TODO: handle other relays
 	}
 
 	ledWifiStatus();
 	ledAccessDeniedOff();
 	beeperBeep();
-	doorStatus();
-	doorbellStatus();
+	if (!secureReaderModeEnabled())
+	{
+		doorStatus();
+		doorbellStatus();
+	}
 
-	if (currentMillis >= cooldown)
+	if (secureReaderModeEnabled())
+	{
+		access_reader_app_loop();
+	}
+	else if (currentMillis >= cooldown)
 	{
 		rfidLoop();
 	}
 
-	for (int currentRelay = 0; currentRelay < config.numRelays; currentRelay++)
+	bool anyRelayActivated = false;
+	for (int i = 0; !secureReaderModeEnabled() && i < config.numRelays; i++) {
+		if (activateRelay[i]) anyRelayActivated = true;
+	}
+
+	// don't try connecting to WiFi when waiting for pincode
+	if (!secureReaderModeEnabled() && doEnableWifi == true && keyTimer == 0 && anyRelayActivated)
+	{
+		if (!WiFi.isConnected())
+		{
+			enableWifi();
+			writeEvent("INFO", "wifi", "Enabling WiFi", "");
+			doEnableWifi = false;
+		}
+	}
+
+	for (int currentRelay = 0; !secureReaderModeEnabled() && currentRelay < config.numRelays; currentRelay++)
 	{
 		if (config.lockType[currentRelay] == LOCKTYPE_CONTINUOUS) // Continuous relay mode
 		{
@@ -245,16 +314,16 @@ void ICACHE_RAM_ATTR loop()
 				Serial.printf("activating relay %d now\n", currentRelay);
 #endif
 				digitalWrite(config.relayPin[currentRelay], config.relayType[currentRelay]);
-				previousMillis = millis();
+				previousRelayMillis[currentRelay] = millis();
 				activateRelay[currentRelay] = false;
 				deactivateRelay[currentRelay] = true;
 			}
-			else if ((currentMillis - previousMillis >= config.activateTime[currentRelay]) && (deactivateRelay[currentRelay]))
+			else if ((currentMillis - previousRelayMillis[currentRelay] >= config.activateTime[currentRelay]) && (deactivateRelay[currentRelay]))
 			{
 				mqttPublishIo("lock" + String(currentRelay), "LOCKED");
 #ifdef DEBUG
 				Serial.println(currentMillis);
-				Serial.println(previousMillis);
+				Serial.println(previousRelayMillis[currentRelay]);
 				Serial.println(config.activateTime[currentRelay]);
 				Serial.println(activateRelay[currentRelay]);
 				Serial.println("deactivate relay after this");
@@ -299,17 +368,6 @@ void ICACHE_RAM_ATTR loop()
 	{
 		writeEvent("INFO", "wifi", "WiFi is going to be disabled", "");
 		disableWifi();
-	}
-
-	// don't try connecting to WiFi when waiting for pincode
-	if (doEnableWifi == true && keyTimer == 0 && activateRelay[0] == true)
-	{
-		if (!WiFi.isConnected())
-		{
-			enableWifi();
-			writeEvent("INFO", "wifi", "Enabling WiFi", "");
-			doEnableWifi = false;
-		}
 	}
 
 	if (config.mqttEnabled && mqttClient.connected())

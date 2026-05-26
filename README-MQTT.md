@@ -57,12 +57,12 @@ When sending the following command:
 }
 ```
 
-A list of messages like the following will be sent, one for each user:
+A user JSON document is published for each user file found on the device (same content stored under `/P/<uid>`). A typical payload looks like:
 ```
 {
-    "command": "userfile",
     "uid": "1234",
     "user": "User Name",
+    "role_id": 1,
     "acctype": 1,
     "acctype2": null,
     "acctype3": null,
@@ -71,6 +71,10 @@ A list of messages like the following will be sent, one for each user:
     "validuntil": 1608336000
 }
 ```
+Notes:
+
+* Newer role-based configs use `role_id` (or legacy alias `role`) as primary authorization field.
+* Legacy `acctype` fields are still accepted for backward compatibility.
 
 ### Open door
 Opens the Door/Magnetic Lock.
@@ -136,12 +140,18 @@ Command:
      "doorip":"(The ESP-RFID IP address as String)",
      "uid": "(The PIN as String)",
      "user": "(User Name as String)",
+     "role_id": 1,
      "acctype": "1",
      "validsince": "0",
      "validuntil": "1608466200"
 }
 ```
+* _role_id_
+  * Role identifier used by the role-based access model
+  * If `role_id` is present, it is used as the primary access definition
+
 * _acctype_
+  * Legacy compatibility field
   * 0 = Disabled
   * 1 = Always
   * 99 = Admin
@@ -251,12 +261,10 @@ Every X seconds ESP-RFID sends a heartbeat over MQTT. The interval can be custom
 #### Publish Access
 When a RFID token is detected a set of messages can be sent, depending on the presence of the token UID in the database.
 
-If the UID is in the users list, there can be a set of possible "access" configurations. It can be:
+If the UID is in the users list, the `access` field usually contains the resolved role name (for example `Admin`, `Standard`, or a custom role name). It can also contain status values like:
 
-* `Admin` for admin users
-* `Always` for access enabled
-* `Disabled` for access disabled
 * `Expired` for access expired
+* `Wrong pin code` when PIN verification fails
 
 ```
 {
