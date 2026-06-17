@@ -10,7 +10,7 @@
   "license": "UNLICENSED",
   "dependencies": {
     "websocket": "^1.0.28",
-    "ws": "^4.0.0"
+    "ws": "^5.2.5"
   },
   "bin": "wserver.js"
 }
