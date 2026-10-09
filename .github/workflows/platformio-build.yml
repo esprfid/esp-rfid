@@ -1,16 +1,22 @@
 name: Platformio build
 
-on: push
+on: [push, pull_request]
+
+permissions:
+  contents: read
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: [generic, debug, esp32, esp32c3]
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Set up Python 3.10
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
         python-version: "3.10"
     - name: Install Platformio
@@ -18,14 +24,12 @@ jobs:
         python -m pip install --upgrade pip
         pip install platformio
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    - name: Run Platformio builds
+    - name: Build ${{ matrix.environment }}
       run: |
-        platformio run -e generic -e debug
+        platformio run -e ${{ matrix.environment }}
     - name: Export bins
       uses: actions/upload-artifact@v4
       with:
-        name: bins
-        path: |
-          bin/generic.bin
-          bin/forV2Board.bin
-          bin/debug.bin
+        name: firmware-${{ matrix.environment }}
+        path: bin/${{ matrix.environment }}.bin
+        if-no-files-found: error

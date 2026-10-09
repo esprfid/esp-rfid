@@ -1,8 +1,8 @@
-# ESP RFID - Access Control with ESP8266, RC522 PN532 Wiegand RDM6300
+# ESP RFID - Access Control with ESP8266/ESP32/ESP32-C3, RC522 PN532 Wiegand RDM6300
 
 [![Chat at https://gitter.im/esp-rfid/Lobby](https://badges.gitter.im/esp-rfid.svg)](https://gitter.im/esp-rfid/Lobby) [![Backers on Open Collective](https://opencollective.com/esp-rfid/backers/badge.svg)](#backers) [![Sponsors on Open Collective](https://opencollective.com/esp-rfid/sponsors/badge.svg)](#sponsors)
 
-Access Control system using a cheap MFRC522, PN532 RFID, RDM6300 readers or Wiegand RFID readers and Espressif's ESP8266 Microcontroller. 
+Access Control system using MFRC522, PN532, RDM6300 or Wiegand RFID readers and Espressif ESP8266, ESP32 or ESP32-C3 microcontrollers.
 
 ![Showcase Gif](https://raw.githubusercontent.com/esprfid/esp-rfid/stable/demo/showcase.gif)[![Board](https://raw.githubusercontent.com/esprfid/esp-rfid/stable/demo/board.jpg)](https://www.tindie.com/products/nardev/esp-rfid-relay-blue-board/)
 
@@ -61,7 +61,7 @@ This project still in its development phase. New features (and also bugs) are in
 ### Hardware
 * [Official ESP-RFID Relay Board](https://www.tindie.com/products/nardev/esp-rfid-relay-blue-board/)
 or
-* An ESP8266 module or a development board like **WeMos D1 mini** or **NodeMcu 1.0** with at least **32Mbit Flash (equals to 4MBytes)** (ESP32 is not supported for now)
+* An ESP8266 module or a development board like **WeMos D1 mini** or **NodeMcu 1.0** with at least **32Mbit Flash (equals to 4MBytes)**, or an **ESP32 DevKit** / **ESP32-C3 DevKitM-1** with 4MB flash
 * A MFRC522 RFID PCD Module or PN532 NFC Reader Module or RDM6300 125KHz RFID Module Wiegand based RFID reader
 * A Relay Module (or you can build your own circuit)
 * n quantity of Mifare Classic 1KB (recommended due to available code base) PICCs (RFID Tags) equivalent to User Number
@@ -90,11 +90,23 @@ When you run ```platformio run``` for the first time, it will download the toolc
 
 ##### Useful commands:
 
-* ```platformio run``` - process/build all targets
+* ```platformio run``` - build the default ESP8266 target (`generic`)
 * ```platformio run -e generic -t upload``` - process/build and flash just the ESP12e target (the NodeMcu v2)
+* ```platformio run -e esp32 -t upload``` - build and flash an ESP32 DevKit
+* ```platformio run -e esp32c3 -t upload``` - build and flash an ESP32-C3 DevKitM-1
+* ```platformio run -e generic -e debug -e esp32 -e esp32c3``` - build all four environments
 * ```platformio run -t clean``` - clean project (remove compiled files)
 
 The resulting (built) image(s) can be found in the directory ```/bin``` created during the build process.
+
+ESP32 builds produce `bin/esp32.bin` and ESP32-C3 builds produce `bin/esp32c3.bin`.
+Use the PlatformIO upload command for a first installation: it also writes the
+bootloader and partition table required by the selected board. The exported
+`bin/*.bin` files contain only the application firmware.
+
+The `generic` environment remains the default. Existing configuration and user
+file formats are shared by all targets; GPIO assignments must match the board
+and wiring. This port uses the existing UID-based reader and access-control flow.
 
 ##### How to modify the project
 
@@ -116,6 +128,27 @@ The following table shows the typical pin layout used for connecting readers har
 | GPIO-05 | D1            |         | SS            |         |         |
 
 For Wiegand based readers, you can configure D0 and D1 pins via settings page. By default, D0 is GPIO-4 and D1 is GPIO-5
+
+### ESP32 and ESP32-C3 wiring
+
+MFRC522 uses the board's default hardware SPI bus. PN532 uses software SPI on
+the same board SPI pins, with its reset signal connected to GPIO0. Select the
+reader SS pin in Hardware Settings.
+
+| PlatformIO target | SCK | MISO | MOSI | PN532 reset | RDM6300 UART |
+| --- | --- | --- | --- | --- | --- |
+| `esp32` | GPIO18 | GPIO19 | GPIO23 | GPIO0 | UART2 |
+| `esp32c3` | GPIO4 | GPIO5 | GPIO6 | GPIO0 | UART1 |
+
+Connect RDM6300 TX to the receive GPIO chosen in Hardware Settings. Wiegand
+D0/D1 and relay pins are also configured there. Choose pins that are available
+on the selected board and do not overlap the SPI bus, flash, console or other
+connected devices. In particular, change the default relay GPIO4 when using SPI
+on ESP32-C3. The existing web interface retains its original GPIO selection lists.
+
+The ESP32-C3 environment enables native USB CDC on GPIO18/GPIO19. Boards with an
+external USB-to-UART bridge can use that bridge for uploading; native USB serial
+output requires a connection to the chip's USB pins.
 
 ### Steps
 * First, flash firmware (you can use /bin/flash.bat on Windows) to your ESP either using Arduino IDE or with your favourite flash tool

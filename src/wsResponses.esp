@@ -4,7 +4,7 @@ void ICACHE_FLASH_ATTR sendUserList(int page, AsyncWebSocketClient *client)
 	root["command"] = "userlist";
 	root["page"] = page;
 	JsonArray users = root.createNestedArray("list");
-	Dir dir = SPIFFS.openDir("/P/");
+	EspRfidDir dir("/P/");
 	int first = (page - 1) * 10;
 	int last = page * 10;
 	int i = 0;
@@ -53,17 +53,22 @@ void ICACHE_FLASH_ATTR sendUserList(int page, AsyncWebSocketClient *client)
 	}
 	float pages = i / 10.0;
 	root["haspages"] = ceil(pages);
-	size_t len = measureJson(root);
-	AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
+	String response;
+	serializeJson(root, response);
+	AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer((uint8_t *)response.c_str(), response.length());
 	if (buffer)
 	{
-		serializeJson(root, (char *)buffer->get(), len + 1);
 		if (client)
 		{
+#if defined(ESP8266)
 			wsMessageTicker.once_ms_scheduled(50, [client, buffer]() {
 				client->text(buffer);
 				client->text("{\"command\":\"result\",\"resultof\":\"userlist\",\"result\": true}");
 			});
+#else
+			client->text(buffer);
+			client->text("{\"command\":\"result\",\"resultof\":\"userlist\",\"result\": true}");
+#endif
 		}
 		else
 		{
@@ -74,9 +79,8 @@ void ICACHE_FLASH_ATTR sendUserList(int page, AsyncWebSocketClient *client)
 
 void ICACHE_FLASH_ATTR sendStatus(AsyncWebSocketClient *client)
 {
-	struct ip_info info;
-	FSInfo fsinfo;
-	if (!SPIFFS.info(fsinfo))
+	EspRfidFSInfo fsinfo;
+	if (!espRfidSpiffsInfo(fsinfo))
 	{
 #ifdef DEBUG
 		Serial.print(F("[ WARN ] Error getting info on SPIFFS"));
@@ -85,7 +89,7 @@ void ICACHE_FLASH_ATTR sendStatus(AsyncWebSocketClient *client)
 	DynamicJsonDocument root(512);
 	root["command"] = "status";
 	root["heap"] = ESP.getFreeHeap();
-	root["chipid"] = String(ESP.getChipId(), HEX);
+	root["chipid"] = String(espRfidChipId(), HEX);
 	root["cpu"] = ESP.getCpuFreqMHz();
 	root["sketchsize"] = ESP.getSketchSize();
 	root["availsize"] = ESP.getFreeSketchSpace();
@@ -101,39 +105,39 @@ void ICACHE_FLASH_ATTR sendStatus(AsyncWebSocketClient *client)
 	root["uptime"] = uptimebuffer;
 
 	root["version"] = VERSION;
-	root["hostname"] = WiFi.hostname();
+	root["hostname"] = espRfidHostname();
 
+	IPAddress ipaddr;
+	IPAddress gwaddr;
+	IPAddress nmaddr;
 	if (config.accessPointMode)
 	{
-		wifi_get_ip_info(SOFTAP_IF, &info);
-		struct softap_config conf;
-		wifi_softap_get_config(&conf);
-		root["ssid"] = String(reinterpret_cast<char *>(conf.ssid));
+		ipaddr = WiFi.softAPIP();
+		gwaddr = WiFi.softAPIP();
+		nmaddr = espRfidApSubnetMask();
+		root["ssid"] = WiFi.softAPSSID();
 		root["dns"] = printIP(WiFi.softAPIP());
 		root["mac"] = WiFi.softAPmacAddress();
 	}
 	else
 	{
-		wifi_get_ip_info(STATION_IF, &info);
-		struct station_config conf;
-		wifi_station_get_config(&conf);
-		root["ssid"] = String(reinterpret_cast<char *>(conf.ssid));
+		ipaddr = WiFi.localIP();
+		gwaddr = WiFi.gatewayIP();
+		nmaddr = WiFi.subnetMask();
+		root["ssid"] = WiFi.SSID();
 		root["dns"] = printIP(WiFi.dnsIP());
 		root["mac"] = WiFi.macAddress();
 	}
 
-	IPAddress ipaddr = IPAddress(info.ip.addr);
-	IPAddress gwaddr = IPAddress(info.gw.addr);
-	IPAddress nmaddr = IPAddress(info.netmask.addr);
 	root["ip"] = printIP(ipaddr);
 	root["gateway"] = printIP(gwaddr);
 	root["netmask"] = printIP(nmaddr);
 
-	size_t len = measureJson(root);
-	AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
+	String response;
+	serializeJson(root, response);
+	AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer((uint8_t *)response.c_str(), response.length());
 	if (buffer)
 	{
-		serializeJson(root, (char *)buffer->get(), len + 1);
 		if (client)
 		{
 			client->text(buffer);
@@ -177,13 +181,17 @@ void ICACHE_FLASH_ATTR printScanResult(int networksFound)
 		item["rssi"] = WiFi.RSSI(indices[i]);
 		item["channel"] = WiFi.channel(indices[i]);
 		item["enctype"] = WiFi.encryptionType(indices[i]);
+#if defined(ESP8266)
 		item["hidden"] = WiFi.isHidden(indices[i]) ? true : false;
+#else
+		item["hidden"] = false;
+#endif
 	}
-	size_t len = measureJson(root);
-	AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len); //  creates a buffer (len + 1) for you.
+	String response;
+	serializeJson(root, response);
+	AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer((uint8_t *)response.c_str(), response.length());
 	if (buffer)
 	{
-		serializeJson(root, (char *)buffer->get(), len + 1);
 		ws.textAll(buffer);
 	}
 	WiFi.scanDelete();
@@ -194,11 +202,11 @@ void ICACHE_FLASH_ATTR sendTime(AsyncWebSocketClient *client)
 	DynamicJsonDocument root(512);
 	root["command"] = "gettime";
 	root["epoch"] = epoch;
-	size_t len = measureJson(root);
-	AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
+	String response;
+	serializeJson(root, response);
+	AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer((uint8_t *)response.c_str(), response.length());
 	if (buffer)
 	{
-		serializeJson(root, (char *)buffer->get(), len + 1);
 		if (client)
 		{
 			client->text(buffer);

@@ -25,12 +25,23 @@ SOFTWARE.
 #define VERSION "2.0.0"
 
 #include "Arduino.h"
+#if defined(ESP32)
+#include <WiFi.h>
+#include <ESPmDNS.h>
+#include <FS.h>
+#include <SPIFFS.h>
+#include <AsyncTCP.h>
+#if ARDUINO_USB_CDC_ON_BOOT && ARDUINO_USB_MODE
+#include "HWCDC.h"
+#endif
+#else
 #include <ESP8266WiFi.h>
-#include <SPI.h>
 #include <ESP8266mDNS.h>
-#include <ArduinoJson.h>
 #include <FS.h>
 #include <ESPAsyncTCP.h>
+#endif
+#include <SPI.h>
+#include <ArduinoJson.h>
 #include <ESPAsyncWebServer.h>
 #include <TimeLib.h>
 #include <Ticker.h>
@@ -38,6 +49,7 @@ SOFTWARE.
 #include <AsyncMqttClient.h>
 #include <Bounce2.h>
 #include "magicnumbers.h"
+#include "platform_compat.h"
 #include "config.h"
 
 Config config;
@@ -46,13 +58,17 @@ Config config;
 #include "PN532.h"
 #include <Wiegand.h>
 #include "rfid125kHz.h"
+#if defined(ESP32)
+HardwareSerial *rdm6300SwSerial = NULL;
+#else
 #include <SoftwareSerial.h>
+SoftwareSerial *rdm6300SwSerial = NULL;
+#endif
 
 MFRC522 mfrc522 = MFRC522();
 PN532 pn532;
 WIEGAND wg;
 RFID_Reader RFIDr;
-SoftwareSerial *rdm6300SwSerial = NULL;
 
 // relay specific variables
 bool activateRelay[MAX_NUM_RELAYS] = {false, false, false, false};
@@ -72,7 +88,9 @@ AsyncMqttClient mqttClient;
 Ticker mqttReconnectTimer;
 Ticker wifiReconnectTimer;
 Ticker wsMessageTicker;
+#if defined(ESP8266)
 WiFiEventHandler wifiDisconnectHandler, wifiConnectHandler, wifiOnStationModeGotIPHandler;
+#endif
 Bounce openLockButton;
 
 AsyncWebServer server(80);
@@ -126,11 +144,20 @@ void ICACHE_FLASH_ATTR setup()
 {
 #ifdef DEBUG
 	Serial.begin(115200);
+#if ARDUINO_USB_CDC_ON_BOOT
+	delay(3000); // wait for USB CDC to re-enumerate after reset
+#endif
 	Serial.println();
 
 	Serial.print(F("[ INFO ] ESP RFID v"));
 	Serial.println(VERSION);
 
+#if defined(ESP32)
+	Serial.printf("Chip model:      %s rev %u\n", ESP.getChipModel(), ESP.getChipRevision());
+	Serial.printf("Chip cores:      %u\n", ESP.getChipCores());
+	Serial.printf("Flash size:      %u\n", ESP.getFlashChipSize());
+	Serial.printf("Flash speed:     %u\n", ESP.getFlashChipSpeed());
+#else
 	uint32_t realSize = ESP.getFlashChipRealSize();
 	uint32_t ideSize = ESP.getFlashChipSize();
 	FlashMode_t ideMode = ESP.getFlashChipMode();
@@ -151,12 +178,16 @@ void ICACHE_FLASH_ATTR setup()
 		Serial.println("Flash Chip configuration ok.\n");
 	}
 #endif
+#endif
 
 	if (!SPIFFS.begin())
 	{
 		if (SPIFFS.format())
 		{
-			writeEvent("WARN", "sys", "Filesystem formatted", "");
+			if (SPIFFS.begin())
+			{
+				writeEvent("WARN", "sys", "Filesystem formatted", "");
+			}
 		}
 		else
 		{
@@ -170,8 +201,8 @@ void ICACHE_FLASH_ATTR setup()
 	bool configured = false;
 	configured = loadConfiguration(config);
 	setupMqtt();
-	setupWebServer();
 	setupWifi(configured);
+	setupWebServer();
 	writeEvent("INFO", "sys", "System setup completed, running", "");
 }
 
