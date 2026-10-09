@@ -38,6 +38,7 @@ SOFTWARE.
 #include <AsyncMqttClient.h>
 #include <Bounce2.h>
 #include "magicnumbers.h"
+#include "pn532_uid_format.h"
 #include "config.h"
 
 Config config;
