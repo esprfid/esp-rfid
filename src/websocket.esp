@@ -154,25 +154,25 @@ void ICACHE_FLASH_ATTR processWsMessage(WsMessage *incomingMessage)
 	else if (strcmp(command, "testrelay1") == 0)
 	{
 		activateRelay[0] = true;
-		previousMillis = millis();
+		previousRelayMillis[0] = millis();
 		client->text("{\"command\":\"giveAccess\"}");
 	}
 	else if (strcmp(command, "testrelay2") == 0)
 	{
 		activateRelay[1] = true;
-		previousMillis = millis();
+		previousRelayMillis[1] = millis();
 		client->text("{\"command\":\"giveAccess\"}");
 	}
 	else if (strcmp(command, "testrelay3") == 0)
 	{
 		activateRelay[2] = true;
-		previousMillis = millis();
+		previousRelayMillis[2] = millis();
 		client->text("{\"command\":\"giveAccess\"}");
 	}
 	else if (strcmp(command, "testrelay4") == 0)
 	{
 		activateRelay[3] = true;
-		previousMillis = millis();
+		previousRelayMillis[3] = millis();
 		client->text("{\"command\":\"giveAccess\"}");
 	}
 	else if (strcmp(command, "scan") == 0)

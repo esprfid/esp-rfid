@@ -101,7 +101,8 @@ time_t lastNTPepoch;
 unsigned long lastNTPSync = 0;
 unsigned long openDoorMillis = 0;
 unsigned long previousLoopMillis = 0;
-unsigned long previousMillis = 0;
+unsigned long previousRelayMillis[MAX_NUM_RELAYS] = {0};
+unsigned long beeperPreviousMillis = 0;
 bool shouldReboot = false;
 tm timeinfo;
 unsigned long uptimeSeconds = 0;
@@ -245,16 +246,16 @@ void ICACHE_RAM_ATTR loop()
 				Serial.printf("activating relay %d now\n", currentRelay);
 #endif
 				digitalWrite(config.relayPin[currentRelay], config.relayType[currentRelay]);
-				previousMillis = millis();
+				previousRelayMillis[currentRelay] = millis();
 				activateRelay[currentRelay] = false;
 				deactivateRelay[currentRelay] = true;
 			}
-			else if ((currentMillis - previousMillis >= config.activateTime[currentRelay]) && (deactivateRelay[currentRelay]))
+			else if ((currentMillis - previousRelayMillis[currentRelay] >= config.activateTime[currentRelay]) && (deactivateRelay[currentRelay]))
 			{
 				mqttPublishIo("lock" + String(currentRelay), "LOCKED");
 #ifdef DEBUG
 				Serial.println(currentMillis);
-				Serial.println(previousMillis);
+				Serial.println(previousRelayMillis[currentRelay]);
 				Serial.println(config.activateTime[currentRelay]);
 				Serial.println(activateRelay[currentRelay]);
 				Serial.println("deactivate relay after this");
