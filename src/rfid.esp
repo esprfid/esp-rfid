@@ -146,14 +146,18 @@ void pn532Read()
 	eCardType e_CardType;
 	byte u8_UidLength = 0x00; // UID = 4 or 7 bytes
 	found = pn532.ReadPassiveTargetID(pnuid, &u8_UidLength, &e_CardType);
-	if (found && u8_UidLength >= 4)
+	if (found && u8_UidLength >= 4 && u8_UidLength <= sizeof(pnuid))
 	{
 #ifdef DEBUG
 		Serial.print(F("[ INFO ] PICC's UID: "));
 #endif
-		for (uint8_t i = 0; i < u8_UidLength; i++)
+		char canonicalUid[17];
+		char legacyUid[17];
+		if (formatPn532Uid(pnuid, u8_UidLength, canonicalUid, sizeof(canonicalUid),
+						legacyUid, sizeof(legacyUid)))
 		{
-			uid += String(pnuid[i], HEX);
+			uid = canonicalUid;
+			v1uid = legacyUid;
 			rfidState = cardSwiped;
 		}
 #ifdef DEBUG

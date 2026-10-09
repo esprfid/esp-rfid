@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Fixed
+- Pad every PN532 UID byte to two hexadecimal digits while retaining lookup of previously saved unpadded user IDs.
+
 ## [2.0.0] - 2024-11-02
 
 ### Bugfixes

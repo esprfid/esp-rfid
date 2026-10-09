@@ -117,6 +117,13 @@ The following table shows the typical pin layout used for connecting readers har
 
 For Wiegand based readers, you can configure D0 and D1 pins via settings page. By default, D0 is GPIO-4 and D1 is GPIO-5
 
+PN532 now shows each UID byte as two hexadecimal digits. Previously saved
+unpadded user IDs are still checked when no user exists under the new ID. The
+old representation could assign the same text to different cards (for example,
+`01 23 45 67` and `12 03 45 67` both became `1234567`). If such cards were
+enrolled, give each its own new padded user ID and remove the ambiguous legacy
+entry after migration.
+
 ### Steps
 * First, flash firmware (you can use /bin/flash.bat on Windows) to your ESP either using Arduino IDE or with your favourite flash tool
 * (optional) Fire up your serial monitor to get informed

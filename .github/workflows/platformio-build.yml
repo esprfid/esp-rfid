@@ -21,6 +21,10 @@ jobs:
     - name: Run Platformio builds
       run: |
         platformio run -e generic -e debug
+    - name: Test PN532 UID formats
+      run: |
+        c++ -std=c++11 -Wall -Wextra -Werror -I src test/native/test_pn532_uid_format.cpp -o /tmp/test_pn532_uid_format
+        /tmp/test_pn532_uid_format
     - name: Export bins
       uses: actions/upload-artifact@v4
       with:
