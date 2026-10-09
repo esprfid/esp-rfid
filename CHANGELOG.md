@@ -1,6 +1,13 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+- ESP32 and ESP32-C3 build targets for the existing RFID readers, web interface, MQTT and relay controls.
+- Platform compatibility helpers for Wi-Fi, SPIFFS, firmware updates and static web responses.
+- CI builds for ESP8266 release/debug, ESP32 and ESP32-C3 on pushes and pull requests.
+
 ## [2.0.0] - 2024-11-02
 
 ### Bugfixes

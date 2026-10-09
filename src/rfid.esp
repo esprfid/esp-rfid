@@ -539,11 +539,11 @@ void rfidOutsideMessaging()
 		root["uid"] = uid;
 		root["type"] = type;
 		root["known"] = 0;
-		size_t len = measureJson(root);
-		AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
+		String response;
+		serializeJson(root, response);
+		AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer((uint8_t *)response.c_str(), response.length());
 		if (buffer)
 		{
-			serializeJson(root, (char *)buffer->get(), len + 1);
 			ws.textAll(buffer);
 		}
 		mqttPublishAccess(epoch, "false", "Denied", "Unknown", uid, " ");
@@ -559,11 +559,11 @@ void rfidOutsideMessaging()
 		root["known"] = 1;
 		root["acctype"] = accountType;
 		root["user"] = username;
-		size_t len = measureJson(root);
-		AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
+		String response;
+		serializeJson(root, response);
+		AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer((uint8_t *)response.c_str(), response.length());
 		if (buffer)
 		{
-			serializeJson(root, (char *)buffer->get(), len + 1);
 			ws.textAll(buffer);
 		}
 	}
@@ -652,7 +652,11 @@ void ICACHE_FLASH_ATTR setupMFRC522Reader(int rfidss, int rfidgain)
 void ICACHE_FLASH_ATTR setupPN532Reader(int rfidss)
 {
 	// init controller
+#if defined(ESP32)
+	pn532.InitSoftwareSPI(SCK, MISO, MOSI, rfidss, 0);
+#else
 	pn532.InitSoftwareSPI(14, 12, 13, rfidss, 0);
+#endif
 	do
 	{ // pseudo loop (just used for aborting with break;)
 		// Reset the PN532
@@ -685,7 +689,16 @@ void ICACHE_FLASH_ATTR setupPN532Reader(int rfidss)
 
 void ICACHE_FLASH_ATTR setupRDM6300Reader(int rmd6300TxPin)
 {
+#if defined(ESP32)
+#if defined(CONFIG_IDF_TARGET_ESP32C3)
+	rdm6300SwSerial = new HardwareSerial(1);
+#else
+	rdm6300SwSerial = new HardwareSerial(2);
+#endif
+	rdm6300SwSerial->begin(RDM6300_BAUDRATE, SERIAL_8N1, rmd6300TxPin, -1);
+#else
 	rdm6300SwSerial = new SoftwareSerial(rmd6300TxPin, -1);
 	rdm6300SwSerial->begin(RDM6300_BAUDRATE);
+#endif
 	rdm6300SwSerial->setTimeout(RDM6300_READ_TIMEOUT);
 }

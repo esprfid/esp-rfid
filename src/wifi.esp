@@ -3,7 +3,11 @@ void setEnableWifi()
 	doEnableWifi = true;
 }
 
+#if defined(ESP32)
+void onWifiConnect(WiFiEvent_t event, WiFiEventInfo_t info)
+#else
 void onWifiConnect(const WiFiEventStationModeConnected &event)
+#endif
 {
 #ifdef DEBUG
 	Serial.println(F("[ INFO ] WiFi STA Connected"));
@@ -16,12 +20,18 @@ void onWifiConnect(const WiFiEventStationModeConnected &event)
 	ledWifiOff();
 }
 
+#if defined(ESP32)
+void onWifiDisconnect(WiFiEvent_t event, WiFiEventInfo_t info)
+#else
 void onWifiDisconnect(const WiFiEventStationModeDisconnected &event)
+#endif
 {
+#if defined(ESP8266)
 	if ( !WiFi.isConnected() )
 	{
 		return;
 	}
+#endif
 #ifdef DEBUG
 	Serial.println(F("[ INFO ] WiFi STA Disconnected"));
 #endif
@@ -34,7 +44,11 @@ void onWifiDisconnect(const WiFiEventStationModeDisconnected &event)
 	ledWifiOff();
 }
 
+#if defined(ESP32)
+void onWifiGotIP(WiFiEvent_t event, WiFiEventInfo_t info)
+#else
 void onWifiGotIP(const WiFiEventStationModeGotIP &event)
+#endif
 {
 #ifdef DEBUG
 	Serial.print("[ INFO ] WiFi IP Connected: ");
@@ -223,14 +237,20 @@ void setupWifi(bool configured)
 {
 	if (!configured)
 	{
-		WiFi.hostname("esp-rfid");
+		espRfidSetHostname("esp-rfid");
 		fallbacktoAPMode();
 	} else
 	{
+#if defined(ESP32)
+		WiFi.onEvent(onWifiConnect, ARDUINO_EVENT_WIFI_STA_CONNECTED);
+		WiFi.onEvent(onWifiDisconnect, ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
+		WiFi.onEvent(onWifiGotIP, ARDUINO_EVENT_WIFI_STA_GOT_IP);
+#else
 		wifiConnectHandler = WiFi.onStationModeConnected(onWifiConnect);
 		wifiDisconnectHandler = WiFi.onStationModeDisconnected(onWifiDisconnect);
 		wifiOnStationModeGotIPHandler = WiFi.onStationModeGotIP(onWifiGotIP);
-		WiFi.hostname(config.deviceHostname);
+#endif
+		espRfidSetHostname(config.deviceHostname);
 		enableWifi();
 	}
 }
