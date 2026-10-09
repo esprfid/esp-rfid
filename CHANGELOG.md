@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Fixed
+- The physical open-lock button now activates every configured relay, consistent with its door-opening action in multi-relay setups.
+
 ## [2.0.0] - 2024-11-02
 
 ### Bugfixes
