@@ -1,6 +1,7 @@
 #define MAX_MQTT_BUFFER 2048
 
 char mqttBuffer[MAX_MQTT_BUFFER];
+size_t mqttBytesReceived = 0;
 
 struct MqttMessage {
 	char command[20];
@@ -466,16 +467,10 @@ void deleteUserID(const char *uid)
 
 void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total)
 {
-	size_t n = 0;
-	size_t i = index;
-	while(n < len) {
-		mqttBuffer[i] = payload[n];
-		n++;
-		i++;
-	}
-	if(index + len == total) {
-		mqttBuffer[i] = '\0';
-	} else {
+	MqttChunkResult chunkResult = appendMqttChunk(mqttBuffer, sizeof(mqttBuffer), mqttBytesReceived,
+									 payload, len, index, total);
+	if (chunkResult != MQTT_CHUNK_COMPLETE)
+	{
 		return;
 	}
 #ifdef DEBUG
@@ -504,7 +499,7 @@ void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties 
 	
 	const char *ipadr = mqttIncomingJson["doorip"];
 	String espIp = WiFi.localIP().toString();
-	if (!((strcmp(ipadr, espIp.c_str()) == 0) && (ipadr != NULL)))
+	if (ipadr == NULL || strcmp(ipadr, espIp.c_str()) != 0)
 	{
 #ifdef DEBUG
 		Serial.print("[ INFO ] ESP  IP: ");
@@ -524,15 +519,20 @@ void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties 
 		return;
 	}
 
-	MqttMessage* incomingMessage = new MqttMessage;
-	if (mqttIncomingJson.containsKey("cmd")) {
-		strlcpy(incomingMessage->command, mqttIncomingJson["cmd"], sizeof(incomingMessage->command));
-	} else {
+	const char *mqttCommand = mqttIncomingJson["cmd"];
+	if (mqttCommand == NULL) {
 #ifdef DEBUG
 		Serial.println("[ INFO ] No cmd key in MQTT message");
 #endif
 		return;
 	}
+
+	MqttMessage* incomingMessage = new MqttMessage;
+	if (incomingMessage == NULL)
+	{
+		return;
+	}
+	strlcpy(incomingMessage->command, mqttCommand, sizeof(incomingMessage->command));
 	if (mqttIncomingJson.containsKey("uid")) {
 		strlcpy(incomingMessage->uid, mqttIncomingJson["uid"], sizeof(incomingMessage->uid));
 	}
@@ -706,7 +706,6 @@ void processMqttMessage(MqttMessage *incomingMessage)
 		}
 	}
 
-	free(incomingMessage);
 	return;
 }
 
@@ -766,6 +765,7 @@ void processMqttQueue()
 		MqttMessage *messageToProcess = mqttMessageQueue;
 		mqttMessageQueue = messageToProcess->nextMessage;
 		processMqttMessage(messageToProcess);
+		delete messageToProcess;
 	}
 }
 

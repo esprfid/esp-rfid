@@ -16,7 +16,15 @@ void addWsMessageToQueue(AsyncWebSocketClient *client, int messageSize)
 {
 	WsMessage *incomingMessage = new WsMessage;
 	incomingMessage->serializedMessage = (char *)malloc(messageSize);
-	strlcpy(incomingMessage->serializedMessage, (const char *)client->_tempObject, messageSize);
+	if (incomingMessage->serializedMessage == NULL)
+	{
+		free(client->_tempObject);
+		client->_tempObject = NULL;
+		delete incomingMessage;
+		return;
+	}
+	memcpy(incomingMessage->serializedMessage, client->_tempObject, messageSize - 1);
+	incomingMessage->serializedMessage[messageSize - 1] = '\0';
 	free(client->_tempObject);
 	client->_tempObject = NULL;
 
@@ -40,9 +48,35 @@ void addWsMessageToQueue(AsyncWebSocketClient *client, int messageSize)
 
 void ICACHE_FLASH_ATTR processWsMessage(WsMessage *incomingMessage)
 {
-	// We should always get a JSON object (stringfied) from browser, so parse it
-	DynamicJsonDocument root(2448);
 	AsyncWebSocketClient *client = incomingMessage->client;
+	// Configuration can exceed the document budget used for ordinary commands.
+	// Validate the complete JSON while retaining only its command field.
+	if (strncmp(incomingMessage->serializedMessage, "{\"command\":\"configfile\"", 23) == 0)
+	{
+		StaticJsonDocument<64> filter;
+		filter["command"] = true;
+		DynamicJsonDocument header(128);
+		auto validation = deserializeJson(header, (const char *)incomingMessage->serializedMessage,
+			DeserializationOption::Filter(filter));
+		if (!validation && header["command"] == "configfile")
+		{
+			File f = SPIFFS.open("/config.json", "w");
+			if (f)
+			{
+				size_t len = strlen(incomingMessage->serializedMessage);
+				f.write((const uint8_t *)incomingMessage->serializedMessage, len);
+				f.close();
+				shouldReboot = true;
+				writeEvent("INFO", "sys", "Config stored in the SPIFFS", String(len) + " bytes");
+			}
+		}
+		free(incomingMessage->serializedMessage);
+		delete incomingMessage;
+		return;
+	}
+
+	// Ordinary browser commands still use the original document budget.
+	DynamicJsonDocument root(2448);
 	// cast to const char * to avoid in-place editing of serializedMessage
 	auto error = deserializeJson(root, (const char *)incomingMessage->serializedMessage);
 
@@ -52,11 +86,17 @@ void ICACHE_FLASH_ATTR processWsMessage(WsMessage *incomingMessage)
 		Serial.println(F("[ WARN ] Couldn't parse WebSocket message"));
 #endif
 		free(incomingMessage->serializedMessage);
-		free(incomingMessage);
+		delete incomingMessage;
 		return;
 	}
 	// Web Browser sends some commands, check which command is given
 	const char *command = root["command"];
+	if (command == NULL)
+	{
+		free(incomingMessage->serializedMessage);
+		delete incomingMessage;
+		return;
+	}
 	// Check whatever the command is and act accordingly
 	if (strcmp(command, "remove") == 0)
 	{
@@ -65,22 +105,6 @@ void ICACHE_FLASH_ATTR processWsMessage(WsMessage *incomingMessage)
 		filename += uid;
 		SPIFFS.remove(filename);
 		ws.textAll("{\"command\":\"result\",\"resultof\":\"remove\",\"result\": true}");
-	}
-	else if (strcmp(command, "configfile") == 0)
-	{
-		File f = SPIFFS.open("/config.json", "w");
-		if (f)
-		{
-			size_t len = 0;
-			while (incomingMessage->serializedMessage[len] != '\0' && len < MAX_WS_BUFFER)
-			{
-				len++;
-			}
-			f.write(incomingMessage->serializedMessage, len);
-			f.close();
-			shouldReboot = true;
-			writeEvent("INFO", "sys", "Config stored in the SPIFFS", String(len) + " bytes");
-		}
 	}
 	else if (strcmp(command, "userlist") == 0)
 	{
@@ -206,7 +230,7 @@ void ICACHE_FLASH_ATTR processWsMessage(WsMessage *incomingMessage)
 		}
 	}
 	free(incomingMessage->serializedMessage);
-	free(incomingMessage);
+	delete incomingMessage;
 	yield();
 }
 
@@ -226,8 +250,11 @@ void ICACHE_FLASH_ATTR onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *c
 		{
 			//the whole message is in a single frame and we got all of it's data
 			client->_tempObject = malloc(info->len);
-			memcpy((uint8_t *)(client->_tempObject), data, len);
-			addWsMessageToQueue(client, info->len + 1);
+			if (client->_tempObject != NULL)
+			{
+				memcpy((uint8_t *)(client->_tempObject), data, len);
+				addWsMessageToQueue(client, info->len + 1);
+			}
 		}
 		else
 		{
@@ -238,6 +265,12 @@ void ICACHE_FLASH_ATTR onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *c
 				{
 					client->_tempObject = malloc(info->len);
 				}
+			}
+			if (client->_tempObject == NULL || info->index > info->len || len > info->len - info->index)
+			{
+				free(client->_tempObject);
+				client->_tempObject = NULL;
+				return;
 			}
 			if (client->_tempObject != NULL)
 			{

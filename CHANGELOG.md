@@ -1,6 +1,13 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Fixed
+- Reject MQTT messages that exceed the receive buffer or contain out-of-order chunks, and release processed queue entries.
+- Save large WebSocket configuration messages without truncation; validate JSON before writing and copy frame data with explicit lengths.
+- Correct MQTT auto-topic allocation and avoid leaking a legacy timezone string when a newer setting is present.
+
 ## [2.0.0] - 2024-11-02
 
 ### Bugfixes

@@ -199,8 +199,12 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 	}
 	if (ntp.containsKey("tzinfo"))
 	{
-		config.tzInfo = (char *) malloc(strlen(ntp["tzinfo"]) * sizeof(char));
-		config.tzInfo = strdup(ntp["tzinfo"]);
+		const char *tzInfoText = ntp["tzinfo"] | "";
+		if (ntp.containsKey("timezone"))
+		{
+			free(config.tzInfo);
+		}
+		config.tzInfo = strdup(tzInfoText);
 	}
 	configTime(0, 0, config.ntpServer);
 	// See https://github.com/nayarsystems/posix_tz_db/blob/master/zones.csv for Timezone codes for your region
@@ -329,12 +333,17 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 		{
 			uint8_t macAddr[6];
 			WiFi.softAPmacAddress(macAddr);
-			char topicSuffix[7];
+			char topicSuffix[8];
 			sprintf(topicSuffix, "-%02x%02x%02x", macAddr[3], macAddr[4], macAddr[5]);
-			char *newTopic = (char *)malloc(sizeof(char) * 80);
-			strcpy(newTopic, config.mqttTopic);
-			strcat(newTopic, topicSuffix);
-			config.mqttTopic = newTopic;
+			size_t topicLen = strlen(config.mqttTopic) + strlen(topicSuffix) + 1;
+			char *newTopic = (char *)malloc(topicLen);
+			if (newTopic != NULL)
+			{
+				strcpy(newTopic, config.mqttTopic);
+				strcat(newTopic, topicSuffix);
+				free(config.mqttTopic);
+				config.mqttTopic = newTopic;
+			}
 		}
 		if (mqtt.containsKey("syncrate"))
 		{
