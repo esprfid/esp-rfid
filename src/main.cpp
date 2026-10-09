@@ -39,6 +39,7 @@ SOFTWARE.
 #include <Bounce2.h>
 #include "magicnumbers.h"
 #include "config.h"
+#include "roles.h"
 
 Config config;
 

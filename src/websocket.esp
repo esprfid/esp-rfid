@@ -16,7 +16,8 @@ void addWsMessageToQueue(AsyncWebSocketClient *client, int messageSize)
 {
 	WsMessage *incomingMessage = new WsMessage;
 	incomingMessage->serializedMessage = (char *)malloc(messageSize);
-	strlcpy(incomingMessage->serializedMessage, (const char *)client->_tempObject, messageSize);
+	memcpy(incomingMessage->serializedMessage, client->_tempObject, messageSize - 1);
+	incomingMessage->serializedMessage[messageSize - 1] = '\0';
 	free(client->_tempObject);
 	client->_tempObject = NULL;
 
@@ -40,9 +41,27 @@ void addWsMessageToQueue(AsyncWebSocketClient *client, int messageSize)
 
 void ICACHE_FLASH_ATTR processWsMessage(WsMessage *incomingMessage)
 {
+	AsyncWebSocketClient *client = incomingMessage->client;
+	StaticJsonDocument<64> filter;
+	filter["command"] = true;
+	StaticJsonDocument<128> header;
+	auto headerError = deserializeJson(header, (const char *)incomingMessage->serializedMessage,
+		DeserializationOption::Filter(filter));
+	if (!headerError && header["command"] == "rolesfile")
+	{
+		bool ok = roles_save_from_json_string(incomingMessage->serializedMessage);
+		client->text(ok ? "{\"command\":\"result\",\"resultof\":\"rolesfile\",\"result\":true}" :
+			"{\"command\":\"result\",\"resultof\":\"rolesfile\",\"result\":false}");
+		if (ok)
+		{
+			sendRoleList(client);
+		}
+		free(incomingMessage->serializedMessage);
+		delete incomingMessage;
+		return;
+	}
 	// We should always get a JSON object (stringfied) from browser, so parse it
 	DynamicJsonDocument root(2448);
-	AsyncWebSocketClient *client = incomingMessage->client;
 	// cast to const char * to avoid in-place editing of serializedMessage
 	auto error = deserializeJson(root, (const char *)incomingMessage->serializedMessage);
 
@@ -86,6 +105,10 @@ void ICACHE_FLASH_ATTR processWsMessage(WsMessage *incomingMessage)
 	{
 		int page = root["page"];
 		sendUserList(page, incomingMessage->client);
+	}
+	else if (strcmp(command, "getroles") == 0)
+	{
+		sendRoleList(client);
 	}
 	else if (strcmp(command, "status") == 0)
 	{

@@ -307,6 +307,7 @@ bool ICACHE_FLASH_ATTR loadConfiguration(Config &config)
 			config.openingHours[d] = strdup("111111111111111111111111");
 		}
 	}
+	roles_load((const char **)config.openingHours);
 
 	config.mqttEnabled = mqtt["enabled"] == 1;
 

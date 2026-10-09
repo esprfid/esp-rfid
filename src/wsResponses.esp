@@ -72,6 +72,30 @@ void ICACHE_FLASH_ATTR sendUserList(int page, AsyncWebSocketClient *client)
 	}
 }
 
+void ICACHE_FLASH_ATTR sendRoleList(AsyncWebSocketClient *client)
+{
+	DynamicJsonDocument root(6144);
+	root["command"] = "roleslist";
+	root["max_roles"] = MAX_ACCESS_ROLES;
+	JsonArray roles = root.createNestedArray("roles");
+	roles_serialize(roles);
+	if (root.overflowed())
+	{
+		return;
+	}
+	String response;
+	if (!response.reserve(measureJson(root) + 1))
+	{
+		return;
+	}
+	serializeJson(root, response);
+	AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer((uint8_t *)response.c_str(), response.length());
+	if (buffer && client)
+	{
+		client->text(buffer);
+	}
+}
+
 void ICACHE_FLASH_ATTR sendStatus(AsyncWebSocketClient *client)
 {
 	struct ip_info info;
