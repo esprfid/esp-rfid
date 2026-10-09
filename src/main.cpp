@@ -189,9 +189,11 @@ void ICACHE_RAM_ATTR loop()
 	{
 		writeLatest(" ", "Button", 1);
 		mqttPublishAccess(epoch, "true", "Always", "Button", " ", " ");
-		activateRelay[0] = true;
+		for (int currentRelay = 0; currentRelay < config.numRelays && currentRelay < MAX_NUM_RELAYS; currentRelay++)
+		{
+			activateRelay[currentRelay] = true;
+		}
 		beeperValidAccess();
-		// TODO: handle other relays
 	}
 
 	ledWifiStatus();
