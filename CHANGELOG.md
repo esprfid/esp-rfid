@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Fixed
+- Give each relay and the beeper its own timer so concurrent activity cannot change another output's timing.
+
 ## [2.0.0] - 2024-11-02
 
 ### Bugfixes

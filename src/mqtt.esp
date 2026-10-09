@@ -578,8 +578,8 @@ void processMqttMessage(MqttMessage *incomingMessage)
 		for (int currentRelay = 0; currentRelay < config.numRelays; currentRelay++)
 		{
 			activateRelay[currentRelay] = true;
+			previousRelayMillis[currentRelay] = millis();
 		}
-		previousMillis = millis();
 	}
 	else if (strcmp(command, "open") == 0)
 	{
@@ -594,8 +594,8 @@ void processMqttMessage(MqttMessage *incomingMessage)
 		if (digitalRead(config.relayPin[currentRelay]) == !config.relayType[currentRelay])
 		{
 			activateRelay[currentRelay] = true;
+			previousRelayMillis[currentRelay] = millis();
 		}
-		previousMillis = millis();
 	}
 	else if (strcmp(command, "close") == 0)
 	{
@@ -610,8 +610,8 @@ void processMqttMessage(MqttMessage *incomingMessage)
 		if (digitalRead(config.relayPin[currentRelay]) == config.relayType[currentRelay])
 		{
 			activateRelay[currentRelay] = true;
+			previousRelayMillis[currentRelay] = millis();
 		}
-		previousMillis = millis();
 	}
 	else if (strcmp(command, "deletusers") == 0)
 	{
