@@ -203,6 +203,12 @@ At least 1000 unique User (RFID Tag) can be handled, the test were performed on 
 
 See [ChangeLog](https://github.com/esprfid/esp-rfid/blob/dev/CHANGELOG.md)
 
+## Access-role definitions
+
+The firmware can store up to eight role definitions in `/roles.json`. On first boot without this file, it creates in-memory Disabled (ID 0), Standard (ID 1), and Admin (ID 99) defaults. Standard inherits the existing `general.openinghours` schedule. Existing access decisions and the current web interface continue to use their original settings.
+
+Authenticated WebSocket clients can send `{"command":"getroles"}` and receive `{"command":"roleslist","max_roles":8,"roles":[...]}`. To save a complete list, send `{"command":"rolesfile","roles":[...]}`. Every list must contain the three built-in IDs; custom IDs may be 2–8. Each role has `id`, `name` (1–23 characters), `enabled`, `admin`, `relay_mask` (0–15), and `schedule` (seven 24-character binary strings, Monday first). The Disabled and Admin permissions are fixed regardless of submitted values. Invalid lists are rejected without replacing the active definitions. Saving responds with a `result` for `rolesfile` and, on success, the updated `roleslist`.
+
 ## Donations
 [![OC](https://opencollective.com/esp-rfid/tiers/esp-rfid-user.svg?avatarHeight=56)](https://opencollective.com/esp-rfid)
 

@@ -1,6 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+### Added
+- [firmware] Persist up to eight access-role definitions in `/roles.json`, with Disabled, Standard, and Admin defaults. The Standard default inherits the existing opening-hours schedule.
+- [firmware] Add WebSocket `getroles` and `rolesfile` commands for reading and saving role definitions. Existing access decisions continue to use the legacy configuration until the role-aware access flow is added separately.
+
 ## [2.0.0] - 2024-11-02
 
 ### Bugfixes

@@ -21,6 +21,10 @@ jobs:
     - name: Run Platformio builds
       run: |
         platformio run -e generic -e debug
+    - name: Test access-role persistence
+      run: |
+        c++ -std=c++11 -Wall -Wextra -Werror -I test/native/stubs -I src -I .pio/libdeps/generic/ArduinoJson/src test/native/test_roles.cpp src/roles.cpp -o /tmp/test_esp_rfid_roles
+        /tmp/test_esp_rfid_roles
     - name: Export bins
       uses: actions/upload-artifact@v4
       with:
