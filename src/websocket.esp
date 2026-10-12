@@ -99,6 +99,10 @@ void ICACHE_FLASH_ATTR processWsMessage(WsMessage *incomingMessage)
 	{
 		formatreq = true;
 	}
+	else if (strcmp(command, "getrecentlog") == 0)
+	{
+		sendRecentLog(root, client);
+	}
 	else if (strcmp(command, "geteventlog") == 0)
 	{
 		int page = root["page"];

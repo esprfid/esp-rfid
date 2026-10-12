@@ -11,6 +11,11 @@ var maxNumRelays=4;
 var numRelays=1;
 
 var theCurrentLogFile ="";
+var logOlderBefore = 0;
+var recentLogRequest = null;
+var recentLogRequestId = 0;
+var recentLogBatch = [];
+var recentLogKind = "latest";
 
 var config = {
     "command": "configfile",
@@ -238,7 +243,7 @@ function listhardware() {
 }
 
 function listlog() {
-  sendWebsocket("{\"command\":\"getlatestlog\", \"page\":" + page + ", \"filename\":\"" + theCurrentLogFile +"\"}");
+  getRecentLogs("latest");
 }
 
 function listntp() {
@@ -685,7 +690,92 @@ function getUsers() {
 }
 
 function getEvents() {
-  sendWebsocketWithRetry("{\"command\":\"geteventlog\", \"page\":" + page + ", \"filename\":\"" + theCurrentLogFile +"\"}");
+  getRecentLogs("event");
+}
+
+
+function requestRecentLogPage(request) {
+  request.command = "getrecentlog";
+  request.filename = theCurrentLogFile;
+  request.requestid = ++recentLogRequestId;
+  recentLogRequest = request;
+  sendWebsocketWithRetry(JSON.stringify(request));
+}
+
+
+function getRecentLogs(kind, end) {
+  if (recentLogRequest) {
+    var oldFilename = recentLogRequest.filename;
+    websocketMessagesToRetry = websocketMessagesToRetry.filter(function(entry) {
+      var request = JSON.parse(entry.message);
+      return request.command !== "getrecentlog" || request.filename !== oldFilename;
+    });
+  }
+  recentLogKind = kind;
+  recentLogBatch = [];
+  if (typeof end !== "number") logOlderBefore = 0;
+  document.getElementById("loading-img").style.display = "block";
+  document.getElementById("older" + kind + "logbtn").disabled = true;
+  document.getElementById("save" + kind + "logbtn").disabled = true;
+  document.getElementById("clear" + kind + "logbtn").disabled = true;
+  var request = {};
+  if (typeof end === "number") request.end = end;
+  requestRecentLogPage(request);
+}
+
+
+function loadOlderLogs(kind) {
+  if (!recentLogRequest && logOlderBefore > 0) getRecentLogs(kind, logOlderBefore);
+}
+
+
+function receiveRecentLog(obj) {
+  if (!recentLogRequest || obj.requestid !== recentLogRequest.requestid) return;
+  websocketMessagesToRetry = websocketMessagesToRetry.filter(function(entry) {
+    return JSON.parse(entry.message).requestid !== obj.requestid;
+  });
+  recentLogRequest = null;
+  if (obj.result === false) {
+    document.getElementById("loading-img").style.display = "none";
+    document.getElementById("save" + recentLogKind + "logbtn").disabled = false;
+    document.getElementById("older" + recentLogKind + "logbtn").disabled = logOlderBefore === 0;
+    alert(obj.message || "Failed to load log.");
+    return;
+  }
+  recentLogBatch = recentLogBatch.concat(obj.list);
+  document.getElementById("loadpages").textContent = " Loaded " + recentLogBatch.length + " records";
+  if (obj.more) {
+    requestRecentLogPage({offset: obj.nextoffset, start: obj.start, end: obj.end});
+    return;
+  }
+  data = recentLogBatch.concat(data);
+  logOlderBefore = obj.start;
+  var table = FooTable.get(recentLogKind === "latest" ? "#latestlogtable" : "#eventtable");
+  if (table) table.destroy();
+  if (recentLogKind === "latest") initLatestLogTable(); else initEventTable();
+  document.getElementById("loading-img").style.display = "none";
+  document.getElementById("older" + recentLogKind + "logbtn").disabled = logOlderBefore === 0;
+  document.getElementById("save" + recentLogKind + "logbtn").disabled = false;
+  document.getElementById("clear" + recentLogKind + "logbtn").disabled =
+    theCurrentLogFile !== (recentLogKind === "latest" ? "/latestlog.json" : "/eventlog.json");
+  document.getElementById(recentLogKind + "logsummary").textContent =
+    "Showing " + data.length + " most recent records. Download includes the entire log.";
+}
+
+
+function downloadEntireLog(kind) {
+  var button = document.getElementById("save" + kind + "logbtn");
+  button.disabled = true;
+  button.textContent = "Downloading...";
+  $.ajax({url: "/logdata", data: {filename: theCurrentLogFile}, dataType: "text", cache: false})
+    .done(function(text) {
+      var records = text.split(/\r?\n/).filter(function(line) { return line.trim().length > 0; });
+      saveLogfile({type: kind === "latest" ? "esp-rfid-accesslog" : "esp-rfid-eventlog", list: records},
+        kind === "latest" ? "downloadLatest" : "downloadEvent",
+        kind === "latest" ? "esp-rfid-accesslog.json" : "esp-rfid-eventlog.json");
+    })
+    .fail(function() { alert("Failed to download the complete log. Please try again."); })
+    .always(function() { button.disabled = false; button.textContent = "Download"; });
 }
 
 function isVisible(e) {
@@ -784,6 +874,10 @@ function listStats() {
 }
 
 function getContent(contentname) {
+  recentLogRequest = null;
+  websocketMessagesToRetry = websocketMessagesToRetry.filter(function(entry) {
+    return JSON.parse(entry.message).command !== "getrecentlog";
+  });
   $("#dismiss").click();
   $(".overlay").fadeOut().promise().done(function() {
     var content = $(contentname).html();
@@ -1489,6 +1583,10 @@ function restartESP() {
 
 function socketMessageListener(evt) {
   var obj = JSON.parse(evt.data);
+  if (obj.command === "recentlog") {
+    receiveRecentLog(obj);
+    return;
+  }
   if (obj.hasOwnProperty("command")) {
     switch (obj.command) {
       case "status":
@@ -1676,15 +1774,11 @@ function saveLogfile(obj,anchorElement,filename) {
 }
 
 function saveevent() {
-  file.type = "esp-rfid-eventlog";
-  file.list = data;
-  saveLogfile(file,"downloadEvent","esp-rfid-eventlog.json");
+  downloadEntireLog("event");
 }
 
 function savelatest() {
-  file.type = "esp-rfid-accesslog";
-  file.list = data;
-  saveLogfile(file,"downloadLatest","esp-rfid-accesslog.json");
+  downloadEntireLog("latest");
 }
 
 function clearlatest() {
