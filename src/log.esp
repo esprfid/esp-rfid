@@ -1,3 +1,5 @@
+#include "RecentLog.h"
+
 void extern mqttPublishEvent(JsonDocument *root);
 
 void ICACHE_FLASH_ATTR writeEvent(String type, String src, String desc, String data)
@@ -46,6 +48,88 @@ size_t lastPos; // position counter for fast seek
 #define ITEMS_PER_PAGE 10
 #define FILES_PER_PAGE 10.0
 #define MIN_SPIFF_BYTES 4096
+
+bool isLogFileName(const String &filename)
+{
+	return filename.indexOf('/', 1) < 0 &&
+		(filename == "/latestlog.json" || filename.startsWith("/latestlog.json.") ||
+		filename == "/eventlog.json" || filename.startsWith("/eventlog.json."));
+}
+
+void sendRecentLog(JsonDocument &request, AsyncWebSocketClient *client)
+{
+	String filename = request["filename"] | "/latestlog.json";
+	DynamicJsonDocument response(4096);
+	response["command"] = "recentlog";
+	response["filename"] = filename;
+	response["resultof"] = "recentlog";
+	response["requestid"] = request["requestid"];
+	response["result"] = false;
+	File file;
+	if (isLogFileName(filename))
+		file = SPIFFS.open(filename, "r");
+	size_t end = file ? file.size() : 0;
+	if (request.containsKey("end") && request["end"].as<size_t>() < end)
+		end = request["end"].as<size_t>();
+	size_t start = 0;
+	size_t offset = 0;
+	bool ok = isLogFileName(filename) && (file || !SPIFFS.exists(filename));
+	if (ok && request.containsKey("offset"))
+	{
+		start = request["start"] | 0;
+		offset = request["offset"] | 0;
+		ok = start <= offset && offset <= end;
+	}
+	else if (ok && file)
+	{
+		ok = findRecentLogStart(file, end, 100, start);
+		offset = start;
+	}
+	JsonArray items = response.createNestedArray("list");
+	if (ok && file && offset < end)
+	{
+		ok = file.seek(offset);
+		for (int i = 0; ok && i < ITEMS_PER_PAGE && file.position() < end;)
+		{
+			String line;
+			while (file.position() < end)
+			{
+				int ch = file.read();
+				if (ch < 0) { ok = false; break; }
+				if (ch == '\n') break;
+				if (ch != '\r') line += (char)ch;
+				if (line.length() > 1024) { ok = false; break; }
+			}
+			if (line.length()) { items.add(line); ++i; }
+			yield();
+		}
+		offset = file.position();
+	}
+	response["start"] = start;
+	response["nextoffset"] = offset;
+	response["end"] = end;
+	response["more"] = offset < end;
+	response["result"] = ok;
+	if (!ok || response.overflowed())
+	{
+		response.clear();
+		response["command"] = "recentlog";
+		response["filename"] = filename;
+		response["resultof"] = "recentlog";
+		response["requestid"] = request["requestid"];
+		response["result"] = false;
+		response["message"] = "Unable to read log page (file error or insufficient memory)";
+	}
+	size_t len = measureJson(response);
+	AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
+	if (buffer)
+	{
+		serializeJson(response, (char *)buffer->get(), len + 1);
+		client->text(buffer);
+	}
+	else
+		client->text(String("{\"command\":\"recentlog\",\"resultof\":\"recentlog\",\"result\":false,\"requestid\":") + request["requestid"].as<unsigned long>() + ",\"message\":\"Not enough memory to send log page\"}");
+}
 
 void ICACHE_FLASH_ATTR sendLogFile(int page, String fileName, int logFileType, AsyncWebSocketClient *client)
 {

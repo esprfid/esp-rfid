@@ -51,6 +51,20 @@ void ICACHE_FLASH_ATTR setupWebServer() {
 		response->addHeader("Content-Encoding", "gzip");
 		request->send(response);
 	});
+	server.on("/logdata", HTTP_GET, [](AsyncWebServerRequest *request) {
+		if (!request->authenticate(httpUsername, config.httpPass))
+			return request->requestAuthentication();
+		if (!request->hasParam("filename"))
+			return request->send(400, "text/plain", "Missing filename");
+		String filename = request->getParam("filename")->value();
+		if (!isLogFileName(filename))
+			return request->send(400, "text/plain", "Invalid log filename");
+		if (!SPIFFS.exists(filename))
+			return request->send(200, "text/plain", "");
+		AsyncWebServerResponse *response = request->beginResponse(SPIFFS, filename, "text/plain");
+		response->addHeader("Cache-Control", "no-store");
+		request->send(response);
+	});
 	server.on("/css/required.css", HTTP_GET, [](AsyncWebServerRequest *request) {
 		AsyncWebServerResponse *response = request->beginResponse_P(200, "text/css", required_css_gz, required_css_gz_len);
 		response->addHeader("Content-Encoding", "gzip");

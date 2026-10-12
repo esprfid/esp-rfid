@@ -491,6 +491,8 @@
         </div>
         <button id="clearlatestlogbtn" disabled="true" onclick="clearlatest()" class="btn btn-primary btn-sm">Clear Log</button>
         <button id="savelatestlogbtn" disabled="true"  onclick="savelatest()"  class="btn btn-success btn-sm">Download</button>
+        <button id="olderlatestlogbtn" disabled="true" onclick="loadOlderLogs('latest')" class="btn btn-default btn-sm">Load older records</button>
+        <p id="latestlogsummary"></p>
         <a id="downloadLatest" style="display:none"></a>
         <div style="clear:both;">
             <br>
@@ -516,6 +518,8 @@
         </div>
         <button id="cleareventlogbtn" disabled="true" onclick="clearevent()" class="btn btn-primary btn-sm">Clear Log</button>
         <button id="saveeventlogbtn"  disabled="true" onclick="saveevent()" class="btn btn-success btn-sm">Download</button>
+        <button id="oldereventlogbtn" disabled="true" onclick="loadOlderLogs('event')" class="btn btn-default btn-sm">Load older records</button>
+        <p id="eventlogsummary"></p>
         <a id="downloadEvent" style="display:none"></a>
         <div style="clear:both;">
             <br>
