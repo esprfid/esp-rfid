@@ -1488,7 +1488,17 @@ function restartESP() {
 }
 
 function socketMessageListener(evt) {
-  var obj = JSON.parse(evt.data);
+  var obj;
+  try {
+    obj = JSON.parse(evt.data);
+  } catch (error) {
+    console.error("Invalid JSON received over WebSocket", error, evt.data);
+    return; // Leave the request pending so the retry timer can resend it.
+  }
+  if (!obj || typeof obj !== "object") {
+    console.error("Invalid WebSocket response", evt.data);
+    return;
+  }
   if (obj.hasOwnProperty("command")) {
     switch (obj.command) {
       case "status":
@@ -1575,6 +1585,11 @@ function socketMessageListener(evt) {
         }
         break;
       case "userlist":
+        if (obj.result === false) {
+          document.getElementById("loading-img").style.display = "none";
+          alert(obj.message || "Failed to load users. Please try again.");
+          break;
+        }
         if (page < haspages && obj.result === true) {
           getnextpage("userlist");
         } else if (page === haspages) {

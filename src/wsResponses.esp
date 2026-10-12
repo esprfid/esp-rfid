@@ -1,6 +1,7 @@
 void ICACHE_FLASH_ATTR sendUserList(int page, AsyncWebSocketClient *client)
 {
-	DynamicJsonDocument root(2048);
+	// Ten users include copied UID, username, PIN and relay-key strings.
+	DynamicJsonDocument root(4096);
 	root["command"] = "userlist";
 	root["page"] = page;
 	JsonArray users = root.createNestedArray("list");
@@ -53,6 +54,15 @@ void ICACHE_FLASH_ATTR sendUserList(int page, AsyncWebSocketClient *client)
 	}
 	float pages = i / 10.0;
 	root["haspages"] = ceil(pages);
+	// Acknowledge the page in the same frame so a lost/invalid page is retried.
+	root["resultof"] = "userlist";
+	root["result"] = true;
+	if (root.overflowed())
+	{
+		if (client)
+			client->text("{\"command\":\"result\",\"resultof\":\"userlist\",\"result\":false,\"message\":\"Not enough memory to load users\"}");
+		return;
+	}
 	size_t len = measureJson(root);
 	AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
 	if (buffer)
@@ -60,10 +70,8 @@ void ICACHE_FLASH_ATTR sendUserList(int page, AsyncWebSocketClient *client)
 		serializeJson(root, (char *)buffer->get(), len + 1);
 		if (client)
 		{
-			wsMessageTicker.once_ms_scheduled(50, [client, buffer]() {
-				client->text(buffer);
-				client->text("{\"command\":\"result\",\"resultof\":\"userlist\",\"result\": true}");
-			});
+			// Queue immediately: an unreferenced buffer can be cleaned up by ws.
+			client->text(buffer);
 		}
 		else
 		{

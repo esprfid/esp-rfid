@@ -16,7 +16,9 @@ void addWsMessageToQueue(AsyncWebSocketClient *client, int messageSize)
 {
 	WsMessage *incomingMessage = new WsMessage;
 	incomingMessage->serializedMessage = (char *)malloc(messageSize);
-	strlcpy(incomingMessage->serializedMessage, (const char *)client->_tempObject, messageSize);
+	// Incoming frame data is length-delimited, not NUL-terminated.
+	memcpy(incomingMessage->serializedMessage, client->_tempObject, messageSize - 1);
+	incomingMessage->serializedMessage[messageSize - 1] = '\0';
 	free(client->_tempObject);
 	client->_tempObject = NULL;
 

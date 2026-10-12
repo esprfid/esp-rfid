@@ -22,7 +22,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
-#define VERSION "2.0.0"
+#define VERSION "2.0.2"
 
 #include "Arduino.h"
 #include <ESP8266WiFi.h>
@@ -71,7 +71,6 @@ bool deactivateRelay[MAX_NUM_RELAYS] = {false, false, false, false};
 AsyncMqttClient mqttClient;
 Ticker mqttReconnectTimer;
 Ticker wifiReconnectTimer;
-Ticker wsMessageTicker;
 WiFiEventHandler wifiDisconnectHandler, wifiConnectHandler, wifiOnStationModeGotIPHandler;
 Bounce openLockButton;
 
